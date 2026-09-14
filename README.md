@@ -74,3 +74,19 @@ Suggested commit:
 ```text
 refactor(architecture): separate dashboard UI and application entry point
 ```
+
+## Command architecture
+
+The command system is now separated into a small typed layer:
+
+- `command/ClockCommand.kt` — supported command types.
+- `command/CommandParser.kt` — converts raw text into a command.
+- `command/CommandResult.kt` — maps commands to user-facing result text.
+
+The dashboard UI is not yet wired to this layer. This step intentionally prepares the architecture before changing command behavior.
+
+Suggested commit:
+
+```text
+refactor(command): separate command parsing from dashboard UI
+```
