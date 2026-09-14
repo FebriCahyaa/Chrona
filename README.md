@@ -113,3 +113,9 @@ The settings implementation was corrected so the clock format state is passed th
 
 All command variants now explicitly implement `ClockCommand`, including `Unknown`.
 The parser returns `ClockCommand` consistently from every `when` branch.
+
+
+## Dashboard V2
+- Redesigned premium home dashboard with gradient hero clock card.
+- Added visual stat cards, focus action card, and status panel.
+- Fixed ClockDisplay spacing to use Dp values.

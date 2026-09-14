@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -38,7 +39,7 @@ fun ClockDisplay(use24HourFormat: Boolean, compact: Boolean = false) {
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(if (compact) 2.sp else 8.sp)
+        verticalArrangement = Arrangement.spacedBy(if (compact) 2.dp else 8.dp)
     ) {
         Icon(
             imageVector = Icons.Default.AccessTime,
