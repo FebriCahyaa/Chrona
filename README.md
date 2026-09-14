@@ -1,35 +1,51 @@
 # CLOCK APP
 
-Modern Android clock dashboard built with Kotlin and Jetpack Compose.
+A clean Android clock dashboard built with Kotlin and Jetpack Compose.
 
-## Stable build profile
+## Project principles
 
-- `compileSdk`: 36
-- `targetSdk`: 36
-- `minSdk`: 26
-- Java/JDK: 17
-- Android Gradle Plugin: 8.9.2
-- Gradle: 8.11.1
-- GitHub Actions: Ubuntu latest
+- **Readable source:** small composables with one responsibility.
+- **Predictable state:** UI state is owned at the screen level and passed down explicitly.
+- **Minimal permissions:** the current feature set does not require runtime permissions.
+- **CI-first workflow:** builds are designed to run through GitHub Actions.
+- **Consistent naming:** PascalCase for composables, descriptive names for state and callbacks.
 
-## Permissions
+## Available commands
 
-The current app requests no runtime permissions. The manifest intentionally does not include camera, microphone, location, contacts, storage, SMS, Bluetooth, notification, or internet permissions.
+Enter a command in the command bar and submit it from the keyboard:
 
-Add permissions only when the related feature is implemented and actually requires them.
+- `dark` — enable dark theme.
+- `light` — enable light theme.
+- `settings` — open appearance settings.
+- `reset` — restore the default dashboard state.
 
-## GitHub Actions
-
-The workflow verifies the project, installs Android SDK 36, builds a debug APK, and uploads the APK as an artifact.
-
-## Manual build
+## Build locally
 
 ```bash
 gradle assembleDebug
 ```
 
-APK output:
+The generated APK is located at:
 
 ```text
 app/build/outputs/apk/debug/app-debug.apk
 ```
+
+## Commit message convention
+
+Use a detailed, action-oriented commit message:
+
+```text
+feat(clock): add live dashboard and theme controls
+
+- Add a realtime HH:mm:ss clock display.
+- Add light/dark theme switching.
+- Add command bar actions for common dashboard controls.
+- Split the screen into focused composables for maintainability.
+- Keep the current feature set permission-free.
+
+Verification:
+- gradle assembleDebug
+```
+
+Keep commits focused: one logical change per commit, with a summary, detailed bullet points, and verification notes.
