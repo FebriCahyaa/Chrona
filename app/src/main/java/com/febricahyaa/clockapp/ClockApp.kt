@@ -52,6 +52,9 @@ import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.febricahyaa.clockapp.command.ClockCommand
+import com.febricahyaa.clockapp.command.CommandParser
+import com.febricahyaa.clockapp.command.CommandResult
 
 private val GlassShape = RoundedCornerShape(28.dp)
 
@@ -62,6 +65,7 @@ fun ClockApp() {
     var isDarkTheme by remember { mutableStateOf(true) }
     var command by remember { mutableStateOf("") }
     var showSettings by remember { mutableStateOf(false) }
+    var commandResult by remember { mutableStateOf<String?>(null) }
 
     ClockTheme(isDarkTheme = isDarkTheme) {
         Surface(modifier = Modifier.fillMaxSize()) {
@@ -85,18 +89,28 @@ fun ClockApp() {
                     value = command,
                     onValueChange = { command = it },
                     onCommand = { value ->
-                        when (value.trim().lowercase(Locale.ROOT)) {
-                            "dark" -> isDarkTheme = true
-                            "light" -> isDarkTheme = false
-                            "settings" -> showSettings = !showSettings
-                            "reset" -> {
+                        val parsedCommand = CommandParser.parse(value)
+                        commandResult = CommandResult.message(parsedCommand)
+
+                        when (parsedCommand) {
+                            ClockCommand.Dark -> isDarkTheme = true
+                            ClockCommand.Light -> isDarkTheme = false
+                            ClockCommand.Settings -> showSettings = !showSettings
+                            ClockCommand.Reset -> {
                                 command = ""
                                 showSettings = false
                                 isDarkTheme = true
                             }
+                            ClockCommand.Help,
+                            ClockCommand.Empty,
+                            is ClockCommand.Unknown -> Unit
                         }
                     }
                 )
+
+                commandResult?.let { result ->
+                    CommandResultCard(message = result)
+                }
 
                 if (showSettings) {
                     SettingsCard(
@@ -236,6 +250,17 @@ private fun CommandBar(
         ) {
             Text("Execute command")
         }
+    }
+}
+
+@Composable
+private fun CommandResultCard(message: String) {
+    GlassCard {
+        Text(
+            text = message,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodyMedium
+        )
     }
 }
 

@@ -90,3 +90,8 @@ Suggested commit:
 ```text
 refactor(command): separate command parsing from dashboard UI
 ```
+
+
+## Command feedback
+
+The command bar now uses `CommandParser` and `CommandResult` to interpret commands and display feedback without mixing parsing logic into the dashboard UI.
