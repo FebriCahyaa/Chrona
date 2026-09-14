@@ -49,3 +49,11 @@ Verification:
 ```
 
 Keep commits focused: one logical change per commit, with a summary, detailed bullet points, and verification notes.
+
+## Layout and input behavior
+
+- The dashboard respects system bars and display cutouts.
+- The content scrolls on smaller screens.
+- The layout adjusts when the on-screen keyboard appears.
+- Commands can be executed with the keyboard action or visible button.
+- The keyboard is dismissed after command execution.
