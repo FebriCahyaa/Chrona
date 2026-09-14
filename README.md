@@ -57,3 +57,20 @@ Keep commits focused: one logical change per commit, with a summary, detailed bu
 - The layout adjusts when the on-screen keyboard appears.
 - Commands can be executed with the keyboard action or visible button.
 - The keyboard is dismissed after command execution.
+
+
+## Architecture refactor
+
+This revision separates the Android activity entry point from the Compose application UI:
+
+- `MainActivity.kt` — Android activity entry point only.
+- `ClockApp.kt` — Compose application and UI composition.
+- `model/ClockSettings.kt` — small domain model prepared for future settings work.
+
+No new user-facing feature is introduced in this refactor. The goal is to make the next command and settings changes safer and easier to review.
+
+Suggested commit:
+
+```text
+refactor(architecture): separate dashboard UI and application entry point
+```
