@@ -2,25 +2,30 @@
 
 Modern Android clock dashboard built with Kotlin and Jetpack Compose.
 
-## Features
+## Android support
 
-- Realtime digital clock
-- Dynamic light/dark theme
-- LiquidGlass-inspired cards
-- Dashboard widgets
-- Command bar with simple commands
-- Widget visibility and ordering controls
+- Compile SDK: Android 17 / API 37
+- Target SDK: Android 17 / API 37
+- Minimum SDK: Android 8.0 / API 26
+- Java: 17
+- Android Gradle Plugin: 8.9.2
 
-## Build
+## Permissions
 
-Use JDK 17 and Gradle 8.7+.
+CLOCK APP currently requests **no runtime permissions**. A clock/dashboard does not need camera, location, contacts, storage, SMS, microphone, or notification access. Keeping the manifest permission-free improves privacy and reduces permission-related failures.
+
+## Build with GitHub Actions
+
+Push the repository to GitHub, then open **Actions**. The workflow installs Android 17 SDK packages, verifies the project structure, builds the debug APK, and uploads it as an artifact.
+
+## Local build
 
 ```bash
-gradle wrapper --gradle-version 8.7
-./gradlew assembleDebug
+gradle --version
+gradle assembleDebug
 ```
 
-The generated APK will be under:
+The APK is generated at:
 
 ```text
 app/build/outputs/apk/debug/app-debug.apk
