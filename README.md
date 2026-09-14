@@ -94,7 +94,7 @@ refactor(command): separate command parsing from dashboard UI
 
 ## Command feedback
 
-The command bar now uses `CommandParser` and `CommandResult` to interpret commands and display feedback without mixing parsing logic into the dashboard UI.
+The command bar now uses `CommandParser` and `CommandResult` to interpret commands and display feedback without mixing parsing logic into the dashboard UI. `CommandBar` (in `ui/components/`) is mounted directly in `ClockApp.kt` and is the layer's first real caller.
 
 
 ## Clock format settings
@@ -119,3 +119,14 @@ The parser returns `ClockCommand` consistently from every `when` branch.
 - Redesigned premium home dashboard with gradient hero clock card.
 - Added visual stat cards, focus action card, and status panel.
 - Fixed ClockDisplay spacing to use Dp values.
+
+## Review fix pass
+- Fixed `HomeScreen.kt`: it was declared under the wrong package (`com.example.clockapp`) and imported `ClockDisplay` from a package that doesn't exist in this project, so the module could not compile.
+- Fixed a duplicate `modifier` argument on the "Focus on the time" `Card`, which is a Kotlin compile error.
+- `ClockDisplay` now accepts `lightContent` (used by the gradient hero card) instead of silently failing to resolve.
+- `HomeScreen`'s `onOpenClock` is now actually wired from `ClockApp.kt`, so tapping the focus card navigates to `ClockScreen`.
+- Mounted `CommandBar` (new, in `ui/components/`) in `ClockApp.kt` so the command layer documented above is finally reachable from the UI.
+- `MainActivity.kt` trimmed back down to an activity entry point, per this file's own "Architecture refactor" section — it had accumulated a full screen's worth of dead imports left over from before that refactor.
+- Added Material You dynamic color (`dynamicLightColorScheme` / `dynamicDarkColorScheme` on API 31+, with a static fallback) so theming actually reflects MD3 rather than the default purple scheme.
+- Replaced manual `statusBarColor` / `navigationBarColor` forcing in `styles.xml` with `enableEdgeToEdge()`, which is the supported approach on the API levels this app targets and avoids a hardcoded black nav bar on a light theme.
+- `ClockApp.kt` now holds theme/seconds state as `ClockSettings` instead of a duplicate, disconnected `isDarkTheme` boolean, so the model in `model/ClockSettings.kt` is no longer dead code.

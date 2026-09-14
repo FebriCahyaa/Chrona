@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
@@ -22,7 +23,11 @@ import java.util.Date
 import java.util.Locale
 
 @Composable
-fun ClockDisplay(use24HourFormat: Boolean, compact: Boolean = false) {
+fun ClockDisplay(
+    use24HourFormat: Boolean,
+    compact: Boolean = false,
+    lightContent: Boolean = false
+) {
     var currentTime by remember { mutableStateOf(Date()) }
     val timeFormatter = remember(use24HourFormat) {
         SimpleDateFormat(if (use24HourFormat) "HH:mm:ss" else "hh:mm:ss", Locale.getDefault())
@@ -37,6 +42,9 @@ fun ClockDisplay(use24HourFormat: Boolean, compact: Boolean = false) {
         }
     }
 
+    val primaryColor = if (lightContent) Color.White else MaterialTheme.colorScheme.primary
+    val secondaryColor = if (lightContent) Color.White.copy(alpha = .82f) else MaterialTheme.colorScheme.onSurfaceVariant
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(if (compact) 2.dp else 8.dp)
@@ -44,26 +52,27 @@ fun ClockDisplay(use24HourFormat: Boolean, compact: Boolean = false) {
         Icon(
             imageVector = Icons.Default.AccessTime,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary
+            tint = primaryColor
         )
         Text(
             text = timeFormatter.format(currentTime),
             fontSize = if (compact) 42.sp else 64.sp,
             lineHeight = if (compact) 48.sp else 70.sp,
             letterSpacing = if (compact) 0.sp else 1.sp,
-            style = MaterialTheme.typography.displaySmall
+            style = MaterialTheme.typography.displaySmall,
+            color = primaryColor
         )
         if (!use24HourFormat) {
             Text(
                 text = meridiemFormatter.format(currentTime),
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
+                color = primaryColor
             )
         }
         Text(
             text = dateFormatter.format(currentTime),
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = secondaryColor
         )
     }
 }
