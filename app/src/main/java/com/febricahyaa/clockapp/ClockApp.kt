@@ -66,6 +66,7 @@ fun ClockApp() {
     var command by remember { mutableStateOf("") }
     var showSettings by remember { mutableStateOf(false) }
     var commandResult by remember { mutableStateOf<String?>(null) }
+    var use24HourFormat by remember { mutableStateOf(true) }
 
     ClockTheme(isDarkTheme = isDarkTheme) {
         Surface(modifier = Modifier.fillMaxSize()) {
@@ -96,12 +97,16 @@ fun ClockApp() {
                             ClockCommand.Dark -> isDarkTheme = true
                             ClockCommand.Light -> isDarkTheme = false
                             ClockCommand.Settings -> showSettings = !showSettings
+                            ClockCommand.Format12 -> use24HourFormat = false
+                            ClockCommand.Format24 -> use24HourFormat = true
                             ClockCommand.Reset -> {
                                 command = ""
                                 showSettings = false
                                 isDarkTheme = true
                             }
                             ClockCommand.Help,
+                            ClockCommand.Format12,
+                            ClockCommand.Format24,
                             ClockCommand.Empty,
                             is ClockCommand.Unknown -> Unit
                         }
@@ -172,7 +177,7 @@ private fun Header(
 }
 
 @Composable
-private fun ClockCard() {
+private fun ClockCard(use24HourFormat: Boolean) {
     var currentTime by remember { mutableStateOf(Date()) }
     val timeFormatter = remember { SimpleDateFormat("HH:mm:ss", Locale.getDefault()) }
     val dateFormatter = remember { SimpleDateFormat("EEEE, d MMMM", Locale.getDefault()) }
@@ -288,6 +293,23 @@ private fun SettingsCard(
     onThemeChanged: (Boolean) -> Unit
 ) {
     GlassCard {
+        Text(
+            text = "Clock format",
+            style = MaterialTheme.typography.titleMedium
+        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = if (use24HourFormat) "24-hour" else "12-hour",
+                modifier = Modifier.weight(1f)
+            )
+            Switch(
+                checked = use24HourFormat,
+                onCheckedChange = onFormatChange
+            )
+        }
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text("Appearance", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             Row(

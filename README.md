@@ -95,3 +95,11 @@ refactor(command): separate command parsing from dashboard UI
 ## Command feedback
 
 The command bar now uses `CommandParser` and `CommandResult` to interpret commands and display feedback without mixing parsing logic into the dashboard UI.
+
+
+## Clock format settings
+
+The dashboard now supports switching between 24-hour and 12-hour clock display.
+Commands:
+- `12` / `12h` / `12-hour`
+- `24` / `24h` / `24-hour`
