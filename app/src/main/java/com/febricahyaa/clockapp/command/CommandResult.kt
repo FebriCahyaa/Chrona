@@ -9,6 +9,8 @@ object CommandResult {
             ClockCommand.Dark -> "Dark mode selected."
             ClockCommand.Light -> "Light mode selected."
             ClockCommand.Settings -> "Settings command received."
+            ClockCommand.Format12 -> "12-hour format selected."
+            ClockCommand.Format24 -> "24-hour format selected."
             ClockCommand.Reset -> "Clock settings reset."
             ClockCommand.Help -> "Available commands: dark, light, settings, reset, help."
             ClockCommand.Empty -> "Enter a command first."

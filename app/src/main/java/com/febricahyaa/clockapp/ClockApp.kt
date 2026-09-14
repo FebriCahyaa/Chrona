@@ -84,7 +84,7 @@ fun ClockApp() {
                     onThemeChanged = { isDarkTheme = it }
                 )
 
-                ClockCard()
+                ClockCard(use24HourFormat = use24HourFormat)
 
                 CommandBar(
                     value = command,
@@ -120,7 +120,9 @@ fun ClockApp() {
                 if (showSettings) {
                     SettingsCard(
                         isDarkTheme = isDarkTheme,
-                        onThemeChanged = { isDarkTheme = it }
+                        onThemeChanged = { isDarkTheme = it },
+                        use24HourFormat = use24HourFormat,
+                        onFormatChange = { use24HourFormat = it }
                     )
                 } else {
                     StatusCard()
@@ -179,7 +181,12 @@ private fun Header(
 @Composable
 private fun ClockCard(use24HourFormat: Boolean) {
     var currentTime by remember { mutableStateOf(Date()) }
-    val timeFormatter = remember { SimpleDateFormat("HH:mm:ss", Locale.getDefault()) }
+    val timeFormatter = remember(use24HourFormat) {
+        SimpleDateFormat(
+            if (use24HourFormat) "HH:mm:ss" else "hh:mm:ss a",
+            Locale.getDefault()
+        )
+    }
     val dateFormatter = remember { SimpleDateFormat("EEEE, d MMMM", Locale.getDefault()) }
 
     LaunchedEffect(Unit) {
@@ -290,7 +297,9 @@ private fun StatusCard() {
 @Composable
 private fun SettingsCard(
     isDarkTheme: Boolean,
-    onThemeChanged: (Boolean) -> Unit
+    onThemeChanged: (Boolean) -> Unit,
+    use24HourFormat: Boolean,
+    onFormatChange: (Boolean) -> Unit
 ) {
     GlassCard {
         Text(

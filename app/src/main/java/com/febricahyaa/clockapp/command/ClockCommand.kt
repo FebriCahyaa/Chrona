@@ -6,7 +6,7 @@ package com.febricahyaa.clockapp.command
 sealed interface ClockCommand {
     data object Dark : ClockCommand
     data object Light : ClockCommand
-    data object Settings
+    data object Settings : ClockCommand
     data object Format12
     data object Format24 : ClockCommand
     data object Reset : ClockCommand

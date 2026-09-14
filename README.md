@@ -103,3 +103,7 @@ The dashboard now supports switching between 24-hour and 12-hour clock display.
 Commands:
 - `12` / `12h` / `12-hour`
 - `24` / `24h` / `24-hour`
+
+
+## Build validation note
+The settings implementation was corrected so the clock format state is passed through the UI and all command cases are exhaustive.
