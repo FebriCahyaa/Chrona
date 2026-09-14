@@ -107,3 +107,9 @@ Commands:
 
 ## Build validation note
 The settings implementation was corrected so the clock format state is passed through the UI and all command cases are exhaustive.
+
+
+## Command parser fix
+
+All command variants now explicitly implement `ClockCommand`, including `Unknown`.
+The parser returns `ClockCommand` consistently from every `when` branch.
