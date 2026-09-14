@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.febricahyaa.clockapp
 
 
@@ -51,14 +53,12 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 private val GlassShape = RoundedCornerShape(28.dp)
 
 
 
 @Composable
-private fun ClockApp() {
+fun ClockApp() {
     var isDarkTheme by remember { mutableStateOf(true) }
     var command by remember { mutableStateOf("") }
     var showSettings by remember { mutableStateOf(false) }
