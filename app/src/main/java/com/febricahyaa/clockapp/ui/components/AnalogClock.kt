@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
-import com.febricahyaa.clockapp.core.ChronaNativeBridge
+import com.febricahyaa.clockapp.core.NativeClock
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.coroutineScope
@@ -43,8 +43,8 @@ fun LiveAnalogClock(
             while (isActive) {
                 val now = System.currentTimeMillis()
                 val nextBoundary = 1000L - (now % 1000L)
-                val values = ChronaNativeBridge.anglesForEpochMillis(now)
-                value = AnalogAngles(values[0], values[1], values[2])
+                val clockAngles = NativeClock.clockAngles(now)
+                value = AnalogAngles(clockAngles.hour, clockAngles.minute, clockAngles.second)
                 delay(nextBoundary.coerceAtLeast(16L))
             }
         }

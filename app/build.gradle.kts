@@ -19,7 +19,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
-                cppFlags += listOf("-std=c++20", "-O2", "-ffast-math", "-fvisibility=hidden")
+                cppFlags += listOf("-std=c++20")
                 arguments += listOf("-DANDROID_STL=c++_static")
             }
         }
@@ -86,6 +86,7 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-core")
     implementation("androidx.compose.material:material-icons-extended")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
