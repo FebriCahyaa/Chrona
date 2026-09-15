@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -111,7 +112,7 @@ fun WorldClockScreen(
         }
         LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             items(shown, key = { it.id }) { item ->
-                CityRow(item, timePattern, favorites, onToggleFavorite, onRemoveCity)
+                CityRow(item, timePattern, favorites, onToggleFavorite, { onRemoveCity(item.id) })
             }
             item { Spacer(Modifier.size(8.dp)) }
         }
@@ -205,7 +206,7 @@ private fun AddCityDialog(
                     placeholder = { Text("Search city or country") },
                     singleLine = true, modifier = Modifier.fillMaxWidth()
                 )
-                LazyColumn(Modifier.size(height = 260.dp, width = 300.dp)) {
+                LazyColumn(Modifier.size(width = 300.dp, height = 260.dp)) {
                     items(filtered) { entry ->
                         TextButton(onClick = { onPick(entry) }) {
                             Text("${entry.city}, ${entry.country}  ·  ${regionOf(entry.zoneId)}",

@@ -8,7 +8,10 @@ package com.febricahyaa.clockapp.model
  * hand-picked seed color turned into a full Material 3 scheme by
  * [com.febricahyaa.clockapp.ui.theme.ThemeEngine].
  */
+enum class AppThemeMode { LIGHT, DARK, GLASS }
+
 enum class ThemeAccent {
+    PEACH,
     SYSTEM,
     INDIGO,
     OCEAN,
@@ -25,6 +28,7 @@ enum class ThemeAccent {
  */
 data class ClockSettings(
     val isDarkTheme: Boolean = true,
+    val themeMode: AppThemeMode = AppThemeMode.DARK,
     val showSeconds: Boolean = true,
     val themeAccent: ThemeAccent = ThemeAccent.SYSTEM,
 )

@@ -2,6 +2,7 @@ package com.febricahyaa.clockapp.data
 
 import android.content.Context
 import com.febricahyaa.clockapp.model.ClockSettings
+import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.model.ThemeAccent
 
 /**
@@ -11,6 +12,7 @@ import com.febricahyaa.clockapp.model.ThemeAccent
  */
 object SettingsStore {
     private const val PREFS_NAME = "clock_app_settings"
+    private const val KEY_THEME_MODE = "theme_mode"
     private const val KEY_DARK_THEME = "is_dark_theme"
     private const val KEY_SHOW_SECONDS = "show_seconds"
     private const val KEY_THEME_ACCENT = "theme_accent"
@@ -27,7 +29,9 @@ object SettingsStore {
         val accent = prefs.getString(KEY_THEME_ACCENT, null)
             ?.let { name -> runCatching { ThemeAccent.valueOf(name) }.getOrNull() }
             ?: defaults.themeAccent
+        val mode = prefs.getString(KEY_THEME_MODE, null)?.let { runCatching { AppThemeMode.valueOf(it) }.getOrNull() } ?: defaults.themeMode
         val settings = ClockSettings(
+            themeMode = mode,
             isDarkTheme = prefs.getBoolean(KEY_DARK_THEME, defaults.isDarkTheme),
             showSeconds = prefs.getBoolean(KEY_SHOW_SECONDS, defaults.showSeconds),
             themeAccent = accent
@@ -39,6 +43,7 @@ object SettingsStore {
     fun save(context: Context, settings: ClockSettings, use24HourFormat: Boolean) {
         val prefs = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit()
+            .putString(KEY_THEME_MODE, settings.themeMode.name)
             .putBoolean(KEY_DARK_THEME, settings.isDarkTheme)
             .putBoolean(KEY_SHOW_SECONDS, settings.showSeconds)
             .putString(KEY_THEME_ACCENT, settings.themeAccent.name)

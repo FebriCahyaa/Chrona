@@ -23,6 +23,7 @@ object ThemeEngine {
 
     /** Curated seed colors for each preset. SYSTEM has no seed of its own. */
     fun seedColorFor(accent: ThemeAccent): Color? = when (accent) {
+        ThemeAccent.PEACH -> Color(0xFFF6A56F)
         ThemeAccent.SYSTEM -> null
         ThemeAccent.INDIGO -> Color(0xFF6750A4)
         ThemeAccent.OCEAN -> Color(0xFF00677E)
@@ -110,4 +111,24 @@ object ThemeEngine {
         hsv[0] = ((hsv[0] + degrees) % 360f + 360f) % 360f
         return Color(android.graphics.Color.HSVToColor(hsv))
     }
+    fun schemeFor(seed: Color, mode: com.febricahyaa.clockapp.model.AppThemeMode): ColorScheme =
+        schemeFor(seed, mode != com.febricahyaa.clockapp.model.AppThemeMode.LIGHT)
+
+    fun glassifyDynamic(scheme: ColorScheme): ColorScheme = scheme.copy(
+        surface = scheme.surface.copy(alpha = 0.88f),
+        background = scheme.background.copy(alpha = 0.96f)
+    )
+
+}
+
+
+fun accentGradientColors(accent: ThemeAccent): Pair<Color, Color> = when (accent) {
+    ThemeAccent.PEACH -> Color(0xFFF6A56F) to Color(0xFFE2794E)
+    ThemeAccent.SYSTEM -> Color(0xFFF6A56F) to Color(0xFFE2794E)
+    ThemeAccent.INDIGO -> Color(0xFFB8A1FF) to Color(0xFF6750A4)
+    ThemeAccent.OCEAN -> Color(0xFF7DD3FC) to Color(0xFF00677E)
+    ThemeAccent.EMERALD -> Color(0xFF86EFAC) to Color(0xFF146C43)
+    ThemeAccent.SUNSET -> Color(0xFFFFC078) to Color(0xFFB3510A)
+    ThemeAccent.ROSE -> Color(0xFFFFA3B1) to Color(0xFF9C4146)
+    ThemeAccent.SLATE -> Color(0xFFCBD5E1) to Color(0xFF5C5F70)
 }
