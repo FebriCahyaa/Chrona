@@ -5,10 +5,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.weight
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -23,7 +24,7 @@ import com.febricahyaa.clockapp.R
 @Composable
 fun SettingsScreen(isDarkTheme: Boolean, onThemeChanged: (Boolean) -> Unit, use24HourFormat: Boolean, onFormatChange: (Boolean) -> Unit) {
     Column(
-        modifier = Modifier.verticalScroll(rememberScrollState()),
+        modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(stringResource(R.string.settings_screen_title), style = MaterialTheme.typography.headlineMedium)
@@ -43,6 +44,7 @@ fun SettingsScreen(isDarkTheme: Boolean, onThemeChanged: (Boolean) -> Unit, use2
                 )
             }
         }
+        Spacer(modifier = Modifier.weight(1f))
         Text(stringResource(R.string.settings_footer), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
