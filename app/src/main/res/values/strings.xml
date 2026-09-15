@@ -118,4 +118,15 @@
     <string name="settings_seconds_subtitle">Include seconds in the time display</string>
     <string name="settings_footer_title">Clock App</string>
     <string name="settings_footer_subtitle">Alarm · Clock · Timer · Stopwatch</string>
+
+    <!-- Theme Studio -->
+    <string name="theme_studio_title">Theme Studio</string>
+    <string name="theme_studio_subtitle">Choose an accent color for the whole app</string>
+    <string name="theme_accent_dynamic">Dynamic</string>
+    <string name="theme_accent_indigo">Indigo</string>
+    <string name="theme_accent_ocean">Ocean</string>
+    <string name="theme_accent_emerald">Emerald</string>
+    <string name="theme_accent_sunset">Sunset</string>
+    <string name="theme_accent_rose">Rose</string>
+    <string name="theme_accent_slate">Slate</string>
 </resources>

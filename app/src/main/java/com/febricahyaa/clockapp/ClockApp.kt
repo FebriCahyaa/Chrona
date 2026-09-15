@@ -50,10 +50,12 @@ import com.febricahyaa.clockapp.command.ClockCommand
 import com.febricahyaa.clockapp.data.AlarmStore
 import com.febricahyaa.clockapp.model.AlarmItem
 import com.febricahyaa.clockapp.model.ClockSettings
+import com.febricahyaa.clockapp.model.ThemeAccent
 import com.febricahyaa.clockapp.model.WorldClockItem
 import com.febricahyaa.clockapp.navigation.AppDestination
 import com.febricahyaa.clockapp.ui.components.CommandBar
 import com.febricahyaa.clockapp.ui.components.FloatingNavigationBar
+import com.febricahyaa.clockapp.ui.theme.ThemeEngine
 import com.febricahyaa.clockapp.ui.screens.AlarmScreen
 import com.febricahyaa.clockapp.ui.screens.ClockScreen
 import com.febricahyaa.clockapp.ui.screens.SettingsScreen
@@ -160,7 +162,7 @@ fun ClockApp() {
         }
     }
 
-    ClockTheme(isDarkTheme = settings.isDarkTheme) {
+    ClockTheme(isDarkTheme = settings.isDarkTheme, themeAccent = settings.themeAccent) {
         Surface(modifier = Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
@@ -192,7 +194,9 @@ fun ClockApp() {
                             use24HourFormat = use24HourFormat,
                             onFormatChange = { use24HourFormat = it },
                             showSeconds = settings.showSeconds,
-                            onShowSecondsChange = { settings = settings.copy(showSeconds = it) }
+                            onShowSecondsChange = { settings = settings.copy(showSeconds = it) },
+                            themeAccent = settings.themeAccent,
+                            onThemeAccentChange = { settings = settings.copy(themeAccent = it) }
                         )
                     } else {
                         AnimatedContent(
@@ -285,10 +289,14 @@ fun ClockApp() {
 }
 
 @Composable
-private fun ClockTheme(isDarkTheme: Boolean, content: @Composable () -> Unit) {
+private fun ClockTheme(isDarkTheme: Boolean, themeAccent: ThemeAccent, content: @Composable () -> Unit) {
     val context = LocalContext.current
     val supportsDynamicColor = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    val seed = ThemeEngine.seedColorFor(themeAccent)
     val colors = when {
+        // A Theme Studio preset always wins: build its scheme from the seed color.
+        seed != null -> ThemeEngine.schemeFor(seed, isDarkTheme)
+        // SYSTEM preset: follow the device wallpaper where supported.
         supportsDynamicColor && isDarkTheme -> dynamicDarkColorScheme(context)
         supportsDynamicColor && !isDarkTheme -> dynamicLightColorScheme(context)
         isDarkTheme -> darkColorScheme()

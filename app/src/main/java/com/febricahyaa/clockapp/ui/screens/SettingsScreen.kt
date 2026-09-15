@@ -3,6 +3,9 @@ package com.febricahyaa.clockapp.ui.screens
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,8 +16,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Schedule
@@ -30,11 +38,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.febricahyaa.clockapp.R
+import com.febricahyaa.clockapp.model.ThemeAccent
+import com.febricahyaa.clockapp.ui.theme.ThemeEngine
 
 @Composable
 fun SettingsScreen(
@@ -43,10 +55,14 @@ fun SettingsScreen(
     use24HourFormat: Boolean,
     onFormatChange: (Boolean) -> Unit,
     showSeconds: Boolean,
-    onShowSecondsChange: (Boolean) -> Unit
+    onShowSecondsChange: (Boolean) -> Unit,
+    themeAccent: ThemeAccent,
+    onThemeAccentChange: (ThemeAccent) -> Unit
 ) {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -88,7 +104,41 @@ fun SettingsScreen(
                 )
             }
         }
-        Spacer(modifier = Modifier.weight(1f))
+
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                stringResource(R.string.theme_studio_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                stringResource(R.string.theme_studio_subtitle),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.extraLarge,
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 12.dp, vertical = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                ThemeAccent.entries.forEach { accent ->
+                    AccentSwatch(
+                        accent = accent,
+                        selected = accent == themeAccent,
+                        onClick = { onThemeAccentChange(accent) }
+                    )
+                }
+            }
+        }
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -154,4 +204,66 @@ private fun SettingRow(
         }
         Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
+}
+
+/** One tappable color preset in the Theme Studio row. */
+@Composable
+private fun AccentSwatch(
+    accent: ThemeAccent,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    val swatchColor = ThemeEngine.seedColorFor(accent) ?: MaterialTheme.colorScheme.primary
+    val onSwatchColor = if (swatchColor.luminance() > 0.5f) Color.Black else Color.White
+    val borderColor by animateColorAsState(
+        targetValue = if (selected) MaterialTheme.colorScheme.onSurface else Color.Transparent,
+        animationSpec = tween(180),
+        label = "accentSwatchBorder"
+    )
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+        modifier = Modifier
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick)
+            .padding(8.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(swatchColor)
+                .border(width = 2.dp, color = borderColor, shape = CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            when {
+                accent == ThemeAccent.SYSTEM -> Icon(
+                    imageVector = Icons.Default.AutoAwesome,
+                    contentDescription = null,
+                    tint = onSwatchColor
+                )
+                selected -> Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = null,
+                    tint = onSwatchColor
+                )
+            }
+        }
+        Text(
+            text = stringResource(accent.labelRes()),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+private fun ThemeAccent.labelRes(): Int = when (this) {
+    ThemeAccent.SYSTEM -> R.string.theme_accent_dynamic
+    ThemeAccent.INDIGO -> R.string.theme_accent_indigo
+    ThemeAccent.OCEAN -> R.string.theme_accent_ocean
+    ThemeAccent.EMERALD -> R.string.theme_accent_emerald
+    ThemeAccent.SUNSET -> R.string.theme_accent_sunset
+    ThemeAccent.ROSE -> R.string.theme_accent_rose
+    ThemeAccent.SLATE -> R.string.theme_accent_slate
 }
