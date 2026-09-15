@@ -6,23 +6,21 @@ on:
   push:
     branches:
       - main
-      - master
 
   pull_request:
     branches:
       - main
-      - master
 
 permissions:
   contents: write
 
 concurrency:
-  group: chrona-android-build-${{ github.ref }}
+  group: chrona-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   build:
-    name: Setup Gradle and Build Chrona
+    name: Build Chrona
     runs-on: ubuntu-24.04
 
     env:
@@ -33,13 +31,13 @@ jobs:
       ANDROID_NDK_VERSION: "28.2.13676358"
 
     steps:
-      - name: Checkout source
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup JDK 17
+      - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -50,112 +48,128 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: ${{ env.GRADLE_VERSION }}
-          cache-read-only: false
 
-      - name: Verify environment
+      - name: Verify Java and Gradle
         shell: bash
         run: |
           set -euxo pipefail
 
-          echo "Java:"
+          echo "===== JAVA ====="
           java -version
 
-          echo "Gradle:"
+          echo "===== GRADLE ====="
           gradle --version
-
-          echo "Git:"
-          git --version
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Android SDK packages
+      - name: Configure Android SDK
         shell: bash
         run: |
           set -euxo pipefail
 
+          echo "ANDROID_HOME=${ANDROID_HOME}"
+          echo "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT}"
+
+          sdkmanager --version
+
           yes | sdkmanager --licenses >/dev/null || true
+
+      - name: Install Android SDK components
+        shell: bash
+        run: |
+          set -euxo pipefail
 
           sdkmanager \
             "platform-tools" \
             "platforms;android-${ANDROID_API_LEVEL}" \
             "build-tools;${ANDROID_BUILD_TOOLS}" \
-            "ndk;${ANDROID_NDK_VERSION}" \
-            "cmdline-tools;latest"
+            "ndk;${ANDROID_NDK_VERSION}"
 
-      - name: Configure Android environment
+      - name: Verify Android SDK
         shell: bash
         run: |
           set -euxo pipefail
 
-          echo "ANDROID_HOME=${ANDROID_HOME}" >> "$GITHUB_ENV"
-          echo "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT}" >> "$GITHUB_ENV"
+          echo "===== SDK PACKAGES ====="
+          sdkmanager --list_installed | sed -n '1,160p'
 
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          echo
+          echo "===== ADB ====="
+          adb version
 
-      - name: Check Gradle files
+          echo
+          echo "===== AAPT2 ====="
+          test -x "$ANDROID_HOME/build-tools/${ANDROID_BUILD_TOOLS}/aapt2"
+
+          echo
+          echo "===== NDK ====="
+          test -d "$ANDROID_HOME/ndk/${ANDROID_NDK_VERSION}"
+
+      - name: Inspect project
         shell: bash
         run: |
           set -euxo pipefail
 
-          test -f settings.gradle || test -f settings.gradle.kts
-          test -f build.gradle || test -f build.gradle.kts
+          echo "===== PROJECT ROOT ====="
+          ls -lah
 
+          echo
+          echo "===== GRADLE FILES ====="
           find . -maxdepth 3 \
-            \( -name "build.gradle" \
-            -o -name "build.gradle.kts" \
-            -o -name "settings.gradle" \
-            -o -name "settings.gradle.kts" \) \
+            \( \
+              -name "build.gradle" \
+              -o -name "build.gradle.kts" \
+              -o -name "settings.gradle" \
+              -o -name "settings.gradle.kts" \
+              -o -name "gradle.properties" \
+            \) \
             -print
-
-      - name: Make Gradle wrapper executable
-        shell: bash
-        run: |
-          if [ -f "./gradlew" ]; then
-            chmod +x ./gradlew
-          fi
 
       - name: Validate Gradle project
         shell: bash
         run: |
           set -euxo pipefail
 
-          if [ -x "./gradlew" ]; then
-            ./gradlew tasks --stacktrace --no-daemon
-          else
-            gradle tasks --stacktrace --no-daemon
-          fi
+          gradle tasks \
+            --stacktrace \
+            --no-daemon \
+            --warning-mode all
 
       - name: Build Debug APK
         shell: bash
         run: |
           set -euxo pipefail
 
-          if [ -x "./gradlew" ]; then
-            ./gradlew assembleDebug \
-              --stacktrace \
-              --no-daemon \
-              --warning-mode all
-          else
-            gradle assembleDebug \
-              --stacktrace \
-              --no-daemon \
-              --warning-mode all
-          fi
+          gradle assembleDebug \
+            --stacktrace \
+            --no-daemon \
+            --warning-mode all
 
-      - name: Upload APK artifact
+      - name: Find APK
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          echo "===== APK OUTPUT ====="
+
+          find . \
+            -type f \
+            -path "*/build/outputs/apk/*" \
+            -name "*.apk" \
+            -print
+
+      - name: Upload APK
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: chrona-debug-apk
           path: |
             **/build/outputs/apk/**/*.apk
-            **/build/outputs/mapping/**/*.txt
           if-no-files-found: warn
           retention-days: 14
 
-      - name: Detect source changes
+      - name: Detect generated changes
         id: changes
         shell: bash
         run: |
@@ -179,8 +193,8 @@ jobs:
           git add -A
 
           git commit \
-            -m "ci: update generated Android build files" \
-            || echo "Tidak ada perubahan untuk di-commit"
+            -m "ci: update generated build files" \
+            || true
 
       - name: Push generated changes
         if: |
