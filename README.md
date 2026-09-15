@@ -1,144 +1,118 @@
-# Chrona
+# Chrona — Time, Your Way
 
-A modern Android clock experience inspired by premium minimal UI, with smooth motion, world clock, alarm, timer, stopwatch, persistent settings, and localized resources.
+Chrona is a modern Android clock application built around a calm, premium Material 3 visual language. The rebuild combines **Kotlin + Jetpack Compose**, **Java platform bridges**, **XML Android resources**, and a small **C++20 native clock kernel**.
+
+> Design direction: minimal, warm, expressive, glass-aware, and information-first. The visual language is inspired by modern Google Clock / Material 3 principles without copying proprietary assets or screens.
 
 ## Highlights
-- Chrona premium split-digit clock display
-- OxygenOS-inspired motion and spring transitions
-- Persistent settings
-- World clock, alarms, timer, and stopwatch
-- Notification, reboot, vibration, wake-lock, and exact-alarm permission support
-- Locales: English, Indonesian, Japanese, Korean, Spanish, French, Brazilian Portuguese
 
-# CLOCK APP
+| Area | Implementation |
+| --- | --- |
+| Main clock | Live analog + split digital clock |
+| Analog hands | Real device time, second-aligned updates |
+| UI | Jetpack Compose + Material 3 components |
+| Themes | Light / Dark / Glass |
+| Navigation | Clock, World, Timer, Stopwatch, Alarm |
+| Native | C++20 angle kernel via JNI |
+| Java | JNI boundary + widget provider + deterministic fallback math |
+| XML | Adaptive icon layers, monochrome icon, widget metadata/layout |
+| Min SDK | 26 |
+| Target / Compile | 37 |
+| Build | AGP 9.4.0 / Gradle 9.6.1 / JDK 17 / NDK 30.0.16248370 |
 
-A clean Android clock dashboard built with Kotlin and Jetpack Compose.
+## Architecture
 
-## Project principles
+```text
+Compose UI
+   │
+   ├── LiveAnalogClock.kt
+   │       │
+   │       └── lifecycle-aware 1 Hz ticker
+   │              │
+   │              ▼
+   │       ChronaNativeBridge.java
+   │              │
+   │              ▼
+   │       chrona_clock.cpp (C++20)
+   │              │
+   │              └── hour/minute/second angles
+   │
+   ├── ClockTimeMath.java (fallback + JVM tests)
+   └── Android XML resources
+           ├── adaptive icon: background/foreground/monochrome
+           └── widget metadata/layout
+```
 
-- **Readable source:** small composables with one responsibility.
-- **Predictable state:** UI state is owned at the screen level and passed down explicitly.
-- **Minimal permissions:** the current feature set does not require runtime permissions.
-- **CI-first workflow:** builds are designed to run through GitHub Actions.
-- **Consistent naming:** PascalCase for composables, descriptive names for state and callbacks.
+## Live analog clock and battery strategy
 
-## Available commands
+The analog clock is **not** a busy infinite animation loop. When the screen is RESUMED, it computes the next hand position and sleeps until the next second boundary. When the Activity is paused/stopped, the lifecycle-aware loop is suspended. The visual therefore updates once per second while visible, with no foreground service and no permanent background timer.
 
-Enter a command in the command bar and submit it from the keyboard:
+The native C++ routine is deliberately tiny: it only converts epoch milliseconds + timezone offset into three angles. Heavy UI work, persistence, and navigation remain in the managed Android/Compose layer.
 
-- `dark` — enable dark theme.
-- `light` — enable light theme.
-- `settings` — open appearance settings.
-- `reset` — restore the default dashboard state.
+## Adaptive app icon
 
-## Build locally
+`res/mipmap-anydpi-v26/ic_launcher.xml` contains the color layers, while `res/mipmap-anydpi-v33/ic_launcher.xml` adds the themed monochrome layer:
+
+```xml
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/ic_launcher_background" />
+    <foreground android:drawable="@drawable/ic_launcher_foreground" />
+    <monochrome android:drawable="@drawable/ic_launcher_monochrome" />
+</adaptive-icon>
+```
+
+The v33 resource supplies the monochrome layer for themed icons on newer Android versions. Android launchers apply their own mask and launcher effects to adaptive icons.
+
+### Important limitation: a continuously rotating launcher icon
+
+A normal Android launcher does **not** provide an API that lets an application continuously mutate its installed adaptive icon every second. Adaptive icon animations are system/launcher visual effects, not a per-second app-controlled canvas. Therefore Chrona keeps the launcher icon intentionally static and puts live time into the in-app clock and the supported home-screen widget surface.
+
+A continuously rotating icon can only be guaranteed in a custom launcher that renders the icon itself, or through launcher/OEM-specific private behavior. Chrona does **not** use a battery-heavy foreground service merely to fake a rotating app icon.
+
+## CI/CD
+
+GitHub Actions is split into quality, build, and dependency graph jobs. The pipeline uses pinned major releases of the maintained GitHub/Gradle actions, explicit JDK/Android SDK configuration, NDK/CMake installation, Gradle caching, lint, unit tests, and release artifact upload.
+
+Recommended secrets are not required for debug builds. Release signing can be added later through repository Actions secrets without changing source layout.
+
+## Local build
 
 ```bash
-gradle assembleDebug
+# Recommended: Android Studio or a shell with JDK 17 + Android SDK 37 + NDK 30.0.16248370 + CMake 3.31.6
+
+./gradlew testDebugUnitTest
+./gradlew lintDebug
+./gradlew assembleDebug
+./gradlew assembleRelease
 ```
 
-The generated APK is located at:
+## Project layout
 
 ```text
-app/build/outputs/apk/debug/app-debug.apk
+Chrona/
+├── app/
+│   ├── src/main/java/com/febricahyaa/clockapp/
+│   │   ├── core/          # Java native bridge + fallback math
+│   │   ├── ui/            # Compose screens/components/themes
+│   │   ├── alarm/         # Alarm subsystem
+│   │   └── widget/        # Home-screen widget provider
+│   ├── src/main/cpp/      # C++20 native clock kernel
+│   ├── src/main/res/      # XML themes, strings, adaptive icon, widget
+│   └── build.gradle.kts
+├── .github/workflows/
+├── build.gradle.kts
+├── settings.gradle.kts
+└── README.md
 ```
 
-## Commit message convention
+## Design principles
 
-Use a detailed, action-oriented commit message:
+1. **Time is the hero.** The home screen gives the analog clock visual priority while the digital clock remains the precise, glanceable readout.
+2. **Expressive geometry.** Thick capsules, rounded surfaces, restrained borders, and a warm accent create the Material 3 expressive feel.
+3. **Glass is a system, not a blur filter.** The Glass theme uses layered translucency, contrast-aware borders, and depth instead of placing blur everywhere.
+4. **Native only where it earns its place.** C++ handles deterministic math; Android business logic stays in Kotlin/Java for maintainability.
+5. **Battery-aware live updates.** UI ticks are lifecycle-bound and aligned to second boundaries.
 
-```text
-feat(clock): add live dashboard and theme controls
+## Status
 
-- Add a realtime HH:mm:ss clock display.
-- Add light/dark theme switching.
-- Add command bar actions for common dashboard controls.
-- Split the screen into focused composables for maintainability.
-- Keep the current feature set permission-free.
-
-Verification:
-- gradle assembleDebug
-```
-
-Keep commits focused: one logical change per commit, with a summary, detailed bullet points, and verification notes.
-
-## Layout and input behavior
-
-- The dashboard respects system bars and display cutouts.
-- The content scrolls on smaller screens.
-- The layout adjusts when the on-screen keyboard appears.
-- Commands can be executed with the keyboard action or visible button.
-- The keyboard is dismissed after command execution.
-
-
-## Architecture refactor
-
-This revision separates the Android activity entry point from the Compose application UI:
-
-- `MainActivity.kt` — Android activity entry point only.
-- `ClockApp.kt` — Compose application and UI composition.
-- `model/ClockSettings.kt` — small domain model prepared for future settings work.
-
-No new user-facing feature is introduced in this refactor. The goal is to make the next command and settings changes safer and easier to review.
-
-Suggested commit:
-
-```text
-refactor(architecture): separate dashboard UI and application entry point
-```
-
-## Command architecture
-
-The command system is now separated into a small typed layer:
-
-- `command/ClockCommand.kt` — supported command types.
-- `command/CommandParser.kt` — converts raw text into a command.
-- `command/CommandResult.kt` — maps commands to user-facing result text.
-
-The dashboard UI is not yet wired to this layer. This step intentionally prepares the architecture before changing command behavior.
-
-Suggested commit:
-
-```text
-refactor(command): separate command parsing from dashboard UI
-```
-
-
-## Command feedback
-
-The command bar now uses `CommandParser` and `CommandResult` to interpret commands and display feedback without mixing parsing logic into the dashboard UI. `CommandBar` (in `ui/components/`) is mounted directly in `ClockApp.kt` and is the layer's first real caller.
-
-
-## Clock format settings
-
-The dashboard now supports switching between 24-hour and 12-hour clock display.
-Commands:
-- `12` / `12h` / `12-hour`
-- `24` / `24h` / `24-hour`
-
-
-## Build validation note
-The settings implementation was corrected so the clock format state is passed through the UI and all command cases are exhaustive.
-
-
-## Command parser fix
-
-All command variants now explicitly implement `ClockCommand`, including `Unknown`.
-The parser returns `ClockCommand` consistently from every `when` branch.
-
-
-## Dashboard V2
-- Redesigned premium home dashboard with gradient hero clock card.
-- Added visual stat cards, focus action card, and status panel.
-- Fixed ClockDisplay spacing to use Dp values.
-
-## Review fix pass
-- Fixed `HomeScreen.kt`: it was declared under the wrong package (`com.example.clockapp`) and imported `ClockDisplay` from a package that doesn't exist in this project, so the module could not compile.
-- Fixed a duplicate `modifier` argument on the "Focus on the time" `Card`, which is a Kotlin compile error.
-- `ClockDisplay` now accepts `lightContent` (used by the gradient hero card) instead of silently failing to resolve.
-- `HomeScreen`'s `onOpenClock` is now actually wired from `ClockApp.kt`, so tapping the focus card navigates to `ClockScreen`.
-- Mounted `CommandBar` (new, in `ui/components/`) in `ClockApp.kt` so the command layer documented above is finally reachable from the UI.
-- `MainActivity.kt` trimmed back down to an activity entry point, per this file's own "Architecture refactor" section — it had accumulated a full screen's worth of dead imports left over from before that refactor.
-- Added Material You dynamic color (`dynamicLightColorScheme` / `dynamicDarkColorScheme` on API 31+, with a static fallback) so theming actually reflects MD3 rather than the default purple scheme.
-- Replaced manual `statusBarColor` / `navigationBarColor` forcing in `styles.xml` with `enableEdgeToEdge()`, which is the supported approach on the API levels this app targets and avoids a hardcoded black nav bar on a light theme.
-- `ClockApp.kt` now holds theme/seconds state as `ClockSettings` instead of a duplicate, disconnected `isDarkTheme` boolean, so the model in `model/ClockSettings.kt` is no longer dead code.
+This release is the **Chrona UI/native foundation v0.3.0**. The source is structured for continued visual refinement and feature expansion rather than a placeholder/demo-only implementation.

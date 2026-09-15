@@ -2,19 +2,24 @@ package com.febricahyaa.clockapp.ui.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Alarm
+import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -22,55 +27,45 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.febricahyaa.clockapp.model.AlarmItem
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
-fun NightstandDialog(alarms: List<AlarmItem>, onDismiss: () -> Unit) {
+fun NightstandDialog(use24HourFormat: Boolean, showSeconds: Boolean, onDismiss: () -> Unit) {
     val now = rememberZonedNow()
-    val next = alarms.filter { it.enabled }.minByOrNull { it.time }
-    val hhmm = now.format(DateTimeFormatter.ofPattern("HH:mm"))
+    val pattern = if (use24HourFormat) "HH:mm" else "hh:mm"
+    val value = now.format(DateTimeFormatter.ofPattern(pattern, Locale.getDefault()))
+    val hour = value.substring(0, 2)
+    val minute = value.substring(3, 5)
+    val seconds = now.format(DateTimeFormatter.ofPattern("ss"))
 
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
-    ) {
-        Surface(
-            modifier = Modifier.fillMaxSize().clickable(onClick = onDismiss),
-            color = Color(0xFF070707)
-        ) {
-            Column(
-                Modifier.fillMaxSize().padding(32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    now.format(DateTimeFormatter.ofPattern("EEE, MMM d, yyyy", Locale.ENGLISH)),
-                    fontSize = 15.sp, color = Color(0xFF8F8C86)
-                )
-                Spacer(Modifier.height(22.dp))
-                Text(hhmm.substring(0, 2), fontSize = 128.sp, fontWeight = FontWeight.SemiBold,
-                    lineHeight = 118.sp, color = Color(0xFFF5F2EC))
-                Text(hhmm.substring(3), fontSize = 128.sp, fontWeight = FontWeight.SemiBold,
-                    lineHeight = 118.sp, style = TextStyle(brush = LocalAccentGradient.current))
-                Spacer(Modifier.height(18.dp))
-                Text("INDONESIA (UTC+7)", fontSize = 11.sp, letterSpacing = 3.sp, color = Color(0xFF6F6C66))
-                Spacer(Modifier.height(22.dp))
-                Surface(color = Color.White.copy(alpha = 0.06f), shape = RoundedCornerShape(18.dp)) {
-                    Row(
-                        Modifier.padding(horizontal = 22.dp, vertical = 12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(22.dp)
-                    ) {
-                        Text("⛅ 28°C Partly cloudy", fontSize = 13.sp, color = Color(0xFFC9C5BD))
-                        Text(
-                            "⏰ Next alarm " + (next?.time?.format(DateTimeFormatter.ofPattern("HH:mm")) ?: "--:--"),
-                            fontSize = 13.sp, color = Color(0xFFC9C5BD)
-                        )
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
+        Surface(Modifier.fillMaxSize().clickable { onDismiss() }, color = Color(0xFF070707)) {
+            Box(Modifier.fillMaxSize()) {
+                Column(Modifier.fillMaxSize().padding(28.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                    Text(now.format(DateTimeFormatter.ofPattern("EEE, MMM d, yyyy", Locale.ENGLISH)), fontSize = 14.sp, color = Color(0xFF77736D))
+                    Spacer(Modifier.padding(8.dp))
+                    Text(hour, fontSize = 134.sp, lineHeight = 120.sp, fontWeight = FontWeight.Light, color = Color(0xFFF4F0EA), letterSpacing = (-5).sp)
+                    Text(minute, fontSize = 134.sp, lineHeight = 120.sp, fontWeight = FontWeight.Light, style = TextStyle(brush = Brush.linearGradient(listOf(Color(0xFFFFE5D5), Color(0xFFF39A69)))), letterSpacing = (-5).sp)
+                    if (showSeconds) Text("$seconds", fontSize = 12.sp, letterSpacing = 4.sp, color = Color(0xFF6D6963), modifier = Modifier.padding(top = 6.dp))
+                    Text("INDONESIA  •  UTC+7", fontSize = 10.sp, letterSpacing = 3.sp, color = Color(0xFF65615B), modifier = Modifier.padding(top = 18.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(top = 24.dp)) {
+                        Surface(color = Color.White.copy(alpha = .055f), shape = RoundedCornerShape(20.dp)) {
+                            Row(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Icon(Icons.Filled.Cloud, null, tint = Color(0xFF8D8982))
+                                Column { Text("Weather", fontSize = 9.sp, color = Color(0xFF74716B)); Text("—", fontSize = 13.sp, color = Color(0xFFD2CEC7)) }
+                            }
+                        }
+                        Surface(color = Color.White.copy(alpha = .055f), shape = RoundedCornerShape(20.dp)) {
+                            Row(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Icon(Icons.Filled.Alarm, null, tint = Color(0xFFE9A47E))
+                                Column { Text("Next alarm", fontSize = 9.sp, color = Color(0xFF74716B)); Text("Ready", fontSize = 13.sp, color = Color(0xFFD2CEC7)) }
+                            }
+                        }
                     }
+                    Text("TAP ANYWHERE TO CLOSE", fontSize = 9.sp, letterSpacing = 2.sp, color = Color(0xFF4B4844), modifier = Modifier.padding(top = 34.dp))
                 }
-                Spacer(Modifier.height(42.dp))
-                Text("TAP ANYWHERE TO CLOSE", fontSize = 10.sp, letterSpacing = 2.sp, color = Color(0xFF55524D))
             }
         }
     }

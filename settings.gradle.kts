@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "CLOCK APP"
+rootProject.name = "Chrona"
 include(":app")

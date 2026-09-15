@@ -137,4 +137,5 @@
     <string name="theme_accent_rose_desc">Pink • Red • Blush</string>
     <string name="theme_accent_slate">Slate</string>
     <string name="theme_accent_slate_desc">Gray • Cool • Neutral</string>
+    <string name="widget_description">A battery-conscious Chrona time widget.</string>
 </resources>
