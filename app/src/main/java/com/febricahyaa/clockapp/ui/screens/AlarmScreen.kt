@@ -1,33 +1,22 @@
 package com.febricahyaa.clockapp.ui.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Alarm
-import androidx.compose.material.icons.filled.AlarmOff
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -44,282 +33,110 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.febricahyaa.clockapp.R
+import androidx.compose.ui.unit.sp
 import com.febricahyaa.clockapp.model.AlarmItem
+import com.febricahyaa.clockapp.ui.components.ChronaCard
+import com.febricahyaa.clockapp.ui.components.ScreenHeader
 import java.time.DayOfWeek
 import java.time.LocalTime
-import java.time.format.TextStyle
-import java.util.Locale
+import java.time.format.DateTimeFormatter
 
-/**
- * Standard alarm list screen: shows all user alarms sorted by time, lets the
- * user toggle, delete, and add new alarms through a time-picker dialog.
- */
+fun repeatSummary(days: Set<DayOfWeek>): String = when {
+    days.isEmpty() -> "One time"
+    days.size == 7 -> "Every day"
+    else -> days.sortedBy { it.value }.joinToString(" ") { it.name.take(3) }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlarmScreen(
     alarms: List<AlarmItem>,
     use24HourFormat: Boolean,
     onAdd: (AlarmItem) -> Unit,
     onToggle: (Long, Boolean) -> Unit,
-    onDelete: (Long) -> Unit
+    onDelete: (Long) -> Unit,
+    onBack: () -> Unit,
 ) {
-    var showAddDialog by remember { mutableStateOf(false) }
+    var showAdd by remember { mutableStateOf(false) }
+    val dim = MaterialTheme.colorScheme.onSurfaceVariant
+    val timePattern = if (use24HourFormat) "HH:mm" else "hh:mm a"
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(stringResource(R.string.alarm_screen_title), style = MaterialTheme.typography.headlineMedium)
-                Text(
-                    pluralAlarmsSubtitle(alarms.size),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+    Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
+        Spacer(Modifier.height(8.dp))
+        ScreenHeader("Alarm", "Wake up to a better day", actions = {
+            IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = "Back") }
+        })
+        Spacer(Modifier.height(12.dp))
 
-            if (alarms.isEmpty()) {
-                EmptyAlarmsState()
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    items(alarms.sortedBy { it.time }, key = { it.id }) { alarm ->
-                        AlarmRow(
-                            alarm = alarm,
-                            use24HourFormat = use24HourFormat,
-                            onToggle = { checked -> onToggle(alarm.id, checked) },
-                            onDelete = { onDelete(alarm.id) }
-                        )
-                    }
-                    item { Spacer(Modifier.size(88.dp)) }
-                }
-            }
-        }
-
-        FloatingActionButton(
-            onClick = { showAddDialog = true },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(bottom = 8.dp)
-        ) {
-            Icon(Icons.Default.Add, contentDescription = stringResource(R.string.alarm_add_action))
-        }
-    }
-
-    if (showAddDialog) {
-        AddAlarmDialog(
-            onDismiss = { showAddDialog = false },
-            onConfirm = { alarm ->
-                onAdd(alarm)
-                showAddDialog = false
-            }
-        )
-    }
-}
-
-@Composable
-private fun pluralAlarmsSubtitle(count: Int): String = if (count == 0) {
-    stringResource(R.string.alarm_screen_subtitle_empty)
-} else {
-    stringResource(R.string.alarm_screen_subtitle_count, count)
-}
-
-@Composable
-private fun EmptyAlarmsState() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 48.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(64.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                Icons.Default.AlarmOff,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        Text(
-            stringResource(R.string.alarm_empty_title),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold
-        )
-        Text(
-            stringResource(R.string.alarm_empty_subtitle),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
-
-@Composable
-private fun AlarmRow(
-    alarm: AlarmItem,
-    use24HourFormat: Boolean,
-    onToggle: (Boolean) -> Unit,
-    onDelete: () -> Unit
-) {
-    val displayed = if (use24HourFormat) {
-        alarm.time.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
-    } else {
-        alarm.time.format(java.time.format.DateTimeFormatter.ofPattern("hh:mm a"))
-    }
-    val alpha = if (alarm.enabled) 1f else 0.45f
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 18.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = displayed,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = alpha)
-                )
-                val subtitle = if (alarm.label.isNotBlank()) alarm.label else repeatSummary(alarm.repeatDays)
-                if (subtitle.isNotBlank()) {
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = alpha)
-                    )
-                }
-            }
-            Switch(checked = alarm.enabled, onCheckedChange = onToggle)
-            IconButton(onClick = onDelete) {
-                Icon(
-                    Icons.Default.Delete,
-                    contentDescription = stringResource(R.string.alarm_delete_action),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
-
-private fun repeatSummary(days: Set<DayOfWeek>): String {
-    if (days.isEmpty()) return ""
-    if (days.size == 7) return "Every day"
-    val ordered = listOf(
-        DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY,
-        DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY
-    )
-    return ordered.filter { it in days }
-        .joinToString(", ") { it.getDisplayName(TextStyle.SHORT, Locale.getDefault()) }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun AddAlarmDialog(
-    onDismiss: () -> Unit,
-    onConfirm: (AlarmItem) -> Unit
-) {
-    val now = LocalTime.now()
-    val pickerState = rememberTimePickerState(
-        initialHour = now.hour,
-        initialMinute = now.minute,
-        is24Hour = true
-    )
-    var label by remember { mutableStateOf("") }
-    var selectedDays by remember { mutableStateOf(setOf<DayOfWeek>()) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.alarm_dialog_title)) },
-        text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(14.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                TimePicker(state = pickerState)
-                OutlinedTextField(
-                    value = label,
-                    onValueChange = { label = it },
-                    label = { Text(stringResource(R.string.alarm_dialog_label_hint)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    listOf(
-                        DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY,
-                        DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY
-                    ).forEach { day ->
-                        val selected = day in selectedDays
-                        DayChip(
-                            label = day.getDisplayName(TextStyle.NARROW, Locale.getDefault()),
-                            selected = selected,
-                            onClick = {
-                                selectedDays = if (selected) selectedDays - day else selectedDays + day
-                            }
-                        )
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier.weight(1f)) {
+            items(alarms, key = { it.id }) { alarm ->
+                ChronaCard(Modifier.fillMaxWidth()) {
+                    Row(
+                        Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text(alarm.time.format(DateTimeFormatter.ofPattern(timePattern)),
+                                fontSize = 24.sp, fontWeight = FontWeight.SemiBold,
+                                color = if (alarm.enabled) MaterialTheme.colorScheme.onSurface else dim)
+                            Text(alarm.label.ifBlank { repeatSummary(alarm.repeatDays) },
+                                fontSize = 11.sp, color = dim)
+                        }
+                        Switch(checked = alarm.enabled, onCheckedChange = { onToggle(alarm.id, it) })
+                        IconButton(onClick = { onDelete(alarm.id) }) {
+                            Icon(Icons.Filled.Delete, contentDescription = "Delete", tint = dim)
+                        }
                     }
                 }
             }
-        },
-        confirmButton = {
-            Button(onClick = {
-                onConfirm(
-                    AlarmItem(
+        }
+        Button(onClick = { showAdd = true },
+            modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
+            Text("＋ Add Alarm")
+        }
+    }
+
+    if (showAdd) {
+        val picker = rememberTimePickerState(initialHour = 6, initialMinute = 30)
+        var label by remember { mutableStateOf("") }
+        var days by remember { mutableStateOf(setOf<DayOfWeek>()) }
+        val dayLabels = listOf(
+            DayOfWeek.MONDAY to "M", DayOfWeek.TUESDAY to "T", DayOfWeek.WEDNESDAY to "W",
+            DayOfWeek.THURSDAY to "T", DayOfWeek.FRIDAY to "F", DayOfWeek.SATURDAY to "S",
+            DayOfWeek.SUNDAY to "S"
+        )
+        AlertDialog(
+            onDismissRequest = { showAdd = false },
+            title = { Text("Add Alarm") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    TimePicker(state = picker)
+                    OutlinedTextField(value = label, onValueChange = { label = it },
+                        label = { Text("Label") }, singleLine = true,
+                        modifier = Modifier.fillMaxWidth())
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                        dayLabels.forEach { (d, l) ->
+                            FilterChip(selected = d in days,
+                                onClick = { days = if (d in days) days - d else days + d },
+                                label = { Text(l) })
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    onAdd(AlarmItem(
                         id = System.currentTimeMillis(),
-                        time = LocalTime.of(pickerState.hour, pickerState.minute),
-                        label = label.trim(),
-                        enabled = true,
-                        repeatDays = selectedDays
-                    )
-                )
-            }) {
-                Text(stringResource(R.string.alarm_dialog_save))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.alarm_dialog_cancel)) }
-        }
-    )
-}
-
-@Composable
-private fun DayChip(label: String, selected: Boolean, onClick: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .size(34.dp)
-            .clip(CircleShape)
-            .background(
-                if (selected) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.surfaceVariant
-            )
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                        time = LocalTime.of(picker.hour, picker.minute),
+                        label = label, enabled = true, repeatDays = days
+                    ))
+                    showAdd = false
+                }) { Text("Save") }
+            },
+            dismissButton = { TextButton(onClick = { showAdd = false }) { Text("Cancel") } }
         )
     }
 }
