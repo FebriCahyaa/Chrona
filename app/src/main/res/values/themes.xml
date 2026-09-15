@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      This app's UI is 100% Jetpack Compose. This theme is only the native
+      window theme applied for the brief moment before Compose takes over
+      (window background, status/nav bar chrome) — it intentionally does not
+      define Material widget styles.
+    -->
+    <style name="Theme.ClockApp" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/window_background</item>
+        <item name="android:fontFamily">sans</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>
