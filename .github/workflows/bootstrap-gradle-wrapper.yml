@@ -51,7 +51,13 @@ jobs:
         run: |
           set -euo pipefail
 
-          gradle wrapper \
+          rm -rf .gradle/configuration-cache
+
+          gradle \
+            --no-daemon \
+            --no-configuration-cache \
+            --stacktrace \
+            wrapper \
             --gradle-version 9.2.0 \
             --distribution-type bin
 
