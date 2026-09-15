@@ -14,9 +14,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Alarm
+import androidx.compose.material.icons.filled.AvTimer
+import androidx.compose.material.icons.filled.Public
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -53,9 +54,10 @@ fun FloatingNavigationBar(
             AppDestination.entries.forEach { destination ->
                 val active = destination == selected
                 val icon = when (destination) {
-                    AppDestination.HOME -> Icons.Default.Home
-                    AppDestination.CLOCK -> Icons.Default.AccessTime
-                    AppDestination.SETTINGS -> Icons.Default.Settings
+                    AppDestination.ALARM -> Icons.Default.Alarm
+                    AppDestination.CLOCK -> Icons.Default.Public
+                    AppDestination.TIMER -> Icons.Default.Timer
+                    AppDestination.STOPWATCH -> Icons.Default.AvTimer
                 }
                 NavigationItem(
                     label = stringResource(destination.labelRes),

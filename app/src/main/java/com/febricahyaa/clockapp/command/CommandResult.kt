@@ -8,8 +8,10 @@ object CommandResult {
     @Composable
     fun message(command: ClockCommand): String {
         return when (command) {
-            ClockCommand.Home -> stringResource(R.string.command_feedback_home)
             ClockCommand.ClockView -> stringResource(R.string.command_feedback_clock)
+            ClockCommand.Alarm -> stringResource(R.string.command_feedback_alarm)
+            ClockCommand.Timer -> stringResource(R.string.command_feedback_timer)
+            ClockCommand.Stopwatch -> stringResource(R.string.command_feedback_stopwatch)
             ClockCommand.Dark -> stringResource(R.string.command_feedback_dark)
             ClockCommand.Light -> stringResource(R.string.command_feedback_light)
             ClockCommand.Settings -> stringResource(R.string.command_feedback_settings)

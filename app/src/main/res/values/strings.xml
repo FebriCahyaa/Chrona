@@ -3,55 +3,86 @@
     <string name="app_name">Clock App</string>
 
     <!-- Shared -->
-    <string name="app_title">CLOCK APP</string>
+    <string name="app_title">CLOCK</string>
     <string name="user_name">Febrian</string>
 
     <!-- Navigation -->
-    <string name="nav_home">Home</string>
+    <string name="nav_alarm">Alarm</string>
     <string name="nav_clock">Clock</string>
+    <string name="nav_timer">Timer</string>
+    <string name="nav_stopwatch">Stopwatch</string>
     <string name="nav_settings">Settings</string>
 
     <!-- Command bar -->
-    <string name="command_bar_placeholder">Try \"dark\", \"12h\", \"reset\"...</string>
+    <string name="command_bar_placeholder">Try \"alarm\", \"timer\", \"dark\"...</string>
     <string name="command_bar_run">Run command</string>
     <string name="command_bar_close">Close command bar</string>
     <string name="command_bar_collapsed_hint">Quick command…</string>
-    <string name="command_feedback_home">Home opened.</string>
-    <string name="command_feedback_clock">Clock opened.</string>
+    <string name="command_feedback_clock">World clock opened.</string>
+    <string name="command_feedback_alarm">Alarm opened.</string>
+    <string name="command_feedback_timer">Timer opened.</string>
+    <string name="command_feedback_stopwatch">Stopwatch opened.</string>
     <string name="command_feedback_dark">Dark theme selected.</string>
     <string name="command_feedback_light">Light theme selected.</string>
     <string name="command_feedback_settings">Settings opened.</string>
     <string name="command_feedback_format_12">12-hour format selected.</string>
     <string name="command_feedback_format_24">24-hour format selected.</string>
-    <string name="command_feedback_help">Available commands: home, clock, dark, light, settings, 12, 24, reset, help.</string>
+    <string name="command_feedback_help">Available commands: clock, alarm, timer, stopwatch, dark, light, settings, 12, 24, reset, help.</string>
     <string name="command_feedback_empty">Enter a command.</string>
     <string name="command_feedback_reset">Settings reset.</string>
     <string name="command_feedback_unknown">Unknown command: %1$s</string>
 
-    <!-- Home screen -->
-    <string name="greeting_late_night">Still up, %1$s?</string>
-    <string name="greeting_morning">Good morning, %1$s</string>
-    <string name="greeting_afternoon">Good afternoon, %1$s</string>
-    <string name="greeting_evening">Good evening, %1$s</string>
-    <string name="greeting_night">Good night, %1$s</string>
-    <string name="home_subtitle">Your time, beautifully organized.</string>
-    <string name="home_current_time_label">CURRENT TIME</string>
-    <string name="home_current_time_caption">A calm moment in your day</string>
-    <string name="home_stat_today_value">Today</string>
-    <string name="home_stat_today_label">Daily overview</string>
-    <string name="home_stat_live_value">Live</string>
-    <string name="home_stat_live_label">Clock synced</string>
-    <string name="home_focus_title">Focus on the time</string>
-    <string name="home_focus_subtitle">Open the distraction-free clock</string>
-    <string name="home_footer_title">Your dashboard is ready</string>
-    <string name="home_footer_subtitle">Use the floating navigation to explore.</string>
+    <!-- Clock (world clock) screen -->
+    <string name="clock_screen_title">LOCAL TIME</string>
+    <string name="clock_world_section_title">World clocks</string>
+    <string name="clock_world_empty">No cities added yet. Tap + to add one.</string>
+    <string name="clock_world_tomorrow">Tomorrow</string>
+    <string name="clock_world_yesterday">Yesterday</string>
+    <string name="clock_add_city_action">Add city</string>
+    <string name="clock_remove_city_action">Remove city</string>
+    <string name="clock_add_city_title">Add a city</string>
+    <string name="clock_add_city_search_hint">Search city or country</string>
+    <string name="clock_add_city_added">Added</string>
+    <string name="clock_add_city_close">Close</string>
 
-    <!-- Clock screen -->
-    <string name="clock_screen_title">FOCUS MODE</string>
+    <!-- Alarm screen -->
+    <string name="alarm_screen_title">Alarm</string>
+    <string name="alarm_screen_subtitle_empty">No alarms set</string>
+    <string name="alarm_screen_subtitle_count">%1$d alarm(s) set</string>
+    <string name="alarm_empty_title">No alarms yet</string>
+    <string name="alarm_empty_subtitle">Tap the + button to create your first alarm.</string>
+    <string name="alarm_add_action">Add alarm</string>
+    <string name="alarm_delete_action">Delete alarm</string>
+    <string name="alarm_dialog_title">New alarm</string>
+    <string name="alarm_dialog_label_hint">Label (optional)</string>
+    <string name="alarm_dialog_save">Save</string>
+    <string name="alarm_dialog_cancel">Cancel</string>
+
+    <!-- Timer screen -->
+    <string name="timer_screen_title">Timer</string>
+    <string name="timer_screen_subtitle">Count down from a set duration</string>
+    <string name="timer_preset_1m">1m</string>
+    <string name="timer_preset_5m">5m</string>
+    <string name="timer_preset_10m">10m</string>
+    <string name="timer_adjust_minute">± 1 min</string>
+    <string name="timer_clear">Clear</string>
+    <string name="timer_action_start">Start</string>
+    <string name="timer_action_pause">Pause</string>
+    <string name="timer_action_resume">Resume</string>
+    <string name="timer_action_reset">Reset</string>
+
+    <!-- Stopwatch screen -->
+    <string name="stopwatch_screen_title">Stopwatch</string>
+    <string name="stopwatch_screen_subtitle">Track elapsed time and laps</string>
+    <string name="stopwatch_action_start">Start</string>
+    <string name="stopwatch_action_pause">Pause</string>
+    <string name="stopwatch_action_lap">Lap</string>
+    <string name="stopwatch_action_reset">Reset</string>
+    <string name="stopwatch_lap_label">Lap %1$d</string>
 
     <!-- Settings screen -->
     <string name="settings_screen_title">Settings</string>
-    <string name="settings_screen_subtitle">Tune how your dashboard looks and behaves</string>
+    <string name="settings_screen_subtitle">Tune how your clock looks and behaves</string>
     <string name="settings_dark_theme_title">Dark theme</string>
     <string name="settings_dark_theme_subtitle">Use a darker appearance</string>
     <string name="settings_format_title">24-hour format</string>
@@ -59,5 +90,5 @@
     <string name="settings_seconds_title">Show seconds</string>
     <string name="settings_seconds_subtitle">Include seconds in the time display</string>
     <string name="settings_footer_title">Clock App</string>
-    <string name="settings_footer_subtitle">Dashboard Layout Engine</string>
+    <string name="settings_footer_subtitle">Alarm · Clock · Timer · Stopwatch</string>
 </resources>
