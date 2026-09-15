@@ -43,19 +43,7 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
         with:
-          packages: 'platform-tools'
-          accept-android-sdk-licenses: true
-
-      - name: Install Android 17 SDK 37 preview toolchain
-        shell: bash
-        run: |
-          set -euo pipefail
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager --install --channel=1 \
-            'platforms;android-37.0' \
-            'build-tools;37.0.0' \
-            'cmake;3.31.6' \
-            'ndk;30.0.16248370'
+          packages: 'platform-tools platforms;android-37 build-tools;36.0.0 cmake;3.31.6 ndk;30.0.16248370'
 
       - name: Verify toolchain
         run: |
@@ -64,10 +52,10 @@ jobs:
           sdkmanager --list_installed | sed -n '1,120p'
 
       - name: Unit tests
-        run: ./gradlew --no-daemon testDebugUnitTest --stacktrace
+        run: gradle --no-daemon testDebugUnitTest --stacktrace
 
       - name: Android lint
-        run: ./gradlew --no-daemon lintDebug --stacktrace
+        run: gradle --no-daemon lintDebug --stacktrace
 
   build:
     name: Build • debug + release
@@ -93,25 +81,13 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
         with:
-          packages: 'platform-tools'
-          accept-android-sdk-licenses: true
-
-      - name: Install Android 17 SDK 37 preview toolchain
-        shell: bash
-        run: |
-          set -euo pipefail
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager --install --channel=1 \
-            'platforms;android-37.0' \
-            'build-tools;37.0.0' \
-            'cmake;3.31.6' \
-            'ndk;30.0.16248370'
+          packages: 'platform-tools platforms;android-37 build-tools;36.0.0 cmake;3.31.6 ndk;30.0.16248370'
 
       - name: Assemble debug
-        run: ./gradlew --no-daemon assembleDebug --stacktrace
+        run: gradle --no-daemon assembleDebug --stacktrace
 
       - name: Assemble release
-        run: ./gradlew --no-daemon assembleRelease --stacktrace
+        run: gradle --no-daemon assembleRelease --stacktrace
 
       - name: Upload APKs
         uses: actions/upload-artifact@v7
