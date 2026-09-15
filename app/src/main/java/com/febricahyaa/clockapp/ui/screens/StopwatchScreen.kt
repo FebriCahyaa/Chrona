@@ -10,12 +10,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -25,41 +27,50 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.febricahyaa.clockapp.ui.components.ChronaCard
+import com.febricahyaa.clockapp.ui.components.GlassPill
 import com.febricahyaa.clockapp.ui.components.IconCircleButton
 import com.febricahyaa.clockapp.ui.components.ScreenHeader
 import java.util.Locale
 
 @Composable
-fun StopwatchScreen(elapsedMillis: Long, isRunning: Boolean, laps: List<Long>, onToggleRun: () -> Unit, onLap: () -> Unit, onReset: () -> Unit) {
+fun StopwatchScreen(elapsedMillis: Long, isRunning: Boolean, laps: List<Long>, glass: Boolean, onToggleRun: () -> Unit, onLap: () -> Unit, onReset: () -> Unit) {
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(12.dp))
         ScreenHeader("Stopwatch", "Track every second", actions = { IconCircleButton(Icons.Filled.Refresh, onReset) })
-        Spacer(Modifier.height(52.dp))
-        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(formatStopwatch(elapsedMillis), fontSize = 58.sp, fontWeight = FontWeight.Light, letterSpacing = (-2).sp)
-            Spacer(Modifier.height(6.dp))
-            Text(if (isRunning) "Recording time" else "Ready", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        Spacer(Modifier.height(30.dp))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-            Surface(onClick = onLap, modifier = Modifier.padding(end = 22.dp), color = MaterialTheme.colorScheme.onSurface.copy(alpha = .06f), shape = androidx.compose.foundation.shape.CircleShape) {
-                androidx.compose.material3.Icon(Icons.Filled.Flag, null, modifier = Modifier.padding(16.dp), tint = MaterialTheme.colorScheme.onSurface)
-            }
-            Surface(onClick = onToggleRun, modifier = Modifier.padding(horizontal = 4.dp), color = MaterialTheme.colorScheme.primary, shape = androidx.compose.foundation.shape.CircleShape, shadowElevation = 8.dp) {
-                androidx.compose.material3.Icon(if (isRunning) Icons.Filled.Pause else Icons.Filled.PlayArrow, null, modifier = Modifier.padding(21.dp), tint = MaterialTheme.colorScheme.onPrimary)
-            }
-        }
-        Spacer(Modifier.height(26.dp))
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(0.dp)) {
-            itemsIndexed(laps.asReversed()) { index, total ->
-                val n = laps.size - index
-                val previous = if (n > 1) laps[n - 2] else 0L
-                Row(Modifier.fillMaxWidth().padding(vertical = 13.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Lap $n", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text("+${formatStopwatch(total - previous)}", fontSize = 13.sp, fontWeight = FontWeight.Medium)
-                    Text(formatStopwatch(total), fontSize = 12.sp)
+        Spacer(Modifier.height(22.dp))
+        ChronaCard(Modifier.fillMaxWidth(), glass = glass) {
+            Column(Modifier.fillMaxWidth().padding(vertical = 28.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(formatStopwatch(elapsedMillis), fontSize = 56.sp, fontWeight = FontWeight.Light, letterSpacing = (-2).sp)
+                Spacer(Modifier.height(5.dp))
+                Text(if (isRunning) "Recording time" else "Ready", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(22.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Surface(onClick = onLap, modifier = Modifier.size(54.dp), color = MaterialTheme.colorScheme.onSurface.copy(alpha = .07f), shape = CircleShape) {
+                        Icon(Icons.Filled.Flag, null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(16.dp))
+                    }
+                    Surface(onClick = onToggleRun, modifier = Modifier.size(72.dp), color = MaterialTheme.colorScheme.primary, shape = CircleShape, shadowElevation = 10.dp) {
+                        Icon(if (isRunning) Icons.Filled.Pause else Icons.Filled.PlayArrow, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.padding(21.dp))
+                    }
+                    GlassPill(onClick = onReset) { Text("Reset", fontSize = 11.sp) }
                 }
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .5f))
+            }
+        }
+        Spacer(Modifier.height(18.dp))
+        if (laps.isEmpty()) {
+            Text("Laps will appear here while the stopwatch is running.", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        } else {
+            LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(0.dp)) {
+                itemsIndexed(laps.asReversed()) { index, total ->
+                    val n = laps.size - index
+                    val previous = if (n > 1) laps[n - 2] else 0L
+                    Row(Modifier.fillMaxWidth().padding(vertical = 13.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Lap $n", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("+${formatStopwatch(total - previous)}", fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                        Text(formatStopwatch(total), fontSize = 12.sp)
+                    }
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .45f))
+                }
             }
         }
     }

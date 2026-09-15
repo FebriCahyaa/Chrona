@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.AvTimer
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.HourglassTop
@@ -19,8 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
@@ -32,42 +32,47 @@ private fun iconFor(dest: AppDestination): ImageVector = when (dest) {
     AppDestination.WORLD -> Icons.Filled.Public
     AppDestination.TIMER -> Icons.Filled.HourglassTop
     AppDestination.STOPWATCH -> Icons.Filled.AvTimer
-    AppDestination.ALARM -> Icons.Filled.Home
+    AppDestination.ALARM -> Icons.Filled.AccessTime
 }
 
 @Composable
-fun FloatingNavigationBar(
-    selected: AppDestination,
-    onSelected: (AppDestination) -> Unit,
-) {
+fun FloatingNavigationBar(selected: AppDestination, onSelected: (AppDestination) -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(28.dp),
-        color = MaterialTheme.colorScheme.surface.copy(alpha = .78f),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = .08f)),
-        shadowElevation = 10.dp
+        shape = RoundedCornerShape(30.dp),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.72f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.13f)),
+        shadowElevation = 14.dp,
     ) {
         Row(
-            Modifier.fillMaxWidth().padding(6.dp),
+            Modifier.fillMaxWidth().padding(5.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             AppDestination.entries.filter { it.inBottomBar }.forEach { dest ->
                 val active = dest == selected
                 Surface(
                     onClick = { onSelected(dest) },
-                    shape = RoundedCornerShape(20.dp),
-                    color = if (active) MaterialTheme.colorScheme.primary.copy(alpha = .14f) else Color.Transparent
+                    shape = RoundedCornerShape(23.dp),
+                    color = if (active) MaterialTheme.colorScheme.primary.copy(alpha = 0.19f) else Color.Transparent,
+                    border = if (active) BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)) else null,
                 ) {
                     Row(
-                        Modifier.padding(horizontal = 13.dp, vertical = 9.dp),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        Modifier.padding(horizontal = 15.dp, vertical = 10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(if (active) 7.dp else 0.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Icon(iconFor(dest), contentDescription = null, modifier = Modifier.size(19.dp),
-                            tint = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
-                        if (active) Text(dest.name.lowercase().replaceFirstChar { it.uppercase() }, fontSize = 10.sp,
-                            color = MaterialTheme.colorScheme.primary)
+                        Icon(
+                            iconFor(dest),
+                            contentDescription = dest.name,
+                            modifier = Modifier.size(19.dp),
+                            tint = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        if (active) Text(
+                            dest.name.lowercase().replaceFirstChar { it.uppercase() },
+                            fontSize = 10.sp,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
                     }
                 }
             }

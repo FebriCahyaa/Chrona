@@ -1,6 +1,7 @@
 package com.febricahyaa.clockapp.ui.components
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -17,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -39,7 +39,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -52,7 +52,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
 val LocalAccentGradient = compositionLocalOf {
-    Brush.linearGradient(listOf(Color(0xFFFFD1B3), Color(0xFFF39A69)))
+    Brush.linearGradient(listOf(Color(0xFFFFD4BD), Color(0xFFFF8E62)))
 }
 
 @Composable
@@ -76,48 +76,59 @@ fun ChronaCard(
     glass: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val shape = RoundedCornerShape(24.dp)
-    val base = if (glass) {
-        MaterialTheme.colorScheme.surface.copy(alpha = 0.54f)
+    val shape = RoundedCornerShape(26.dp)
+    val outline = MaterialTheme.colorScheme.onSurface.copy(alpha = if (glass) 0.18f else 0.08f)
+    val container = if (glass) {
+        Brush.linearGradient(
+            listOf(
+                Color.White.copy(alpha = 0.18f),
+                MaterialTheme.colorScheme.surface.copy(alpha = 0.58f),
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.07f),
+            )
+        )
     } else {
-        MaterialTheme.colorScheme.surface
+        Brush.linearGradient(
+            listOf(
+                MaterialTheme.colorScheme.surface,
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+            )
+        )
     }
-    val cardModifier = modifier.then(
-        if (glass) Modifier.border(
-            1.dp,
-            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.10f),
-            shape
-        ) else Modifier
-    )
-    val cardColors = CardDefaults.cardColors(containerColor = base)
-    if (onClick != null) {
-        Card(onClick = onClick, modifier = cardModifier, shape = shape, colors = cardColors,
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp), content = content)
-    } else {
-        Card(modifier = cardModifier, shape = shape, colors = cardColors,
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp), content = content)
-    }
+    val cardModifier = modifier
+        .shadow(if (glass) 12.dp else 4.dp, shape, clip = false)
+        .border(BorderStroke(1.dp, outline), shape)
+        .clip(shape)
+        .background(container)
+        .then(onClick?.let { Modifier.clickable(onClick = it) } ?: Modifier)
+
+    Column(cardModifier, content = content)
 }
 
 @Composable
 fun GlassPill(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
+    selected: Boolean = false,
     content: @Composable RowScope.() -> Unit,
 ) {
     val shape = RoundedCornerShape(50)
+    val fill = if (selected) {
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.22f)
+    } else {
+        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.07f)
+    }
     Surface(
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.065f),
+        color = fill,
         shape = shape,
         modifier = modifier
-            .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.09f), shape)
-            .then(onClick?.let { Modifier.clickable { it() } } ?: Modifier)
+            .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = if (selected) 0.2f else 0.1f), shape)
+            .then(onClick?.let { Modifier.clickable(onClick = it) } ?: Modifier),
     ) {
         Row(
-            Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
+            Modifier.padding(horizontal = 15.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            content = content
+            horizontalArrangement = Arrangement.spacedBy(7.dp),
+            content = content,
         )
     }
 }
@@ -125,16 +136,21 @@ fun GlassPill(
 @Composable
 fun GradientIconBox(
     icon: ImageVector,
-    modifier: Modifier = Modifier.size(42.dp),
+    modifier: Modifier = Modifier.size(44.dp),
     contentDescription: String? = null,
 ) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(14.dp))
             .background(LocalAccentGradient.current),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
-        Icon(icon, contentDescription, tint = Color(0xFF28160B), modifier = Modifier.size(21.dp))
+        Icon(
+            icon,
+            contentDescription,
+            tint = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier.size(21.dp),
+        )
     }
 }
 
@@ -146,16 +162,21 @@ fun IconCircleButton(
     active: Boolean = false,
     contentDescription: String? = null,
 ) {
-    val alpha = if (active) 0.16f else 0.065f
     Surface(
         onClick = onClick,
-        modifier = modifier.size(42.dp),
+        modifier = modifier.size(44.dp),
         shape = CircleShape,
-        color = if (active) MaterialTheme.colorScheme.primary.copy(alpha = alpha) else MaterialTheme.colorScheme.onSurface.copy(alpha = alpha),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
+        color = if (active) MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
+        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.07f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.11f)),
     ) {
         Box(contentAlignment = Alignment.Center) {
-            Icon(icon, contentDescription, tint = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
+            Icon(
+                icon,
+                contentDescription,
+                tint = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(20.dp),
+            )
         }
     }
 }
@@ -169,15 +190,26 @@ fun ScreenHeader(
     Row(
         Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Top
+        verticalAlignment = Alignment.Top,
     ) {
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.headlineMedium)
-            Spacer(Modifier.height(2.dp))
+            Spacer(Modifier.height(3.dp))
             Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), content = actions)
     }
+}
+
+@Composable
+fun SectionEyebrow(text: String) {
+    Text(
+        text,
+        style = MaterialTheme.typography.labelSmall,
+        fontWeight = FontWeight.SemiBold,
+        letterSpacing = 1.8.sp,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
 }
 
 @Composable
@@ -186,13 +218,22 @@ fun ChronaBackdrop(glass: Boolean) {
     val secondary = MaterialTheme.colorScheme.tertiary
     Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Canvas(Modifier.fillMaxSize()) {
-            drawCircle(primary.copy(alpha = if (glass) 0.24f else 0.05f), radius = size.minDimension * 0.62f,
-                center = androidx.compose.ui.geometry.Offset(size.width * 1.03f, size.height * 0.03f))
-            drawCircle(secondary.copy(alpha = if (glass) 0.17f else 0.03f), radius = size.minDimension * 0.46f,
-                center = androidx.compose.ui.geometry.Offset(-size.width * 0.05f, size.height * 0.70f))
+            drawCircle(
+                primary.copy(alpha = if (glass) 0.22f else 0.045f),
+                radius = size.minDimension * 0.78f,
+                center = androidx.compose.ui.geometry.Offset(size.width * 1.06f, size.height * 0.08f),
+            )
+            drawCircle(
+                secondary.copy(alpha = if (glass) 0.16f else 0.035f),
+                radius = size.minDimension * 0.56f,
+                center = androidx.compose.ui.geometry.Offset(-size.width * 0.12f, size.height * 0.78f),
+            )
             if (glass) {
-                drawCircle(Color.White.copy(alpha = 0.05f), radius = size.minDimension * 0.30f,
-                    center = androidx.compose.ui.geometry.Offset(size.width * 0.42f, size.height * 0.33f))
+                drawCircle(
+                    Color.White.copy(alpha = 0.055f),
+                    radius = size.minDimension * 0.36f,
+                    center = androidx.compose.ui.geometry.Offset(size.width * 0.35f, size.height * 0.36f),
+                )
             }
         }
     }
@@ -201,8 +242,15 @@ fun ChronaBackdrop(glass: Boolean) {
 @Composable
 fun AnimatedProgress(value: Float, modifier: Modifier = Modifier) {
     val animated by animateFloatAsState(value.coerceIn(0f, 1f), label = "progress")
-    Box(modifier.height(5.dp).clip(RoundedCornerShape(5.dp)).background(MaterialTheme.colorScheme.onSurface.copy(alpha = .09f))) {
-        Box(Modifier.fillMaxSize().fillMaxWidth(animated).clip(RoundedCornerShape(5.dp)).background(LocalAccentGradient.current))
+    Box(
+        modifier
+            .height(6.dp)
+            .clip(RoundedCornerShape(6.dp))
+            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = .08f)),
+    ) {
+        Box(
+            Modifier.fillMaxSize().fillMaxWidth(animated).clip(RoundedCornerShape(6.dp)).background(LocalAccentGradient.current),
+        )
     }
 }
 

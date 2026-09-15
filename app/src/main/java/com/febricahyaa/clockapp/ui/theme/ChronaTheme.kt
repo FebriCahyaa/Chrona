@@ -1,7 +1,6 @@
 package com.febricahyaa.clockapp.ui.theme
 
 import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -16,11 +15,10 @@ import com.febricahyaa.clockapp.ui.components.LocalAccentGradient
 @Composable
 fun ChronaTheme(settings: ClockSettings, content: @Composable () -> Unit) {
     val context = LocalContext.current
-    val systemDark = isSystemInDarkTheme()
     val dark = when (settings.themeMode) {
         AppThemeMode.LIGHT -> false
         AppThemeMode.DARK -> true
-        AppThemeMode.GLASS -> systemDark
+        AppThemeMode.GLASS -> true
     }
     val seed = ThemeEngine.seedColorFor(settings.themeAccent)
     val scheme = when {
@@ -32,8 +30,12 @@ fun ChronaTheme(settings: ClockSettings, content: @Composable () -> Unit) {
     }
     val (accentStart, accentEnd) = accentGradientColors(settings.themeAccent)
     CompositionLocalProvider(
-        LocalAccentGradient provides Brush.linearGradient(listOf(accentStart, accentEnd))
+        LocalAccentGradient provides Brush.linearGradient(listOf(accentStart, accentEnd)),
     ) {
-        MaterialTheme(colorScheme = scheme, typography = ChronaTypography, content = content)
+        MaterialTheme(
+            colorScheme = scheme,
+            typography = ChronaTypography,
+            content = content,
+        )
     }
 }

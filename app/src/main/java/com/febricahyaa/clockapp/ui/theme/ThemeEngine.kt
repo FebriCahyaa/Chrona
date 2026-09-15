@@ -8,127 +8,92 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.ColorUtils
 import com.febricahyaa.clockapp.model.ThemeAccent
 
-/**
- * Turns a single seed color into a full Material 3 [ColorScheme].
- *
- * This is a lightweight, dependency-free stand-in for a real HCT/tonal-palette
- * generator (the kind Material You builds from a wallpaper). It approximates
- * the same idea by blending the seed toward white/black for tone steps and
- * rotating hue for the secondary/tertiary roles. It's the shared engine behind
- * Theme Studio's presets today, and is meant to be the seam where the planned
- * Dynamic Color Engine (wallpaper / time-of-day / weather driven seeds) plugs
- * in later without changing how screens consume the color scheme.
- */
 object ThemeEngine {
-
-    /** Curated seed colors for each preset. SYSTEM has no seed of its own. */
     fun seedColorFor(accent: ThemeAccent): Color? = when (accent) {
-        ThemeAccent.PEACH -> Color(0xFFF6A56F)
+        ThemeAccent.PEACH -> Color(0xFFFFA26F)
         ThemeAccent.SYSTEM -> null
-        ThemeAccent.INDIGO -> Color(0xFF6750A4)
-        ThemeAccent.OCEAN -> Color(0xFF00677E)
-        ThemeAccent.EMERALD -> Color(0xFF146C43)
-        ThemeAccent.SUNSET -> Color(0xFFB3510A)
-        ThemeAccent.ROSE -> Color(0xFF9C4146)
-        ThemeAccent.SLATE -> Color(0xFF5C5F70)
+        ThemeAccent.INDIGO -> Color(0xFF7C6CFF)
+        ThemeAccent.OCEAN -> Color(0xFF4BC1E6)
+        ThemeAccent.EMERALD -> Color(0xFF55D18D)
+        ThemeAccent.SUNSET -> Color(0xFFFFA13D)
+        ThemeAccent.ROSE -> Color(0xFFFF8497)
+        ThemeAccent.SLATE -> Color(0xFF9CAFC6)
     }
 
-    /** Builds a full light or dark [ColorScheme] from a single [seed] color. */
     fun schemeFor(seed: Color, isDark: Boolean): ColorScheme {
-        val secondary = seed.rotateHue(30f)
-        val tertiary = seed.rotateHue(-60f)
-
+        val secondary = seed.rotateHue(32f)
+        val tertiary = seed.rotateHue(-48f)
         return if (isDark) {
             darkColorScheme(
-                primary = seed.tone(80f),
-                onPrimary = seed.tone(20f),
-                primaryContainer = seed.tone(30f),
-                onPrimaryContainer = seed.tone(90f),
-                secondary = secondary.tone(80f),
-                onSecondary = secondary.tone(20f),
-                secondaryContainer = secondary.tone(30f),
-                onSecondaryContainer = secondary.tone(90f),
-                tertiary = tertiary.tone(80f),
-                onTertiary = tertiary.tone(20f),
-                tertiaryContainer = tertiary.tone(30f),
-                onTertiaryContainer = tertiary.tone(90f),
-                background = seed.neutral(10f),
-                onBackground = seed.neutral(90f),
-                surface = seed.neutral(10f),
-                onSurface = seed.neutral(90f),
-                surfaceVariant = seed.neutralVariant(30f),
-                onSurfaceVariant = seed.neutralVariant(80f),
-                outline = seed.neutralVariant(60f),
+                primary = seed.tone(82f),
+                onPrimary = seed.tone(15f),
+                primaryContainer = seed.tone(28f),
+                onPrimaryContainer = seed.tone(94f),
+                secondary = secondary.tone(82f),
+                onSecondary = secondary.tone(15f),
+                secondaryContainer = secondary.tone(28f),
+                onSecondaryContainer = secondary.tone(94f),
+                tertiary = tertiary.tone(82f),
+                onTertiary = tertiary.tone(15f),
+                tertiaryContainer = tertiary.tone(28f),
+                onTertiaryContainer = tertiary.tone(94f),
+                background = Color(0xFF0B0B0D),
+                onBackground = Color(0xFFF7F4F1),
+                surface = Color(0xFF121214),
+                onSurface = Color(0xFFF7F4F1),
+                surfaceVariant = Color(0xFF26262B),
+                onSurfaceVariant = Color(0xFFC8C3BE),
+                outline = Color(0xFF5A5652),
             )
         } else {
             lightColorScheme(
-                primary = seed.tone(40f),
-                onPrimary = seed.tone(100f),
-                primaryContainer = seed.tone(90f),
-                onPrimaryContainer = seed.tone(10f),
-                secondary = secondary.tone(40f),
-                onSecondary = secondary.tone(100f),
-                secondaryContainer = secondary.tone(90f),
-                onSecondaryContainer = secondary.tone(10f),
-                tertiary = tertiary.tone(40f),
-                onTertiary = tertiary.tone(100f),
-                tertiaryContainer = tertiary.tone(90f),
-                onTertiaryContainer = tertiary.tone(10f),
-                background = seed.neutral(99f),
-                onBackground = seed.neutral(10f),
-                surface = seed.neutral(99f),
-                onSurface = seed.neutral(10f),
-                surfaceVariant = seed.neutralVariant(90f),
-                onSurfaceVariant = seed.neutralVariant(30f),
-                outline = seed.neutralVariant(50f),
+                primary = seed.tone(42f),
+                onPrimary = Color.White,
+                primaryContainer = seed.tone(92f),
+                onPrimaryContainer = seed.tone(12f),
+                secondary = secondary.tone(42f),
+                onSecondary = Color.White,
+                secondaryContainer = secondary.tone(92f),
+                onSecondaryContainer = secondary.tone(12f),
+                tertiary = tertiary.tone(42f),
+                onTertiary = Color.White,
+                tertiaryContainer = tertiary.tone(92f),
+                onTertiaryContainer = tertiary.tone(12f),
+                background = Color(0xFFF8F6F3),
+                onBackground = Color(0xFF191817),
+                surface = Color(0xFFFFFBF8),
+                onSurface = Color(0xFF191817),
+                surfaceVariant = Color(0xFFEFEAE5),
+                onSurfaceVariant = Color(0xFF6B625C),
+                outline = Color(0xFF928982),
             )
         }
     }
 
-    /** Blends [this] toward white (tone 100) or black (tone 0) by [tone] percent (0..100). */
+    fun schemeFor(seed: Color, mode: com.febricahyaa.clockapp.model.AppThemeMode): ColorScheme =
+        schemeFor(seed, mode != com.febricahyaa.clockapp.model.AppThemeMode.LIGHT)
+
     private fun Color.tone(tone: Float): Color {
         val target = if (tone >= 50f) android.graphics.Color.WHITE else android.graphics.Color.BLACK
         val fraction = if (tone >= 50f) (tone - 50f) / 50f else (50f - tone) / 50f
-        return Color(ColorUtils.blendARGB(this.toArgb(), target, fraction.coerceIn(0f, 1f)))
-    }
-
-    /** Low-saturation neutral derived from the seed's hue, for background/surface. */
-    private fun Color.neutral(tone: Float): Color = this.desaturate(0.85f).tone(tone)
-
-    /** Slightly-tinted neutral, for surfaceVariant/outline. */
-    private fun Color.neutralVariant(tone: Float): Color = this.desaturate(0.55f).tone(tone)
-
-    private fun Color.desaturate(amount: Float): Color {
-        val hsv = FloatArray(3)
-        android.graphics.Color.colorToHSV(this.toArgb(), hsv)
-        hsv[1] = (hsv[1] * (1f - amount)).coerceIn(0f, 1f)
-        return Color(android.graphics.Color.HSVToColor(hsv))
+        return Color(ColorUtils.blendARGB(toArgb(), target, fraction.coerceIn(0f, 1f)))
     }
 
     private fun Color.rotateHue(degrees: Float): Color {
         val hsv = FloatArray(3)
-        android.graphics.Color.colorToHSV(this.toArgb(), hsv)
+        android.graphics.Color.colorToHSV(toArgb(), hsv)
         hsv[0] = ((hsv[0] + degrees) % 360f + 360f) % 360f
         return Color(android.graphics.Color.HSVToColor(hsv))
     }
-    fun schemeFor(seed: Color, mode: com.febricahyaa.clockapp.model.AppThemeMode): ColorScheme =
-        schemeFor(seed, mode != com.febricahyaa.clockapp.model.AppThemeMode.LIGHT)
-
-    fun glassifyDynamic(scheme: ColorScheme): ColorScheme = scheme.copy(
-        surface = scheme.surface.copy(alpha = 0.88f),
-        background = scheme.background.copy(alpha = 0.96f)
-    )
-
 }
 
-
 fun accentGradientColors(accent: ThemeAccent): Pair<Color, Color> = when (accent) {
-    ThemeAccent.PEACH -> Color(0xFFF6A56F) to Color(0xFFE2794E)
-    ThemeAccent.SYSTEM -> Color(0xFFF6A56F) to Color(0xFFE2794E)
-    ThemeAccent.INDIGO -> Color(0xFFB8A1FF) to Color(0xFF6750A4)
-    ThemeAccent.OCEAN -> Color(0xFF7DD3FC) to Color(0xFF00677E)
-    ThemeAccent.EMERALD -> Color(0xFF86EFAC) to Color(0xFF146C43)
-    ThemeAccent.SUNSET -> Color(0xFFFFC078) to Color(0xFFB3510A)
-    ThemeAccent.ROSE -> Color(0xFFFFA3B1) to Color(0xFF9C4146)
-    ThemeAccent.SLATE -> Color(0xFFCBD5E1) to Color(0xFF5C5F70)
+    ThemeAccent.PEACH -> Color(0xFFFFC4A7) to Color(0xFFFF8A5B)
+    ThemeAccent.SYSTEM -> Color(0xFFFFC4A7) to Color(0xFFFF8A5B)
+    ThemeAccent.INDIGO -> Color(0xFFB8AEFF) to Color(0xFF6E5BFF)
+    ThemeAccent.OCEAN -> Color(0xFF8AE4FF) to Color(0xFF23A9D2)
+    ThemeAccent.EMERALD -> Color(0xFF9AF0BF) to Color(0xFF37B875)
+    ThemeAccent.SUNSET -> Color(0xFFFFD08C) to Color(0xFFFF8A24)
+    ThemeAccent.ROSE -> Color(0xFFFFB3BF) to Color(0xFFF15C77)
+    ThemeAccent.SLATE -> Color(0xFFD9E7F6) to Color(0xFF72879E)
 }

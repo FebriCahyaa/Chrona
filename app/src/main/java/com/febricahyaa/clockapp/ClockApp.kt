@@ -4,12 +4,6 @@ import android.Manifest
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -185,34 +179,42 @@ fun ClockApp() {
                 ChronaBackdrop(glass)
                 Column(Modifier.fillMaxSize().statusBarsPadding()) {
                     Box(Modifier.weight(1f).fillMaxSize()) {
-                        AnimatedContent(
-                            targetState = destination,
-                            transitionSpec = {
-                                (fadeIn() + slideInHorizontally { it / 14 }) togetherWith
-                                    (fadeOut() + slideOutHorizontally { -it / 14 })
-                            }, label = "chrona-navigation"
-                        ) { current ->
-                            when (current) {
-                                AppDestination.CLOCK -> HomeScreen(use24HourFormat, settings.showSeconds, alarms, glass,
-                                    onNavigate = { destination = it }, onOpenNightstand = { showNightstand = true }, onOpenSettings = { showSettings = true })
-                                AppDestination.WORLD -> WorldClockScreen(worldClocks, favorites, glass,
-                                    onAdd = { worldClocks.add(it) }, onRemove = { worldClocks.remove(it) },
-                                    onToggleFavorite = { city -> favorites = if (city in favorites) favorites - city else favorites + city })
-                                AppDestination.TIMER -> TimerScreen(timerTotal, timerRemaining, timerRunning, glass,
-                                    onToggle = { if (timerRunning) timerRunning = false else if (timerRemaining > 0) timerRunning = true },
-                                    onReset = { timerRunning = false; timerRemaining = timerTotal; timerBaseRemainingMillis = timerTotal * 1000L },
-                                    onSetPreset = { timerTotal = it; timerRemaining = it; timerBaseRemainingMillis = it * 1000L; timerRunning = false })
-                                AppDestination.STOPWATCH -> StopwatchScreen(stopwatchElapsed, stopwatchRunning, stopwatchLaps,
-                                    onToggleRun = { stopwatchRunning = !stopwatchRunning },
-                                    onLap = { if (stopwatchRunning) stopwatchLaps.add(stopwatchElapsed) },
-                                    onReset = { stopwatchRunning = false; stopwatchElapsed = 0; stopwatchLaps.clear() })
-                                AppDestination.ALARM -> AlarmScreen(alarms, glass, onBack = { destination = AppDestination.CLOCK },
-                                    onAdd = { alarms.add(it); persistAlarms() },
-                                    onToggle = { alarm, enabled -> val i = alarms.indexOfFirst { it.id == alarm.id }; if (i >= 0) { alarms[i] = alarm.copy(enabled = enabled); persistAlarms() } },
-                                    onDelete = { alarms.remove(it); persistAlarms() })
-                            }
-                        }
+                    // Render exactly one destination at a time. Keeping the previous
+                    // destination out of composition prevents the ghost-layer effect
+                    // seen during navigation transitions.
+                    when (destination) {
+                        AppDestination.CLOCK -> HomeScreen(
+                            use24HourFormat, settings.showSeconds, alarms, glass,
+                            onNavigate = { destination = it },
+                            onOpenNightstand = { showNightstand = true },
+                            onOpenSettings = { showSettings = true },
+                        )
+                        AppDestination.WORLD -> WorldClockScreen(
+                            worldClocks, favorites, glass,
+                            onAdd = { worldClocks.add(it) },
+                            onRemove = { worldClocks.remove(it) },
+                            onToggleFavorite = { city -> favorites = if (city in favorites) favorites - city else favorites + city },
+                        )
+                        AppDestination.TIMER -> TimerScreen(
+                            timerTotal, timerRemaining, timerRunning, glass,
+                            onToggle = { if (timerRunning) timerRunning = false else if (timerRemaining > 0) timerRunning = true },
+                            onReset = { timerRunning = false; timerRemaining = timerTotal; timerBaseRemainingMillis = timerTotal * 1000L },
+                            onSetPreset = { timerTotal = it; timerRemaining = it; timerBaseRemainingMillis = it * 1000L; timerRunning = false },
+                        )
+                        AppDestination.STOPWATCH -> StopwatchScreen(
+                            stopwatchElapsed, stopwatchRunning, stopwatchLaps, glass,
+                            onToggleRun = { stopwatchRunning = !stopwatchRunning },
+                            onLap = { if (stopwatchRunning) stopwatchLaps.add(stopwatchElapsed) },
+                            onReset = { stopwatchRunning = false; stopwatchElapsed = 0; stopwatchLaps.clear() },
+                        )
+                        AppDestination.ALARM -> AlarmScreen(
+                            alarms, glass, onBack = { destination = AppDestination.CLOCK },
+                            onAdd = { alarms.add(it); persistAlarms() },
+                            onToggle = { alarm, enabled -> val i = alarms.indexOfFirst { it.id == alarm.id }; if (i >= 0) { alarms[i] = alarm.copy(enabled = enabled); persistAlarms() } },
+                            onDelete = { alarms.remove(it); persistAlarms() },
+                        )
                     }
+                }
                     Box(Modifier.padding(horizontal = 14.dp, vertical = 10.dp).navigationBarsPadding()) {
                         FloatingNavigationBar(destination, onSelected = { destination = it })
                     }
