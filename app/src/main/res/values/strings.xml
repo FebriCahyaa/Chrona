@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Clock App</string>
+    <string name="app_name">Chrona</string>
 
     <!-- Shared -->
-    <string name="app_title">CLOCK</string>
+    <string name="app_title">CHRONА</string>
     <string name="user_name">Febrian</string>
 
     <!-- Home screen -->
@@ -121,7 +121,7 @@
 
     <!-- Theme Studio -->
     <string name="theme_studio_title">Theme Studio</string>
-    <string name="theme_studio_subtitle">Pick an accent color — clock face styles are coming to this same screen next</string>
+    <string name="theme_studio_subtitle">Make time feel like yours with colors, motion, and display styles</string>
     <string name="theme_accent_dynamic">Dynamic</string>
     <string name="theme_accent_dynamic_desc">Follows your wallpaper</string>
     <string name="theme_accent_indigo">Indigo</string>

@@ -1,3 +1,15 @@
+# Chrona
+
+A modern Android clock experience inspired by premium minimal UI, with smooth motion, world clock, alarm, timer, stopwatch, persistent settings, and localized resources.
+
+## Highlights
+- Chrona premium split-digit clock display
+- OxygenOS-inspired motion and spring transitions
+- Persistent settings
+- World clock, alarms, timer, and stopwatch
+- Notification, reboot, vibration, wake-lock, and exact-alarm permission support
+- Locales: English, Indonesian, Japanese, Korean, Spanish, French, Brazilian Portuguese
+
 # CLOCK APP
 
 A clean Android clock dashboard built with Kotlin and Jetpack Compose.

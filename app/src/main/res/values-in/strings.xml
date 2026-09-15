@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Chrona</string>
+    <string name="app_title">CHRONА</string>
+    <string name="nav_alarm">Alarm</string>
+    <string name="nav_clock">Jam</string>
+    <string name="nav_timer">Timer</string>
+    <string name="nav_stopwatch">Stopwatch</string>
+    <string name="nav_settings">Pengaturan</string>
+    <string name="settings_screen_title">Pengaturan</string>
+    <string name="settings_dark_theme_title">Tema gelap</string>
+    <string name="settings_format_title">Format 24 jam</string>
+    <string name="settings_seconds_title">Tampilkan detik</string>
+    <string name="clock_world_section_title">Jam dunia</string>
+    <string name="clock_world_empty">Belum ada kota. Ketuk + untuk menambahkan.</string>
+    <string name="clock_add_city_action">Tambah kota</string>
+</resources>

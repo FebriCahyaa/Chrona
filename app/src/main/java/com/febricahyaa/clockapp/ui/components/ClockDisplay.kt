@@ -1,10 +1,13 @@
 package com.febricahyaa.clockapp.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material3.Icon
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -14,14 +17,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+/** Premium Chrona clock face: split hour/minute typography with a subtle accent minute. */
 @Composable
 fun ClockDisplay(
     use24HourFormat: Boolean,
@@ -30,13 +37,6 @@ fun ClockDisplay(
     lightContent: Boolean = false
 ) {
     var currentTime by remember { mutableStateOf(Date()) }
-    val timeFormatter = remember(use24HourFormat, showSeconds) {
-        val base = if (use24HourFormat) "HH:mm" else "hh:mm"
-        SimpleDateFormat(if (showSeconds) "$base:ss" else base, Locale.getDefault())
-    }
-    val meridiemFormatter = remember { SimpleDateFormat("a", Locale.getDefault()) }
-    val dateFormatter = remember { SimpleDateFormat("EEEE, d MMMM yyyy", Locale.getDefault()) }
-
     LaunchedEffect(Unit) {
         while (true) {
             currentTime = Date()
@@ -44,37 +44,35 @@ fun ClockDisplay(
         }
     }
 
-    val primaryColor = if (lightContent) Color.White else MaterialTheme.colorScheme.primary
-    val secondaryColor = if (lightContent) Color.White.copy(alpha = .82f) else MaterialTheme.colorScheme.onSurfaceVariant
+    val locale = Locale.getDefault()
+    val hour = SimpleDateFormat(if (use24HourFormat) "HH" else "hh", locale).format(currentTime)
+    val minute = SimpleDateFormat("mm", locale).format(currentTime)
+    val seconds = SimpleDateFormat("ss", locale).format(currentTime)
+    val meridiem = SimpleDateFormat("a", locale).format(currentTime)
+    val date = SimpleDateFormat("EEEE, d MMMM yyyy", locale).format(currentTime)
+    val primary = if (lightContent) Color.White else MaterialTheme.colorScheme.onSurface
+    val accent = if (lightContent) Color(0xFFFFC29B) else MaterialTheme.colorScheme.primary
+    val secondary = if (lightContent) Color.White.copy(alpha = .78f) else MaterialTheme.colorScheme.onSurfaceVariant
+    val digitSize = if (compact) 42.sp else 76.sp
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(if (compact) 2.dp else 8.dp)
     ) {
-        Icon(
-            imageVector = Icons.Default.AccessTime,
-            contentDescription = null,
-            tint = primaryColor
-        )
-        Text(
-            text = timeFormatter.format(currentTime),
-            fontSize = if (compact) 42.sp else 64.sp,
-            lineHeight = if (compact) 48.sp else 70.sp,
-            letterSpacing = if (compact) 0.sp else 1.sp,
-            style = MaterialTheme.typography.displaySmall,
-            color = primaryColor
-        )
-        if (!use24HourFormat) {
-            Text(
-                text = meridiemFormatter.format(currentTime),
-                style = MaterialTheme.typography.titleMedium,
-                color = primaryColor
-            )
+        Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.Center) {
+            Text(hour, color = primary, fontSize = digitSize, lineHeight = digitSize, fontWeight = FontWeight.Light, letterSpacing = (-2).sp)
+            Text(":", color = secondary, fontSize = if (compact) 34.sp else 58.sp, fontWeight = FontWeight.Light, modifier = Modifier.padding(horizontal = 2.dp, vertical = 2.dp))
+            Text(minute, color = accent, fontSize = digitSize, lineHeight = digitSize, fontWeight = FontWeight.Light, letterSpacing = (-2).sp)
         }
-        Text(
-            text = dateFormatter.format(currentTime),
-            style = MaterialTheme.typography.bodyLarge,
-            color = secondaryColor
-        )
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+            if (!use24HourFormat) {
+                Text(meridiem, color = secondary, fontSize = if (compact) 11.sp else 14.sp, letterSpacing = 2.sp)
+                Spacer(Modifier.width(10.dp))
+            }
+            if (showSeconds) {
+                Text(":$seconds", color = secondary, fontSize = if (compact) 12.sp else 15.sp, fontWeight = FontWeight.Medium)
+            }
+        }
+        Text(date, color = secondary, fontSize = if (compact) 12.sp else 15.sp, fontWeight = FontWeight.Medium)
     }
 }

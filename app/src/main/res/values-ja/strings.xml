@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Chrona</string>
+    <string name="app_title">CHRONА</string>
+    <string name="nav_alarm">アラーム</string>
+    <string name="nav_clock">時計</string>
+    <string name="nav_timer">タイマー</string>
+    <string name="nav_stopwatch">ストップウォッチ</string>
+    <string name="nav_settings">設定</string>
+    <string name="settings_screen_title">設定</string>
+    <string name="settings_dark_theme_title">ダークテーマ</string>
+    <string name="settings_format_title">24時間表示</string>
+    <string name="settings_seconds_title">秒を表示</string>
+    <string name="clock_world_section_title">世界時計</string>
+    <string name="clock_add_city_action">都市を追加</string>
+</resources>

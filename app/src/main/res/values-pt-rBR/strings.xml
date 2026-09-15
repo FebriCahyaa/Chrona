@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Chrona</string>
+    <string name="app_title">CHRONА</string>
+    <string name="nav_alarm">Alarme</string>
+    <string name="nav_clock">Relógio</string>
+    <string name="nav_timer">Temporizador</string>
+    <string name="nav_stopwatch">Cronômetro</string>
+    <string name="nav_settings">Configurações</string>
+    <string name="settings_screen_title">Configurações</string>
+    <string name="settings_dark_theme_title">Tema escuro</string>
+    <string name="settings_format_title">Formato de 24 horas</string>
+    <string name="settings_seconds_title">Mostrar segundos</string>
+    <string name="clock_world_section_title">Relógios mundiais</string>
+    <string name="clock_add_city_action">Adicionar cidade</string>
+</resources>
