@@ -1,6 +1,6 @@
 package com.febricahyaa.clockapp.core
 
-/** Stable Kotlin facade for C++ timing primitives exposed through the Java/JNI boundary. */
+/** Kotlin facade: Kotlin → Java/JNI → C++ for timing/math primitives. */
 object NativeClock {
     fun remainingSeconds(endMillis: Long, nowMillis: Long): Long =
         ChronaNativeBridge.remainingSeconds(endMillis, nowMillis)
