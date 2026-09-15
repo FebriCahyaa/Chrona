@@ -16,7 +16,13 @@ public final class ClockTimeMath {
     }
 
     public static float[] anglesForEpochMillis(long epochMillis) {
-        final ZoneId zone = ZoneId.systemDefault();
+        return anglesForEpochMillis(epochMillis, ZoneId.systemDefault());
+    }
+
+    static float[] anglesForEpochMillis(long epochMillis, ZoneId zone) {
+        if (zone == null) {
+            throw new IllegalArgumentException("zone must not be null");
+        }
         final int offsetMillis = ZonedDateTime.ofInstant(Instant.ofEpochMilli(epochMillis), zone)
                 .getOffset()
                 .getTotalSeconds() * 1_000;

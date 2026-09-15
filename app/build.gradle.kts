@@ -19,7 +19,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
-                cppFlags += listOf("-std=c++20")
+                cppFlags += listOf("-std=c++20", "-O2", "-ffast-math", "-fvisibility=hidden")
                 arguments += listOf("-DANDROID_STL=c++_static")
             }
         }

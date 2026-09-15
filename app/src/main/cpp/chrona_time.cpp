@@ -8,7 +8,6 @@ namespace chrona {
 namespace {
 constexpr double kPi = 3.14159265358979323846;
 constexpr double kRad = kPi / 180.0;
-constexpr double kJ2000 = 2451545.0;
 constexpr std::int64_t kDayMs = 86'400'000;
 
 double normalize_angle(double value) {
@@ -32,7 +31,6 @@ double deg_sin(double d) { return std::sin(d * kRad); }
 double deg_cos(double d) { return std::cos(d * kRad); }
 double deg_tan(double d) { return std::tan(d * kRad); }
 double rad_to_deg(double r) { return r / kRad; }
-double deg_to_rad(double d) { return d * kRad; }
 }
 
 ClockAngles clock_angles(std::int64_t epoch_millis, int offset_minutes) {
@@ -121,16 +119,20 @@ MoonState moon_state(std::int64_t epoch_millis) {
 }
 
 double cubic_bezier(double t, double p0, double p1, double p2, double p3) {
+    if (!std::isfinite(t)) t = 0.0;
     t = std::clamp(t, 0.0, 1.0);
     const double u = 1.0 - t;
     return u*u*u*p0 + 3.0*u*u*t*p1 + 3.0*u*t*t*p2 + t*t*t*p3;
 }
 
 double spring_progress(double elapsed_ms, double duration_ms, double damping_ratio, double frequency_hz) {
-    if (duration_ms <= 0.0) return 1.0;
-    const double t = std::clamp(elapsed_ms / duration_ms, 0.0, 1.0);
-    const double zeta = std::clamp(damping_ratio, 0.05, 2.0);
-    const double omega = std::max(0.01, 2.0 * kPi * frequency_hz);
+    if (duration_ms <= 0.0 || !std::isfinite(duration_ms)) return 1.0;
+    const double safe_elapsed = std::isfinite(elapsed_ms) ? elapsed_ms : 0.0;
+    const double safe_damping = std::isfinite(damping_ratio) ? damping_ratio : 0.85;
+    const double safe_frequency = std::isfinite(frequency_hz) ? frequency_hz : 2.6;
+    const double t = std::clamp(safe_elapsed / duration_ms, 0.0, 1.0);
+    const double zeta = std::clamp(safe_damping, 0.05, 2.0);
+    const double omega = std::max(0.01, 2.0 * kPi * safe_frequency);
     const double x = t * duration_ms / 1000.0;
     double response;
     if (zeta < 1.0) {

@@ -23,7 +23,9 @@ object NativeClock {
     fun monotonicMillis(): Long = ChronaNativeBridge.monotonicMillis()
 
     fun clockAngles(epochMillis: Long): ClockAngles =
-        ChronaNativeBridge.anglesForEpochMillis(epochMillis).let { values ->
+        ChronaNativeBridge.anglesForEpochMillis(epochMillis).also { values ->
+            require(values.size == 3) { "Clock angle payload mismatch: ${values.size}" }
+        }.let { values ->
             ClockAngles(
                 hour = values[0],
                 minute = values[1],
@@ -32,7 +34,9 @@ object NativeClock {
         }
 
     fun solarTimes(latitude: Double, longitude: Double, date: LocalDate): SolarTimes =
-        ChronaNativeBridge.solarTimes(latitude, longitude, date).let { values ->
+        ChronaNativeBridge.solarTimes(latitude, longitude, date).also { values ->
+            require(values.size == 3) { "Solar payload mismatch: ${values.size}" }
+        }.let { values ->
             SolarTimes(
                 sunriseMinutesUtc = values[0].toInt(),
                 sunsetMinutesUtc = values[1].toInt(),
@@ -41,7 +45,9 @@ object NativeClock {
         }
 
     fun moonState(epochMillis: Long): MoonState =
-        ChronaNativeBridge.moonState(epochMillis).let { values ->
+        ChronaNativeBridge.moonState(epochMillis).also { values ->
+            require(values.size == 3) { "Moon payload mismatch: ${values.size}" }
+        }.let { values ->
             MoonState(
                 illumination = values[0].coerceIn(0.0, 1.0),
                 phaseIndex = values[1].toInt().mod(PHASE_COUNT),
