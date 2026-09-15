@@ -134,7 +134,7 @@ jobs:
             --include='gradlew' \
             --include='gradlew.bat' \
             '9\.2\.0' .; then
-            echo "::error::Gradle 9.2.0 masih ditemukan."
+            echo "::error::Gradle 9.6.1 masih ditemukan."
             exit 1
           fi
 
@@ -144,7 +144,7 @@ jobs:
             exit 1
           fi
 
-          echo "Tidak ditemukan Gradle 9.2.0."
+          echo "Tidak ditemukan Gradle 9.6.1."
           echo "Gradle Wrapper menggunakan ${GRADLE_VERSION}."
 
       - name: Validate Gradle Wrapper
