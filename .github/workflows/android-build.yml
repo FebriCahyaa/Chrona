@@ -38,7 +38,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
@@ -62,15 +62,18 @@ jobs:
 
       - name: Accept Android SDK licenses
         run: |
-          set -euxo pipefail
-          yes | sdkmanager --licenses >/dev/null || true
+          set -euo pipefail
+          yes | sdkmanager --licenses >/dev/null 2>&1 || true
 
       - name: Show available SDK packages
         run: |
-          set -euxo pipefail
-          sdkmanager --list | grep -E \
+          set -euo pipefail
+
+          sdkmanager --list > sdkmanager-list.txt
+
+          grep -E \
             'platforms;android-|build-tools;|ndk;' \
-            | head -n 150
+            sdkmanager-list.txt | sed -n '1,150p'
 
       - name: Install Android SDK
         run: |
