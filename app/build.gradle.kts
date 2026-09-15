@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.febricahyaa.clockapp"
     compileSdk = 37
-    ndkVersion = "30.0.16248370"
+    ndkVersion = "28.2.13676358"
 
     defaultConfig {
         applicationId = "com.febricahyaa.clockapp"
@@ -74,7 +74,7 @@ kotlin {
 }
 
 dependencies {
-    val composeBom = platform("androidx.compose:compose-bom:2026.06.01")
+    val composeBom = platform("androidx.compose:compose-bom:2026.08.00")
     implementation(composeBom)
     androidTestImplementation(composeBom)
 
