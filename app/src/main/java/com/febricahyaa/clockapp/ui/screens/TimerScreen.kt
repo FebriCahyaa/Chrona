@@ -45,7 +45,7 @@ fun TimerScreen(
 ) {
     val progress = if (totalSeconds <= 0) 0f else remainingSeconds.toFloat() / totalSeconds
     val accentGradient = LocalAccentGradient.current
-    val trackColor = trackColor
+    val trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = .10f)
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Spacer(Modifier.height(10.dp))
         ScreenHeader("Timer", "Focus on what matters", actions = { IconCircleButton(Icons.Filled.Refresh, onReset) })
