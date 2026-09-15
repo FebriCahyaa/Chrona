@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Clock App</string>
+
+    <!-- Shared -->
+    <string name="app_title">CLOCK APP</string>
+    <string name="user_name">Febrian</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_clock">Clock</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Command bar -->
+    <string name="command_bar_placeholder">Try \"dark\", \"12h\", \"reset\"...</string>
+    <string name="command_bar_run">Run command</string>
+    <string name="command_feedback_home">Home opened.</string>
+    <string name="command_feedback_clock">Clock opened.</string>
+    <string name="command_feedback_dark">Dark theme selected.</string>
+    <string name="command_feedback_light">Light theme selected.</string>
+    <string name="command_feedback_settings">Settings opened.</string>
+    <string name="command_feedback_format_12">12-hour format selected.</string>
+    <string name="command_feedback_format_24">24-hour format selected.</string>
+    <string name="command_feedback_help">Available commands: home, clock, dark, light, settings, 12, 24, reset, help.</string>
+    <string name="command_feedback_empty">Enter a command.</string>
+    <string name="command_feedback_reset">Settings reset.</string>
+    <string name="command_feedback_unknown">Unknown command: %1$s</string>
+
+    <!-- Home screen -->
+    <string name="greeting_late_night">Still up, %1$s?</string>
+    <string name="greeting_morning">Good morning, %1$s</string>
+    <string name="greeting_afternoon">Good afternoon, %1$s</string>
+    <string name="greeting_evening">Good evening, %1$s</string>
+    <string name="greeting_night">Good night, %1$s</string>
+    <string name="home_subtitle">Your time, beautifully organized.</string>
+    <string name="home_current_time_label">CURRENT TIME</string>
+    <string name="home_current_time_caption">A calm moment in your day</string>
+    <string name="home_stat_today_value">Today</string>
+    <string name="home_stat_today_label">Daily overview</string>
+    <string name="home_stat_live_value">Live</string>
+    <string name="home_stat_live_label">Clock synced</string>
+    <string name="home_focus_title">Focus on the time</string>
+    <string name="home_focus_subtitle">Open the distraction-free clock</string>
+    <string name="home_footer_title">Your dashboard is ready</string>
+    <string name="home_footer_subtitle">Use the floating navigation to explore.</string>
+
+    <!-- Clock screen -->
+    <string name="clock_screen_title">Clock</string>
+
+    <!-- Settings screen -->
+    <string name="settings_screen_title">Settings</string>
+    <string name="settings_dark_theme_title">Dark theme</string>
+    <string name="settings_dark_theme_subtitle">Use a darker appearance</string>
+    <string name="settings_format_title">24-hour format</string>
+    <string name="settings_format_subtitle">Show time from 00:00 to 23:59</string>
+    <string name="settings_footer">CLOCK APP • Dashboard Layout Engine</string>
+</resources>

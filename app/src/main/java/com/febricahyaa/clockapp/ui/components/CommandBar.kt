@@ -21,18 +21,21 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.command.ClockCommand
 import com.febricahyaa.clockapp.command.CommandParser
 import com.febricahyaa.clockapp.command.CommandResult
 
 /**
- * Text entry that parses dashboard commands (dark, light, settings, 12/24, reset, help)
- * using [CommandParser] and reports the outcome through [onCommand], while showing
- * feedback text from [CommandResult] locally.
+ * Text entry that parses dashboard commands (home, clock, dark, light, settings,
+ * 12/24, reset, help) using [CommandParser] and reports the outcome through
+ * [onCommand], while showing feedback text from [CommandResult] locally.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,12 +44,12 @@ fun CommandBar(
     modifier: Modifier = Modifier
 ) {
     var input by remember { mutableStateOf("") }
-    var feedback by remember { mutableStateOf<String?>(null) }
+    var lastCommand by remember { mutableStateOf<ClockCommand?>(null) }
     val keyboardController = LocalSoftwareKeyboardController.current
 
     fun submit() {
         val command = CommandParser.parse(input)
-        feedback = CommandResult.message(command)
+        lastCommand = command
         if (command !is ClockCommand.Empty) {
             onCommand(command)
         }
@@ -57,26 +60,26 @@ fun CommandBar(
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             OutlinedTextField(
                 value = input,
                 onValueChange = { input = it },
                 modifier = Modifier.weight(1f),
-                placeholder = { Text("Try \"dark\", \"12h\", \"reset\"...") },
+                placeholder = { Text(stringResource(R.string.command_bar_placeholder)) },
                 singleLine = true,
                 shape = RoundedCornerShape(18.dp),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { submit() })
             )
             IconButton(onClick = { submit() }) {
-                Icon(Icons.Default.Send, contentDescription = "Run command")
+                Icon(Icons.Default.Send, contentDescription = stringResource(R.string.command_bar_run))
             }
         }
-        feedback?.let {
+        lastCommand?.let { command ->
             Text(
-                text = it,
+                text = CommandResult.message(command),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(start = 4.dp)

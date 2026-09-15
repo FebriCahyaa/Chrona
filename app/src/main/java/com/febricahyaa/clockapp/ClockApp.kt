@@ -28,7 +28,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.command.ClockCommand
 import com.febricahyaa.clockapp.model.ClockSettings
 import com.febricahyaa.clockapp.navigation.AppDestination
@@ -81,7 +83,7 @@ fun ClockApp() {
                     .padding(horizontal = 20.dp, vertical = 18.dp),
                 verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
-                Text("CLOCK APP", style = MaterialTheme.typography.titleLarge)
+                Text(stringResource(R.string.app_title), style = MaterialTheme.typography.titleLarge)
                 CommandBar(onCommand = ::handleCommand)
                 Column(modifier = Modifier.weight(1f)) {
                     AnimatedContent(

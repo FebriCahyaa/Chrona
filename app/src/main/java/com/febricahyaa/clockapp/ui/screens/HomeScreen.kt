@@ -33,7 +33,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.ripple.ripple
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -44,22 +44,24 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.ui.components.ClockDisplay
 import java.time.LocalTime
 
-private data class Greeting(val text: String, val icon: ImageVector)
+private data class Greeting(val textRes: Int, val icon: ImageVector)
 
 private fun greetingForNow(): Greeting {
     val hour = LocalTime.now().hour
     return when {
-        hour < 5 -> Greeting("Still up, Febrian?", Icons.Default.NightsStay)
-        hour < 11 -> Greeting("Good morning, Febrian", Icons.Default.WbSunny)
-        hour < 15 -> Greeting("Good afternoon, Febrian", Icons.Default.WbSunny)
-        hour < 18 -> Greeting("Good evening, Febrian", Icons.Default.WbTwilight)
-        else -> Greeting("Good night, Febrian", Icons.Default.NightsStay)
+        hour < 5 -> Greeting(R.string.greeting_late_night, Icons.Default.NightsStay)
+        hour < 11 -> Greeting(R.string.greeting_morning, Icons.Default.WbSunny)
+        hour < 15 -> Greeting(R.string.greeting_afternoon, Icons.Default.WbSunny)
+        hour < 18 -> Greeting(R.string.greeting_evening, Icons.Default.WbTwilight)
+        else -> Greeting(R.string.greeting_night, Icons.Default.NightsStay)
     }
 }
 
@@ -71,6 +73,7 @@ fun HomeScreen(
     val surface = MaterialTheme.colorScheme.surface
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
     val greeting = remember { greetingForNow() }
+    val greetingText = stringResource(greeting.textRes, stringResource(R.string.user_name))
 
     Column(
         modifier = Modifier
@@ -85,12 +88,12 @@ fun HomeScreen(
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Text(
-                    text = greeting.text,
+                    text = greetingText,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = "Your time, beautifully organized.",
+                    text = stringResource(R.string.home_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
                     color = muted
                 )
@@ -137,7 +140,7 @@ fun HomeScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "CURRENT TIME",
+                            text = stringResource(R.string.home_current_time_label),
                             color = Color.White.copy(alpha = .78f),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
@@ -155,7 +158,7 @@ fun HomeScreen(
                         lightContent = true
                     )
                     Text(
-                        text = "A calm moment in your day",
+                        text = stringResource(R.string.home_current_time_caption),
                         color = Color.White.copy(alpha = .82f),
                         style = MaterialTheme.typography.bodySmall
                     )
@@ -170,14 +173,14 @@ fun HomeScreen(
             StatCard(
                 modifier = Modifier.weight(1f),
                 icon = Icons.Default.CalendarToday,
-                value = "Today",
-                label = "Daily overview"
+                value = stringResource(R.string.home_stat_today_value),
+                label = stringResource(R.string.home_stat_today_label)
             )
             StatCard(
                 modifier = Modifier.weight(1f),
                 icon = Icons.Default.Bolt,
-                value = "Live",
-                label = "Clock synced"
+                value = stringResource(R.string.home_stat_live_value),
+                label = stringResource(R.string.home_stat_live_label)
             )
         }
 
@@ -196,7 +199,7 @@ fun HomeScreen(
                 .clip(RoundedCornerShape(24.dp))
                 .clickable(
                     interactionSource = focusInteractionSource,
-                    indication = ripple(),
+                    indication = LocalIndication.current,
                     onClick = onOpenClock
                 ),
             shape = RoundedCornerShape(24.dp),
@@ -220,8 +223,8 @@ fun HomeScreen(
                 }
                 Spacer(Modifier.width(14.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Focus on the time", fontWeight = FontWeight.SemiBold)
-                    Text("Open the distraction-free clock", color = muted, style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(R.string.home_focus_title), fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.home_focus_subtitle), color = muted, style = MaterialTheme.typography.bodySmall)
                 }
                 Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = muted)
             }
@@ -238,8 +241,8 @@ fun HomeScreen(
             Icon(Icons.Default.Cloud, contentDescription = null, tint = muted)
             Spacer(Modifier.width(12.dp))
             Column {
-                Text("Your dashboard is ready", fontWeight = FontWeight.Medium)
-                Text("Use the floating navigation to explore.", color = muted, style = MaterialTheme.typography.bodySmall)
+                Text(stringResource(R.string.home_footer_title), fontWeight = FontWeight.Medium)
+                Text(stringResource(R.string.home_footer_subtitle), color = muted, style = MaterialTheme.typography.bodySmall)
             }
         }
     }
