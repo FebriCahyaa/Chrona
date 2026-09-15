@@ -1,0 +1,45 @@
+name: Bug Report
+description: Report a reproducible problem
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the problem clearly.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Provide the exact steps.
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      placeholder: "1.0.0"
+
+  - type: input
+    id: android
+    attributes:
+      label: Android version
+      placeholder: "Android 17"
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Include relevant logs.
+      render: shell
