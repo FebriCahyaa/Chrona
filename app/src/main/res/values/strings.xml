@@ -14,6 +14,8 @@
     <!-- Command bar -->
     <string name="command_bar_placeholder">Try \"dark\", \"12h\", \"reset\"...</string>
     <string name="command_bar_run">Run command</string>
+    <string name="command_bar_close">Close command bar</string>
+    <string name="command_bar_collapsed_hint">Quick command…</string>
     <string name="command_feedback_home">Home opened.</string>
     <string name="command_feedback_clock">Clock opened.</string>
     <string name="command_feedback_dark">Dark theme selected.</string>
@@ -45,15 +47,17 @@
     <string name="home_footer_subtitle">Use the floating navigation to explore.</string>
 
     <!-- Clock screen -->
-    <string name="clock_screen_title">Clock</string>
+    <string name="clock_screen_title">FOCUS MODE</string>
 
     <!-- Settings screen -->
     <string name="settings_screen_title">Settings</string>
+    <string name="settings_screen_subtitle">Tune how your dashboard looks and behaves</string>
     <string name="settings_dark_theme_title">Dark theme</string>
     <string name="settings_dark_theme_subtitle">Use a darker appearance</string>
     <string name="settings_format_title">24-hour format</string>
     <string name="settings_format_subtitle">Show time from 00:00 to 23:59</string>
     <string name="settings_seconds_title">Show seconds</string>
     <string name="settings_seconds_subtitle">Include seconds in the time display</string>
-    <string name="settings_footer">CLOCK APP • Dashboard Layout Engine</string>
+    <string name="settings_footer_title">Clock App</string>
+    <string name="settings_footer_subtitle">Dashboard Layout Engine</string>
 </resources>
