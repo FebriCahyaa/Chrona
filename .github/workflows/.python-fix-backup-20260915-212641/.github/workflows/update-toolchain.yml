@@ -39,7 +39,7 @@ jobs:
           cache: gradle
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v4
+        uses: android-actions/setup-android@v3
 
       - name: Locate SDK tools
         shell: bash
@@ -57,7 +57,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          yes | sdkmanager --licenses >/dev/null || true
 
       - name: Install Android SDK packages
         shell: bash
@@ -98,7 +98,6 @@ jobs:
           set -euo pipefail
 
           chmod +x ./gradlew
-          test -x ./gradlew
           ./gradlew --version
 
       - name: Configure Git

@@ -26,14 +26,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Fix Gradle wrapper permissions
-        shell: bash
-        run: |
-          set -euo pipefail
-          chmod +x ./gradlew
-          test -x ./gradlew
-          ls -l ./gradlew
-
       - name: Set up JDK 17
         uses: actions/setup-java@v6
         with:
@@ -47,7 +39,7 @@ jobs:
           packages: 'platform-tools'
           accept-android-sdk-licenses: true
 
-      - name: Install Android 17 SDK 37 toolchain
+      - name: Install Android 17 SDK 37 preview toolchain
         shell: bash
         run: |
           set -euo pipefail
@@ -66,9 +58,7 @@ jobs:
 
       - name: Build for CodeQL extraction
         run: |
-          set -euo pipefail
           chmod +x ./gradlew
-          test -x ./gradlew
           ./gradlew --no-daemon assembleDebug --stacktrace
 
       - name: Analyze

@@ -24,14 +24,6 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v7
 
-      - name: Fix Gradle wrapper permissions
-        shell: bash
-        run: |
-          set -euo pipefail
-          chmod +x ./gradlew
-          test -x ./gradlew
-          ls -l ./gradlew
-
       - name: Verify required files
         shell: bash
         run: |
@@ -65,15 +57,12 @@ jobs:
           packages: 'platform-tools'
 
 
-      - name: Install Android SDK 37
+      - name: Install Android SDK 36
         run: |
-          yes | sdkmanager --licenses >/dev/null || true
-          sdkmanager --install --channel=1 \
+          sdkmanager --install \
             "platform-tools" \
-            "platforms;android-37.0" \
-            "build-tools;36.0.0" \
-            "cmake;3.31.6" \
-            "ndk;30.0.16248370"
+            "platforms;android-36" \
+            "build-tools;36.0.0"
           yes | sdkmanager --licenses > /dev/null || true
 
       - name: Set up Gradle
@@ -82,7 +71,7 @@ jobs:
           gradle-version: '9.6.1'
 
       - name: Build APK
-        run: ./gradlew --no-daemon --stacktrace --build-cache assembleDebug
+        run: gradle --no-daemon --stacktrace --build-cache assembleDebug
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v7
