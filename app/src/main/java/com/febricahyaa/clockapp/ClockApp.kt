@@ -6,9 +6,12 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -239,10 +242,18 @@ fun ClockApp() {
                         targetState = showSettings,
                         label = "settingsToggle",
                         transitionSpec = {
-                            (fadeIn(animationSpec = tween(260)) + androidx.compose.animation.scaleIn(
-                                initialScale = 0.98f,
-                                animationSpec = tween(260)
-                            )).togetherWith(fadeOut(animationSpec = tween(160)))
+                            (fadeIn(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)) + androidx.compose.animation.scaleIn(
+                                initialScale = 0.96f,
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioNoBouncy,
+                                    stiffness = Spring.StiffnessMediumLow
+                                )
+                            )).togetherWith(
+                                fadeOut(animationSpec = tween(150)) + androidx.compose.animation.scaleOut(
+                                    targetScale = 1.02f,
+                                    animationSpec = tween(180)
+                                )
+                            )
                         }
                     ) { settingsVisible ->
                         if (settingsVisible) {
@@ -264,12 +275,18 @@ fun ClockApp() {
                                     val forward = targetState.order >= initialState.order
                                     val slideDistance = if (forward) { width: Int -> width / 4 } else { width: Int -> -width / 4 }
                                     (slideInHorizontally(
-                                        animationSpec = tween(320),
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioNoBouncy,
+                                            stiffness = Spring.StiffnessMediumLow
+                                        ),
                                         initialOffsetX = slideDistance
-                                    ) + fadeIn(animationSpec = tween(320)))
+                                    ) + fadeIn(animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioNoBouncy,
+                                            stiffness = Spring.StiffnessMediumLow
+                                        )))
                                         .togetherWith(
                                             slideOutHorizontally(
-                                                animationSpec = tween(220),
+                                                animationSpec = tween(180),
                                                 targetOffsetX = { width -> if (forward) -width / 4 else width / 4 }
                                             ) + fadeOut(animationSpec = tween(180))
                                         )
@@ -339,7 +356,20 @@ fun ClockApp() {
                         }
                     }
                 }
-                if (!showSettings) {
+                AnimatedVisibility(
+                    visible = !showSettings,
+                    enter = fadeIn(animationSpec = tween(220)) + androidx.compose.animation.slideInVertically(
+                        initialOffsetY = { it / 2 },
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioNoBouncy,
+                            stiffness = Spring.StiffnessMediumLow
+                        )
+                    ),
+                    exit = fadeOut(animationSpec = tween(150)) + androidx.compose.animation.slideOutVertically(
+                        targetOffsetY = { it / 2 },
+                        animationSpec = tween(180)
+                    )
+                ) {
                     FloatingNavigationBar(selected = destination, onSelected = { destination = it })
                 }
             }
