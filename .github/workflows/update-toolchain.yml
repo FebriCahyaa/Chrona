@@ -25,12 +25,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup JDK
-        uses: actions/setup-java@v6
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
@@ -39,53 +39,53 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Android SDK
+      - name: Verify sdkmanager
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          command -v sdkmanager
+          sdkmanager --version
+
+      - name: Accept Android SDK licenses
         shell: bash
         run: |
           set -euo pipefail
 
           yes | sdkmanager --licenses >/dev/null || true
 
+      - name: Install Android SDK packages
+        shell: bash
+        run: |
+          set -euo pipefail
+
           sdkmanager --install --channel=1             "platform-tools"             "platforms;android-${ANDROID_API}"             "build-tools;${BUILD_TOOLS_VERSION}"             "ndk;${NDK_VERSION}"             "cmake;${CMAKE_VERSION}"
+
+      - name: Show installed SDK packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          sdkmanager --list_installed | sed -n '1,160p'
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: ${{ env.GRADLE_VERSION }}
 
-      - name: Generate Gradle Wrapper
+      - name: Generate Gradle wrapper
         shell: bash
         run: |
           set -euo pipefail
 
           gradle wrapper             --gradle-version "${GRADLE_VERSION}"             --distribution-type bin
 
-      - name: Validate Java
+      - name: Validate Gradle wrapper
         shell: bash
         run: |
           set -euo pipefail
-          java -version
 
-      - name: Validate Gradle
-        shell: bash
-        run: |
-          set -euo pipefail
-          gradle --version
-
-      - name: Validate Gradle Wrapper
-        shell: bash
-        run: |
-          set -euo pipefail
           chmod +x ./gradlew
           ./gradlew --version
-
-      - name: Validate Android SDK
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          echo "Installed Android SDK packages:"
-          sdkmanager --list_installed | sed -n '1,160p'
 
       - name: Configure Git
         shell: bash
@@ -95,12 +95,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Commit Gradle Wrapper
+      - name: Commit wrapper changes
         shell: bash
         run: |
           set -euo pipefail
 
-          git add             gradle/wrapper             gradlew             gradlew.bat             2>/dev/null || true
+          git add gradle/wrapper gradlew gradlew.bat 2>/dev/null || true
 
           if git diff --cached --quiet; then
             echo "No wrapper changes detected."
