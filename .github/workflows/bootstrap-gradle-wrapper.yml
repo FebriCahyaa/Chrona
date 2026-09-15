@@ -1,0 +1,91 @@
+name: Bootstrap Gradle Wrapper
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bootstrap:
+    name: Generate and Commit Gradle Wrapper
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Download Gradle
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          GRADLE_VERSION="9.2.0"
+          GRADLE_HOME="$RUNNER_TEMP/gradle"
+
+          mkdir -p "$GRADLE_HOME"
+
+          curl -fL --retry 3 \
+            -o "$RUNNER_TEMP/gradle.zip" \
+            "https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip"
+
+          unzip -q "$RUNNER_TEMP/gradle.zip" -d "$GRADLE_HOME"
+
+          echo "$GRADLE_HOME/gradle-${GRADLE_VERSION}/bin" >> "$GITHUB_PATH"
+
+      - name: Verify Gradle
+        run: |
+          gradle --version
+
+      - name: Generate Gradle Wrapper
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          gradle wrapper \
+            --gradle-version 9.2.0 \
+            --distribution-type bin
+
+      - name: Verify Wrapper
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -f gradlew
+          test -f gradlew.bat
+          test -f gradle/wrapper/gradle-wrapper.jar
+          test -f gradle/wrapper/gradle-wrapper.properties
+
+          chmod +x gradlew
+
+          ./gradlew --version
+
+      - name: Commit Gradle Wrapper
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add \
+            gradlew \
+            gradlew.bat \
+            gradle/wrapper
+
+          if git diff --cached --quiet; then
+            echo "No Gradle Wrapper changes to commit."
+            exit 0
+          fi
+
+          git commit -m "build: bootstrap Gradle wrapper"
+          git push origin HEAD:main
