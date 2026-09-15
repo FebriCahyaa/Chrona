@@ -1,6 +1,9 @@
 package com.febricahyaa.clockapp
 
+import android.Manifest
 import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -42,7 +45,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.febricahyaa.clockapp.R
+import com.febricahyaa.clockapp.alarm.AlarmScheduler
 import com.febricahyaa.clockapp.command.ClockCommand
+import com.febricahyaa.clockapp.data.AlarmStore
 import com.febricahyaa.clockapp.model.AlarmItem
 import com.febricahyaa.clockapp.model.ClockSettings
 import com.febricahyaa.clockapp.model.WorldClockItem
@@ -72,8 +77,24 @@ fun ClockApp() {
     var destination by remember { mutableStateOf(AppDestination.CLOCK) }
     var showSettings by remember { mutableStateOf(false) }
 
-    // --- Alarms ---
+    // --- Alarms (persisted to disk and mirrored into AlarmManager) ---
+    val context = LocalContext.current
     val alarms = remember { mutableStateListOf<AlarmItem>() }
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { /* No follow-up needed: alarms still ring via full-screen intent either way. */ }
+
+    LaunchedEffect(Unit) {
+        alarms.addAll(AlarmStore.load(context))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    fun persistAndSchedule() {
+        AlarmStore.save(context, alarms)
+        AlarmScheduler.rescheduleAll(context, alarms)
+    }
 
     // --- World clock ---
     val worldClocks = remember { mutableStateListOf<WorldClockItem>() }
@@ -196,12 +217,20 @@ fun ClockApp() {
                                 AppDestination.ALARM -> AlarmScreen(
                                     alarms = alarms,
                                     use24HourFormat = use24HourFormat,
-                                    onAdd = { alarms.add(it) },
+                                    onAdd = { newAlarm ->
+                                        alarms.add(newAlarm)
+                                        persistAndSchedule()
+                                    },
                                     onToggle = { id, enabled ->
                                         val index = alarms.indexOfFirst { it.id == id }
                                         if (index >= 0) alarms[index] = alarms[index].copy(enabled = enabled)
+                                        persistAndSchedule()
                                     },
-                                    onDelete = { id -> alarms.removeAll { it.id == id } }
+                                    onDelete = { id ->
+                                        alarms.removeAll { it.id == id }
+                                        AlarmScheduler.cancel(context, id)
+                                        persistAndSchedule()
+                                    }
                                 )
                                 AppDestination.CLOCK -> ClockScreen(
                                     use24HourFormat = use24HourFormat,

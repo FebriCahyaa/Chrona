@@ -58,6 +58,14 @@
     <string name="alarm_dialog_save">Save</string>
     <string name="alarm_dialog_cancel">Cancel</string>
 
+    <!-- Alarm notification / ringing -->
+    <string name="alarm_notification_channel_name">Alarms</string>
+    <string name="alarm_notification_channel_description">Notifications shown when an alarm goes off</string>
+    <string name="alarm_notification_title">Alarm</string>
+    <string name="alarm_notification_body">Tap to open</string>
+    <string name="alarm_notification_dismiss">Dismiss</string>
+    <string name="alarm_notification_snooze">Snooze 10 min</string>
+
     <!-- Timer screen -->
     <string name="timer_screen_title">Timer</string>
     <string name="timer_screen_subtitle">Count down from a set duration</string>
