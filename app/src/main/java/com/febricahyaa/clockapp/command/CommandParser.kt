@@ -6,6 +6,8 @@ object CommandParser {
 
         return when (normalized) {
             "" -> ClockCommand.Empty
+            "home" -> ClockCommand.Home
+            "clock" -> ClockCommand.ClockView
             "dark" -> ClockCommand.Dark
             "light" -> ClockCommand.Light
             "settings" -> ClockCommand.Settings

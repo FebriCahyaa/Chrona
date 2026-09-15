@@ -1,7 +1,11 @@
 package com.febricahyaa.clockapp.ui.screens
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,7 +15,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Bolt
@@ -19,16 +25,22 @@ import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.NightsStay
 import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material.icons.filled.WbTwilight
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -36,6 +48,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.febricahyaa.clockapp.ui.components.ClockDisplay
+import java.time.LocalTime
+
+private data class Greeting(val text: String, val icon: ImageVector)
+
+private fun greetingForNow(): Greeting {
+    val hour = LocalTime.now().hour
+    return when {
+        hour < 5 -> Greeting("Still up, Febrian?", Icons.Default.NightsStay)
+        hour < 11 -> Greeting("Good morning, Febrian", Icons.Default.WbSunny)
+        hour < 15 -> Greeting("Good afternoon, Febrian", Icons.Default.WbSunny)
+        hour < 18 -> Greeting("Good evening, Febrian", Icons.Default.WbTwilight)
+        else -> Greeting("Good night, Febrian", Icons.Default.NightsStay)
+    }
+}
 
 @Composable
 fun HomeScreen(
@@ -44,9 +70,12 @@ fun HomeScreen(
 ) {
     val surface = MaterialTheme.colorScheme.surface
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
+    val greeting = remember { greetingForNow() }
 
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Row(
@@ -56,7 +85,7 @@ fun HomeScreen(
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Text(
-                    text = "Good morning, Febrian",
+                    text = greeting.text,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -74,7 +103,7 @@ fun HomeScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.WbSunny,
+                    imageVector = greeting.icon,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
@@ -152,11 +181,24 @@ fun HomeScreen(
             )
         }
 
+        val focusInteractionSource = remember { MutableInteractionSource() }
+        val focusPressed by focusInteractionSource.collectIsPressedAsState()
+        val focusScale by animateFloatAsState(
+            targetValue = if (focusPressed) 0.97f else 1f,
+            animationSpec = tween(120),
+            label = "focusCardScale"
+        )
+
         Card(
             modifier = Modifier
                 .fillMaxWidth()
+                .scale(focusScale)
                 .clip(RoundedCornerShape(24.dp))
-                .clickable(onClick = onOpenClock),
+                .clickable(
+                    interactionSource = focusInteractionSource,
+                    indication = ripple(),
+                    onClick = onOpenClock
+                ),
             shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(containerColor = surface),
             elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)

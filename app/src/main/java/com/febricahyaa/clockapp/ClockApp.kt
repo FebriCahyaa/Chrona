@@ -1,6 +1,13 @@
 package com.febricahyaa.clockapp
 
 import android.os.Build
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,6 +38,14 @@ import com.febricahyaa.clockapp.ui.screens.ClockScreen
 import com.febricahyaa.clockapp.ui.screens.HomeScreen
 import com.febricahyaa.clockapp.ui.screens.SettingsScreen
 
+/** Order used to decide the horizontal slide direction between destinations. */
+private val AppDestination.order: Int
+    get() = when (this) {
+        AppDestination.HOME -> 0
+        AppDestination.CLOCK -> 1
+        AppDestination.SETTINGS -> 2
+    }
+
 @Composable
 fun ClockApp() {
     var settings by remember { mutableStateOf(ClockSettings()) }
@@ -39,6 +54,8 @@ fun ClockApp() {
 
     fun handleCommand(command: ClockCommand) {
         when (command) {
+            ClockCommand.Home -> destination = AppDestination.HOME
+            ClockCommand.ClockView -> destination = AppDestination.CLOCK
             ClockCommand.Dark -> settings = settings.copy(isDarkTheme = true)
             ClockCommand.Light -> settings = settings.copy(isDarkTheme = false)
             ClockCommand.Settings -> destination = AppDestination.SETTINGS
@@ -67,18 +84,37 @@ fun ClockApp() {
                 Text("CLOCK APP", style = MaterialTheme.typography.titleLarge)
                 CommandBar(onCommand = ::handleCommand)
                 Column(modifier = Modifier.weight(1f)) {
-                    when (destination) {
-                        AppDestination.HOME -> HomeScreen(
-                            use24HourFormat = use24HourFormat,
-                            onOpenClock = { destination = AppDestination.CLOCK }
-                        )
-                        AppDestination.CLOCK -> ClockScreen(use24HourFormat)
-                        AppDestination.SETTINGS -> SettingsScreen(
-                            isDarkTheme = settings.isDarkTheme,
-                            onThemeChanged = { settings = settings.copy(isDarkTheme = it) },
-                            use24HourFormat = use24HourFormat,
-                            onFormatChange = { use24HourFormat = it }
-                        )
+                    AnimatedContent(
+                        targetState = destination,
+                        label = "destination",
+                        transitionSpec = {
+                            val forward = targetState.order >= initialState.order
+                            val slideDistance = if (forward) { width: Int -> width / 4 } else { width: Int -> -width / 4 }
+                            (slideInHorizontally(
+                                animationSpec = tween(320),
+                                initialOffsetX = slideDistance
+                            ) + fadeIn(animationSpec = tween(320)))
+                                .togetherWith(
+                                    slideOutHorizontally(
+                                        animationSpec = tween(220),
+                                        targetOffsetX = { width -> if (forward) -width / 4 else width / 4 }
+                                    ) + fadeOut(animationSpec = tween(180))
+                                )
+                        }
+                    ) { targetDestination ->
+                        when (targetDestination) {
+                            AppDestination.HOME -> HomeScreen(
+                                use24HourFormat = use24HourFormat,
+                                onOpenClock = { destination = AppDestination.CLOCK }
+                            )
+                            AppDestination.CLOCK -> ClockScreen(use24HourFormat)
+                            AppDestination.SETTINGS -> SettingsScreen(
+                                isDarkTheme = settings.isDarkTheme,
+                                onThemeChanged = { settings = settings.copy(isDarkTheme = it) },
+                                use24HourFormat = use24HourFormat,
+                                onFormatChange = { use24HourFormat = it }
+                            )
+                        }
                     }
                 }
                 FloatingNavigationBar(selected = destination, onSelected = { destination = it })

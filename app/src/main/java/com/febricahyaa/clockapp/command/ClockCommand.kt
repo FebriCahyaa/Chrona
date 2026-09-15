@@ -1,6 +1,8 @@
 package com.febricahyaa.clockapp.command
 
 sealed interface ClockCommand {
+    data object Home : ClockCommand
+    data object ClockView : ClockCommand
     data object Dark : ClockCommand
     data object Light : ClockCommand
     data object Settings : ClockCommand
