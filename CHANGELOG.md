@@ -1,3 +1,14 @@
+## 0.5.0
+
+### Native Engine
+- Expanded the C++ core into a dedicated Chrona native time engine.
+- Added monotonic timing for timer and stopwatch accuracy.
+- Added solar sunrise/sunset calculations.
+- Added moon phase and illumination calculations.
+- Added cubic Bezier and spring interpolation primitives for future motion design.
+- Added Java JNI APIs and a Kotlin facade while preserving the existing Android architecture.
+- Kept CI workflows and SDK/toolchain configuration unchanged.
+
 # Changelog
 
 ## 0.3.0 — Chrona UI / Native Foundation

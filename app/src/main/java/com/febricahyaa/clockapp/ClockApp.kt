@@ -126,30 +126,34 @@ fun ClockApp() {
     var timerTotal by remember { mutableStateOf(25 * 60) }
     var timerRemaining by remember { mutableStateOf(25 * 60) }
     var timerRunning by remember { mutableStateOf(false) }
-    var timerEndMillis by remember { mutableLongStateOf(0L) }
+    var timerStartMonotonic by remember { mutableLongStateOf(0L) }
+    var timerBaseRemainingMillis by remember { mutableLongStateOf(timerRemaining * 1000L) }
     LaunchedEffect(timerRunning) {
         if (timerRunning) {
-            timerEndMillis = System.currentTimeMillis() + timerRemaining * 1000L
+            timerBaseRemainingMillis = timerRemaining * 1000L
+            timerStartMonotonic = NativeClock.monotonicMillis()
             while (timerRunning) {
-                timerRemaining = NativeClock.remainingSeconds(timerEndMillis, System.currentTimeMillis()).toInt()
-                if (timerRemaining <= 0) {
+                val elapsed = NativeClock.elapsedMillis(timerStartMonotonic, NativeClock.monotonicMillis())
+                val remaining = (timerBaseRemainingMillis - elapsed).coerceAtLeast(0L)
+                timerRemaining = ((remaining + 999L) / 1000L).toInt()
+                if (remaining <= 0L) {
                     timerRemaining = 0
                     timerRunning = false
                 }
-                delay(250)
+                delay(100)
             }
         }
     }
 
     var stopwatchRunning by remember { mutableStateOf(false) }
-    var stopwatchStartMillis by remember { mutableLongStateOf(0L) }
+    var stopwatchStartMonotonic by remember { mutableLongStateOf(0L) }
     var stopwatchElapsed by remember { mutableLongStateOf(0L) }
     val stopwatchLaps = remember { mutableStateListOf<Long>() }
     LaunchedEffect(stopwatchRunning) {
         if (stopwatchRunning) {
-            stopwatchStartMillis = System.currentTimeMillis() - stopwatchElapsed
+            stopwatchStartMonotonic = NativeClock.monotonicMillis() - stopwatchElapsed
             while (stopwatchRunning) {
-                stopwatchElapsed = NativeClock.elapsedMillis(stopwatchStartMillis, System.currentTimeMillis())
+                stopwatchElapsed = NativeClock.elapsedMillis(stopwatchStartMonotonic, NativeClock.monotonicMillis())
                 delay(31)
             }
         }
@@ -196,8 +200,8 @@ fun ClockApp() {
                                     onToggleFavorite = { city -> favorites = if (city in favorites) favorites - city else favorites + city })
                                 AppDestination.TIMER -> TimerScreen(timerTotal, timerRemaining, timerRunning, glass,
                                     onToggle = { if (timerRunning) timerRunning = false else if (timerRemaining > 0) timerRunning = true },
-                                    onReset = { timerRunning = false; timerRemaining = timerTotal },
-                                    onSetPreset = { timerTotal = it; timerRemaining = it; timerRunning = false })
+                                    onReset = { timerRunning = false; timerRemaining = timerTotal; timerBaseRemainingMillis = timerTotal * 1000L },
+                                    onSetPreset = { timerTotal = it; timerRemaining = it; timerBaseRemainingMillis = it * 1000L; timerRunning = false })
                                 AppDestination.STOPWATCH -> StopwatchScreen(stopwatchElapsed, stopwatchRunning, stopwatchLaps,
                                     onToggleRun = { stopwatchRunning = !stopwatchRunning },
                                     onLap = { if (stopwatchRunning) stopwatchLaps.add(stopwatchElapsed) },

@@ -1,54 +1,93 @@
 package com.febricahyaa.clockapp.ui.screens
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.febricahyaa.clockapp.ui.components.*
+import com.febricahyaa.clockapp.ui.components.GlassPill
+import com.febricahyaa.clockapp.ui.components.IconCircleButton
+import com.febricahyaa.clockapp.ui.components.LocalAccentGradient
+import com.febricahyaa.clockapp.ui.components.ScreenHeader
 
 @Composable
-fun TimerScreen(totalSeconds: Int, remainingSeconds: Int, running: Boolean, glass: Boolean, onToggle: () -> Unit, onReset: () -> Unit, onSetPreset: (Int) -> Unit) {
-    val progress by animateFloatAsState(if (totalSeconds == 0) 0f else remainingSeconds / totalSeconds.toFloat(), label = "timer")
-    Column(Modifier.fillMaxSize().padding(horizontal = 22.dp, vertical = 12.dp)) {
-        ScreenHeader("Timer", "Stay in the moment")
-        Spacer(Modifier.height(26.dp))
-        Box(Modifier.fillMaxWidth().height(300.dp), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(progress = { progress }, modifier = Modifier.size(230.dp), strokeWidth = 12.dp, trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = .06f), color = MaterialTheme.colorScheme.primary)
+fun TimerScreen(
+    totalSeconds: Int,
+    remainingSeconds: Int,
+    running: Boolean,
+    glass: Boolean,
+    onToggle: () -> Unit,
+    onReset: () -> Unit,
+    onSetPreset: (Int) -> Unit,
+) {
+    val progress = if (totalSeconds <= 0) 0f else remainingSeconds.toFloat() / totalSeconds
+    val accentGradient = LocalAccentGradient.current
+    val trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = .10f)
+    Column(Modifier.fillMaxSize().padding(horizontal = 20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Spacer(Modifier.height(10.dp))
+        ScreenHeader("Timer", "Focus on what matters", actions = { IconCircleButton(Icons.Filled.Refresh, onReset) })
+        Spacer(Modifier.height(38.dp))
+        Box(Modifier.size(290.dp), contentAlignment = Alignment.Center) {
+            Canvas(Modifier.fillMaxSize()) {
+                val stroke = 15.dp.toPx()
+                val inset = stroke / 2
+                drawArc(trackColor, -90f, 360f, false,
+                    topLeft = Offset(inset, inset), size = androidx.compose.ui.geometry.Size(size.width - stroke, size.height - stroke), style = Stroke(stroke, cap = StrokeCap.Round))
+                drawArc(accentGradient, -90f, 360f * progress, false,
+                    topLeft = Offset(inset, inset), size = androidx.compose.ui.geometry.Size(size.width - stroke, size.height - stroke), style = Stroke(stroke, cap = StrokeCap.Round))
+            }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(formatTimer(remainingSeconds), fontSize = 55.sp, color = MaterialTheme.colorScheme.onBackground, style = MaterialTheme.typography.displayMedium)
-                Text(if (running) "Running" else "Ready", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(formatTimer(remainingSeconds), fontSize = 48.sp, fontWeight = FontWeight.Light, letterSpacing = (-1).sp)
+                Text(if (running) "Running" else "Ready", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Surface(onClick = onToggle, modifier = Modifier.size(70.dp), shape = CircleShape, color = MaterialTheme.colorScheme.primary) { Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Icon(if (running) Icons.Filled.Pause else Icons.Filled.PlayArrow, null, tint = Color.White, modifier = Modifier.size(31.dp)) } }
-            Surface(onClick = onReset, modifier = Modifier.size(52.dp), shape = CircleShape, color = MaterialTheme.colorScheme.onSurface.copy(alpha = .06f)) { Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Icon(Icons.Filled.Refresh, null) } }
+        Spacer(Modifier.height(26.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf(5, 15, 25, 60).forEach { minutes ->
+                GlassPill(onClick = { onSetPreset(minutes * 60) }) {
+                    Text("${minutes}m", fontSize = 11.sp)
+                }
+            }
         }
-        Spacer(Modifier.height(24.dp))
-        Text("Quick start", style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.height(10.dp))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            listOf(5, 15, 25, 60).forEach { mins -> PresetChip("$mins min", glass) { onSetPreset(mins * 60) } }
+        Spacer(Modifier.height(26.dp))
+        Surface(onClick = onToggle, modifier = Modifier.size(76.dp), shape = CircleShape,
+            color = MaterialTheme.colorScheme.primary, shadowElevation = 8.dp) {
+            Box(contentAlignment = Alignment.Center) {
+                androidx.compose.material3.Icon(if (running) Icons.Filled.Pause else Icons.Filled.PlayArrow, null,
+                    tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(31.dp))
+            }
         }
+        Spacer(Modifier.height(12.dp))
+        Text("Timer stays accurate across screen off and background work.", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
-private fun formatTimer(seconds: Int): String { val m = seconds / 60; val s = seconds % 60; return "%02d:%02d".format(m, s) }
-
-@Composable
-private fun PresetChip(text: String, glass: Boolean, onClick: () -> Unit) {
-    Surface(onClick = onClick, modifier = Modifier.height(46.dp), shape = RoundedCornerShape(18.dp), color = MaterialTheme.colorScheme.surface.copy(alpha = if (glass) .58f else 1f), border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = .07f))) {
-        Box(Modifier.padding(horizontal = 15.dp), contentAlignment = Alignment.Center) { Text(text, fontSize = 12.sp) }
-    }
+private fun formatTimer(total: Int): String {
+    val h = total / 3600
+    val m = (total / 60) % 60
+    val s = total % 60
+    return if (h > 0) String.format("%02d:%02d:%02d", h, m, s) else String.format("%02d:%02d", m, s)
 }
