@@ -25,12 +25,14 @@ import java.util.Locale
 @Composable
 fun ClockDisplay(
     use24HourFormat: Boolean,
+    showSeconds: Boolean = true,
     compact: Boolean = false,
     lightContent: Boolean = false
 ) {
     var currentTime by remember { mutableStateOf(Date()) }
-    val timeFormatter = remember(use24HourFormat) {
-        SimpleDateFormat(if (use24HourFormat) "HH:mm:ss" else "hh:mm:ss", Locale.getDefault())
+    val timeFormatter = remember(use24HourFormat, showSeconds) {
+        val base = if (use24HourFormat) "HH:mm" else "hh:mm"
+        SimpleDateFormat(if (showSeconds) "$base:ss" else base, Locale.getDefault())
     }
     val meridiemFormatter = remember { SimpleDateFormat("a", Locale.getDefault()) }
     val dateFormatter = remember { SimpleDateFormat("EEEE, d MMMM yyyy", Locale.getDefault()) }

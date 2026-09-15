@@ -68,6 +68,7 @@ private fun greetingForNow(): Greeting {
 @Composable
 fun HomeScreen(
     use24HourFormat: Boolean,
+    showSeconds: Boolean,
     onOpenClock: () -> Unit
 ) {
     val surface = MaterialTheme.colorScheme.surface
@@ -154,6 +155,7 @@ fun HomeScreen(
                     }
                     ClockDisplay(
                         use24HourFormat = use24HourFormat,
+                        showSeconds = showSeconds,
                         compact = false,
                         lightContent = true
                     )

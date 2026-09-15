@@ -22,7 +22,14 @@ import androidx.compose.ui.unit.dp
 import com.febricahyaa.clockapp.R
 
 @Composable
-fun SettingsScreen(isDarkTheme: Boolean, onThemeChanged: (Boolean) -> Unit, use24HourFormat: Boolean, onFormatChange: (Boolean) -> Unit) {
+fun SettingsScreen(
+    isDarkTheme: Boolean,
+    onThemeChanged: (Boolean) -> Unit,
+    use24HourFormat: Boolean,
+    onFormatChange: (Boolean) -> Unit,
+    showSeconds: Boolean,
+    onShowSecondsChange: (Boolean) -> Unit
+) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -41,6 +48,12 @@ fun SettingsScreen(isDarkTheme: Boolean, onThemeChanged: (Boolean) -> Unit, use2
                     subtitle = stringResource(R.string.settings_format_subtitle),
                     checked = use24HourFormat,
                     onCheckedChange = onFormatChange
+                )
+                SettingRow(
+                    title = stringResource(R.string.settings_seconds_title),
+                    subtitle = stringResource(R.string.settings_seconds_subtitle),
+                    checked = showSeconds,
+                    onCheckedChange = onShowSecondsChange
                 )
             }
         }

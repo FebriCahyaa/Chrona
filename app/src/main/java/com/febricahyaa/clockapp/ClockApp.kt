@@ -107,14 +107,17 @@ fun ClockApp() {
                         when (targetDestination) {
                             AppDestination.HOME -> HomeScreen(
                                 use24HourFormat = use24HourFormat,
+                                showSeconds = settings.showSeconds,
                                 onOpenClock = { destination = AppDestination.CLOCK }
                             )
-                            AppDestination.CLOCK -> ClockScreen(use24HourFormat)
+                            AppDestination.CLOCK -> ClockScreen(use24HourFormat, settings.showSeconds)
                             AppDestination.SETTINGS -> SettingsScreen(
                                 isDarkTheme = settings.isDarkTheme,
                                 onThemeChanged = { settings = settings.copy(isDarkTheme = it) },
                                 use24HourFormat = use24HourFormat,
-                                onFormatChange = { use24HourFormat = it }
+                                onFormatChange = { use24HourFormat = it },
+                                showSeconds = settings.showSeconds,
+                                onShowSecondsChange = { settings = settings.copy(showSeconds = it) }
                             )
                         }
                     }

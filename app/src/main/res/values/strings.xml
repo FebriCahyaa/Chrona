@@ -53,5 +53,7 @@
     <string name="settings_dark_theme_subtitle">Use a darker appearance</string>
     <string name="settings_format_title">24-hour format</string>
     <string name="settings_format_subtitle">Show time from 00:00 to 23:59</string>
+    <string name="settings_seconds_title">Show seconds</string>
+    <string name="settings_seconds_subtitle">Include seconds in the time display</string>
     <string name="settings_footer">CLOCK APP • Dashboard Layout Engine</string>
 </resources>

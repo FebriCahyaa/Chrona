@@ -19,7 +19,7 @@ import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.ui.components.ClockDisplay
 
 @Composable
-fun ClockScreen(use24HourFormat: Boolean) {
+fun ClockScreen(use24HourFormat: Boolean, showSeconds: Boolean) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -30,7 +30,7 @@ fun ClockScreen(use24HourFormat: Boolean) {
         Text(stringResource(R.string.clock_screen_title), style = MaterialTheme.typography.headlineMedium)
         Surface(modifier = Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.extraLarge, color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f)) {
             Column(modifier = Modifier.padding(vertical = 42.dp, horizontal = 16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                ClockDisplay(use24HourFormat = use24HourFormat)
+                ClockDisplay(use24HourFormat = use24HourFormat, showSeconds = showSeconds)
             }
         }
     }
