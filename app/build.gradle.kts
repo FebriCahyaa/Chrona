@@ -7,13 +7,13 @@ plugins {
 
 android {
     namespace = "com.febricahyaa.clockapp"
-    compileSdk = 37
+    compileSdk = 36
     ndkVersion = "28.2.13676358"
 
     defaultConfig {
         applicationId = "com.febricahyaa.clockapp"
         minSdk = 26
-        targetSdk = 37
+        targetSdk = 36
         versionCode = 30
         versionName = "0.3.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

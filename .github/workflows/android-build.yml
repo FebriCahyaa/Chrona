@@ -26,7 +26,7 @@ jobs:
     env:
       JAVA_VERSION: "17"
       GRADLE_VERSION: "9.6.1"
-      ANDROID_API_LEVEL: "37"
+      ANDROID_API_LEVEL: "36"
       ANDROID_BUILD_TOOLS: "36.0.0"
       ANDROID_NDK_VERSION: "28.2.13676358"
 
@@ -50,14 +50,9 @@ jobs:
           gradle-version: ${{ env.GRADLE_VERSION }}
 
       - name: Verify Java and Gradle
-        shell: bash
         run: |
           set -euxo pipefail
-
-          echo "===== JAVA ====="
           java -version
-
-          echo "===== GRADLE ====="
           gradle --version
 
       - name: Setup Android SDK
@@ -65,61 +60,58 @@ jobs:
         with:
           packages: ''
 
-      - name: Configure SDK licenses
-        shell: bash
+      - name: Accept Android SDK licenses
         run: |
           set -euxo pipefail
-
           yes | sdkmanager --licenses >/dev/null || true
 
+      - name: Show available SDK packages
+        run: |
+          set -euxo pipefail
+          sdkmanager --list | grep -E \
+            'platforms;android-|build-tools;|ndk;' \
+            | head -n 150
+
       - name: Install Android SDK
-        shell: bash
         run: |
           set -euxo pipefail
 
-          sdkmanager \
+          sdkmanager --install \
             "platform-tools" \
             "platforms;android-${ANDROID_API_LEVEL}" \
             "build-tools;${ANDROID_BUILD_TOOLS}" \
             "ndk;${ANDROID_NDK_VERSION}"
 
       - name: Verify Android SDK
-        shell: bash
         run: |
           set -euxo pipefail
 
-          echo "===== SDK MANAGER ====="
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+
+          echo "SDK:"
           sdkmanager --version
 
-          echo
-          echo "===== INSTALLED PACKAGES ====="
-          sdkmanager --list_installed | sed -n '1,180p'
-
-          echo
-          echo "===== ADB ====="
+          echo "ADB:"
           adb version
 
-          echo
-          echo "===== BUILD TOOLS ====="
-          test -x \
-            "$ANDROID_HOME/build-tools/${ANDROID_BUILD_TOOLS}/aapt2"
+          echo "Platform:"
+          test -d "$ANDROID_SDK_ROOT/platforms/android-${ANDROID_API_LEVEL}"
 
-          echo
-          echo "===== NDK ====="
-          test -d \
-            "$ANDROID_HOME/ndk/${ANDROID_NDK_VERSION}"
+          echo "Build Tools:"
+          test -d "$ANDROID_SDK_ROOT/build-tools/${ANDROID_BUILD_TOOLS}"
+
+          echo "NDK:"
+          test -d "$ANDROID_SDK_ROOT/ndk/${ANDROID_NDK_VERSION}"
 
       - name: Inspect project
-        shell: bash
         run: |
           set -euxo pipefail
 
           echo "===== ROOT ====="
           ls -lah
 
-          echo
-          echo "===== GRADLE CONFIGURATION ====="
-
+          echo "===== GRADLE PROJECT ====="
           find . -maxdepth 3 \
             \( \
               -name "settings.gradle" \
@@ -130,34 +122,22 @@ jobs:
             \) \
             -print
 
-      - name: Validate Gradle project
-        shell: bash
+      - name: Validate project
         run: |
           set -euxo pipefail
-
-          gradle \
-            tasks \
-            --stacktrace \
-            --no-daemon \
-            --warning-mode all
+          gradle tasks --stacktrace --no-daemon --warning-mode all
 
       - name: Build Debug APK
-        shell: bash
         run: |
           set -euxo pipefail
-
-          gradle \
-            assembleDebug \
+          gradle assembleDebug \
             --stacktrace \
             --no-daemon \
             --warning-mode all
 
-      - name: Locate APK
-        shell: bash
+      - name: Find APK
         run: |
           set -euxo pipefail
-
-          echo "===== APK ====="
 
           find . \
             -type f \
@@ -177,7 +157,6 @@ jobs:
 
       - name: Detect generated changes
         id: changes
-        shell: bash
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
@@ -189,7 +168,6 @@ jobs:
         if: |
           github.event_name == 'push' &&
           steps.changes.outputs.changed == 'true'
-        shell: bash
         run: |
           set -euxo pipefail
 
@@ -207,8 +185,6 @@ jobs:
         if: |
           github.event_name == 'push' &&
           steps.changes.outputs.changed == 'true'
-        shell: bash
         run: |
           set -euxo pipefail
-
           git push origin HEAD:${GITHUB_REF_NAME}
