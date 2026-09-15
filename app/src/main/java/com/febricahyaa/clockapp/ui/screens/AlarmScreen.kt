@@ -1,3 +1,4 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
 package com.febricahyaa.clockapp.ui.screens
 
 import androidx.compose.foundation.BorderStroke
@@ -47,7 +48,6 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 import androidx.compose.material3.ExperimentalMaterial3Api
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlarmScreen(alarms: List<AlarmItem>, glass: Boolean, onBack: () -> Unit, onAdd: (AlarmItem) -> Unit, onToggle: (AlarmItem, Boolean) -> Unit, onDelete: (AlarmItem) -> Unit) {
     var showAdd by rememberSaveable { mutableStateOf(false) }
