@@ -44,6 +44,8 @@ fun TimerScreen(
     onSetPreset: (Int) -> Unit,
 ) {
     val progress = if (totalSeconds <= 0) 0f else remainingSeconds.toFloat() / totalSeconds
+    val accentGradient = LocalAccentGradient.current
+    val trackColor = trackColor
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Spacer(Modifier.height(10.dp))
         ScreenHeader("Timer", "Focus on what matters", actions = { IconCircleButton(Icons.Filled.Refresh, onReset) })
@@ -52,9 +54,9 @@ fun TimerScreen(
             Canvas(Modifier.fillMaxSize()) {
                 val stroke = 15.dp.toPx()
                 val inset = stroke / 2
-                drawArc(MaterialTheme.colorScheme.onSurface.copy(alpha = .10f), -90f, 360f, false,
+                drawArc(trackColor, -90f, 360f, false,
                     topLeft = Offset(inset, inset), size = androidx.compose.ui.geometry.Size(size.width - stroke, size.height - stroke), style = Stroke(stroke, cap = StrokeCap.Round))
-                drawArc(LocalAccentGradient.current, -90f, 360f * progress, false,
+                drawArc(accentGradient, -90f, 360f * progress, false,
                     topLeft = Offset(inset, inset), size = androidx.compose.ui.geometry.Size(size.width - stroke, size.height - stroke), style = Stroke(stroke, cap = StrokeCap.Round))
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {

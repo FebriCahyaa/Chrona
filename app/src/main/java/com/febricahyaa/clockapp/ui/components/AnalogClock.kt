@@ -53,6 +53,12 @@ fun LiveAnalogClock(
     val primary = MaterialTheme.colorScheme.primary
     val onSurface = MaterialTheme.colorScheme.onSurface
     val tertiary = MaterialTheme.colorScheme.tertiary
+    val surfaceContainerHighest = MaterialTheme.colorScheme.surfaceContainerHighest
+    val surfaceContainer = MaterialTheme.colorScheme.surfaceContainer
+    val surface = MaterialTheme.colorScheme.surface
+    val outline = MaterialTheme.colorScheme.outline
+    val dialBrush = Brush.radialGradient(listOf(surfaceContainerHighest.copy(alpha = 0.95f), surfaceContainer.copy(alpha = 0.88f), surface.copy(alpha = 0.74f)))
+    val outlineColor = outline.copy(alpha = 0.14f)
 
     Box(
         modifier = modifier
@@ -63,16 +69,9 @@ fun LiveAnalogClock(
         Canvas(Modifier.fillMaxWidth(sizeFraction).aspectRatio(1f).clip(RoundedCornerShape(50.dp))) {
             val center = Offset(size.width / 2f, size.height / 2f)
             val radius = size.minDimension / 2f
-            val dialBrush = Brush.radialGradient(
-                colors = listOf(
-                    MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.95f),
-                    MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.88f),
-                    MaterialTheme.colorScheme.surface.copy(alpha = 0.74f)
-                )
-            )
             drawCircle(brush = dialBrush, radius = radius * 0.98f, center = center)
             drawCircle(
-                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.14f),
+                color = outlineColor,
                 radius = radius * 0.98f,
                 center = center,
                 style = androidx.compose.ui.graphics.drawscope.Stroke(width = radius * 0.018f)
