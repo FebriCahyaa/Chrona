@@ -6,6 +6,25 @@
     <string name="app_title">CLOCK</string>
     <string name="user_name">Febrian</string>
 
+    <!-- Home screen -->
+    <string name="greeting_late_night">Still up, %1$s?</string>
+    <string name="greeting_morning">Good morning, %1$s</string>
+    <string name="greeting_afternoon">Good afternoon, %1$s</string>
+    <string name="greeting_evening">Good evening, %1$s</string>
+    <string name="greeting_night">Good night, %1$s</string>
+    <string name="home_subtitle">Here\'s everything at a glance</string>
+    <string name="home_current_time_label">CURRENT TIME</string>
+    <string name="home_current_time_caption">Matches your device\'s time zone</string>
+    <string name="home_stat_today_value">4</string>
+    <string name="home_stat_today_label">Tools ready to use</string>
+    <string name="home_stat_live_value">Live</string>
+    <string name="home_stat_live_label">Always in sync</string>
+    <string name="home_focus_title">Focus mode</string>
+    <string name="home_focus_subtitle">See the clock in full screen, distraction-free</string>
+    <string name="home_footer_title">All set</string>
+    <string name="home_footer_subtitle">Your preferences are saved on this device</string>
+
+
     <!-- Navigation -->
     <string name="nav_alarm">Alarm</string>
     <string name="nav_clock">Clock</string>
