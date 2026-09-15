@@ -1,0 +1,193 @@
+name: Chrona Android Build
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+      - master
+
+  pull_request:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: write
+
+concurrency:
+  group: chrona-android-build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Setup Gradle and Build Chrona
+    runs-on: ubuntu-24.04
+
+    env:
+      JAVA_VERSION: "17"
+      GRADLE_VERSION: "9.6.1"
+      ANDROID_API_LEVEL: "37"
+      ANDROID_BUILD_TOOLS: "36.0.0"
+      ANDROID_NDK_VERSION: "28.2.13676358"
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: ${{ env.GRADLE_VERSION }}
+          cache-read-only: false
+
+      - name: Verify environment
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          echo "Java:"
+          java -version
+
+          echo "Gradle:"
+          gradle --version
+
+          echo "Git:"
+          git --version
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          yes | sdkmanager --licenses >/dev/null || true
+
+          sdkmanager \
+            "platform-tools" \
+            "platforms;android-${ANDROID_API_LEVEL}" \
+            "build-tools;${ANDROID_BUILD_TOOLS}" \
+            "ndk;${ANDROID_NDK_VERSION}" \
+            "cmdline-tools;latest"
+
+      - name: Configure Android environment
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          echo "ANDROID_HOME=${ANDROID_HOME}" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT}" >> "$GITHUB_ENV"
+
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+
+      - name: Check Gradle files
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          test -f settings.gradle || test -f settings.gradle.kts
+          test -f build.gradle || test -f build.gradle.kts
+
+          find . -maxdepth 3 \
+            \( -name "build.gradle" \
+            -o -name "build.gradle.kts" \
+            -o -name "settings.gradle" \
+            -o -name "settings.gradle.kts" \) \
+            -print
+
+      - name: Make Gradle wrapper executable
+        shell: bash
+        run: |
+          if [ -f "./gradlew" ]; then
+            chmod +x ./gradlew
+          fi
+
+      - name: Validate Gradle project
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          if [ -x "./gradlew" ]; then
+            ./gradlew tasks --stacktrace --no-daemon
+          else
+            gradle tasks --stacktrace --no-daemon
+          fi
+
+      - name: Build Debug APK
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          if [ -x "./gradlew" ]; then
+            ./gradlew assembleDebug \
+              --stacktrace \
+              --no-daemon \
+              --warning-mode all
+          else
+            gradle assembleDebug \
+              --stacktrace \
+              --no-daemon \
+              --warning-mode all
+          fi
+
+      - name: Upload APK artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chrona-debug-apk
+          path: |
+            **/build/outputs/apk/**/*.apk
+            **/build/outputs/mapping/**/*.txt
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Detect source changes
+        id: changes
+        shell: bash
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit generated changes
+        if: |
+          github.event_name == 'push' &&
+          steps.changes.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+
+          git commit \
+            -m "ci: update generated Android build files" \
+            || echo "Tidak ada perubahan untuk di-commit"
+
+      - name: Push generated changes
+        if: |
+          github.event_name == 'push' &&
+          steps.changes.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          git push origin HEAD:${GITHUB_REF_NAME}
