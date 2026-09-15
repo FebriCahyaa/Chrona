@@ -6,11 +6,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,13 +39,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.awaitEachGesture
+import androidx.compose.ui.input.pointer.awaitFirstDown
+import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.febricahyaa.clockapp.navigation.AppDestination
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
@@ -113,20 +118,47 @@ fun FloatingNavigationBar(
                 .pointerInput(itemWidthPx, items.size) {
                     if (itemWidthPx <= 0f) return@pointerInput
                     val maxX = itemWidthPx * (items.size - 1)
-                    detectHorizontalDragGestures(
-                        onDragStart = {
-                            liveDragX = settledX.value
-                            isDragging = true
-                        },
-                        onDragEnd = {
-                            isDragging = false
-                            val targetIndex = (liveDragX / itemWidthPx).roundToInt().coerceIn(0, items.lastIndex)
-                            onSelected(items[targetIndex])
-                        },
-                        onDragCancel = { isDragging = false }
-                    ) { change, dragAmount ->
-                        change.consume()
-                        liveDragX = (liveDragX + dragAmount).coerceIn(0f, maxX)
+                    val slop = viewConfiguration.touchSlop
+                    // Single gesture recognizer for both tap-to-select and
+                    // drag-to-follow. Handling both cases here (instead of
+                    // splitting tap into each item's own clickable) avoids
+                    // a race where a plain tap fires the item's onClick
+                    // *and* this detector's onDragEnd with a stale target,
+                    // which used to make the pill/label flick back to the
+                    // previous tab before landing on the tapped one.
+                    awaitEachGesture {
+                        val down = awaitFirstDown(requireUnconsumed = false)
+                        val downX = down.position.x
+                        var accumulatedDrag = 0f
+                        var dragging = false
+                        liveDragX = settledX.value
+
+                        while (true) {
+                            val event = awaitPointerEvent()
+                            val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                            if (change.changedToUpIgnoreConsumed()) break
+
+                            val deltaX = change.positionChange().x
+                            if (!dragging) {
+                                accumulatedDrag += deltaX
+                                if (abs(accumulatedDrag) > slop) {
+                                    dragging = true
+                                    isDragging = true
+                                }
+                            }
+                            if (dragging) {
+                                liveDragX = (liveDragX + deltaX).coerceIn(0f, maxX)
+                                change.consume()
+                            }
+                        }
+
+                        isDragging = false
+                        val targetIndex = if (dragging) {
+                            (liveDragX / itemWidthPx).roundToInt().coerceIn(0, items.lastIndex)
+                        } else {
+                            (downX / itemWidthPx).toInt().coerceIn(0, items.lastIndex)
+                        }
+                        onSelected(items[targetIndex])
                     }
                 }
         ) {
@@ -189,17 +221,24 @@ private fun NavigationItem(
         animationSpec = tween(180),
         label = "navItemScale"
     )
-    val interactionSource = remember { MutableInteractionSource() }
 
+    // Selection itself is driven entirely by the parent's unified pointer
+    // gesture (see FloatingNavigationBar's pointerInput) so a raw touch
+    // never triggers this and races with the drag detector. `onClick` is
+    // only exposed to accessibility services (TalkBack "double tap to
+    // activate"), which invoke it directly without going through touch
+    // dispatch, so there's no conflict.
     Column(
         modifier = modifier
             .scale(scale)
             .clip(RoundedCornerShape(20.dp))
-            .clickable(
-                interactionSource = interactionSource,
-                indication = LocalIndication.current,
-                onClick = onClick
-            )
+            .semantics {
+                role = Role.Tab
+                onClick {
+                    onClick()
+                    true
+                }
+            }
             .padding(vertical = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(3.dp)
