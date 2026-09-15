@@ -121,12 +121,19 @@
 
     <!-- Theme Studio -->
     <string name="theme_studio_title">Theme Studio</string>
-    <string name="theme_studio_subtitle">Choose an accent color for the whole app</string>
+    <string name="theme_studio_subtitle">Pick an accent color — clock face styles are coming to this same screen next</string>
     <string name="theme_accent_dynamic">Dynamic</string>
+    <string name="theme_accent_dynamic_desc">Follows your wallpaper</string>
     <string name="theme_accent_indigo">Indigo</string>
+    <string name="theme_accent_indigo_desc">Violet • Purple • Deep</string>
     <string name="theme_accent_ocean">Ocean</string>
+    <string name="theme_accent_ocean_desc">Teal • Cyan • Blue</string>
     <string name="theme_accent_emerald">Emerald</string>
+    <string name="theme_accent_emerald_desc">Green • Mint • Forest</string>
     <string name="theme_accent_sunset">Sunset</string>
+    <string name="theme_accent_sunset_desc">Orange • Amber • Gold</string>
     <string name="theme_accent_rose">Rose</string>
+    <string name="theme_accent_rose_desc">Pink • Red • Blush</string>
     <string name="theme_accent_slate">Slate</string>
+    <string name="theme_accent_slate_desc">Gray • Cool • Neutral</string>
 </resources>

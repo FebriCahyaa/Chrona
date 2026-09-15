@@ -5,7 +5,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -117,24 +116,24 @@ fun SettingsScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.extraLarge,
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 12.dp, vertical = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                ThemeAccent.entries.forEach { accent ->
-                    AccentSwatch(
-                        accent = accent,
-                        selected = accent == themeAccent,
-                        onClick = { onThemeAccentChange(accent) }
-                    )
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            ThemeAccent.entries.chunked(2).forEach { rowAccents ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    rowAccents.forEach { accent ->
+                        AccentThemeCard(
+                            accent = accent,
+                            selected = accent == themeAccent,
+                            modifier = Modifier.weight(1f),
+                            onClick = { onThemeAccentChange(accent) }
+                        )
+                    }
+                    // Odd item count: keep the last card from stretching to full width.
+                    if (rowAccents.size == 1) {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
                 }
             }
         }
@@ -206,55 +205,86 @@ private fun SettingRow(
     }
 }
 
-/** One tappable color preset in the Theme Studio row. */
+/**
+ * One selectable accent card in the Theme Studio grid — a swatch icon,
+ * preset name, and a short color description, styled after the reference
+ * mock (rounded card, tinted background, checkmark badge when selected).
+ */
 @Composable
-private fun AccentSwatch(
+private fun AccentThemeCard(
     accent: ThemeAccent,
     selected: Boolean,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     val swatchColor = ThemeEngine.seedColorFor(accent) ?: MaterialTheme.colorScheme.primary
     val onSwatchColor = if (swatchColor.luminance() > 0.5f) Color.Black else Color.White
-    val borderColor by animateColorAsState(
-        targetValue = if (selected) MaterialTheme.colorScheme.onSurface else Color.Transparent,
+
+    val cardBackground by animateColorAsState(
+        targetValue = swatchColor.copy(alpha = if (selected) 0.22f else 0.12f),
         animationSpec = tween(180),
-        label = "accentSwatchBorder"
+        label = "accentCardBackground"
+    )
+    val borderColor by animateColorAsState(
+        targetValue = if (selected) swatchColor else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f),
+        animationSpec = tween(180),
+        label = "accentCardBorder"
     )
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(6.dp),
-        modifier = Modifier
-            .clip(RoundedCornerShape(16.dp))
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(22.dp))
+            .background(cardBackground)
+            .border(
+                width = if (selected) 1.5.dp else 1.dp,
+                color = borderColor,
+                shape = RoundedCornerShape(22.dp)
+            )
             .clickable(onClick = onClick)
-            .padding(8.dp)
+            .padding(16.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(swatchColor)
-                .border(width = 2.dp, color = borderColor, shape = CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            when {
-                accent == ThemeAccent.SYSTEM -> Icon(
-                    imageVector = Icons.Default.AutoAwesome,
-                    contentDescription = null,
-                    tint = onSwatchColor
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(13.dp))
+                    .background(swatchColor),
+                contentAlignment = Alignment.Center
+            ) {
+                if (accent == ThemeAccent.SYSTEM) {
+                    Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = onSwatchColor)
+                }
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    text = stringResource(accent.labelRes()),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold
                 )
-                selected -> Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = null,
-                    tint = onSwatchColor
+                Text(
+                    text = stringResource(accent.descriptionRes()),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
-        Text(
-            text = stringResource(accent.labelRes()),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        if (selected) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .size(22.dp)
+                    .clip(CircleShape)
+                    .background(swatchColor),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = null,
+                    tint = onSwatchColor,
+                    modifier = Modifier.size(14.dp)
+                )
+            }
+        }
     }
 }
 
@@ -266,4 +296,14 @@ private fun ThemeAccent.labelRes(): Int = when (this) {
     ThemeAccent.SUNSET -> R.string.theme_accent_sunset
     ThemeAccent.ROSE -> R.string.theme_accent_rose
     ThemeAccent.SLATE -> R.string.theme_accent_slate
+}
+
+private fun ThemeAccent.descriptionRes(): Int = when (this) {
+    ThemeAccent.SYSTEM -> R.string.theme_accent_dynamic_desc
+    ThemeAccent.INDIGO -> R.string.theme_accent_indigo_desc
+    ThemeAccent.OCEAN -> R.string.theme_accent_ocean_desc
+    ThemeAccent.EMERALD -> R.string.theme_accent_emerald_desc
+    ThemeAccent.SUNSET -> R.string.theme_accent_sunset_desc
+    ThemeAccent.ROSE -> R.string.theme_accent_rose_desc
+    ThemeAccent.SLATE -> R.string.theme_accent_slate_desc
 }
