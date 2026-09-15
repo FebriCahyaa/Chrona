@@ -1,5 +1,9 @@
 package com.febricahyaa.clockapp.alarm
 
+import androidx.core.content.ContextCompat
+import android.os.Build
+import android.content.pm.PackageManager
+import android.Manifest
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
@@ -103,7 +107,22 @@ class AlarmReceiver : BroadcastReceiver() {
             .build()
 
         val manager = NotificationManagerCompat.from(context)
-        runCatching { manager.notify(notificationId(alarmId), notification) }
+
+        val notificationPermissionGranted =
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+
+        if (notificationPermissionGranted) {
+            try {
+                manager.notify(notificationId(alarmId), notification)
+            } catch (_: SecurityException) {
+                // Notification permission may be revoked by the user.
+                // Do not crash the alarm receiver.
+            }
+        }
     }
 
     companion object {
