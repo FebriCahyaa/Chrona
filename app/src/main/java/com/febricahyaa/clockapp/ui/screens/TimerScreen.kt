@@ -47,7 +47,13 @@ fun TimerScreen(
     onReset: () -> Unit,
     onSetPreset: (Int) -> Unit,
 ) {
-    val progress = if (totalSeconds <= 0) 0f else (remainingSeconds.toFloat() / totalSeconds).coerceIn(0f, 1f)
+    val progress = if (totalSeconds <= 0) {
+        0f
+    } else {
+        (remainingSeconds.toFloat() / totalSeconds).coerceIn(0f, 1f)
+    }
+    val accentGradient = LocalAccentGradient.current
+
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
         Spacer(Modifier.height(12.dp))
         ScreenHeader("Timer", "Focus on what matters", actions = { IconCircleButton(Icons.Filled.Refresh, onReset) })
@@ -61,7 +67,15 @@ fun TimerScreen(
                         val inset = stroke / 2f
                         val diameter = size.minDimension - stroke
                         drawArc(MaterialTheme.colorScheme.onSurface.copy(alpha = .08f), -90f, 360f, false, Offset(inset, inset), androidx.compose.ui.geometry.Size(diameter, diameter), style = Stroke(stroke, cap = StrokeCap.Round))
-                        drawArc(LocalAccentGradient.current, -90f, 360f * progress, false, Offset(inset, inset), androidx.compose.ui.geometry.Size(diameter, diameter), style = Stroke(stroke, cap = StrokeCap.Round))
+                        drawArc(
+                            accentGradient,
+                            -90f,
+                            360f * progress,
+                            false,
+                            Offset(inset, inset),
+                            androidx.compose.ui.geometry.Size(diameter, diameter),
+                            style = Stroke(stroke, cap = StrokeCap.Round),
+                        )
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(formatTimer(remainingSeconds), fontSize = 50.sp, fontWeight = FontWeight.Light, letterSpacing = (-1.5).sp)

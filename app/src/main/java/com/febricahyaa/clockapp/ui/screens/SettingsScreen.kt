@@ -3,6 +3,7 @@
 package com.febricahyaa.clockapp.ui.screens
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -110,7 +111,7 @@ fun SettingsSheetContent(
         Spacer(Modifier.height(9.dp))
         var showLegal by rememberSaveable { mutableStateOf(false) }
         Surface(
-            Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(18.dp),
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f),
             onClick = { showLegal = true },

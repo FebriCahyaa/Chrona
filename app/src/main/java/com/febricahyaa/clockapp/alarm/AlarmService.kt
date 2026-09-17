@@ -29,7 +29,7 @@ class AlarmService : Service() {
         }
 
         currentAlarmId = alarmId
-        val label = intent.getStringExtra(AlarmIntentKeys.EXTRA_ALARM_LABEL).orEmpty()
+        val label = intent?.getStringExtra(AlarmIntentKeys.EXTRA_ALARM_LABEL).orEmpty()
         val notification = AlarmNotificationFactory.build(this, alarmId, label)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
