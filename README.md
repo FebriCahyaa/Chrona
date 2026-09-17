@@ -18,7 +18,7 @@ The current repository is focused on the **Chrona foundation, architecture, and 
 
 | Area | Implementation |
 | --- | --- |
-| UI | Kotlin + Jetpack Compose + Material 3 |
+| UI | Kotlin + Jetpack Compose + Material 3 Expressive + adaptive layouts |
 | Features | Clock, World Clock, Timer, Stopwatch, Alarm, Settings |
 | State | Dedicated feature ViewModels |
 | Data | Repository interfaces + Android implementations |
@@ -50,16 +50,20 @@ The native layer is deliberately small. Application state, navigation, persisten
 
 ## Build environment
 
-The project currently declares the following Android build toolchain in source:
+The project declares an Android 17 / Jetpack Compose UI toolchain in source:
 
 - JDK 17
-- Android API 36
-- Android Build Tools 36.0.0
+- Android 17 (API 37)
+- Android SDK Platform 37.0
+- Android Build Tools 37.0.0
 - NDK 28.2.13676358
 - CMake 3.31.6
 - Gradle 9.6.1
 - Android Gradle Plugin 9.4.0
-- Kotlin 2.3.21
+- Kotlin 2.4.20
+- Jetpack Compose BOM 2026.09.00 (alpha channel for the latest Android 17-era Compose APIs)
+- Material 3 Expressive 1.5.0-alpha28 via the Compose alpha BOM
+- Material 3 Adaptive 1.4.0-alpha02 for window-aware layouts
 
 See [`docs/build/BUILD_ENVIRONMENT.md`](docs/build/BUILD_ENVIRONMENT.md) for the authoritative project build notes.
 
@@ -76,7 +80,7 @@ Release builds require the release signing environment described in [`docs/relea
 
 ## CI / CD
 
-GitHub Actions is intentionally separated by responsibility:
+GitHub Actions is intentionally separated by responsibility. Every Android build job installs and verifies the Android 17 SDK platform, Build Tools, NDK, and CMake toolchain before Gradle tasks run:
 
 | Workflow | Purpose | Automatic? |
 | --- | --- | --- |

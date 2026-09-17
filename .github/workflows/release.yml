@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Release tag, for example v0.3.0"
+        description: "Release tag, for example v0.4.0"
         required: true
         type: string
       prerelease:
@@ -24,8 +24,8 @@ concurrency:
 
 env:
   JAVA_VERSION: "17"
-  ANDROID_API_LEVEL: "36"
-  ANDROID_BUILD_TOOLS: "36.0.0"
+  ANDROID_API_LEVEL: "37.0"
+  ANDROID_BUILD_TOOLS: "37.0.0"
   ANDROID_NDK_VERSION: "28.2.13676358"
   ANDROID_CMAKE_VERSION: "3.31.6"
 
@@ -47,14 +47,14 @@ jobs:
           cache: gradle
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
 
       - name: Install Android toolchain
         shell: bash
         run: |
           set -euo pipefail
           yes | sdkmanager --licenses >/dev/null 2>&1 || true
-          sdkmanager --install \
+          sdkmanager --sdk_root="${ANDROID_SDK_ROOT}" --install \
             "platform-tools" \
             "platforms;android-${ANDROID_API_LEVEL}" \
             "build-tools;${ANDROID_BUILD_TOOLS}" \
@@ -133,7 +133,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          chmod +x ./gradlew
+          chmod +x ./gradlew scripts/verify-android17.sh
+          bash scripts/verify-android17.sh
           ./gradlew --no-daemon --stacktrace test lint
 
       - name: Build signed release APK

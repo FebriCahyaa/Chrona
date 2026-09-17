@@ -37,14 +37,15 @@ android {
     }
     namespace = "com.febricahyaa.clockapp"
     compileSdk = 37
+    buildToolsVersion = "37.0.0"
     ndkVersion = "28.2.13676358"
 
     defaultConfig {
         applicationId = "com.febricahyaa.clockapp"
         minSdk = 26
-        targetSdk = 36
-        versionCode = 30
-        versionName = "0.3.0"
+        targetSdk = 37
+        versionCode = 31
+        versionName = "0.4.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
@@ -158,11 +159,11 @@ dependencies {
     constraints { implementation("org.apache.commons:commons-lang3:3.18.0") }
     constraints { implementation("org.bouncycastle:bcpkix-jdk18on:1.84") }
 
-    val composeBom = platform("androidx.compose:compose-bom:2026.09.00")
+    val composeBom = platform("androidx.compose:compose-bom-alpha:2026.09.00")
     implementation(composeBom)
     androidTestImplementation(composeBom)
 
-    implementation("androidx.core:core-ktx:1.18.0")
+    implementation("androidx.core:core-ktx:1.19.0")
     implementation("androidx.annotation:annotation:1.9.1")
     implementation("androidx.activity:activity-compose:1.13.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.10.0")
@@ -172,6 +173,11 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+
+    // Material 3 Expressive / Android 17 UI stack. The alpha BOM is intentional:
+    // it exposes the latest Material 3 Expressive APIs (1.5.0-alpha28) and
+    // Compose 1.13.0-alpha03 as of September 2026.
+    implementation("androidx.compose.material3.adaptive:adaptive:1.4.0-alpha02")
     implementation("androidx.compose.material:material-icons-core")
     implementation("androidx.compose.material:material-icons-extended")
 

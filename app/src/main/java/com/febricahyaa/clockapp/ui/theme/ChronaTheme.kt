@@ -6,13 +6,18 @@ import android.os.Build
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MotionScheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.model.ClockSettings
 import com.febricahyaa.clockapp.model.ThemeAccent
@@ -60,8 +65,14 @@ fun ChronaTheme(settings: ClockSettings, content: @Composable () -> Unit) {
         CompositionLocalProvider(
             LocalAccentGradient provides Brush.linearGradient(listOf(accentStart, accentEnd)),
         ) {
-            MaterialTheme(
+            MaterialExpressiveTheme(
                 colorScheme = colorScheme,
+                motionScheme = MotionScheme.expressive(),
+                shapes = Shapes(
+                    largeIncreased = RoundedCornerShape(32.dp),
+                    extraLargeIncreased = RoundedCornerShape(38.dp),
+                    extraExtraLarge = RoundedCornerShape(44.dp),
+                ),
                 typography = ChronaTypography,
                 content = content,
             )

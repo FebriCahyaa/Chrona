@@ -36,15 +36,16 @@ jobs:
       - name: Prepare SDK packages
         run: |
           yes | sdkmanager --licenses >/dev/null 2>&1 || true
-          sdkmanager --install \
+          sdkmanager --sdk_root="${ANDROID_SDK_ROOT}" --install \
             'platform-tools' \
-            'platforms;android-36' \
-            'build-tools;36.0.0' \
+            'platforms;android-37.0' \
+            'build-tools;37.0.0' \
             'cmake;3.31.6' \
             'ndk;28.2.13676358'
       - name: Validate package files
         run: |
-          chmod +x ./gradlew
+          chmod +x ./gradlew scripts/verify-android17.sh
+          bash scripts/verify-android17.sh
           ./gradlew --no-daemon --stacktrace tasks
           test -f gradle/wrapper/gradle-wrapper.properties
           if [ -f gradle/libs.versions.toml ]; then echo 'Version catalog present'; fi

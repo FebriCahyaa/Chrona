@@ -23,6 +23,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
+import androidx.window.core.layout.WindowWidthSizeClass
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessAlarm
 import androidx.compose.material.icons.filled.AccessTime
@@ -85,6 +87,8 @@ fun HomeScreen(
     var clockDisplayMode by rememberSaveable { mutableStateOf(ClockDisplayMode.DIGITAL) }
 
     val next = nextAlarm(alarms, now)
+    val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
+    val isWideWindow = windowAdaptiveInfo.windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED
     val dateText = buildDateText(now, locale)
     val alarmTime = next?.time?.let {
         val hour = it.hour % 12
@@ -101,99 +105,174 @@ fun HomeScreen(
             Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 18.dp, vertical = 18.dp),
+                .padding(horizontal = if (isWideWindow) 26.dp else 18.dp, vertical = 18.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             BentoHeader(themeMode, onThemeModeChange, onOpenSettings)
 
-            HybridBentoCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(if (maxWidth < 390.dp) 350.dp else 372.dp),
-                themeMode = themeMode,
-            ) {
-                ClockHero(
-                    now = now,
-                    dateText = dateText,
-                    displayMode = clockDisplayMode,
-                    use24HourFormat = use24HourFormat,
-                    showSeconds = showSeconds,
-                    onToggleDisplay = {
-                        clockDisplayMode = if (clockDisplayMode == ClockDisplayMode.DIGITAL) ClockDisplayMode.ANALOG else ClockDisplayMode.DIGITAL
-                    },
-                )
-            }
-
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                TimeActionCard(
-                    modifier = Modifier.weight(1f),
-                    themeMode = themeMode,
-                    icon = Icons.Filled.AccessAlarm,
-                    eyebrow = if (next == null) "ALARM" else "NEXT ALARM",
-                    title = "Alarm",
-                    value = alarmTime,
-                    meta = alarmMeta,
-                    onClick = { onNavigate(AppDestination.ALARM) },
-                )
-                TimeActionCard(
-                    modifier = Modifier.weight(1f),
-                    themeMode = themeMode,
-                    icon = Icons.Filled.Timer,
-                    eyebrow = if (timerRunning) "LIVE" else "TIMER",
-                    title = "Timer",
-                    value = formatBentoTimer(timerRemainingSeconds),
-                    meta = if (timerRunning) "Counting down" else "Ready when you are",
-                    onClick = { onNavigate(AppDestination.TIMER) },
-                )
-            }
-
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                UtilityCard(
-                    modifier = Modifier.weight(1f),
-                    themeMode = themeMode,
-                    icon = Icons.Filled.Public,
-                    title = "World Clock",
-                    subtitle = "Cities & time zones",
-                    onClick = { onNavigate(AppDestination.WORLD) },
-                )
-                UtilityCard(
-                    modifier = Modifier.weight(1f),
-                    themeMode = themeMode,
-                    icon = Icons.Filled.AccessTime,
-                    title = "Stopwatch",
-                    subtitle = "Precise elapsed time",
-                    onClick = { onNavigate(AppDestination.STOPWATCH) },
-                )
-            }
-
-            HybridBentoCard(Modifier.fillMaxWidth(), themeMode = themeMode) {
+            if (isWideWindow) {
                 Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 18.dp, vertical = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(18.dp),
+                    verticalAlignment = Alignment.Top,
                 ) {
-                    Box(
-                        Modifier
-                            .size(44.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
-                        contentAlignment = Alignment.Center,
+                    HybridBentoCard(
+                        modifier = Modifier
+                            .weight(1.32f)
+                            .height(430.dp),
+                        themeMode = themeMode,
                     ) {
-                        Icon(Icons.Filled.AutoAwesome, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-                    }
-                    Spacer(Modifier.size(12.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text("Built around your time", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
-                        Spacer(Modifier.height(2.dp))
-                        Text(
-                            "Glass depth, dynamic color, and tactile motion stay quiet so the clock stays in focus.",
-                            fontSize = 11.sp,
-                            lineHeight = 15.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        ClockHero(
+                            now = now,
+                            dateText = dateText,
+                            displayMode = clockDisplayMode,
+                            use24HourFormat = use24HourFormat,
+                            showSeconds = showSeconds,
+                            onToggleDisplay = {
+                                clockDisplayMode = if (clockDisplayMode == ClockDisplayMode.DIGITAL) ClockDisplayMode.ANALOG else ClockDisplayMode.DIGITAL
+                            },
                         )
                     }
+
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                            TimeActionCard(
+                                modifier = Modifier.weight(1f),
+                                themeMode = themeMode,
+                                icon = Icons.Filled.AccessAlarm,
+                                eyebrow = if (next == null) "ALARM" else "NEXT ALARM",
+                                title = "Alarm",
+                                value = alarmTime,
+                                meta = alarmMeta,
+                                onClick = { onNavigate(AppDestination.ALARM) },
+                            )
+                            TimeActionCard(
+                                modifier = Modifier.weight(1f),
+                                themeMode = themeMode,
+                                icon = Icons.Filled.Timer,
+                                eyebrow = if (timerRunning) "LIVE" else "TIMER",
+                                title = "Timer",
+                                value = formatBentoTimer(timerRemainingSeconds),
+                                meta = if (timerRunning) "Counting down" else "Ready when you are",
+                                onClick = { onNavigate(AppDestination.TIMER) },
+                            )
+                        }
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                            UtilityCard(
+                                modifier = Modifier.weight(1f),
+                                themeMode = themeMode,
+                                icon = Icons.Filled.Public,
+                                title = "World Clock",
+                                subtitle = "Cities & time zones",
+                                onClick = { onNavigate(AppDestination.WORLD) },
+                            )
+                            UtilityCard(
+                                modifier = Modifier.weight(1f),
+                                themeMode = themeMode,
+                                icon = Icons.Filled.AccessTime,
+                                title = "Stopwatch",
+                                subtitle = "Precise elapsed time",
+                                onClick = { onNavigate(AppDestination.STOPWATCH) },
+                            )
+                        }
+                        BentoInfoCard(themeMode)
+                    }
                 }
+            } else {
+                HybridBentoCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(if (maxWidth < 390.dp) 350.dp else 372.dp),
+                    themeMode = themeMode,
+                ) {
+                    ClockHero(
+                        now = now,
+                        dateText = dateText,
+                        displayMode = clockDisplayMode,
+                        use24HourFormat = use24HourFormat,
+                        showSeconds = showSeconds,
+                        onToggleDisplay = {
+                            clockDisplayMode = if (clockDisplayMode == ClockDisplayMode.DIGITAL) ClockDisplayMode.ANALOG else ClockDisplayMode.DIGITAL
+                        },
+                    )
+                }
+
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                    TimeActionCard(
+                        modifier = Modifier.weight(1f),
+                        themeMode = themeMode,
+                        icon = Icons.Filled.AccessAlarm,
+                        eyebrow = if (next == null) "ALARM" else "NEXT ALARM",
+                        title = "Alarm",
+                        value = alarmTime,
+                        meta = alarmMeta,
+                        onClick = { onNavigate(AppDestination.ALARM) },
+                    )
+                    TimeActionCard(
+                        modifier = Modifier.weight(1f),
+                        themeMode = themeMode,
+                        icon = Icons.Filled.Timer,
+                        eyebrow = if (timerRunning) "LIVE" else "TIMER",
+                        title = "Timer",
+                        value = formatBentoTimer(timerRemainingSeconds),
+                        meta = if (timerRunning) "Counting down" else "Ready when you are",
+                        onClick = { onNavigate(AppDestination.TIMER) },
+                    )
+                }
+
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                    UtilityCard(
+                        modifier = Modifier.weight(1f),
+                        themeMode = themeMode,
+                        icon = Icons.Filled.Public,
+                        title = "World Clock",
+                        subtitle = "Cities & time zones",
+                        onClick = { onNavigate(AppDestination.WORLD) },
+                    )
+                    UtilityCard(
+                        modifier = Modifier.weight(1f),
+                        themeMode = themeMode,
+                        icon = Icons.Filled.AccessTime,
+                        title = "Stopwatch",
+                        subtitle = "Precise elapsed time",
+                        onClick = { onNavigate(AppDestination.STOPWATCH) },
+                    )
+                }
+
+                BentoInfoCard(themeMode)
+            }
+        }
+    }
+}
+
+@Composable
+private fun BentoInfoCard(themeMode: AppThemeMode) {
+    HybridBentoCard(Modifier.fillMaxWidth(), themeMode = themeMode) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 18.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(Icons.Filled.AutoAwesome, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+            }
+            Spacer(Modifier.size(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text("Built around your time", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    "Material 3 Expressive motion, dynamic color, and glass depth stay quiet so the clock stays in focus.",
+                    fontSize = 11.sp,
+                    lineHeight = 15.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }
