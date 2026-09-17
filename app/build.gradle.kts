@@ -158,7 +158,7 @@ dependencies {
     constraints { implementation("org.apache.commons:commons-lang3:3.18.0") }
     constraints { implementation("org.bouncycastle:bcpkix-jdk18on:1.84") }
 
-    val composeBom = platform("androidx.compose:compose-bom:2025.08.00")
+    val composeBom = platform("androidx.compose:compose-bom:2026.09.00")
     implementation(composeBom)
     androidTestImplementation(composeBom)
 
