@@ -29,7 +29,10 @@ jobs:
           java-version: '17'
           cache: gradle
       - uses: gradle/actions/setup-gradle@v6
-      - uses: android-actions/setup-android@v3
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: ''
       - name: Prepare SDK packages
         run: |
           yes | sdkmanager --licenses >/dev/null 2>&1 || true
