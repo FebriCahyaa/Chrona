@@ -1,3 +1,5 @@
+/* Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. */
+
 package com.febricahyaa.clockapp.command
 
 object CommandParser {
@@ -6,7 +8,8 @@ object CommandParser {
 
         return when (normalized) {
             "" -> ClockCommand.Empty
-            "clock", "world", "worldclock", "home" -> ClockCommand.ClockView
+            "clock", "home" -> ClockCommand.ClockView
+            "world", "worldclock" -> ClockCommand.WorldClock
             "alarm", "alarms" -> ClockCommand.Alarm
             "timer" -> ClockCommand.Timer
             "stopwatch" -> ClockCommand.Stopwatch

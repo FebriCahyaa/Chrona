@@ -1,9 +1,33 @@
+/* Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. */
+
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
 }
+
+// Release signing is intentionally supplied by the CI environment rather than
+// checked into the repository. Debug/local builds do not require release keys.
+val releaseKeystorePath = providers.environmentVariable("CHRONA_KEYSTORE_PATH")
+    .orNull
+    ?.takeIf { it.isNotBlank() }
+val releaseKeystorePassword = providers.environmentVariable("CHRONA_KEYSTORE_PASSWORD")
+    .orNull
+    ?.takeIf { it.isNotBlank() }
+val releaseKeyAlias = providers.environmentVariable("CHRONA_KEY_ALIAS")
+    .orNull
+    ?.takeIf { it.isNotBlank() }
+val releaseKeyPassword = providers.environmentVariable("CHRONA_KEY_PASSWORD")
+    .orNull
+    ?.takeIf { it.isNotBlank() }
+
+val releaseSigningConfigured = listOf(
+    releaseKeystorePath,
+    releaseKeystorePassword,
+    releaseKeyAlias,
+    releaseKeyPassword,
+).all { !it.isNullOrBlank() }
 
 android {
     namespace = "com.febricahyaa.clockapp"
@@ -25,8 +49,26 @@ android {
         }
     }
 
+    signingConfigs {
+        create("release") {
+            if (releaseSigningConfigured) {
+                storeFile = file(requireNotNull(releaseKeystorePath))
+                storePassword = requireNotNull(releaseKeystorePassword)
+                keyAlias = requireNotNull(releaseKeyAlias)
+                keyPassword = requireNotNull(releaseKeyPassword)
+            }
+        }
+    }
+
     buildTypes {
         release {
+            // Keep the build configuration loadable for Debug/Test tasks. The
+            // dedicated verification task below fails clearly when Release is
+            // requested without the required CI signing environment.
+            if (releaseSigningConfigured) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
@@ -65,6 +107,35 @@ android {
     }
 }
 
+// This check is only attached to Release packaging tasks so that ordinary
+// Debug/Test/Lint jobs remain independent of the private release keystore.
+val verifyReleaseSigning = tasks.register("verifyReleaseSigning") {
+    group = "verification"
+    description = "Verify that the required Chrona release signing environment is configured."
+
+    doLast {
+        if (!releaseSigningConfigured) {
+            throw GradleException(
+                "Release signing is not configured. Set CHRONA_KEYSTORE_PATH, " +
+                    "CHRONA_KEYSTORE_PASSWORD, CHRONA_KEY_ALIAS, and CHRONA_KEY_PASSWORD."
+            )
+        }
+
+        val keystore = file(requireNotNull(releaseKeystorePath))
+        if (!keystore.isFile) {
+            throw GradleException("Release keystore does not exist: ${keystore.absolutePath}")
+        }
+    }
+}
+
+tasks.matching {
+    it.name == "assembleRelease" ||
+        it.name == "bundleRelease" ||
+        it.name == "packageRelease"
+}.configureEach {
+    dependsOn(verifyReleaseSigning)
+}
+
 kotlin {
     jvmToolchain(17)
     compilerOptions {
@@ -83,6 +154,8 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.13.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.10.0")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.10.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.10.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")

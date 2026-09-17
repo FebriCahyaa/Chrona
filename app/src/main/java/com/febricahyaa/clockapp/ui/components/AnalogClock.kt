@@ -1,10 +1,11 @@
+/* Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. */
+
 package com.febricahyaa.clockapp.ui.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -25,7 +26,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.febricahyaa.clockapp.core.NativeClock
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.coroutineScope
 
 private data class AnalogAngles(val hour: Float, val minute: Float, val second: Float)
 

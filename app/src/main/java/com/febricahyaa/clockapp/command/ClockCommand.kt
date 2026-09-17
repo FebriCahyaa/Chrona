@@ -1,7 +1,10 @@
+/* Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. */
+
 package com.febricahyaa.clockapp.command
 
 sealed interface ClockCommand {
     data object ClockView : ClockCommand
+    data object WorldClock : ClockCommand
     data object Alarm : ClockCommand
     data object Timer : ClockCommand
     data object Stopwatch : ClockCommand

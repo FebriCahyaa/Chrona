@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+
 cmake_minimum_required(VERSION 3.22.1)
 project(chrona_clock LANGUAGES CXX)
 

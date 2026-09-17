@@ -1,3 +1,5 @@
+/* Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. */
+
 package com.febricahyaa.clockapp.ui.screens
 
 import androidx.compose.foundation.Canvas
@@ -23,7 +25,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -43,6 +44,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.febricahyaa.clockapp.core.ChronaTimeEngine
 import com.febricahyaa.clockapp.model.TimeZoneCatalog
 import com.febricahyaa.clockapp.model.WorldClockItem
 import com.febricahyaa.clockapp.ui.components.ChronaCard
@@ -51,8 +53,6 @@ import com.febricahyaa.clockapp.ui.components.IconCircleButton
 import com.febricahyaa.clockapp.ui.components.ScreenHeader
 import com.febricahyaa.clockapp.ui.components.rememberZonedNow
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 import kotlin.math.abs
 
 private fun regionOf(zoneId: String): String = when {
@@ -68,6 +68,7 @@ private fun regionOf(zoneId: String): String = when {
 fun WorldClockScreen(
     items: List<WorldClockItem>,
     favorites: Set<String>,
+    use24HourFormat: Boolean,
     glass: Boolean,
     onAdd: (WorldClockItem) -> Unit,
     onRemove: (WorldClockItem) -> Unit,
@@ -80,7 +81,6 @@ fun WorldClockScreen(
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
         Spacer(Modifier.height(12.dp))
         ScreenHeader("World Clock", "Different places, same moment", actions = {
-            IconCircleButton(Icons.Filled.Search, {})
             IconCircleButton(Icons.Filled.Add, { showAdd = true }, active = true, contentDescription = "Add city")
         })
         Spacer(Modifier.height(14.dp))
@@ -101,7 +101,14 @@ fun WorldClockScreen(
         } else {
             LazyColumn(Modifier.weight(1f).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 items(visible, key = { it.id }) { item ->
-                    WorldClockCard(item, favorites.contains(item.city), glass, onRemove = { onRemove(item) }, onToggleFavorite = { onToggleFavorite(item.city) })
+                    WorldClockCard(
+                        item = item,
+                        favorite = favorites.contains(item.city),
+                        use24HourFormat = use24HourFormat,
+                        glass = glass,
+                        onRemove = { onRemove(item) },
+                        onToggleFavorite = { onToggleFavorite(item.city) },
+                    )
                 }
                 item { Spacer(Modifier.height(18.dp)) }
             }
@@ -116,12 +123,21 @@ fun WorldClockScreen(
 }
 
 @Composable
-private fun WorldClockCard(item: WorldClockItem, favorite: Boolean, glass: Boolean, onRemove: () -> Unit, onToggleFavorite: () -> Unit) {
+private fun WorldClockCard(
+    item: WorldClockItem,
+    favorite: Boolean,
+    use24HourFormat: Boolean,
+    glass: Boolean,
+    onRemove: () -> Unit,
+    onToggleFavorite: () -> Unit,
+) {
     val now = rememberZonedNow(ZoneId.of(item.zoneId))
-    val time = now.format(DateTimeFormatter.ofPattern("HH:mm"))
-    val date = now.format(DateTimeFormatter.ofPattern("EEE, MMM d", Locale.ENGLISH))
-    val homeHour = java.time.ZonedDateTime.now().hour
-    val delta = now.hour - homeHour
+    val localNow = rememberZonedNow()
+    val epochMillis = now.toInstant().toEpochMilli()
+    val time = ChronaTimeEngine.shortTime(epochMillis, now.zone, use24HourFormat)
+    val date = ChronaTimeEngine.date(epochMillis, now.zone)
+    val deltaSeconds = now.offset.totalSeconds - localNow.offset.totalSeconds
+    val delta = formatOffsetDelta(deltaSeconds)
     ChronaCard(Modifier.fillMaxWidth(), glass = glass) {
         Row(Modifier.fillMaxWidth().padding(13.dp), verticalAlignment = Alignment.CenterVertically) {
             CityThumbnail(item.city, Modifier.size(62.dp))
@@ -129,12 +145,12 @@ private fun WorldClockCard(item: WorldClockItem, favorite: Boolean, glass: Boole
             Column(Modifier.weight(1f)) {
                 Text(item.city, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                 Text(countryOf(item.zoneId), fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("UTC${now.offset.id.removePrefix("Z")}", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(ChronaTimeEngine.utcOffset(now.zone, epochMillis), fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Column(horizontalAlignment = Alignment.End) {
                 Text(time, fontSize = 24.sp, fontWeight = FontWeight.Light)
                 Text(date, fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(if (delta == 0) "Same time" else "${if (delta > 0) "+" else ""}$delta h", fontSize = 9.sp, color = MaterialTheme.colorScheme.primary)
+                Text(delta, fontSize = 9.sp, color = MaterialTheme.colorScheme.primary)
             }
             IconCircleButton(
                 if (favorite) Icons.Filled.Star else Icons.Filled.StarBorder,
@@ -143,6 +159,22 @@ private fun WorldClockCard(item: WorldClockItem, favorite: Boolean, glass: Boole
                 active = favorite,
                 contentDescription = "Favorite",
             )
+        }
+    }
+}
+
+private fun formatOffsetDelta(totalSeconds: Int): String {
+    if (totalSeconds == 0) return "Same time"
+    val sign = if (totalSeconds > 0) "+" else "-"
+    val absolute = kotlin.math.abs(totalSeconds)
+    val hours = absolute / 3_600
+    val minutes = (absolute % 3_600) / 60
+    return buildString {
+        append(sign)
+        if (hours > 0) append(hours).append("h")
+        if (minutes > 0) {
+            if (hours > 0) append(" ")
+            append(minutes).append("m")
         }
     }
 }

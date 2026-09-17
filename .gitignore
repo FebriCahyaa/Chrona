@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+
+# Android / Gradle generated files
 *.iml
 .gradle/
 .idea/
@@ -8,3 +11,13 @@ app/build/
 .externalNativeBuild/
 .cxx/
 *.log
+
+# Release signing material (never commit)
+*.jks
+*.keystore
+*.p12
+keystore.properties
+
+# Local release outputs / CI scratch files
+release/
+release-changelog.md

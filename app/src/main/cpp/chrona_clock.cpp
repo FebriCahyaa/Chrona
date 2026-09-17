@@ -1,3 +1,5 @@
+/* Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. */
+
 #include <jni.h>
 #include <cstdint>
 #include <cstring>
@@ -120,10 +122,12 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void*) {
     const jclass bridge_class = env->FindClass(kBridgeClass);
     if (bridge_class == nullptr) return JNI_ERR;
 
-    const jint result = env->RegisterNatives(
+    const jint clock_result = env->RegisterNatives(
             bridge_class,
             kMethods,
             static_cast<jint>(sizeof(kMethods) / sizeof(kMethods[0])));
     env->DeleteLocalRef(bridge_class);
-    return result == JNI_OK ? JNI_VERSION_1_6 : JNI_ERR;
+    if (clock_result != JNI_OK) return JNI_ERR;
+
+    return JNI_VERSION_1_6;
 }

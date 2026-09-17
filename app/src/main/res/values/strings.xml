@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
 <resources>
     <string name="app_name">Chrona</string>
 
@@ -39,6 +40,7 @@
     <string name="command_bar_close">Close command bar</string>
     <string name="command_bar_collapsed_hint">Quick command…</string>
     <string name="command_feedback_clock">World clock opened.</string>
+    <string name="command_feedback_world">World clock opened.</string>
     <string name="command_feedback_alarm">Alarm opened.</string>
     <string name="command_feedback_timer">Timer opened.</string>
     <string name="command_feedback_stopwatch">Stopwatch opened.</string>
@@ -47,7 +49,7 @@
     <string name="command_feedback_settings">Settings opened.</string>
     <string name="command_feedback_format_12">12-hour format selected.</string>
     <string name="command_feedback_format_24">24-hour format selected.</string>
-    <string name="command_feedback_help">Available commands: clock, alarm, timer, stopwatch, dark, light, settings, 12, 24, reset, help.</string>
+    <string name="command_feedback_help">Available commands: clock, world, alarm, timer, stopwatch, dark, light, settings, 12, 24, reset, help.</string>
     <string name="command_feedback_empty">Enter a command.</string>
     <string name="command_feedback_reset">Settings reset.</string>
     <string name="command_feedback_unknown">Unknown command: %1$s</string>
@@ -98,6 +100,11 @@
     <string name="timer_action_pause">Pause</string>
     <string name="timer_action_resume">Resume</string>
     <string name="timer_action_reset">Reset</string>
+    <string name="timer_notification_channel_name">Timers</string>
+    <string name="timer_notification_channel_description">Notifications shown when a timer finishes</string>
+    <string name="timer_notification_title">Timer finished</string>
+    <string name="timer_notification_body">Your countdown has ended.</string>
+    <string name="timer_notification_dismiss">Dismiss</string>
 
     <!-- Stopwatch screen -->
     <string name="stopwatch_screen_title">Stopwatch</string>

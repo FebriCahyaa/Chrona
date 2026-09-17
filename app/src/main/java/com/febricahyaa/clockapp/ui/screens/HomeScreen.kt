@@ -1,3 +1,5 @@
+/* Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. */
+
 package com.febricahyaa.clockapp.ui.screens
 
 import androidx.compose.foundation.BorderStroke
@@ -18,13 +20,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.AvTimer
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.HourglassTop
 import androidx.compose.material.icons.filled.NightsStay
 import androidx.compose.material.icons.filled.Public
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.WbTwilight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -39,10 +40,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.febricahyaa.clockapp.command.ClockCommand
 import com.febricahyaa.clockapp.model.AlarmItem
 import com.febricahyaa.clockapp.navigation.AppDestination
 import com.febricahyaa.clockapp.ui.components.ChronaCard
 import com.febricahyaa.clockapp.ui.components.ClockDisplay
+import com.febricahyaa.clockapp.ui.components.CommandBar
 import com.febricahyaa.clockapp.ui.components.GlassPill
 import com.febricahyaa.clockapp.ui.components.GradientIconBox
 import com.febricahyaa.clockapp.ui.components.IconCircleButton
@@ -63,6 +66,7 @@ fun HomeScreen(
     onNavigate: (AppDestination) -> Unit,
     onOpenNightstand: () -> Unit,
     onOpenSettings: () -> Unit,
+    onCommand: (ClockCommand) -> Unit,
 ) {
     val now = rememberZonedNow()
     val nextAlarm = alarms.filter { it.enabled }.minByOrNull { it.time }
@@ -83,7 +87,7 @@ fun HomeScreen(
                 Text("Chrona", style = MaterialTheme.typography.headlineLarge)
                 Text(greeting, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            IconCircleButton(Icons.Filled.Search, {}, contentDescription = "Search")
+            CommandBar(onCommand = onCommand)
             Spacer(Modifier.size(8.dp))
             IconCircleButton(Icons.Filled.Settings, onOpenSettings, contentDescription = "Settings")
         }
@@ -91,7 +95,8 @@ fun HomeScreen(
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Row(horizontalArrangement = Arrangement.spacedBy(7.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(8.dp).clip(androidx.compose.foundation.shape.CircleShape).background(MaterialTheme.colorScheme.primary))
-                Text("Jakarta, Indonesia", fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                Text("Local timezone", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(now.zone.id, fontSize = 12.sp, fontWeight = FontWeight.Medium)
             }
             Text("UTC${now.offset.id.removePrefix("Z")}", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -117,8 +122,13 @@ fun HomeScreen(
                     ClockDisplay(use24HourFormat, showSeconds, lightContent = false)
                     Spacer(Modifier.height(18.dp))
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
-                        StatusCard(Icons.Filled.WbTwilight, "Sunset", "17:52", Modifier.weight(1f))
-                        StatusCard(Icons.Filled.Cloud, "Weather", "28°C", Modifier.weight(1f))
+                        StatusCard(
+                            Icons.Filled.CalendarToday,
+                            "Date",
+                            now.format(DateTimeFormatter.ofPattern("EEE, dd MMM", java.util.Locale.getDefault())),
+                            Modifier.weight(1f),
+                        )
+                        StatusCard(Icons.Filled.Cloud, "Timezone", now.zone.id, Modifier.weight(1f))
                     }
                 }
             }

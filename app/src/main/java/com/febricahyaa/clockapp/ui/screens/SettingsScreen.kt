@@ -1,3 +1,5 @@
+/* Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. */
+
 package com.febricahyaa.clockapp.ui.screens
 
 import androidx.compose.foundation.BorderStroke
@@ -16,6 +18,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Icon
@@ -24,6 +28,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -97,6 +105,28 @@ fun SettingsSheetContent(
         Spacer(Modifier.height(18.dp))
         PreferenceRow("24-hour format", "Switch to 12-hour AM/PM when disabled", use24HourFormat, onFormatChange)
         PreferenceRow("Show seconds", "Keep the clock minimal when disabled", settings.showSeconds, onShowSecondsChange)
+        Spacer(Modifier.height(18.dp))
+        SectionTitle(Icons.Filled.Gavel, "Tentang")
+        Spacer(Modifier.height(9.dp))
+        var showLegal by rememberSaveable { mutableStateOf(false) }
+        Surface(
+            Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(18.dp),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f),
+            onClick = { showLegal = true },
+        ) {
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("Legal & Pengatur", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f))
+            }
+        }
+        if (showLegal) {
+            LegalDialog(onDismiss = { showLegal = false })
+        }
     }
 }
 

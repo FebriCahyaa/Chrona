@@ -1,33 +1,35 @@
-## 0.5.0
-
-### Native Engine
-- Expanded the C++ core into a dedicated Chrona native time engine.
-- Added monotonic timing for timer and stopwatch accuracy.
-- Added solar sunrise/sunset calculations.
-- Added moon phase and illumination calculations.
-- Added cubic Bezier and spring interpolation primitives for future motion design.
-- Added Java JNI APIs and a Kotlin facade while preserving the existing Android architecture.
-- Kept CI workflows and SDK/toolchain configuration unchanged.
+<!--
+Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+-->
 
 # Changelog
 
-## 0.3.0 — Chrona UI / Native Foundation
+Chrona release notes are evidence-based. Completed entries describe changes that exist in the repository source; build and release claims are added only after the corresponding CI gates succeed.
 
-### Added
-- Material 3 Expressive-inspired live analog clock on the main page.
-- Lifecycle-aware 1 Hz clock ticker aligned to second boundaries.
-- C++20 native clock-angle and timer math through a Java JNI boundary.
-- Pure Java fallback clock math and JVM tests.
-- Adaptive icon with explicit background, foreground and Android 13+ monochrome layers.
-- Home-screen clock widget using `TextClock` to avoid a per-second app wake-up loop.
-- GitHub Actions quality, build, dependency review, dependency submission and CodeQL workflows.
-- Dependabot configuration plus issue templates.
+## Unreleased — Foundation / Build System
 
-### Changed
-- Build upgraded to AGP 9.4.0, Gradle 9.6.1, compile/target SDK 37 and NDK r30 LTS.
-- Digital clock and shared time state now suspend when the Activity is not RESUMED.
-- Rust timing prototype replaced by the requested Java/C++ architecture.
+### 🏗️ Foundation
 
-### Design intent
-- Preserve the Chrona identity: warm accent, dark depth, glass-aware surfaces and strong time hierarchy.
-- Keep the launcher icon static because standard Android launchers do not expose a continuous per-second app-icon rendering API.
+- Added `AlarmService` so alarm playback and foreground lifecycle no longer depend on a `BroadcastReceiver` remaining alive.
+- Added `AlarmStateManager` for explicit one-shot disable and repeating-alarm rescheduling transitions.
+- Extended alarm recovery to boot, locale, time, timezone, package replacement, and exact-alarm permission-state changes.
+- Added persistent Timer state and a dedicated timer scheduler/service path.
+- Added persistent Stopwatch state and recovery-safe elapsed-time checkpoints.
+- Persisted World Clock favorites alongside the user's saved city list.
+- Extracted alarm trigger-time calculation into a testable `AlarmTimeCalculator`.
+
+### ⚙️ Build System
+
+- Kept Debug, test, lint, native, and Release responsibilities separated in GitHub Actions.
+- Release signing remains isolated to the `release` GitHub Environment and is not stored in the repository.
+- Release artifacts are designed to be verified with `apksigner` and accompanied by a SHA-256 checksum before publication.
+
+### 🔐 Security
+
+- Release keystore material remains outside the checked-out repository and is supplied through GitHub Environment Secrets.
+- No production secret is introduced into the new alarm/timer/stopwatch lifecycle code.
+
+### ⚠️ Known Issues
+
+- Full Android compilation and device-level lifecycle testing still require a networked Android build host.
+- Physical-device validation is still required for lock-screen alarm presentation, ringtone behavior, vendor background restrictions, and reboot/time-change edge cases.

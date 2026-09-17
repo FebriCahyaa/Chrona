@@ -1,8 +1,11 @@
+/* Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. */
+
 package com.febricahyaa.clockapp.alarm
 
 import android.app.KeyguardManager
 import android.os.Build
 import android.os.Bundle
+import android.content.Intent
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -32,7 +35,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.febricahyaa.clockapp.ClockApplication
 import com.febricahyaa.clockapp.R
+import com.febricahyaa.clockapp.core.config.AppDefaults
+import com.febricahyaa.clockapp.di.AppContainer
 
 /**
  * Full-screen "alarm is ringing" UI, launched over the lock screen by the
@@ -40,12 +46,15 @@ import com.febricahyaa.clockapp.R
  */
 class AlarmRingActivity : ComponentActivity() {
 
+    private val container: AppContainer
+        get() = (application as ClockApplication).container
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setUpLockScreenVisibility()
 
-        val alarmId = intent.getLongExtra(AlarmScheduler.EXTRA_ALARM_ID, -1L)
-        val label = intent.getStringExtra(AlarmScheduler.EXTRA_ALARM_LABEL).orEmpty()
+        val alarmId = intent.getLongExtra(AlarmIntentKeys.EXTRA_ALARM_ID, -1L)
+        val label = intent.getStringExtra(AlarmIntentKeys.EXTRA_ALARM_LABEL).orEmpty()
 
         setContent {
             MaterialTheme(colorScheme = darkColorScheme()) {
@@ -53,9 +62,10 @@ class AlarmRingActivity : ComponentActivity() {
                     label = label,
                     onDismiss = { finishAlarm(alarmId) },
                     onSnooze = {
-                        AlarmSoundPlayer.stop()
+                        container.alarmSoundPlayer.stop()
+                        stopService(Intent(this, AlarmService::class.java))
                         AlarmReceiver.cancelNotification(this, alarmId)
-                        AlarmScheduler.scheduleSnooze(this, alarmId, label, AlarmActionReceiver.SNOOZE_MINUTES)
+                        container.alarmScheduler.scheduleSnooze(alarmId, label, AppDefaults.SNOOZE_MINUTES)
                         finish()
                     }
                 )
@@ -64,7 +74,8 @@ class AlarmRingActivity : ComponentActivity() {
     }
 
     private fun finishAlarm(alarmId: Long) {
-        AlarmSoundPlayer.stop()
+        container.alarmSoundPlayer.stop()
+        stopService(Intent(this, AlarmService::class.java))
         AlarmReceiver.cancelNotification(this, alarmId)
         finish()
     }

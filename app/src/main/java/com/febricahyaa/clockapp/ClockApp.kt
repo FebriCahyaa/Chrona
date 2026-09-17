@@ -1,10 +1,15 @@
+/* Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. */
+
 package com.febricahyaa.clockapp
 
 import android.Manifest
+import android.app.AlarmManager
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,32 +22,20 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import com.febricahyaa.clockapp.alarm.AlarmScheduler
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.febricahyaa.clockapp.command.ClockCommand
-import com.febricahyaa.clockapp.data.AlarmStore
-import com.febricahyaa.clockapp.data.SettingsStore
-import com.febricahyaa.clockapp.data.WorldClockStore
-import com.febricahyaa.clockapp.model.AlarmItem
+import com.febricahyaa.clockapp.di.AppViewModelFactory
 import com.febricahyaa.clockapp.model.AppThemeMode
-import com.febricahyaa.clockapp.model.ClockSettings
-import com.febricahyaa.clockapp.model.WorldClockItem
 import com.febricahyaa.clockapp.navigation.AppDestination
 import com.febricahyaa.clockapp.ui.components.ChronaBackdrop
 import com.febricahyaa.clockapp.ui.components.FloatingNavigationBar
@@ -54,167 +47,137 @@ import com.febricahyaa.clockapp.ui.screens.StopwatchScreen
 import com.febricahyaa.clockapp.ui.screens.TimerScreen
 import com.febricahyaa.clockapp.ui.screens.WorldClockScreen
 import com.febricahyaa.clockapp.ui.theme.ChronaTheme
-import com.febricahyaa.clockapp.core.NativeClock
-import kotlinx.coroutines.delay
+import com.febricahyaa.clockapp.ui.viewmodel.AlarmViewModel
+import com.febricahyaa.clockapp.ui.viewmodel.SettingsViewModel
+import com.febricahyaa.clockapp.ui.viewmodel.StopwatchViewModel
+import com.febricahyaa.clockapp.ui.viewmodel.TimerViewModel
+import com.febricahyaa.clockapp.ui.viewmodel.WorldClockViewModel
 
+/**
+ * Composition root of the Compose UI.
+ *
+ * This function used to own every piece of app state directly (settings,
+ * alarms, world clocks, timer, stopwatch) with `remember`/`LaunchedEffect`,
+ * making it a ~240-line God Composable that mixed persistence, AlarmManager
+ * scheduling, and countdown-loop math with pure UI composition.
+ *
+ * All of that now lives in dedicated ViewModels (see
+ * [com.febricahyaa.clockapp.ui.viewmodel]), constructed through
+ * [AppViewModelFactory] from the app-wide [com.febricahyaa.clockapp.di.AppContainer].
+ * This function's only remaining responsibility is Single: wire ViewModel
+ * state to screens and own transient, purely-visual UI state (which
+ * destination is showing, whether a sheet/dialog is open).
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ClockApp() {
     val context = LocalContext.current
-    var settings by remember { mutableStateOf(ClockSettings()) }
-    var use24HourFormat by remember { mutableStateOf(true) }
+    val container = remember(context) {
+        (context.applicationContext as ClockApplication).container
+    }
+    val viewModelFactory = remember(container) { AppViewModelFactory(container) }
+
+    val settingsViewModel: SettingsViewModel = viewModel(factory = viewModelFactory)
+    val alarmViewModel: AlarmViewModel = viewModel(factory = viewModelFactory)
+    val worldClockViewModel: WorldClockViewModel = viewModel(factory = viewModelFactory)
+    val timerViewModel: TimerViewModel = viewModel(factory = viewModelFactory)
+    val stopwatchViewModel: StopwatchViewModel = viewModel(factory = viewModelFactory)
+
+    val settingsState by settingsViewModel.state.collectAsStateWithLifecycle()
+    val alarms by alarmViewModel.alarms.collectAsStateWithLifecycle()
+    val worldClockState by worldClockViewModel.state.collectAsStateWithLifecycle()
+    val timerState by timerViewModel.state.collectAsStateWithLifecycle()
+    val stopwatchState by stopwatchViewModel.state.collectAsStateWithLifecycle()
+
     var destination by remember { mutableStateOf(AppDestination.CLOCK) }
-    var settingsLoaded by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
     var showNightstand by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        val saved = SettingsStore.load(context)
-        settings = saved.settings
-        use24HourFormat = saved.use24HourFormat
-        settingsLoaded = true
-    }
-    LaunchedEffect(settings, use24HourFormat, settingsLoaded) {
-        if (settingsLoaded) SettingsStore.save(context, settings, use24HourFormat)
-    }
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val latestSettings = rememberUpdatedState(settings)
-    val latestFormat = rememberUpdatedState(use24HourFormat)
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_STOP && settingsLoaded) {
-                SettingsStore.save(context, latestSettings.value, latestFormat.value)
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-    }
-
-    val alarms = remember { mutableStateListOf<AlarmItem>() }
     val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
     LaunchedEffect(Unit) {
-        alarms.addAll(AlarmStore.load(context))
         if (Build.VERSION.SDK_INT >= 33) notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
-    fun persistAlarms() {
-        AlarmStore.save(context, alarms)
-        AlarmScheduler.rescheduleAll(context, alarms)
-    }
 
-    val worldClocks = remember { mutableStateListOf<WorldClockItem>() }
-    var favorites by remember { mutableStateOf(setOf("New York")) }
-    LaunchedEffect(Unit) {
-        val stored = WorldClockStore.load(context)
-        if (stored.isEmpty()) {
-            worldClocks.addAll(listOf(
-                WorldClockItem(1, "New York", "America/New_York"),
-                WorldClockItem(2, "London", "Europe/London"),
-                WorldClockItem(3, "Dubai", "Asia/Dubai"),
-                WorldClockItem(4, "Tokyo", "Asia/Tokyo"),
-                WorldClockItem(5, "Sydney", "Australia/Sydney"),
-            ))
-        } else worldClocks.addAll(stored)
-    }
-    LaunchedEffect(worldClocks.size) { if (worldClocks.isNotEmpty()) WorldClockStore.save(context, worldClocks) }
-
-    var timerTotal by remember { mutableStateOf(25 * 60) }
-    var timerRemaining by remember { mutableStateOf(25 * 60) }
-    var timerRunning by remember { mutableStateOf(false) }
-    var timerStartMonotonic by remember { mutableLongStateOf(0L) }
-    var timerBaseRemainingMillis by remember { mutableLongStateOf(timerRemaining * 1000L) }
-    LaunchedEffect(timerRunning) {
-        if (timerRunning) {
-            timerBaseRemainingMillis = timerRemaining * 1000L
-            timerStartMonotonic = NativeClock.monotonicMillis()
-            while (timerRunning) {
-                val elapsed = NativeClock.elapsedMillis(timerStartMonotonic, NativeClock.monotonicMillis())
-                val remaining = (timerBaseRemainingMillis - elapsed).coerceAtLeast(0L)
-                timerRemaining = ((remaining + 999L) / 1000L).toInt()
-                if (remaining <= 0L) {
-                    timerRemaining = 0
-                    timerRunning = false
-                }
-                delay(100)
-            }
-        }
-    }
-
-    var stopwatchRunning by remember { mutableStateOf(false) }
-    var stopwatchStartMonotonic by remember { mutableLongStateOf(0L) }
-    var stopwatchElapsed by remember { mutableLongStateOf(0L) }
-    val stopwatchLaps = remember { mutableStateListOf<Long>() }
-    LaunchedEffect(stopwatchRunning) {
-        if (stopwatchRunning) {
-            stopwatchStartMonotonic = NativeClock.monotonicMillis() - stopwatchElapsed
-            while (stopwatchRunning) {
-                stopwatchElapsed = NativeClock.elapsedMillis(stopwatchStartMonotonic, NativeClock.monotonicMillis())
-                delay(31)
-            }
-        }
-    }
-
+    // Command palette actions are kept at the composition root so navigation
+    // and settings mutations remain outside leaf UI components.
     fun handleCommand(command: ClockCommand) {
         when (command) {
             ClockCommand.ClockView -> destination = AppDestination.CLOCK
+            ClockCommand.WorldClock -> destination = AppDestination.WORLD
             ClockCommand.Alarm -> destination = AppDestination.ALARM
             ClockCommand.Timer -> destination = AppDestination.TIMER
             ClockCommand.Stopwatch -> destination = AppDestination.STOPWATCH
-            ClockCommand.Dark -> settings = settings.copy(themeMode = AppThemeMode.DARK)
-            ClockCommand.Light -> settings = settings.copy(themeMode = AppThemeMode.LIGHT)
+            ClockCommand.Dark -> settingsViewModel.updateThemeMode(AppThemeMode.DARK)
+            ClockCommand.Light -> settingsViewModel.updateThemeMode(AppThemeMode.LIGHT)
             ClockCommand.Settings -> showSettings = true
-            ClockCommand.Format12 -> use24HourFormat = false
-            ClockCommand.Format24 -> use24HourFormat = true
+            ClockCommand.Format12 -> settingsViewModel.updateUse24HourFormat(false)
+            ClockCommand.Format24 -> settingsViewModel.updateUse24HourFormat(true)
             ClockCommand.Reset -> {
-                settings = ClockSettings(); use24HourFormat = true; destination = AppDestination.CLOCK; showSettings = false
+                settingsViewModel.resetToDefaults()
+                destination = AppDestination.CLOCK
+                showSettings = false
             }
             ClockCommand.Help, ClockCommand.Empty -> Unit
             is ClockCommand.Unknown -> Unit
         }
     }
 
-    ChronaTheme(settings) {
-        val glass = settings.themeMode == AppThemeMode.GLASS
+    ChronaTheme(settingsState.settings) {
+        val glass = settingsState.settings.themeMode == AppThemeMode.GLASS
         Surface(Modifier.fillMaxSize(), color = Color.Transparent) {
             Box(Modifier.fillMaxSize()) {
                 ChronaBackdrop(glass)
                 Column(Modifier.fillMaxSize().statusBarsPadding()) {
                     Box(Modifier.weight(1f).fillMaxSize()) {
-                    // Render exactly one destination at a time. Keeping the previous
-                    // destination out of composition prevents the ghost-layer effect
-                    // seen during navigation transitions.
-                    when (destination) {
-                        AppDestination.CLOCK -> HomeScreen(
-                            use24HourFormat, settings.showSeconds, alarms, glass,
-                            onNavigate = { destination = it },
-                            onOpenNightstand = { showNightstand = true },
-                            onOpenSettings = { showSettings = true },
-                        )
-                        AppDestination.WORLD -> WorldClockScreen(
-                            worldClocks, favorites, glass,
-                            onAdd = { worldClocks.add(it) },
-                            onRemove = { worldClocks.remove(it) },
-                            onToggleFavorite = { city -> favorites = if (city in favorites) favorites - city else favorites + city },
-                        )
-                        AppDestination.TIMER -> TimerScreen(
-                            timerTotal, timerRemaining, timerRunning, glass,
-                            onToggle = { if (timerRunning) timerRunning = false else if (timerRemaining > 0) timerRunning = true },
-                            onReset = { timerRunning = false; timerRemaining = timerTotal; timerBaseRemainingMillis = timerTotal * 1000L },
-                            onSetPreset = { timerTotal = it; timerRemaining = it; timerBaseRemainingMillis = it * 1000L; timerRunning = false },
-                        )
-                        AppDestination.STOPWATCH -> StopwatchScreen(
-                            stopwatchElapsed, stopwatchRunning, stopwatchLaps, glass,
-                            onToggleRun = { stopwatchRunning = !stopwatchRunning },
-                            onLap = { if (stopwatchRunning) stopwatchLaps.add(stopwatchElapsed) },
-                            onReset = { stopwatchRunning = false; stopwatchElapsed = 0; stopwatchLaps.clear() },
-                        )
-                        AppDestination.ALARM -> AlarmScreen(
-                            alarms, glass, onBack = { destination = AppDestination.CLOCK },
-                            onAdd = { alarms.add(it); persistAlarms() },
-                            onToggle = { alarm, enabled -> val i = alarms.indexOfFirst { it.id == alarm.id }; if (i >= 0) { alarms[i] = alarm.copy(enabled = enabled); persistAlarms() } },
-                            onDelete = { alarms.remove(it); persistAlarms() },
-                        )
+                        // Render exactly one destination at a time. Keeping the previous
+                        // destination out of composition prevents the ghost-layer effect
+                        // seen during navigation transitions.
+                        when (destination) {
+                            AppDestination.CLOCK -> HomeScreen(
+                                settingsState.use24HourFormat, settingsState.settings.showSeconds, alarms, glass,
+                                onNavigate = { destination = it },
+                                onOpenNightstand = { showNightstand = true },
+                                onOpenSettings = { showSettings = true },
+                                onCommand = ::handleCommand,
+                            )
+                            AppDestination.WORLD -> WorldClockScreen(
+                                worldClockState.items, worldClockState.favorites, settingsState.use24HourFormat, glass,
+                                onAdd = worldClockViewModel::add,
+                                onRemove = worldClockViewModel::remove,
+                                onToggleFavorite = worldClockViewModel::toggleFavorite,
+                            )
+                            AppDestination.TIMER -> TimerScreen(
+                                timerState.totalSeconds, timerState.remainingSeconds, timerState.isRunning, glass,
+                                onToggle = {
+                                    if (!timerState.isRunning && !container.alarmScheduler.canScheduleExactAlarms()) {
+                                        requestExactAlarmAccess(context)
+                                    } else {
+                                        timerViewModel.toggle()
+                                    }
+                                },
+                                onReset = timerViewModel::reset,
+                                onSetPreset = timerViewModel::setPreset,
+                            )
+                            AppDestination.STOPWATCH -> StopwatchScreen(
+                                stopwatchState.elapsedMillis, stopwatchState.isRunning, stopwatchState.laps, glass,
+                                onToggleRun = stopwatchViewModel::toggleRun,
+                                onLap = stopwatchViewModel::lap,
+                                onReset = stopwatchViewModel::reset,
+                            )
+                            AppDestination.ALARM -> AlarmScreen(
+                                alarms, glass, onBack = { destination = AppDestination.CLOCK },
+                                onAdd = { alarm ->
+                                    alarmViewModel.add(alarm)
+                                    if (!container.alarmScheduler.canScheduleExactAlarms()) requestExactAlarmAccess(context)
+                                },
+                                onToggle = { alarm, enabled ->
+                                    alarmViewModel.setEnabled(alarm, enabled)
+                                    if (enabled && !container.alarmScheduler.canScheduleExactAlarms()) requestExactAlarmAccess(context)
+                                },
+                                onDelete = alarmViewModel::delete,
+                            )
+                        }
                     }
-                }
                     Box(Modifier.padding(horizontal = 14.dp, vertical = 10.dp).navigationBarsPadding()) {
                         FloatingNavigationBar(destination, onSelected = { destination = it })
                     }
@@ -229,13 +192,31 @@ fun ClockApp() {
                 sheetState = sheetState,
                 containerColor = MaterialTheme.colorScheme.surface.copy(alpha = .96f)
             ) {
-                SettingsSheetContent(settings, use24HourFormat,
-                    onThemeModeChange = { settings = settings.copy(themeMode = it) },
-                    onAccentChange = { settings = settings.copy(themeAccent = it) },
-                    onFormatChange = { use24HourFormat = it },
-                    onShowSecondsChange = { settings = settings.copy(showSeconds = it) })
+                SettingsSheetContent(settingsState.settings, settingsState.use24HourFormat,
+                    onThemeModeChange = settingsViewModel::updateThemeMode,
+                    onAccentChange = settingsViewModel::updateAccent,
+                    onFormatChange = settingsViewModel::updateUse24HourFormat,
+                    onShowSecondsChange = settingsViewModel::updateShowSeconds)
             }
         }
-        if (showNightstand) NightstandDialog(use24HourFormat, settings.showSeconds, onDismiss = { showNightstand = false })
+        if (showNightstand) {
+            NightstandDialog(
+                settingsState.use24HourFormat,
+                settingsState.settings.showSeconds,
+                onDismiss = { showNightstand = false },
+            )
+        }
     }
+}
+
+
+private fun requestExactAlarmAccess(context: android.content.Context) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
+    val alarmManager = context.getSystemService(AlarmManager::class.java)
+    if (alarmManager?.canScheduleExactAlarms() == true) return
+    val intent = Intent(
+        Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+        Uri.parse("package:${context.packageName}"),
+    )
+    context.startActivity(intent)
 }

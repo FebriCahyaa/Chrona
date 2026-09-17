@@ -1,3 +1,5 @@
+/* Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. */
+
 package com.febricahyaa.clockapp.command
 
 import androidx.compose.runtime.Composable
@@ -9,6 +11,7 @@ object CommandResult {
     fun message(command: ClockCommand): String {
         return when (command) {
             ClockCommand.ClockView -> stringResource(R.string.command_feedback_clock)
+            ClockCommand.WorldClock -> stringResource(R.string.command_feedback_world)
             ClockCommand.Alarm -> stringResource(R.string.command_feedback_alarm)
             ClockCommand.Timer -> stringResource(R.string.command_feedback_timer)
             ClockCommand.Stopwatch -> stringResource(R.string.command_feedback_stopwatch)

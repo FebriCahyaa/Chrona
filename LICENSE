@@ -1,0 +1,105 @@
+Chrona
+Proprietary License
+
+Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+
+IMPORTANT: By downloading, installing, building, or using Chrona (the
+"App"), whether as compiled software or as source code from this
+repository, you agree to be bound by the following terms (the
+"License").
+
+1. License Grant
+   Febrian Rahmad Cahya (the "Owner") grants you a limited,
+   non-exclusive, non-transferable, revocable license to download and
+   use the compiled App solely for your personal, non-commercial use
+   on a device that you own or control, subject to the terms of the
+   distribution platform through which the App was obtained.
+
+   Viewing this source repository does not, by itself, grant any
+   license to copy, modify, distribute, sublicense, or create
+   derivative works from the source code, documentation, or design
+   assets contained in it, beyond what is necessary to build and run
+   the App for your own personal use as permitted above.
+
+2. Restrictions
+   Except as expressly permitted by applicable law or by the Owner in
+   writing, you may not:
+     a. decompile, reverse engineer, disassemble, or otherwise attempt
+        to derive the source code of the compiled App;
+     b. redistribute, publish, sell, rent, lease, or sublicense the
+        App, this repository, or any part of either;
+     c. remove, alter, or obscure any copyright, trademark, or other
+        proprietary notice contained in the App or this repository;
+     d. use the App, this repository, or any of its contents for any
+        purpose that violates applicable law in your jurisdiction.
+
+3. Ownership
+   The App and this repository are licensed, not sold, to you. The
+   Owner retains all right, title, and interest in and to the App and
+   its original source code, documentation, and design assets,
+   including all intellectual property rights therein, except for
+   third-party components that remain subject to their own licenses
+   (see "Third-Party Components" below and `COPYRIGHT.md`).
+
+4. Data and Device Permissions
+   The App may request certain device permissions (for example,
+   location, notifications, or exact alarms) solely to operate the
+   features you enable. The App does not sell your personal data to
+   third parties.
+
+5. No Warranty
+   TO THE EXTENT PERMITTED BY APPLICABLE LAW, THE APP AND THIS
+   REPOSITORY ARE PROVIDED "AS IS" AND "AS AVAILABLE", WITHOUT
+   WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+   TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+   PURPOSE, AND NON-INFRINGEMENT.
+
+6. Limitation of Liability
+   TO THE EXTENT PERMITTED BY APPLICABLE LAW, THE OWNER SHALL NOT BE
+   LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR
+   OTHER DAMAGES ARISING OUT OF OR RELATED TO THE USE OR INABILITY TO
+   USE THE APP OR THIS REPOSITORY, EVEN IF ADVISED OF THE POSSIBILITY
+   OF SUCH DAMAGES.
+
+7. Termination
+   This License is effective until terminated. It will terminate
+   automatically without notice from the Owner if you fail to comply
+   with any term of this License, including by uninstalling the App
+   from all of your devices.
+
+8. Changes to These Terms
+   These terms may be updated from time to time alongside App or
+   repository updates. Changes take effect as of the date they are
+   published with the relevant version.
+
+9. Governing Law
+   This License is governed by and construed in accordance with the
+   laws of the Republic of Indonesia, without regard to its
+   conflict-of-law principles.
+
+10. Contact
+    Questions about this License may be raised through the Chrona
+    project repository's issue tracker.
+
+Third-Party Components
+-----------------------
+Chrona is built using open-source components, including but not
+limited to:
+
+  - Kotlin Standard Library      JetBrains s.r.o.      Apache License 2.0
+  - AndroidX & Jetpack Compose   Google LLC / AOSP      Apache License 2.0
+  - Material Components          Google LLC             Apache License 2.0
+
+A full copy of the Apache License, Version 2.0 is available at:
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Each third-party component remains subject to its own license and is
+not covered by the proprietary terms above. See `COPYRIGHT.md` for
+further detail.
+
+Trademarks
+-----------
+Android, Google Play, and the Google Play logo are trademarks of
+Google LLC. Kotlin is a registered trademark of JetBrains s.r.o.
+Chrona is not affiliated with, sponsored by, or endorsed by Google LLC
+or JetBrains s.r.o.

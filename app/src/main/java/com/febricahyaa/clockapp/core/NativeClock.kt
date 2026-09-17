@@ -1,5 +1,8 @@
+/* Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. */
+
 package com.febricahyaa.clockapp.core
 
+import com.febricahyaa.clockapp.core.config.AppDefaults
 import java.time.LocalDate
 
 /**
@@ -58,8 +61,8 @@ object NativeClock {
     fun springProgress(
         elapsedMs: Double,
         durationMs: Double,
-        dampingRatio: Double = 0.85,
-        frequencyHz: Double = 2.6,
+        dampingRatio: Double = AppDefaults.SPRING_DAMPING_RATIO,
+        frequencyHz: Double = AppDefaults.SPRING_FREQUENCY_HZ,
     ): Double = ChronaNativeBridge.springProgress(
         elapsedMs,
         durationMs,
