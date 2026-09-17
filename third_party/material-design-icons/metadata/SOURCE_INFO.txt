@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
+
 Source: https://github.com/google/material-design-icons
 Revision: 40a7a292a79d9394157e1ea24f83d52d5e17c556
 License: Apache-2.0
