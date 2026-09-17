@@ -16,6 +16,7 @@ app/build/
 *.jks
 *.keystore
 *.p12
+
 keystore.properties
 
 # Local release outputs / CI scratch files
