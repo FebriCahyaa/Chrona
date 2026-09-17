@@ -14,94 +14,107 @@ concurrency:
   group: package-maintenance
   cancel-in-progress: false
 
+env:
+  JAVA_VERSION: '17'
+  ANDROID_PLATFORM_VERSION: '37.1'
+  ANDROID_BUILD_TOOLS: '37.0.0'
+  ANDROID_NDK_VERSION: '28.2.13676358'
+  ANDROID_CMAKE_VERSION: '3.31.6'
+
 jobs:
   package:
-    name: Prepare and commit package metadata
+    name: Sync assets, validate, build and push
     runs-on: ubuntu-24.04
-    env:
-      ANDROID_PLATFORM_VERSION: '37.1'
-      ANDROID_BUILD_TOOLS: '37.0.0'
-      ANDROID_NDK_VERSION: '28.2.13676358'
-      ANDROID_CMAKE_VERSION: '3.31.6'
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout source
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-java@v6
+          persist-credentials: true
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: ${{ env.JAVA_VERSION }}
           cache: gradle
-      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v4
-        with:
-          packages: ''
-      - name: Prepare SDK packages
-        run: |
-          yes | sdkmanager --licenses >/dev/null 2>&1 || true
-          sdkmanager --sdk_root="${ANDROID_SDK_ROOT}" --install \
-            'platform-tools' \
-            'platforms;android-37.1' \
-            'build-tools;37.0.0' \
-            'cmake;3.31.6' \
-            'ndk;28.2.13676358'
-      - name: Normalize Android 17 compileSdk configuration
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android toolchain
         shell: bash
         run: |
           set -euo pipefail
-          python3 - <<'PYTHON'
-          from pathlib import Path
+          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          sdkmanager --sdk_root="${ANDROID_SDK_ROOT}" --install \
+            'platform-tools' \
+            "platforms;android-${ANDROID_PLATFORM_VERSION}" \
+            "build-tools;${ANDROID_BUILD_TOOLS}" \
+            "cmake;${ANDROID_CMAKE_VERSION}" \
+            "ndk;${ANDROID_NDK_VERSION}"
 
-          path = Path("app/build.gradle.kts")
-          text = path.read_text()
-
-          if "compileSdk = 37" not in text:
-              raise SystemExit("compileSdk = 37 was not found")
-
-          if "compileSdkMinor = 1" not in text:
-              old = '    compileSdk = 37\n'
-              new = (
-                  '    compileSdk = 37\n'
-                  '    // Compose 1.13.0-alpha03 requires Android 37.1+ at compile time.\n'
-                  '    compileSdkMinor = 1\n'
-              )
-              if old not in text:
-                  raise SystemExit("Unable to insert compileSdkMinor = 1")
-              text = text.replace(old, new, 1)
-              path.write_text(text)
-              print("Applied compileSdkMinor = 1")
-          else:
-              print("compileSdkMinor = 1 already configured")
-          PYTHON
-
-      - name: Validate package files
+      - name: Install asset tools
         run: |
-          chmod +x ./gradlew scripts/verify-android17.sh
-          bash scripts/verify-android17.sh
-          ./gradlew --no-daemon --stacktrace tasks
-          ./gradlew --no-daemon --stacktrace lintDebug assembleDebug
-          test -f gradle/wrapper/gradle-wrapper.properties
-          if [ -f gradle/libs.versions.toml ]; then echo 'Version catalog present'; fi
-      - name: Commit and push source changes after successful validation
+          sudo apt-get update
+          sudo apt-get install -y git python3 unzip
+
+      - name: Sync Material Icons, Symbols and metadata
+        run: |
+          ./tools/sync-material-assets.sh
+          ./tools/sync-aosp-assets.sh
+          ./tools/verify-upstream-assets.sh
+
+      - name: Verify Android 17 configuration
+        run: |
+          chmod +x ./gradlew ./scripts/verify-android17.sh
+          ./scripts/verify-android17.sh
+          grep -q 'compileSdk = 37' app/build.gradle.kts
+          grep -q 'targetSdk = 37' app/build.gradle.kts
+
+      - name: Compile Kotlin
+        run: ./gradlew --no-daemon --stacktrace compileDebugKotlin
+
+      - name: Run lint
+        run: ./gradlew --no-daemon --stacktrace lintDebug
+
+      - name: Build debug APK
+        run: ./gradlew --no-daemon --stacktrace assembleDebug
+
+      - name: Commit synchronized source after successful build
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          # Only stage paths that actually exist in the repository.
-          git add app/build.gradle.kts scripts/verify-android17.sh gradle .github
-          if [ -f docs/build/BUILD_ENVIRONMENT.md ]; then
-            git add docs/build/BUILD_ENVIRONMENT.md
-          fi
-          if [ -f docs/build/sdkmanager-list.txt ]; then
-            git add docs/build/sdkmanager-list.txt
-          fi
+
+          git add \
+            app/src/main/res \
+            app/build.gradle.kts \
+            third_party \
+            tools \
+            scripts \
+            .github/workflows \
+            README.md \
+            CHANGELOG.md
 
           if git diff --cached --quiet; then
-            echo 'No package metadata changes.'
+            echo 'No source or asset changes.'
             exit 0
           fi
-          git commit -m 'chore(ci): align Android 17.1 compile SDK and CI packages'
-          git push origin HEAD:${GITHUB_REF_NAME}
+
+          git commit -m 'chore(ci): sync Android 17 Material assets after successful build'
+
+      - name: Push synchronized source
+        if: success()
+        run: git push origin HEAD:${GITHUB_REF_NAME}
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: chrona-android17-debug
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error

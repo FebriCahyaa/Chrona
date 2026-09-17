@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -175,7 +176,7 @@ fun ScreenHeader(
     ) {
         if (onBack != null) {
             IconCircleButton(
-                icon = androidx.compose.material.icons.Icons.Filled.ArrowBack,
+                icon = Icons.AutoMirrored.Filled.ArrowBack,
                 onClick = onBack,
                 contentDescription = "Back",
                 modifier = Modifier.size(42.dp),

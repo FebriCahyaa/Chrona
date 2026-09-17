@@ -71,7 +71,7 @@ fun TimerScreen(
                         modifier = Modifier.fillMaxSize().padding(18.dp),
                         color = MaterialTheme.colorScheme.primary,
                         trackColor = trackColor,
-                        amplitude = if (running) 0.85f else 0.18f,
+                        amplitude = { if (running) 0.85f else 0.18f },
                         wavelength = 30.dp,
                         waveSpeed = 42.dp,
                     )

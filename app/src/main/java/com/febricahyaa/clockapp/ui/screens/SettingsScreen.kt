@@ -118,7 +118,7 @@ fun SettingsSheetContent(
         SectionTitle(Icons.Filled.Gavel, "About")
         Spacer(Modifier.height(9.dp))
         var showLegal by rememberSaveable { mutableStateOf(false) }
-        Surface(Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f), onClick = { showLegal = true }) {
+        Surface(onClick = { showLegal = true }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.04f)) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 15.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     Text("Legal & app info", fontSize = 14.sp, fontWeight = FontWeight.Medium)

@@ -436,6 +436,7 @@ fun AnalogClockUI(hour: Int, minute: Int, second: Float) {
     val onSurface = MaterialTheme.colorScheme.onSurface
     val primary = MaterialTheme.colorScheme.primary
     val tertiary = MaterialTheme.colorScheme.tertiary
+    val surfaceContainerHighest = MaterialTheme.colorScheme.surfaceContainerHighest
 
     Canvas(
         Modifier
@@ -446,7 +447,7 @@ fun AnalogClockUI(hour: Int, minute: Int, second: Float) {
         val center = androidx.compose.ui.geometry.Offset(size.width / 2f, size.height / 2f)
         val radius = size.minDimension / 2f
 
-        drawCircle(MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.74f), radius * 0.92f, center)
+        drawCircle(surfaceContainerHighest.copy(alpha = 0.74f), radius * 0.92f, center)
         drawCircle(primary.copy(alpha = 0.12f), radius * 0.92f, center, style = Stroke(radius * 0.025f))
         drawCircle(Color.White.copy(alpha = 0.14f), radius * 0.865f, center, style = Stroke(radius * 0.010f))
 
