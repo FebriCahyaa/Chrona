@@ -33,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -69,6 +70,7 @@ fun HomeScreen(
     onCommand: (ClockCommand) -> Unit,
 ) {
     val now = rememberZonedNow()
+    val locale = LocalConfiguration.current.locales[0]
     val nextAlarm = alarms.filter { it.enabled }.minByOrNull { it.time }
     val greeting = when (now.hour) { in 5..11 -> "Good morning"; in 12..17 -> "Good afternoon"; else -> "Good evening" }
     val tiles = listOf(
@@ -125,7 +127,7 @@ fun HomeScreen(
                         StatusCard(
                             Icons.Filled.CalendarToday,
                             "Date",
-                            now.format(DateTimeFormatter.ofPattern("EEE, dd MMM", java.util.Locale.getDefault())),
+                            now.format(DateTimeFormatter.ofPattern("EEE, dd MMM", locale)),
                             Modifier.weight(1f),
                         )
                         StatusCard(Icons.Filled.Cloud, "Timezone", now.zone.id, Modifier.weight(1f))

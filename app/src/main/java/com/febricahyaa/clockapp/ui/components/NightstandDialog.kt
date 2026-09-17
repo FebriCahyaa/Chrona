@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -35,10 +36,11 @@ import java.util.Locale
 fun NightstandDialog(use24HourFormat: Boolean, showSeconds: Boolean, onDismiss: () -> Unit) {
     val now = rememberZonedNow()
     val pattern = if (use24HourFormat) "HH:mm" else "hh:mm"
-    val value = now.format(DateTimeFormatter.ofPattern(pattern, Locale.getDefault()))
+    val locale = LocalConfiguration.current.locales[0]
+    val value = now.format(DateTimeFormatter.ofPattern(pattern, locale))
     val hour = value.substring(0, 2)
     val minute = value.substring(3, 5)
-    val seconds = now.format(DateTimeFormatter.ofPattern("ss"))
+    val seconds = now.format(DateTimeFormatter.ofPattern("ss", locale))
 
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
         Surface(Modifier.fillMaxSize().clickable { onDismiss() }, color = Color(0xFF070707)) {

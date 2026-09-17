@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -44,11 +45,15 @@ fun ClockDisplay(
             }
         }
     }
-    val formatter = DateTimeFormatter.ofPattern(if (use24HourFormat) "HH:mm" else "hh:mm", Locale.getDefault())
+    val locale = LocalConfiguration.current.locales[0]
+    val formatter = DateTimeFormatter.ofPattern(
+        if (use24HourFormat) "HH:mm" else "hh:mm",
+        locale,
+    )
     val value = now.format(formatter)
     val hour = value.substring(0, 2)
     val minute = value.substring(3, 5)
-    val seconds = now.format(DateTimeFormatter.ofPattern("ss"))
+    val seconds = now.format(DateTimeFormatter.ofPattern("ss", locale))
     val date = now.format(DateTimeFormatter.ofPattern("EEE, MMM d, yyyy", Locale.ENGLISH))
     val primary = if (lightContent) Color.White else MaterialTheme.colorScheme.onSurface
     val secondary = if (lightContent) Color.White.copy(alpha = .72f) else MaterialTheme.colorScheme.onSurfaceVariant
@@ -61,7 +66,7 @@ fun ClockDisplay(
             androidx.compose.material3.Text(minute, color = accent, fontSize = size, lineHeight = size, fontWeight = FontWeight.Light, letterSpacing = (-4).sp)
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
-            if (!use24HourFormat) androidx.compose.material3.Text(now.format(DateTimeFormatter.ofPattern("a")), color = secondary, fontSize = 12.sp, letterSpacing = 2.sp)
+            if (!use24HourFormat) androidx.compose.material3.Text(now.format(DateTimeFormatter.ofPattern("a", locale)), color = secondary, fontSize = 12.sp, letterSpacing = 2.sp)
             if (showSeconds) androidx.compose.material3.Text("  •  $seconds", color = secondary, fontSize = 12.sp)
         }
         Spacer(Modifier.height(1.dp))
