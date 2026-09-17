@@ -7,14 +7,6 @@ import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.model.ClockSettings
 import com.febricahyaa.clockapp.model.ThemeAccent
 
-/**
- * SharedPreferences-backed [SettingsRepository].
- *
- * Takes [Context] through its constructor instead of requiring the caller to
- * pass one into every method call (the old `object SettingsStore` pattern).
- * Constructor injection is what makes this class replaceable by a fake in
- * tests, and is wired up once, in [com.febricahyaa.clockapp.di.DefaultAppContainer].
- */
 class SharedPreferencesSettingsRepository(context: Context) : SettingsRepository {
 
     private val appContext = context.applicationContext
@@ -26,9 +18,14 @@ class SharedPreferencesSettingsRepository(context: Context) : SettingsRepository
         val accent = prefs.getString(KEY_THEME_ACCENT, null)
             ?.let { name -> runCatching { ThemeAccent.valueOf(name) }.getOrNull() }
             ?: defaults.themeAccent
-        val mode = prefs.getString(KEY_THEME_MODE, null)
+        val storedMode = prefs.getString(KEY_THEME_MODE, null)
             ?.let { name -> runCatching { AppThemeMode.valueOf(name) }.getOrNull() }
-            ?: defaults.themeMode
+        val mode = when (storedMode) {
+            AppThemeMode.NEUMORPHIC, AppThemeMode.MATERIAL_YOU -> storedMode
+            // Migrate the legacy visual modes into the two supported dashboard themes.
+            AppThemeMode.DARK, AppThemeMode.GLASS, null -> AppThemeMode.NEUMORPHIC
+            AppThemeMode.LIGHT -> AppThemeMode.MATERIAL_YOU
+        }
         val settings = ClockSettings(
             themeMode = mode,
             isDarkTheme = prefs.getBoolean(KEY_DARK_THEME, defaults.isDarkTheme),

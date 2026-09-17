@@ -47,6 +47,7 @@ fun TimerScreen(
     onToggle: () -> Unit,
     onReset: () -> Unit,
     onSetPreset: (Int) -> Unit,
+    onBack: () -> Unit,
 ) {
     val progress = if (totalSeconds <= 0) {
         0f
@@ -58,7 +59,12 @@ fun TimerScreen(
 
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
         Spacer(Modifier.height(12.dp))
-        ScreenHeader("Timer", "Focus on what matters", actions = { IconCircleButton(Icons.Filled.Refresh, onReset) })
+        ScreenHeader(
+            title = "Timer",
+            subtitle = "Focus on what matters",
+            onBack = onBack,
+            actions = { IconCircleButton(Icons.Filled.Refresh, onReset) },
+        )
         Spacer(Modifier.height(22.dp))
 
         ChronaCard(Modifier.fillMaxWidth(), glass = glass) {

@@ -45,6 +45,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.febricahyaa.clockapp.model.AppThemeMode
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import kotlinx.coroutines.delay
@@ -75,32 +76,12 @@ fun ChronaCard(
     glass: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val shape = RoundedCornerShape(26.dp)
-    val outline = MaterialTheme.colorScheme.onSurface.copy(alpha = if (glass) 0.18f else 0.08f)
-    val container = if (glass) {
-        Brush.linearGradient(
-            listOf(
-                Color.White.copy(alpha = 0.18f),
-                MaterialTheme.colorScheme.surface.copy(alpha = 0.58f),
-                MaterialTheme.colorScheme.primary.copy(alpha = 0.07f),
-            )
-        )
-    } else {
-        Brush.linearGradient(
-            listOf(
-                MaterialTheme.colorScheme.surface,
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
-            )
-        )
-    }
-    val cardModifier = modifier
-        .shadow(if (glass) 12.dp else 4.dp, shape, clip = false)
-        .border(BorderStroke(1.dp, outline), shape)
-        .clip(shape)
-        .background(container)
-        .then(onClick?.let { Modifier.clickable(onClick = it) } ?: Modifier)
-
-    Column(cardModifier, content = content)
+    HybridBentoCard(
+        modifier = modifier,
+        themeMode = if (glass) AppThemeMode.MATERIAL_YOU else AppThemeMode.NEUMORPHIC,
+        onClick = onClick,
+        content = content,
+    )
 }
 
 @Composable
@@ -184,13 +165,22 @@ fun IconCircleButton(
 fun ScreenHeader(
     title: String,
     subtitle: String,
+    onBack: (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     Row(
         Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.Top,
     ) {
+        if (onBack != null) {
+            IconCircleButton(
+                icon = androidx.compose.material.icons.Icons.Filled.ArrowBack,
+                onClick = onBack,
+                contentDescription = "Back",
+                modifier = Modifier.size(42.dp),
+            )
+        }
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.headlineMedium)
             Spacer(Modifier.height(3.dp))

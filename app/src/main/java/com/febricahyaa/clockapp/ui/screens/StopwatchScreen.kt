@@ -37,10 +37,24 @@ import com.febricahyaa.clockapp.ui.components.ScreenHeader
 import java.util.Locale
 
 @Composable
-fun StopwatchScreen(elapsedMillis: Long, isRunning: Boolean, laps: List<Long>, glass: Boolean, onToggleRun: () -> Unit, onLap: () -> Unit, onReset: () -> Unit) {
+fun StopwatchScreen(
+    elapsedMillis: Long,
+    isRunning: Boolean,
+    laps: List<Long>,
+    glass: Boolean,
+    onToggleRun: () -> Unit,
+    onLap: () -> Unit,
+    onReset: () -> Unit,
+    onBack: () -> Unit,
+) {
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
         Spacer(Modifier.height(12.dp))
-        ScreenHeader("Stopwatch", "Track every second", actions = { IconCircleButton(Icons.Filled.Refresh, onReset) })
+        ScreenHeader(
+            title = "Stopwatch",
+            subtitle = "Track every second",
+            onBack = onBack,
+            actions = { IconCircleButton(Icons.Filled.Refresh, onReset) },
+        )
         Spacer(Modifier.height(22.dp))
         ChronaCard(Modifier.fillMaxWidth(), glass = glass) {
             Column(Modifier.fillMaxWidth().padding(vertical = 28.dp), horizontalAlignment = Alignment.CenterHorizontally) {

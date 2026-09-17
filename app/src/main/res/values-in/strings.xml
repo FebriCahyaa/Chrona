@@ -3,12 +3,6 @@
 <resources>
     <string name="app_name">Chrona</string>
     <string name="app_title">CHRONА</string>
-    <string name="nav_alarm">Alarm</string>
-    <string name="nav_clock">Jam</string>
-    <string name="nav_world">World</string>
-    <string name="nav_timer">Timer</string>
-    <string name="nav_stopwatch">Stopwatch</string>
-    <string name="nav_settings">Pengaturan</string>
     <string name="settings_screen_title">Pengaturan</string>
     <string name="settings_dark_theme_title">Tema gelap</string>
     <string name="settings_format_title">Format 24 jam</string>

@@ -2,15 +2,18 @@
 
 package com.febricahyaa.clockapp.model
 
-/**
- * Accent color presets for Theme Studio.
+/** Visual themes exposed by the new Chrona Bento dashboard.
  *
- * SYSTEM follows the device wallpaper (Android 12+ dynamic color) and falls
- * back to the app's default palette on older devices. Every other entry is a
- * hand-picked seed color turned into a full Material 3 scheme by
- * [com.febricahyaa.clockapp.ui.theme.ThemeEngine].
+ * LIGHT/DARK/GLASS are retained for persisted-settings compatibility with
+ * older Chrona builds. The new UI only presents NEUMORPHIC and MATERIAL_YOU.
  */
-enum class AppThemeMode { LIGHT, DARK, GLASS }
+enum class AppThemeMode {
+    NEUMORPHIC,
+    MATERIAL_YOU,
+    LIGHT,
+    DARK,
+    GLASS,
+}
 
 enum class ThemeAccent {
     PEACH,
@@ -23,14 +26,9 @@ enum class ThemeAccent {
     SLATE,
 }
 
-/**
- * Domain model prepared for future settings work.
- *
- * This refactor intentionally keeps the current UI behavior unchanged.
- */
 data class ClockSettings(
     val isDarkTheme: Boolean = true,
-    val themeMode: AppThemeMode = AppThemeMode.DARK,
+    val themeMode: AppThemeMode = AppThemeMode.NEUMORPHIC,
     val showSeconds: Boolean = true,
     val themeAccent: ThemeAccent = ThemeAccent.SYSTEM,
 )

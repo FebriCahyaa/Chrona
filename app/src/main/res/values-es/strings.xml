@@ -3,11 +3,6 @@
 <resources>
     <string name="app_name">Chrona</string>
     <string name="app_title">CHRONА</string>
-    <string name="nav_alarm">Alarma</string>
-    <string name="nav_clock">Reloj</string>
-    <string name="nav_timer">Temporizador</string>
-    <string name="nav_stopwatch">Cronómetro</string>
-    <string name="nav_settings">Ajustes</string>
     <string name="settings_screen_title">Ajustes</string>
     <string name="settings_dark_theme_title">Tema oscuro</string>
     <string name="settings_format_title">Formato de 24 horas</string>

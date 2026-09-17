@@ -72,6 +72,7 @@ fun WorldClockScreen(
     onAdd: (WorldClockItem) -> Unit,
     onRemove: (WorldClockItem) -> Unit,
     onToggleFavorite: (String) -> Unit,
+    onBack: () -> Unit,
 ) {
     var showAdd by rememberSaveable { mutableStateOf(false) }
     var region by rememberSaveable { mutableStateOf("All") }
@@ -79,7 +80,11 @@ fun WorldClockScreen(
 
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
         Spacer(Modifier.height(12.dp))
-        ScreenHeader("World Clock", "Different places, same moment", actions = {
+        ScreenHeader(
+            title = "World Clock",
+            subtitle = "Different places, same moment",
+            onBack = onBack,
+            actions = {
             IconCircleButton(Icons.Filled.Add, { showAdd = true }, active = true, contentDescription = "Add city")
         })
         Spacer(Modifier.height(14.dp))
