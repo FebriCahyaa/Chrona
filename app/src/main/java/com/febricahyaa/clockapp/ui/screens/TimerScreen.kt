@@ -53,6 +53,7 @@ fun TimerScreen(
         (remainingSeconds.toFloat() / totalSeconds).coerceIn(0f, 1f)
     }
     val accentGradient = LocalAccentGradient.current
+    val trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = .08f)
 
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
         Spacer(Modifier.height(12.dp))
@@ -66,7 +67,7 @@ fun TimerScreen(
                         val stroke = 12.dp.toPx()
                         val inset = stroke / 2f
                         val diameter = size.minDimension - stroke
-                        drawArc(MaterialTheme.colorScheme.onSurface.copy(alpha = .08f), -90f, 360f, false, Offset(inset, inset), androidx.compose.ui.geometry.Size(diameter, diameter), style = Stroke(stroke, cap = StrokeCap.Round))
+                        drawArc(trackColor, -90f, 360f, false, Offset(inset, inset), androidx.compose.ui.geometry.Size(diameter, diameter), style = Stroke(stroke, cap = StrokeCap.Round))
                         drawArc(
                             accentGradient,
                             -90f,
