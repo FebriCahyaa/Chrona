@@ -65,10 +65,17 @@ jobs:
           sudo apt-get install -y git python3 unzip
 
       - name: Sync Material Icons, Symbols and metadata
+        shell: bash
         run: |
-          ./tools/sync-material-assets.sh
-          ./tools/sync-aosp-assets.sh
-          ./tools/verify-upstream-assets.sh
+          set -euo pipefail
+          chmod +x \
+            ./tools/sync-material-assets.sh \
+            ./tools/sync-aosp-assets.sh \
+            ./tools/verify-upstream-assets.sh
+
+          bash ./tools/sync-material-assets.sh
+          bash ./tools/sync-aosp-assets.sh
+          bash ./tools/verify-upstream-assets.sh
 
       - name: Verify Android 17 configuration
         run: |
