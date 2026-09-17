@@ -54,7 +54,15 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add gradle .github docs/build/BUILD_ENVIRONMENT.md docs/build/sdkmanager-list.txt
+          # Only stage paths that actually exist in the repository.
+          git add gradle .github
+          if [ -f docs/build/BUILD_ENVIRONMENT.md ]; then
+            git add docs/build/BUILD_ENVIRONMENT.md
+          fi
+          if [ -f docs/build/sdkmanager-list.txt ]; then
+            git add docs/build/sdkmanager-list.txt
+          fi
+
           if git diff --cached --quiet; then
             echo 'No package metadata changes.'
             exit 0
