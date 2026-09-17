@@ -16,7 +16,7 @@ concurrency:
 
 env:
   JAVA_VERSION: '17'
-  ANDROID_PLATFORM_VERSION: '37.1'
+  ANDROID_PLATFORM_VERSION: '37'
   ANDROID_BUILD_TOOLS: '37.0.0'
   ANDROID_NDK_VERSION: '28.2.13676358'
   ANDROID_CMAKE_VERSION: '3.31.6'
@@ -113,7 +113,7 @@ jobs:
         run: git push origin HEAD:${GITHUB_REF_NAME}
 
       - name: Upload debug APK
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: chrona-android17-debug
           path: app/build/outputs/apk/debug/*.apk

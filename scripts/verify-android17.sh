@@ -11,7 +11,7 @@ if [[ -z "${ANDROID_SDK_ROOT}" ]]; then
   exit 1
 fi
 
-EXPECTED_PLATFORM="37.1"
+EXPECTED_PLATFORM="37"
 EXPECTED_BUILD_TOOLS="37.0.0"
 EXPECTED_NDK="28.2.13676358"
 EXPECTED_CMAKE="3.31.6"
@@ -79,7 +79,7 @@ fi
 for workflow in .github/workflows/*.yml; do
   if [[ "$workflow" == *.yml && "$workflow" != *dependabot-auto-merge.yml ]]; then
     grep -Fq 'setup-android@v4' "$workflow" || fail "Android SDK setup missing in $workflow"
-    grep -Eq 'android-37\.1|ANDROID_PLATFORM_VERSION:.*37\.1' "$workflow" || fail "Android 17 API 37 is not declared in $workflow"
+    grep -Eq 'android-37|ANDROID_PLATFORM_VERSION:.*37' "$workflow" || fail "Android 17 API 37 is not declared in $workflow"
     grep -Eq '37\.0\.0|ANDROID_BUILD_TOOLS:.*37\.0\.0' "$workflow" || fail "Build Tools 37 is not declared in $workflow"
   fi
 done

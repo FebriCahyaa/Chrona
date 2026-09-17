@@ -7,7 +7,7 @@ mkdir -p "$OUT_DIR"
 
 cat > "$OUT_DIR/SDK_PACKAGES.txt" <<INFO
 Android API: 37
-Android compile extension: 37.1 where available on the configured runner
+Android SDK Platform: 37; compile extension/minor requirement is handled by the Android Gradle Plugin
 Build Tools: 37.0.0
 Java: 17
 Android Gradle Plugin: 9.4.0
