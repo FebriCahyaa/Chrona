@@ -150,6 +150,14 @@ kotlin {
 }
 
 dependencies {
+    // CHRONA-SECURITY-CONSTRAINTS
+    // Patched transitive versions reported by GitHub Dependency Graph.
+    constraints { implementation("org.bitbucket.b_c:jose4j:0.9.6") }
+    constraints { implementation("org.jdom:jdom2:2.0.6.1") }
+    constraints { implementation("org.apache.httpcomponents:httpclient:4.5.13") }
+    constraints { implementation("org.apache.commons:commons-lang3:3.18.0") }
+    constraints { implementation("org.bouncycastle:bcpkix-jdk18on:1.84") }
+
     val composeBom = platform("androidx.compose:compose-bom:2025.08.00")
     implementation(composeBom)
     androidTestImplementation(composeBom)
