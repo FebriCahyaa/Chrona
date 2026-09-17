@@ -11,7 +11,7 @@ if [[ -z "${ANDROID_SDK_ROOT}" ]]; then
   exit 1
 fi
 
-EXPECTED_PLATFORM="37"
+EXPECTED_PLATFORM="37.1"
 EXPECTED_BUILD_TOOLS="37.0.0"
 EXPECTED_NDK="28.2.13676358"
 EXPECTED_CMAKE="3.31.6"
@@ -85,7 +85,7 @@ for workflow in .github/workflows/*.yml; do
 done
 
 echo "Android 17 CI verification passed"
-echo "  Platform:   ${EXPECTED_PLATFORM} (Android 17 / API 37)"
+echo "  Platform:   ${EXPECTED_PLATFORM} (Android 17 / API 37, extension platform)"
 echo "  Build Tools:${EXPECTED_BUILD_TOOLS}"
 echo "  NDK:        ${EXPECTED_NDK}"
 echo "  CMake:      ${EXPECTED_CMAKE}"
