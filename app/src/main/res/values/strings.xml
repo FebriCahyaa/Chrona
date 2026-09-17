@@ -5,7 +5,7 @@
 
     <!-- Shared -->
     <string name="app_title">CHRONА</string>
-    <string name="user_name">Febrian</string>
+    <string name="user_name" translatable="false">Febrian</string>
 
     <!-- Home screen -->
     <string name="greeting_late_night">Still up, %1$s?</string>
