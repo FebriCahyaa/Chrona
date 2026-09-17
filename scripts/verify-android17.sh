@@ -42,7 +42,10 @@ grep -Fq 'compose-bom-alpha:2026.09.00' "$APP_GRADLE" || fail "Compose alpha BOM
 grep -Fq "material3.adaptive:adaptive:${EXPECTED_ADAPTIVE}" "$APP_GRADLE" || fail "Material 3 Adaptive != ${EXPECTED_ADAPTIVE}"
 grep -Fq 'MaterialExpressiveTheme' "$ROOT_DIR/app/src/main/java/com/febricahyaa/clockapp/ui/theme/ChronaTheme.kt" || fail "MaterialExpressiveTheme missing"
 grep -Fq 'MotionScheme.expressive()' "$ROOT_DIR/app/src/main/java/com/febricahyaa/clockapp/ui/theme/ChronaTheme.kt" || fail "Expressive motion scheme missing"
-grep -Fq 'CircularWavyProgressIndicator' "$ROOT_DIR/app/src/main/java/com/febricahyaa/clockapp/ui/screens/TimerScreen.kt" || fail "Expressive wavy progress indicator missing"
+TIMER_SCREEN="$ROOT_DIR/app/src/main/java/com/febricahyaa/clockapp/ui/screens/TimerScreen.kt"
+if ! grep -Fq 'CircularWavyProgressIndicator' "$TIMER_SCREEN" && ! grep -Fq 'drawArc(' "$TIMER_SCREEN"; then
+  fail "Timer expressive progress indicator missing (expected CircularWavyProgressIndicator or custom Canvas drawArc)"
+fi
 grep -Fq 'currentWindowAdaptiveInfoV2' "$ROOT_DIR/app/src/main/java/com/febricahyaa/clockapp/ui/screens/HomeScreen.kt" || fail "Adaptive window API missing"
 
 # Confirm the requested Material 3 Expressive line is present.

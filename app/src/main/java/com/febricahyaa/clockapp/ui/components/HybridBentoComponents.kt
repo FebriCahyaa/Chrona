@@ -9,6 +9,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import android.graphics.Paint
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -103,6 +104,7 @@ fun HybridBentoCard(
     val pressed by interactionSource.collectIsPressedAsState()
     val shape = RoundedCornerShape(30.dp)
     val isNeumorphic = themeMode == AppThemeMode.NEUMORPHIC
+    val darkMode = isSystemInDarkTheme()
 
     val scale by animateFloatAsState(
         targetValue = if (pressed) 0.985f else 1f,
@@ -135,12 +137,12 @@ fun HybridBentoCard(
             .then(
                 if (isNeumorphic) {
                     Modifier.drawBehind {
-                        val light = if (androidx.compose.foundation.isSystemInDarkTheme()) {
+                        val light = if (darkMode) {
                             Color.White.copy(alpha = 0.18f)
                         } else {
                             Color.White.copy(alpha = 0.78f)
                         }
-                        val dark = if (androidx.compose.foundation.isSystemInDarkTheme()) {
+                        val dark = if (darkMode) {
                             Color.Black.copy(alpha = 0.78f)
                         } else {
                             Color.Black.copy(alpha = 0.20f)
