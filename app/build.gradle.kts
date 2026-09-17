@@ -36,7 +36,7 @@ android {
         disable += "MissingTranslation"
     }
     namespace = "com.febricahyaa.clockapp"
-    compileSdk = 36
+    compileSdk = 37
     ndkVersion = "28.2.13676358"
 
     defaultConfig {
