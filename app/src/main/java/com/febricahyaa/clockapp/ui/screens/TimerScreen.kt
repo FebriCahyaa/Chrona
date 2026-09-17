@@ -2,7 +2,7 @@
 
 package com.febricahyaa.clockapp.ui.screens
 
-import androidx.compose.foundation.border
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,7 +18,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -28,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
 import com.febricahyaa.clockapp.ui.components.ChronaCard
 import com.febricahyaa.clockapp.ui.components.GlassPill
@@ -66,21 +66,11 @@ fun TimerScreen(
         ChronaCard(Modifier.fillMaxWidth(), glass = glass) {
             Column(Modifier.fillMaxWidth().padding(vertical = 24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Box(Modifier.size(286.dp), contentAlignment = Alignment.Center) {
-                    CircularWavyProgressIndicator(
-                        progress = { progress },
-                        modifier = Modifier.fillMaxSize().padding(18.dp),
-                        color = MaterialTheme.colorScheme.primary,
-                        trackColor = trackColor,
-                        amplitude = { if (running) 0.85f else 0.18f },
-                        wavelength = 30.dp,
-                        waveSpeed = 42.dp,
-                    )
-                    Box(
-                        Modifier
-                            .fillMaxSize()
-                            .padding(52.dp)
-                            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), CircleShape),
-                    )
+                    Canvas(Modifier.fillMaxSize().padding(18.dp)) {
+                        val stroke = 14.dp.toPx()
+                        drawArc(trackColor, -90f, 360f, false, style = androidx.compose.ui.graphics.drawscope.Stroke(stroke, cap = StrokeCap.Round))
+                        drawArc(MaterialTheme.colorScheme.primary, -90f, 360f * progress, false, style = androidx.compose.ui.graphics.drawscope.Stroke(stroke, cap = StrokeCap.Round))
+                    }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(formatTimer(remainingSeconds), fontSize = 50.sp, fontWeight = FontWeight.Light, letterSpacing = (-1.5).sp)
                         Text(if (running) "Running" else "Ready", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)

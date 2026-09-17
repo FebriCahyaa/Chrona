@@ -94,16 +94,19 @@ fun WorldClockScreen(
             }
         }
         Spacer(Modifier.height(12.dp))
-        if (visible.isEmpty()) {
-            ChronaCard(Modifier.fillMaxWidth(), glass = glass) {
-                Column(Modifier.fillMaxWidth().padding(30.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("No cities here yet", fontWeight = FontWeight.SemiBold)
-                    Spacer(Modifier.height(5.dp))
-                    Text("Add another timezone to build your world.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Box(Modifier.fillMaxWidth().weight(1f)) {
+            if (visible.isEmpty()) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    ChronaCard(Modifier.fillMaxWidth(), glass = glass) {
+                        Column(Modifier.fillMaxWidth().padding(30.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("No cities here yet", fontWeight = FontWeight.SemiBold)
+                            Spacer(Modifier.height(5.dp))
+                            Text("Add another timezone to build your world.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
                 }
-            }
-        } else {
-            LazyColumn(Modifier.weight(1f).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            } else {
+                LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 items(visible, key = { it.id }) { item ->
                     WorldClockCard(
                         item = item,
@@ -115,6 +118,7 @@ fun WorldClockScreen(
                     )
                 }
                 item { Spacer(Modifier.height(18.dp)) }
+                }
             }
         }
     }

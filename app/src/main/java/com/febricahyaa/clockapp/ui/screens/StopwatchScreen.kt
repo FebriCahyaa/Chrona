@@ -49,48 +49,55 @@ fun StopwatchScreen(
 ) {
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
         Spacer(Modifier.height(12.dp))
-        ScreenHeader(
-            title = "Stopwatch",
-            subtitle = "Track every second",
-            onBack = onBack,
-            actions = { IconCircleButton(Icons.Filled.Refresh, onReset) },
-        )
-        Spacer(Modifier.height(22.dp))
-        ChronaCard(Modifier.fillMaxWidth(), glass = glass) {
-            Column(Modifier.fillMaxWidth().padding(vertical = 28.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(formatStopwatch(elapsedMillis), fontSize = 56.sp, fontWeight = FontWeight.Light, letterSpacing = (-2).sp)
-                Spacer(Modifier.height(5.dp))
-                Text(if (isRunning) "Recording time" else "Ready", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Spacer(Modifier.height(22.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Surface(onClick = onLap, modifier = Modifier.size(54.dp), color = MaterialTheme.colorScheme.onSurface.copy(alpha = .07f), shape = CircleShape) {
-                        Icon(Icons.Filled.Flag, null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(16.dp))
+        ScreenHeader(title = "Stopwatch", subtitle = "Track every second", onBack = onBack, actions = { IconCircleButton(Icons.Filled.Refresh, onReset) })
+        Spacer(Modifier.height(8.dp))
+        if (laps.isEmpty()) {
+            Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(formatStopwatch(elapsedMillis), fontSize = 64.sp, fontWeight = FontWeight.Light, letterSpacing = (-2.5).sp)
+                    Spacer(Modifier.height(6.dp))
+                    Text(if (isRunning) "Recording time" else "Ready", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.height(30.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(18.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Surface(onClick = onLap, modifier = Modifier.size(58.dp), color = MaterialTheme.colorScheme.onSurface.copy(alpha = .07f), shape = CircleShape) {
+                            Icon(Icons.Filled.Flag, null, modifier = Modifier.padding(17.dp))
+                        }
+                        Surface(onClick = onToggleRun, modifier = Modifier.size(84.dp), color = MaterialTheme.colorScheme.primary, shape = CircleShape, shadowElevation = 16.dp) {
+                            Icon(if (isRunning) Icons.Filled.Pause else Icons.Filled.PlayArrow, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.padding(25.dp))
+                        }
+                        GlassPill(onClick = onReset) { Text("Reset", fontSize = 11.sp) }
                     }
-                    Surface(onClick = onToggleRun, modifier = Modifier.size(72.dp), color = MaterialTheme.colorScheme.primary, shape = CircleShape, shadowElevation = 10.dp) {
-                        Icon(if (isRunning) Icons.Filled.Pause else Icons.Filled.PlayArrow, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.padding(21.dp))
-                    }
-                    GlassPill(onClick = onReset) { Text("Reset", fontSize = 11.sp) }
                 }
             }
-        }
-        Spacer(Modifier.height(18.dp))
-        if (laps.isEmpty()) {
-            Text("Laps will appear here while the stopwatch is running.", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         } else {
-            LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(0.dp)) {
-                itemsIndexed(laps.asReversed()) { index, total ->
-                    val n = laps.size - index
-                    val previous = if (n > 1) laps[n - 2] else 0L
-                    Row(Modifier.fillMaxWidth().padding(vertical = 13.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Lap $n", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text("+${formatStopwatch(total - previous)}", fontSize = 13.sp, fontWeight = FontWeight.Medium)
-                        Text(formatStopwatch(total), fontSize = 12.sp)
+            Column(Modifier.fillMaxWidth().weight(1f)) {
+                Box(Modifier.fillMaxWidth().padding(vertical = 18.dp), contentAlignment = Alignment.Center) {
+                    Text(formatStopwatch(elapsedMillis), fontSize = 58.sp, fontWeight = FontWeight.Light, letterSpacing = (-2.2).sp)
+                }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                    Surface(onClick = onLap, modifier = Modifier.size(56.dp), color = MaterialTheme.colorScheme.onSurface.copy(alpha = .07f), shape = CircleShape) { Icon(Icons.Filled.Flag, null, modifier = Modifier.padding(16.dp)) }
+                    Spacer(Modifier.size(18.dp))
+                    Surface(onClick = onToggleRun, modifier = Modifier.size(84.dp), color = MaterialTheme.colorScheme.primary, shape = CircleShape, shadowElevation = 16.dp) { Icon(if (isRunning) Icons.Filled.Pause else Icons.Filled.PlayArrow, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.padding(25.dp)) }
+                    Spacer(Modifier.size(18.dp))
+                    GlassPill(onClick = onReset) { Text("Reset", fontSize = 11.sp) }
+                }
+                Spacer(Modifier.height(18.dp))
+                LazyColumn(Modifier.fillMaxWidth().weight(1f)) {
+                    itemsIndexed(laps.asReversed()) { index, total ->
+                        val n = laps.size - index
+                        val previous = if (n > 1) laps[n - 2] else 0L
+                        Row(Modifier.fillMaxWidth().padding(vertical = 13.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("Lap $n", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("+${formatStopwatch(total - previous)}", fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                            Text(formatStopwatch(total), fontSize = 12.sp)
+                        }
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .45f))
                     }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .45f))
                 }
             }
         }
     }
+}
 }
 
 fun formatStopwatch(millis: Long): String {

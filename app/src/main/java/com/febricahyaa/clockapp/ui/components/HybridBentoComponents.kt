@@ -7,6 +7,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import android.graphics.Paint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -43,7 +44,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -129,7 +132,38 @@ fun HybridBentoCard(
     Box(
         modifier
             .clip(shape)
-            .shadow(elevation, shape, clip = false)
+            .then(
+                if (isNeumorphic) {
+                    Modifier.drawBehind {
+                        val light = if (androidx.compose.foundation.isSystemInDarkTheme()) {
+                            Color.White.copy(alpha = 0.18f)
+                        } else {
+                            Color.White.copy(alpha = 0.78f)
+                        }
+                        val dark = if (androidx.compose.foundation.isSystemInDarkTheme()) {
+                            Color.Black.copy(alpha = 0.78f)
+                        } else {
+                            Color.Black.copy(alpha = 0.20f)
+                        }
+                        val offsetPx = 6.dp.toPx()
+                        val blurPx = 18.dp.toPx()
+                        val radiusPx = 30.dp.toPx()
+                        val paint = Paint().apply {
+                            isAntiAlias = true
+                            style = Paint.Style.FILL
+                            color = fill.toArgb()
+                        }
+                        paint.setShadowLayer(blurPx, -offsetPx, -offsetPx, light.toArgb())
+                        drawContext.canvas.nativeCanvas.drawRoundRect(0f, 0f, size.width, size.height, radiusPx, radiusPx, paint)
+                        paint.clearShadowLayer()
+                        paint.setShadowLayer(blurPx, offsetPx, offsetPx, dark.toArgb())
+                        drawContext.canvas.nativeCanvas.drawRoundRect(0f, 0f, size.width, size.height, radiusPx, radiusPx, paint)
+                        paint.clearShadowLayer()
+                    }
+                } else {
+                    Modifier.shadow(elevation, shape, clip = false)
+                }
+            )
             .background(fill, shape)
             .border(
                 BorderStroke(
