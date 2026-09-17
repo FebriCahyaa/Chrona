@@ -35,24 +35,6 @@
     <string name="nav_settings">Settings</string>
 
     <!-- Command bar -->
-    <string name="command_bar_placeholder">Try \"alarm\", \"timer\", \"dark\"...</string>
-    <string name="command_bar_run">Run command</string>
-    <string name="command_bar_close">Close command bar</string>
-    <string name="command_bar_collapsed_hint">Quick command…</string>
-    <string name="command_feedback_clock">World clock opened.</string>
-    <string name="command_feedback_world">World clock opened.</string>
-    <string name="command_feedback_alarm">Alarm opened.</string>
-    <string name="command_feedback_timer">Timer opened.</string>
-    <string name="command_feedback_stopwatch">Stopwatch opened.</string>
-    <string name="command_feedback_dark">Dark theme selected.</string>
-    <string name="command_feedback_light">Light theme selected.</string>
-    <string name="command_feedback_settings">Settings opened.</string>
-    <string name="command_feedback_format_12">12-hour format selected.</string>
-    <string name="command_feedback_format_24">24-hour format selected.</string>
-    <string name="command_feedback_help">Available commands: clock, world, alarm, timer, stopwatch, dark, light, settings, 12, 24, reset, help.</string>
-    <string name="command_feedback_empty">Enter a command.</string>
-    <string name="command_feedback_reset">Settings reset.</string>
-    <string name="command_feedback_unknown">Unknown command: %1$s</string>
 
     <!-- Clock (world clock) screen -->
     <string name="clock_screen_title">LOCAL TIME</string>

@@ -41,12 +41,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.febricahyaa.clockapp.command.ClockCommand
 import com.febricahyaa.clockapp.model.AlarmItem
 import com.febricahyaa.clockapp.navigation.AppDestination
 import com.febricahyaa.clockapp.ui.components.ChronaCard
 import com.febricahyaa.clockapp.ui.components.ClockDisplay
-import com.febricahyaa.clockapp.ui.components.CommandBar
 import com.febricahyaa.clockapp.ui.components.GlassPill
 import com.febricahyaa.clockapp.ui.components.GradientIconBox
 import com.febricahyaa.clockapp.ui.components.IconCircleButton
@@ -67,7 +65,6 @@ fun HomeScreen(
     onNavigate: (AppDestination) -> Unit,
     onOpenNightstand: () -> Unit,
     onOpenSettings: () -> Unit,
-    onCommand: (ClockCommand) -> Unit,
 ) {
     val now = rememberZonedNow()
     val locale = LocalConfiguration.current.locales[0]
@@ -89,7 +86,7 @@ fun HomeScreen(
                 Text("Chrona", style = MaterialTheme.typography.headlineLarge)
                 Text(greeting, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            CommandBar(onCommand = onCommand)
+            
             Spacer(Modifier.size(8.dp))
             IconCircleButton(Icons.Filled.Settings, onOpenSettings, contentDescription = "Settings")
         }

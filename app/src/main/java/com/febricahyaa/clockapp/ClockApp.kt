@@ -33,12 +33,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.febricahyaa.clockapp.command.ClockCommand
 import com.febricahyaa.clockapp.di.AppViewModelFactory
 import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.navigation.AppDestination
 import com.febricahyaa.clockapp.ui.components.ChronaBackdrop
-import com.febricahyaa.clockapp.ui.components.FloatingNavigationBar
 import com.febricahyaa.clockapp.ui.components.NightstandDialog
 import com.febricahyaa.clockapp.ui.screens.AlarmScreen
 import com.febricahyaa.clockapp.ui.screens.HomeScreen
@@ -100,27 +98,7 @@ fun ClockApp() {
 
     // Command palette actions are kept at the composition root so navigation
     // and settings mutations remain outside leaf UI components.
-    fun handleCommand(command: ClockCommand) {
-        when (command) {
-            ClockCommand.ClockView -> destination = AppDestination.CLOCK
-            ClockCommand.WorldClock -> destination = AppDestination.WORLD
-            ClockCommand.Alarm -> destination = AppDestination.ALARM
-            ClockCommand.Timer -> destination = AppDestination.TIMER
-            ClockCommand.Stopwatch -> destination = AppDestination.STOPWATCH
-            ClockCommand.Dark -> settingsViewModel.updateThemeMode(AppThemeMode.DARK)
-            ClockCommand.Light -> settingsViewModel.updateThemeMode(AppThemeMode.LIGHT)
-            ClockCommand.Settings -> showSettings = true
-            ClockCommand.Format12 -> settingsViewModel.updateUse24HourFormat(false)
-            ClockCommand.Format24 -> settingsViewModel.updateUse24HourFormat(true)
-            ClockCommand.Reset -> {
-                settingsViewModel.resetToDefaults()
-                destination = AppDestination.CLOCK
-                showSettings = false
-            }
-            ClockCommand.Help, ClockCommand.Empty -> Unit
-            is ClockCommand.Unknown -> Unit
-        }
-    }
+
 
     ChronaTheme(settingsState.settings) {
         val glass = settingsState.settings.themeMode == AppThemeMode.GLASS
@@ -138,8 +116,7 @@ fun ClockApp() {
                                 onNavigate = { destination = it },
                                 onOpenNightstand = { showNightstand = true },
                                 onOpenSettings = { showSettings = true },
-                                onCommand = ::handleCommand,
-                            )
+                                                            )
                             AppDestination.WORLD -> WorldClockScreen(
                                 worldClockState.items, worldClockState.favorites, settingsState.use24HourFormat, glass,
                                 onAdd = worldClockViewModel::add,
@@ -179,8 +156,7 @@ fun ClockApp() {
                         }
                     }
                     Box(Modifier.padding(horizontal = 14.dp, vertical = 10.dp).navigationBarsPadding()) {
-                        FloatingNavigationBar(destination, onSelected = { destination = it })
-                    }
+}
                 }
             }
         }
