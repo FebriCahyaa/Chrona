@@ -113,7 +113,7 @@ jobs:
         run: git push origin HEAD:${GITHUB_REF_NAME}
 
       - name: Upload debug APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: chrona-android17-debug
           path: app/build/outputs/apk/debug/*.apk
