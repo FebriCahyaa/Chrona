@@ -93,7 +93,7 @@ jobs:
           esac
       - name: Upload debug APK
         if: matrix.task == 'assemble'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: chrona-debug-${{ github.sha }}
           path: '**/build/outputs/apk/debug/*.apk'
