@@ -31,7 +31,6 @@ val releaseSigningConfigured = listOf(
 
 android {
     lint {
-        baseline = file("lint-baseline.xml")
         abortOnError = true
         checkReleaseBuilds = true
         disable += "MissingTranslation"

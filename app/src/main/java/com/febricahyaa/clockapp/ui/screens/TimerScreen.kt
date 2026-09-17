@@ -36,6 +36,7 @@ import com.febricahyaa.clockapp.ui.components.GlassPill
 import com.febricahyaa.clockapp.ui.components.IconCircleButton
 import com.febricahyaa.clockapp.ui.components.LocalAccentGradient
 import com.febricahyaa.clockapp.ui.components.ScreenHeader
+import java.util.Locale
 
 @Composable
 fun TimerScreen(
@@ -108,5 +109,5 @@ private fun formatTimer(total: Int): String {
     val h = total / 3600
     val m = (total / 60) % 60
     val s = total % 60
-    return if (h > 0) String.format("%02d:%02d:%02d", h, m, s) else String.format("%02d:%02d", m, s)
+    return if (h > 0) String.format(Locale.US, "%02d:%02d:%02d", h, m, s) else String.format(Locale.US, "%02d:%02d", m, s)
 }
