@@ -21,7 +21,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.AlertDialog
@@ -85,7 +84,7 @@ fun WorldClockScreen(
         })
         Spacer(Modifier.height(14.dp))
         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-            listOf("All", "Favorites", "Asia", "Europe", "Americas", "Oceania").forEach { r ->
+            listOf("All", "Favorites", "Asia", "Europe", "Americas", "Oceania", "Africa").forEach { r ->
                 GlassPill(selected = region == r, onClick = { region = r }) { Text(r, fontSize = 10.sp) }
             }
         }
@@ -131,7 +130,28 @@ private fun WorldClockCard(
     onRemove: () -> Unit,
     onToggleFavorite: () -> Unit,
 ) {
-    val now = rememberZonedNow(ZoneId.of(item.zoneId))
+    val zoneId = runCatching { ZoneId.of(item.zoneId) }.getOrNull()
+    if (zoneId == null) {
+        ChronaCard(Modifier.fillMaxWidth(), glass = glass) {
+            Column(Modifier.fillMaxWidth().padding(13.dp)) {
+                Text(item.city, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.height(3.dp))
+                Text(
+                    "Invalid timezone",
+                    fontSize = 10.sp,
+                    color = MaterialTheme.colorScheme.error,
+                )
+                Text(
+                    item.zoneId,
+                    fontSize = 9.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        return
+    }
+
+    val now = rememberZonedNow(zoneId)
     val localNow = rememberZonedNow()
     val epochMillis = now.toInstant().toEpochMilli()
     val time = ChronaTimeEngine.shortTime(epochMillis, now.zone, use24HourFormat)
@@ -190,11 +210,24 @@ private fun countryOf(zoneId: String) = when {
     else -> "World"
 }
 
+/**
+ * Returns deterministic, Compose-safe HSV hues for a city thumbnail.
+ *
+ * floorMod is intentionally used instead of abs/hash % 360 because
+ * abs(Int.MIN_VALUE) remains negative and would otherwise make Color.hsv
+ * throw during composition. The returned range is always [0, 360).
+ */
+internal fun cityThumbnailHues(cityHash: Int): Pair<Float, Float> {
+    val seed = Math.floorMod(cityHash, 360)
+    val bottom = Math.floorMod(seed + 34, 360)
+    return seed.toFloat() to bottom.toFloat()
+}
+
 @Composable
 private fun CityThumbnail(city: String, modifier: Modifier = Modifier) {
-    val seed = abs(city.hashCode()) % 360
-    val top = Color.hsv(seed.toFloat(), .34f, .82f)
-    val bottom = Color.hsv((seed + 34).toFloat(), .48f, .48f)
+    val (topHue, bottomHue) = cityThumbnailHues(city.hashCode())
+    val top = Color.hsv(topHue, .34f, .82f)
+    val bottom = Color.hsv(bottomHue, .48f, .48f)
     Box(modifier.clip(RoundedCornerShape(16.dp)).background(Brush.verticalGradient(listOf(top, bottom)))) {
         Canvas(Modifier.fillMaxSize()) {
             val base = size.height * .82f
