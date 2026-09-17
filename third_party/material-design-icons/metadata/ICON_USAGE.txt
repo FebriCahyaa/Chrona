@@ -1,0 +1,27 @@
+# Chrona icon usage manifest
+# Upstream commit: 40a7a292a79d9394157e1ea24f83d52d5e17c556
+AutoMirrored.Filled.ArrowBack
+Filled.AccessAlarm
+Filled.AccessTime
+Filled.Add
+Filled.Alarm
+Filled.ArrowBackIosNew
+Filled.AutoAwesome
+Filled.Check
+Filled.ChevronRight
+Filled.Close
+Filled.Cloud
+Filled.DeleteOutline
+Filled.Flag
+Filled.Gavel
+Filled.GridView
+Filled.Palette
+Filled.Pause
+Filled.PlayArrow
+Filled.Public
+Filled.Refresh
+Filled.Settings
+Filled.Star
+Filled.StarBorder
+Filled.Timer
+Filled.Tune
