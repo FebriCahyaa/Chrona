@@ -27,41 +27,42 @@ import com.febricahyaa.clockapp.ui.components.LocalAccentGradient
 fun ChronaTheme(settings: ClockSettings, content: @Composable () -> Unit) {
     val context = LocalContext.current
     val dark = isSystemInDarkTheme()
-    val mode = when (settings.themeMode) {
-        AppThemeMode.NEUMORPHIC -> AppThemeMode.NEUMORPHIC
-        AppThemeMode.MATERIAL_YOU -> AppThemeMode.MATERIAL_YOU
-        else -> AppThemeMode.MATERIAL_YOU
-    }
-
-    val colorScheme = when {
-        mode == AppThemeMode.MATERIAL_YOU &&
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-            settings.themeAccent == ThemeAccent.SYSTEM -> {
-            if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        mode == AppThemeMode.NEUMORPHIC -> {
-            ThemeEngine.neumorphicScheme(
-                seed = ThemeEngine.seedColorFor(settings.themeAccent)
-                    ?: ThemeEngine.seedColorFor(ThemeAccent.PEACH)!!,
-                dark = dark,
-            )
-        }
-        else -> {
-            ThemeEngine.schemeFor(
-                seed = ThemeEngine.seedColorFor(settings.themeAccent)
-                    ?: ThemeEngine.seedColorFor(ThemeAccent.PEACH)!!,
-                isDark = dark,
-            )
-        }
-    }
-
-    val (accentStart, accentEnd) = accentGradientColors(settings.themeAccent, colorScheme.primary)
-
     Crossfade(
         targetState = settings.themeMode to settings.themeAccent,
         animationSpec = tween(durationMillis = 360),
         label = "chrona-theme-transition",
-    ) {
+    ) { targetTheme ->
+        val (themeMode, themeAccent) = targetTheme
+        val mode = when (themeMode) {
+            AppThemeMode.NEUMORPHIC -> AppThemeMode.NEUMORPHIC
+            AppThemeMode.MATERIAL_YOU -> AppThemeMode.MATERIAL_YOU
+            else -> AppThemeMode.MATERIAL_YOU
+        }
+
+        val colorScheme = when {
+            mode == AppThemeMode.MATERIAL_YOU &&
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                themeAccent == ThemeAccent.SYSTEM -> {
+                if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            }
+            mode == AppThemeMode.NEUMORPHIC -> {
+                ThemeEngine.neumorphicScheme(
+                    seed = ThemeEngine.seedColorFor(themeAccent)
+                        ?: ThemeEngine.seedColorFor(ThemeAccent.PEACH)!!,
+                    dark = dark,
+                )
+            }
+            else -> {
+                ThemeEngine.schemeFor(
+                    seed = ThemeEngine.seedColorFor(themeAccent)
+                        ?: ThemeEngine.seedColorFor(ThemeAccent.PEACH)!!,
+                    isDark = dark,
+                )
+            }
+        }
+
+        val (accentStart, accentEnd) = accentGradientColors(themeAccent, colorScheme.primary)
+
         CompositionLocalProvider(
             LocalAccentGradient provides Brush.linearGradient(listOf(accentStart, accentEnd)),
         ) {
