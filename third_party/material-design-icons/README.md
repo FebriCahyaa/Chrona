@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
+
 # Material Design Icons / Symbols
 
 Chrona synchronizes selected official Google Material Design Icons and Material Symbols during CI.

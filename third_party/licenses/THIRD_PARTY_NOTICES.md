@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
+
 # Third-party notices
 
 - Google Material Design Icons / Symbols: Apache License 2.0

@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
+
 # Android assets and AOSP integration
 
 Chrona uses a CI-controlled synchronization process for official Google Material Design Icons/Symbols metadata and selected assets. The full Android SDK and complete AOSP tree are not committed to Git because they are build-system/platform sources rather than application assets.

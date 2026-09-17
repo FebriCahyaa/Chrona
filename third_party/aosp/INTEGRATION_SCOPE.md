@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
+
 # Integration scope
 
 Chrona uses the installed Android SDK and resolved AndroidX/Compose artifacts.
