@@ -1,0 +1,273 @@
+# Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+
+name: Release Android APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release tag, for example v0.3.0"
+        required: true
+        type: string
+      prerelease:
+        description: "Mark as prerelease"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ inputs.version }}
+  cancel-in-progress: false
+
+env:
+  JAVA_VERSION: "17"
+  ANDROID_API_LEVEL: "36"
+  ANDROID_BUILD_TOOLS: "36.0.0"
+  ANDROID_NDK_VERSION: "28.2.13676358"
+  ANDROID_CMAKE_VERSION: "3.31.6"
+
+jobs:
+  release:
+    name: Build, sign and publish release
+    runs-on: ubuntu-24.04
+    environment: release
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          sdkmanager --install \
+            "platform-tools" \
+            "platforms;android-${ANDROID_API_LEVEL}" \
+            "build-tools;${ANDROID_BUILD_TOOLS}" \
+            "cmake;${ANDROID_CMAKE_VERSION}" \
+            "ndk;${ANDROID_NDK_VERSION}"
+
+      - name: Restore release keystore
+        env:
+          CHRONA_KEYSTORE_BASE64: ${{ secrets.CHRONA_KEYSTORE_BASE64 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CHRONA_KEYSTORE_BASE64"
+
+          SIGNING_DIR="$RUNNER_TEMP/chrona-signing"
+          mkdir -p "$SIGNING_DIR"
+
+          printf '%s' "$CHRONA_KEYSTORE_BASE64" | base64 --decode > "$SIGNING_DIR/chrona-release.jks"
+          test -s "$SIGNING_DIR/chrona-release.jks"
+
+          chmod 600 "$SIGNING_DIR/chrona-release.jks"
+
+          # Keep the private keystore outside the checked-out repository.
+          echo "CHRONA_KEYSTORE_PATH=$SIGNING_DIR/chrona-release.jks" >> "$GITHUB_ENV"
+
+      - name: Verify release signing inputs
+        env:
+          CHRONA_KEYSTORE_PASSWORD: ${{ secrets.CHRONA_KEYSTORE_PASSWORD }}
+          CHRONA_KEY_ALIAS: ${{ secrets.CHRONA_KEY_ALIAS }}
+          CHRONA_KEY_PASSWORD: ${{ secrets.CHRONA_KEY_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CHRONA_KEYSTORE_PASSWORD"
+          test -n "$CHRONA_KEY_ALIAS"
+          test -n "$CHRONA_KEY_PASSWORD"
+
+          keytool -list \
+            -keystore "$CHRONA_KEYSTORE_PATH" \
+            -storepass:env CHRONA_KEYSTORE_PASSWORD \
+            -alias "$CHRONA_KEY_ALIAS" \
+            >/dev/null
+
+      - name: Validate release tag and bump version
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          [[ "$RELEASE_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]] \
+            || { echo "Invalid release tag: $RELEASE_VERSION" >&2; exit 1; }
+
+          if git ls-remote --exit-code --refs origin "refs/tags/${RELEASE_VERSION}" >/dev/null 2>&1; then
+            echo "Release tag already exists: ${RELEASE_VERSION}" >&2
+            exit 1
+          fi
+
+          VERSION="${RELEASE_VERSION#v}"
+          CURRENT_VERSION_CODE="$(sed -nE 's/^[[:space:]]*versionCode = ([0-9]+).*/\1/p' app/build.gradle.kts | head -n1)"
+          test -n "$CURRENT_VERSION_CODE"
+          NEXT_VERSION_CODE=$((CURRENT_VERSION_CODE + 1))
+
+          sed -i -E 's/versionName = "[^"]+"/versionName = "'"$VERSION"'"/' app/build.gradle.kts
+          sed -i -E 's/versionCode = [0-9]+/versionCode = '"$NEXT_VERSION_CODE"'/' app/build.gradle.kts
+
+          {
+            echo "CHRONA_RELEASE_VERSION=$VERSION"
+            echo "CHRONA_RELEASE_VERSION_CODE=$NEXT_VERSION_CODE"
+          } >> "$GITHUB_ENV"
+
+          echo "Release versionName: $VERSION"
+          echo "Release versionCode: $NEXT_VERSION_CODE"
+
+      - name: Run tests and lint
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x ./gradlew
+          ./gradlew --no-daemon --stacktrace test lint
+
+      - name: Build signed release APK
+        env:
+          CHRONA_KEYSTORE_PASSWORD: ${{ secrets.CHRONA_KEYSTORE_PASSWORD }}
+          CHRONA_KEY_ALIAS: ${{ secrets.CHRONA_KEY_ALIAS }}
+          CHRONA_KEY_PASSWORD: ${{ secrets.CHRONA_KEY_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./gradlew --no-daemon --stacktrace assembleRelease
+
+      - name: Collect release APK
+        id: collect_apk
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release
+
+          mapfile -t APK_FILES < <(find app/build/outputs/apk/release -maxdepth 1 -type f -name '*.apk' -print | sort)
+          if [ "${#APK_FILES[@]}" -ne 1 ]; then
+            echo "Expected exactly one release APK, found ${#APK_FILES[@]}" >&2
+            printf '%s\n' "${APK_FILES[@]}" >&2
+            exit 1
+          fi
+
+          APK_SOURCE="${APK_FILES[0]}"
+          APK_NAME="$(basename "$APK_SOURCE")"
+          cp "$APK_SOURCE" "release/$APK_NAME"
+          echo "apk=release/$APK_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Verify APK signature
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="${{ steps.collect_apk.outputs.apk }}"
+          APKSIGNER="$ANDROID_SDK_ROOT/build-tools/${ANDROID_BUILD_TOOLS}/apksigner"
+
+          test -x "$APKSIGNER"
+          "$APKSIGNER" verify --verbose "$APK" | tee release/apksigner-verify.txt
+          "$APKSIGNER" verify --print-certs "$APK" | tee release/apksigner-certs.txt
+
+      - name: Generate SHA-256 checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="${{ steps.collect_apk.outputs.apk }}"
+          sha256sum "$APK" > "${APK}.sha256"
+          cat "${APK}.sha256"
+
+      - name: Upload CI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: chrona-release-${{ inputs.version }}
+          path: |
+            release/*.apk
+            release/*.sha256
+            release/apksigner-verify.txt
+            release/apksigner-certs.txt
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Generate verified changelog entry
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="${RELEASE_VERSION#v}"
+          DATE="$(date -u +%Y-%m-%d)"
+          APK="${{ steps.collect_apk.outputs.apk }}"
+          CHECKSUM="$(cut -d' ' -f1 "${APK}.sha256")"
+          {
+            printf '\n## %s — %s\n\n' "$VERSION" "$DATE"
+            printf '### 🏗️ Foundation\n'
+            printf '%s\n' '- Release built from the verified repository source.'
+            printf '\n### ⚙️ Build System\n'
+            printf '%s\n' '- Release APK assembled by GitHub Actions.'
+            printf '%s\n' '- Release checks completed before publication.'
+            printf '\n### 🔐 Security\n'
+            printf '%s\n' '- APK signature verified with apksigner.'
+            printf '%s\n' '- SHA-256 checksum generated for the APK artifact.'
+            printf '\n### 📦 Build Metadata\n'
+            printf '%s\n' "- Commit: \`$RELEASE_SHA\`"
+            printf '%s\n' "- versionCode: \`${CHRONA_RELEASE_VERSION_CODE:-unknown}\`"
+            printf '%s\n' "- SHA-256: \`$CHECKSUM\`"
+            printf '\n### ⚠️ Known Issues\n'
+            printf '%s\n' '- Only issues confirmed by CI or documented source audit belong here.'
+          } > release-changelog.md
+          cat release-changelog.md
+          {
+            cat release-changelog.md
+            cat CHANGELOG.md
+          } > CHANGELOG.md.tmp
+          mv CHANGELOG.md.tmp CHANGELOG.md
+
+      - name: Commit version and changelog back to repository
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app/build.gradle.kts CHANGELOG.md
+          if git diff --cached --quiet; then
+            echo 'No version or changelog changes to commit.'
+          else
+            git commit -m "chore(release): bump ${RELEASE_VERSION} and changelog"
+            git push origin HEAD:${GITHUB_REF_NAME}
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.version }}
+          target_commitish: ${{ github.ref_name }}
+          name: Chrona ${{ inputs.version }}
+          prerelease: ${{ inputs.prerelease }}
+          body_path: release-changelog.md
+          generate_release_notes: false
+          files: |
+            release/*.apk
+            release/*.sha256
+            release/apksigner-verify.txt
+            release/apksigner-certs.txt
+
+      - name: Remove temporary signing material
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          if [ -n "${CHRONA_KEYSTORE_PATH:-}" ]; then
+            shred -u "$CHRONA_KEYSTORE_PATH" 2>/dev/null || rm -f "$CHRONA_KEYSTORE_PATH"
+          fi
+          rm -rf "$RUNNER_TEMP/chrona-signing"

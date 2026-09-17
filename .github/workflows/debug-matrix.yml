@@ -1,0 +1,84 @@
+# Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+
+name: Debug Matrix
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: debug-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: '17'
+  ANDROID_API_LEVEL: '36'
+  ANDROID_BUILD_TOOLS: '36.0.0'
+  ANDROID_NDK_VERSION: '28.2.13676358'
+  ANDROID_CMAKE_VERSION: '3.31.6'
+
+jobs:
+  debug:
+    name: Debug • ${{ matrix.task }} • ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { task: audit, os: ubuntu-24.04 }
+          - { task: unit, os: ubuntu-24.04 }
+          - { task: lint, os: ubuntu-24.04 }
+          - { task: assemble, os: ubuntu-24.04 }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+      - uses: android-actions/setup-android@v3
+      - name: Install Android packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          yes | sdkmanager --licenses >/dev/null 2>&1 || true
+          sdkmanager --install \
+            "platform-tools" \
+            "platforms;android-${ANDROID_API_LEVEL}" \
+            "build-tools;${ANDROID_BUILD_TOOLS}" \
+            "cmake;${ANDROID_CMAKE_VERSION}" \
+            "ndk;${ANDROID_NDK_VERSION}"
+      - name: Verify environment
+        run: |
+          set -euo pipefail
+          chmod +x ./gradlew
+          java -version
+          ./gradlew --version
+          test -d "$ANDROID_SDK_ROOT/platforms/android-${ANDROID_API_LEVEL}"
+          test -d "$ANDROID_SDK_ROOT/build-tools/${ANDROID_BUILD_TOOLS}"
+          test -d "$ANDROID_SDK_ROOT/cmake/${ANDROID_CMAKE_VERSION}"
+          test -d "$ANDROID_SDK_ROOT/ndk/${ANDROID_NDK_VERSION}"
+      - name: Run selected task
+        shell: bash
+        run: |
+          set -euo pipefail
+          case '${{ matrix.task }}' in
+            audit) bash scripts/source-audit.sh ;;
+            unit) ./gradlew --no-daemon --stacktrace test ;;
+            lint) ./gradlew --no-daemon --stacktrace lint ;;
+            assemble) ./gradlew --no-daemon --stacktrace assembleDebug ;;
+          esac
+      - name: Upload debug APK
+        if: matrix.task == 'assemble'
+        uses: actions/upload-artifact@v4
+        with:
+          name: chrona-debug-${{ github.sha }}
+          path: '**/build/outputs/apk/debug/*.apk'
+          if-no-files-found: error
+          retention-days: 14
