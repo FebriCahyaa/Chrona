@@ -6,6 +6,12 @@ Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
 
 Chrona release notes are evidence-based. Completed entries describe changes that exist in the repository source; build and release claims are added only after the corresponding CI gates succeed.
 
+## Toolchain maintenance — 2026-09-18
+
+- Bumped the checked-in Gradle wrapper to `9.7.1`.
+- Replaced repository CI SDK package management with the official Android CLI (`android sdk`).
+- Added scheduled package-maintenance source synchronization for Gradle and Android 17 toolchain pins.
+
 ## Unreleased — Foundation / Build System
 
 ### 🏗️ Foundation

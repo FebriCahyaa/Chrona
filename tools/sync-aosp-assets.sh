@@ -13,7 +13,7 @@ Android SDK Platform: 37; compile extension/minor requirement is handled by the 
 Build Tools: 37.0.0
 Java: 17
 Android Gradle Plugin: 9.4.0
-Gradle: 9.6.1
+Gradle: 9.7.1
 INFO
 
 cat > "$OUT_DIR/INTEGRATION_SCOPE.md" <<INFO
@@ -23,7 +23,7 @@ cat > "$OUT_DIR/INTEGRATION_SCOPE.md" <<INFO
 
 Chrona uses the installed Android SDK and resolved AndroidX/Compose artifacts.
 
-The complete AOSP tree is not copied into the application repository. Only source-level
+The Android SDK is managed in CI through the official Android CLI. The complete AOSP tree is not copied into the application repository. Only source-level
 patterns compatible with the current Android API, AndroidX, Compose, and Material 3 APIs
 should be integrated into Chrona.
 INFO

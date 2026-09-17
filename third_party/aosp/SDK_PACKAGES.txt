@@ -4,4 +4,5 @@ Android SDK Platform: 37; compile extension/minor requirement is handled by the 
 Build Tools: 37.0.0
 Java: 17
 Android Gradle Plugin: 9.4.0
-Gradle: 9.6.1
+Gradle: 9.7.1
+Android SDK management: Android CLI (android sdk)

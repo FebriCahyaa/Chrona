@@ -18,7 +18,9 @@ concurrency:
 
 env:
   JAVA_VERSION: '17'
-  ANDROID_PLATFORM_VERSION: '37.1'
+  ANDROID_PLATFORM_VERSION: '37'
+  ANDROID_PLATFORM_MINOR: '1'
+  GRADLE_VERSION: '9.7.1'
   ANDROID_BUILD_TOOLS: '37.0.0'
   ANDROID_NDK_VERSION: '28.2.13676358'
   ANDROID_CMAKE_VERSION: '3.31.6'
@@ -51,17 +53,28 @@ jobs:
         uses: android-actions/setup-android@v4
         with:
           packages: ''
-      - name: Install Android 17 SDK packages (API 37.1 platform)
+      - name: Setup Android CLI
         shell: bash
         run: |
           set -euo pipefail
-          yes | sdkmanager --licenses >/dev/null 2>&1 || true
-          sdkmanager --sdk_root="${ANDROID_SDK_ROOT}" --install \
+          curl -fsSL https://dl.google.com/android/cli/latest/linux_x86_64/install.sh | bash
+          export PATH="$HOME/.local/bin:$HOME/.android/bin:$PATH"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.android/bin" >> "$GITHUB_PATH"
+          command -v android
+          android --version
+          android update
+
+      - name: Install Android 17 SDK toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          android --sdk="${ANDROID_SDK_ROOT}" sdk install \
             "platform-tools" \
-            "platforms;android-${ANDROID_PLATFORM_VERSION}" \
-            "build-tools;${ANDROID_BUILD_TOOLS}" \
-            "cmake;${ANDROID_CMAKE_VERSION}" \
-            "ndk;${ANDROID_NDK_VERSION}"
+            "platforms/android-${ANDROID_PLATFORM_VERSION}" \
+            "build-tools/${ANDROID_BUILD_TOOLS}" \
+            "cmake/${ANDROID_CMAKE_VERSION}" \
+            "ndk/${ANDROID_NDK_VERSION}"
       - name: Verify environment
         shell: bash
         run: |
@@ -70,11 +83,14 @@ jobs:
           echo "Architecture: $(uname -m)"
           echo "JAVA_HOME: ${JAVA_HOME}"
           echo "ANDROID_SDK_ROOT: ${ANDROID_SDK_ROOT}"
+          echo "GRADLE_VERSION: ${GRADLE_VERSION}"
+          echo "ANDROID_PLATFORM: ${ANDROID_PLATFORM_VERSION}.${ANDROID_PLATFORM_MINOR}"
           command -v java
-          command -v sdkmanager
+          command -v android
           chmod +x ./gradlew
           java -version
           ./gradlew --version
+          grep -Fq "gradle-${GRADLE_VERSION}-bin.zip" gradle/wrapper/gradle-wrapper.properties
           test -d "$ANDROID_SDK_ROOT/platforms/android-${ANDROID_PLATFORM_VERSION}"
           test -d "$ANDROID_SDK_ROOT/build-tools/${ANDROID_BUILD_TOOLS}"
           test -d "$ANDROID_SDK_ROOT/cmake/${ANDROID_CMAKE_VERSION}"

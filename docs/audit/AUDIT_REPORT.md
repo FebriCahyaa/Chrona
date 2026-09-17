@@ -36,7 +36,7 @@ Audited the Android source across Kotlin, Java, C++, JNI, Compose/Material impor
 
 ## Build limitation
 
-A full Gradle/Android compile could not be executed in this environment because the Gradle wrapper distribution (`gradle-9.6.1-bin.zip`) is not locally cached and `services.gradle.org` is unreachable from the execution environment. Therefore this report distinguishes static/native validation from an Android compiler build.
+A full Gradle/Android compile could not be executed in this environment because the Gradle wrapper distribution (`gradle-9.7.1-bin.zip`) is not locally cached and `services.gradle.org` is unreachable from the execution environment. Therefore this report distinguishes static/native validation from an Android compiler build.
 
 ## Foundation lifecycle changes in this revision
 
@@ -61,6 +61,6 @@ Then, for native diagnostics:
 ./gradlew :app:externalNativeBuildDebug
 ```
 
-The Gradle 9.6.1 distribution itself is locally available for diagnostic use, but the Android Gradle Plugin and Android SDK/NDK dependency graph are not cached in this sandbox. An offline Gradle configuration attempt therefore stops at plugin resolution before Android compilation. Static source, XML, YAML, native syntax, Kotlin ViewModel type-checking, alarm-time checks, and copyright checks passed.
+The Gradle 9.7.1 distribution itself is locally available for diagnostic use, but the Android Gradle Plugin and Android SDK/NDK dependency graph are not cached in this sandbox. An offline Gradle configuration attempt therefore stops at plugin resolution before Android compilation. Static source, XML, YAML, native syntax, Kotlin ViewModel type-checking, alarm-time checks, and copyright checks passed.
 
 The CI configuration remains separated into Debug, Release, package-maintenance, and Dependabot workflows.

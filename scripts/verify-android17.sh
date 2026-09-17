@@ -11,17 +11,24 @@ if [[ -z "${ANDROID_SDK_ROOT}" ]]; then
   exit 1
 fi
 
-EXPECTED_PLATFORM="37.1"
+EXPECTED_PLATFORM="37"
+EXPECTED_PLATFORM_MINOR="1"
 EXPECTED_BUILD_TOOLS="37.0.0"
 EXPECTED_NDK="28.2.13676358"
 EXPECTED_CMAKE="3.31.6"
 EXPECTED_AGP="9.4.0"
-EXPECTED_GRADLE="9.6.1"
+EXPECTED_GRADLE="9.7.1"
 EXPECTED_COMPOSE_BOM="2026.09.00"
 EXPECTED_ADAPTIVE="1.4.0-alpha02"
 EXPECTED_M3_ALPHA="1.5.0-alpha28"
 
 fail() { echo "Android 17 verification failed: $*" >&2; exit 1; }
+
+# Prevent accidental regressions to the deprecated SDK Manager CLI.
+DEPRECATED_SDK_CLI="sdk""manager"
+if grep -RInE "(^|[^A-Za-z])${DEPRECATED_SDK_CLI}([^A-Za-z]|$)" .github/workflows scripts >/dev/null 2>&1; then
+  fail "deprecated SDK Manager reference remains in CI or verification scripts"
+fi
 
 APP_GRADLE="$ROOT_DIR/app/build.gradle.kts"
 ROOT_GRADLE="$ROOT_DIR/build.gradle.kts"
@@ -37,7 +44,7 @@ grep -Eq 'compileSdkMinor[[:space:]]*=[[:space:]]*1' "$APP_GRADLE" || fail "comp
 grep -Eq 'targetSdk[[:space:]]*=[[:space:]]*37' "$APP_GRADLE" || fail "targetSdk != 37"
 grep -Fq 'buildToolsVersion = "37.0.0"' "$APP_GRADLE" || fail "Build Tools != 37.0.0"
 grep -Fq 'id("com.android.application") version "9.4.0" apply false' "$ROOT_GRADLE" || fail "AGP != 9.4.0"
-grep -Fq 'gradle-9.6.1-' "$WRAPPER" || fail "Gradle wrapper != 9.6.1"
+grep -Fq "gradle-${EXPECTED_GRADLE}-" "$WRAPPER" || fail "Gradle wrapper != ${EXPECTED_GRADLE}"
 grep -Fq 'compose-bom-alpha:2026.09.00' "$APP_GRADLE" || fail "Compose alpha BOM != 2026.09.00"
 grep -Fq "material3.adaptive:adaptive:${EXPECTED_ADAPTIVE}" "$APP_GRADLE" || fail "Material 3 Adaptive != ${EXPECTED_ADAPTIVE}"
 grep -Fq 'MaterialExpressiveTheme' "$ROOT_DIR/app/src/main/java/com/febricahyaa/clockapp/ui/theme/ChronaTheme.kt" || fail "MaterialExpressiveTheme missing"
@@ -55,20 +62,18 @@ if ! grep -Fq "$EXPECTED_M3_ALPHA" "$APP_GRADLE"; then
   echo "NOTE: Material 3 $EXPECTED_M3_ALPHA is BOM-managed; source pin is $EXPECTED_COMPOSE_BOM."
 fi
 
-SDKMANAGER="${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager"
-if ! command -v sdkmanager >/dev/null 2>&1 && [[ -x "$SDKMANAGER" ]]; then
-  export PATH="${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${ANDROID_SDK_ROOT}/platform-tools:${PATH}"
-fi
-command -v sdkmanager >/dev/null 2>&1 || fail "sdkmanager is not available"
+# Android CLI is the supported SDK-management entry point.
+command -v android >/dev/null 2>&1 || fail "Android CLI (android) is not available"
+android --version >/dev/null 2>&1 || fail "Android CLI cannot execute"
 
-sdkmanager --list_installed | grep -Fq "platforms;android-${EXPECTED_PLATFORM}" \
-  || fail "Android ${EXPECTED_PLATFORM} platform is not installed"
-sdkmanager --list_installed | grep -Fq "build-tools;${EXPECTED_BUILD_TOOLS}" \
-  || fail "Build Tools ${EXPECTED_BUILD_TOOLS} are not installed"
-sdkmanager --list_installed | grep -Fq "ndk;${EXPECTED_NDK}" \
-  || fail "NDK ${EXPECTED_NDK} is not installed"
-sdkmanager --list_installed | grep -Fq "cmake;${EXPECTED_CMAKE}" \
-  || fail "CMake ${EXPECTED_CMAKE} is not installed"
+android --sdk="${ANDROID_SDK_ROOT}" sdk list "platforms/android-${EXPECTED_PLATFORM}" --all >/dev/null 2>&1 \
+  || fail "Android ${EXPECTED_PLATFORM} platform metadata is not available"
+android --sdk="${ANDROID_SDK_ROOT}" sdk list "build-tools/${EXPECTED_BUILD_TOOLS}" --all >/dev/null 2>&1 \
+  || fail "Build Tools ${EXPECTED_BUILD_TOOLS} metadata is not available"
+android --sdk="${ANDROID_SDK_ROOT}" sdk list "ndk/${EXPECTED_NDK}" --all >/dev/null 2>&1 \
+  || fail "NDK ${EXPECTED_NDK} metadata is not available"
+android --sdk="${ANDROID_SDK_ROOT}" sdk list "cmake/${EXPECTED_CMAKE}" --all >/dev/null 2>&1 \
+  || fail "CMake ${EXPECTED_CMAKE} metadata is not available"
 
 [[ -d "$ANDROID_SDK_ROOT/platforms/android-${EXPECTED_PLATFORM}" ]] || fail "Android ${EXPECTED_PLATFORM} platform directory missing"
 [[ -d "$ANDROID_SDK_ROOT/build-tools/${EXPECTED_BUILD_TOOLS}" ]] || fail "build-tools directory missing"
@@ -88,7 +93,7 @@ for workflow in .github/workflows/*.yml; do
 done
 
 echo "Android 17 CI verification passed"
-echo "  Platform:   ${EXPECTED_PLATFORM} (Android 17 / API 37, extension platform)"
+echo "  Platform:   ${EXPECTED_PLATFORM} (Android 17 / API 37, extension ${EXPECTED_PLATFORM_MINOR})"
 echo "  Build Tools:${EXPECTED_BUILD_TOOLS}"
 echo "  NDK:        ${EXPECTED_NDK}"
 echo "  CMake:      ${EXPECTED_CMAKE}"

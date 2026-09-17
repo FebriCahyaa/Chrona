@@ -24,7 +24,9 @@ concurrency:
 
 env:
   JAVA_VERSION: "17"
-  ANDROID_PLATFORM_VERSION: '37.1'
+  ANDROID_PLATFORM_VERSION: '37'
+  ANDROID_PLATFORM_MINOR: '1'
+  GRADLE_VERSION: '9.7.1'
   ANDROID_BUILD_TOOLS: "37.0.0"
   ANDROID_NDK_VERSION: "28.2.13676358"
   ANDROID_CMAKE_VERSION: "3.31.6"
@@ -46,23 +48,36 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: gradle
 
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
         with:
           packages: ''
 
-      - name: Install Android 17 SDK toolchain (API 37.1 platform)
+      - name: Setup Android CLI
         shell: bash
         run: |
           set -euo pipefail
-          yes | sdkmanager --licenses >/dev/null 2>&1 || true
-          sdkmanager --sdk_root="${ANDROID_SDK_ROOT}" --install \
-            "platform-tools" \
-            "platforms;android-${ANDROID_PLATFORM_VERSION}" \
-            "build-tools;${ANDROID_BUILD_TOOLS}" \
-            "cmake;${ANDROID_CMAKE_VERSION}" \
-            "ndk;${ANDROID_NDK_VERSION}"
+          curl -fsSL https://dl.google.com/android/cli/latest/linux_x86_64/install.sh | bash
+          export PATH="$HOME/.local/bin:$HOME/.android/bin:$PATH"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.android/bin" >> "$GITHUB_PATH"
+          command -v android
+          android --version
+          android update
 
+      - name: Install Android 17 SDK toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          android --sdk="${ANDROID_SDK_ROOT}" sdk install \
+            "platform-tools" \
+            "platforms/android-${ANDROID_PLATFORM_VERSION}" \
+            "build-tools/${ANDROID_BUILD_TOOLS}" \
+            "cmake/${ANDROID_CMAKE_VERSION}" \
+            "ndk/${ANDROID_NDK_VERSION}"
       - name: Restore release keystore
         env:
           CHRONA_KEYSTORE_BASE64: ${{ secrets.CHRONA_KEYSTORE_BASE64 }}

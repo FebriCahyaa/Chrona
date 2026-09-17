@@ -58,7 +58,7 @@ The project declares an Android 17 / Jetpack Compose UI toolchain in source:
 - Android Build Tools 37.0.0
 - NDK 28.2.13676358
 - CMake 3.31.6
-- Gradle 9.6.1
+- Gradle 9.7.1
 - Android Gradle Plugin 9.4.0
 - Kotlin 2.4.20
 - Jetpack Compose BOM 2026.09.00 (alpha channel for the latest Android 17-era Compose APIs)
@@ -80,7 +80,7 @@ Release builds require the release signing environment described in [`docs/relea
 
 ## CI / CD
 
-GitHub Actions is intentionally separated by responsibility. Every Android build job installs and verifies the Android 17 SDK platform, Build Tools, NDK, and CMake toolchain before Gradle tasks run:
+GitHub Actions is intentionally separated by responsibility. Every Android build job installs and verifies the Android 17 SDK platform, Build Tools, NDK, and CMake toolchain with the official Android CLI before Gradle tasks run:
 
 | Workflow | Purpose | Automatic? |
 | --- | --- | --- |

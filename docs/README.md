@@ -14,7 +14,7 @@ This directory contains the project documentation that is intentionally kept out
 | Architecture | [ARCHITECTURE.md](architecture/ARCHITECTURE.md) | Kotlin, Java, C++ and JNI responsibilities |
 | Audit | [AUDIT_REPORT.md](audit/AUDIT_REPORT.md) | Static audit findings and verification notes |
 | Build | [BUILD_ENVIRONMENT.md](build/BUILD_ENVIRONMENT.md) | Reproducible Android build toolchain |
-| Build | [sdkmanager-list.txt](build/sdkmanager-list.txt) | Android SDK package reference captured for CI maintenance |
+| Build | [SDK_PACKAGES.txt](../third_party/aosp/SDK_PACKAGES.txt) | Android SDK/Gradle package metadata used by CI maintenance |
 | Design | [ICON_IMPLEMENTATION.md](design/ICON_IMPLEMENTATION.md) | Adaptive icon and widget implementation notes |
 | Design | [UI_REDESIGN_NOTES.md](design/UI_REDESIGN_NOTES.md) | UI redesign notes and constraints |
 | Release | [RELEASE_SIGNING.md](release/RELEASE_SIGNING.md) | Release keystore and GitHub Environment setup |
