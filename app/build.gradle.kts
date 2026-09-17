@@ -37,6 +37,8 @@ android {
     }
     namespace = "com.febricahyaa.clockapp"
     compileSdk = 37
+    // Compose 1.13.0-alpha03 requires Android 37.1+ at compile time.
+    compileSdkMinor = 1
     buildToolsVersion = "37.0.0"
     ndkVersion = "28.2.13676358"
 

@@ -54,7 +54,7 @@ The project declares an Android 17 / Jetpack Compose UI toolchain in source:
 
 - JDK 17
 - Android 17 (API 37)
-- Android SDK Platform 37.0
+- Android SDK Platform 37.1 (Android 17 API 37 minor release)
 - Android Build Tools 37.0.0
 - NDK 28.2.13676358
 - CMake 3.31.6

@@ -18,6 +18,11 @@ jobs:
   package:
     name: Prepare and commit package metadata
     runs-on: ubuntu-24.04
+    env:
+      ANDROID_PLATFORM_VERSION: '37.1'
+      ANDROID_BUILD_TOOLS: '37.0.0'
+      ANDROID_NDK_VERSION: '28.2.13676358'
+      ANDROID_CMAKE_VERSION: '3.31.6'
     steps:
       - uses: actions/checkout@v7
         with:
@@ -38,10 +43,39 @@ jobs:
           yes | sdkmanager --licenses >/dev/null 2>&1 || true
           sdkmanager --sdk_root="${ANDROID_SDK_ROOT}" --install \
             'platform-tools' \
-            'platforms;android-37' \
+            'platforms;android-37.1' \
             'build-tools;37.0.0' \
             'cmake;3.31.6' \
             'ndk;28.2.13676358'
+      - name: Normalize Android 17 compileSdk configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PYTHON'
+          from pathlib import Path
+
+          path = Path("app/build.gradle.kts")
+          text = path.read_text()
+
+          if "compileSdk = 37" not in text:
+              raise SystemExit("compileSdk = 37 was not found")
+
+          if "compileSdkMinor = 1" not in text:
+              old = '    compileSdk = 37\n'
+              new = (
+                  '    compileSdk = 37\n'
+                  '    // Compose 1.13.0-alpha03 requires Android 37.1+ at compile time.\n'
+                  '    compileSdkMinor = 1\n'
+              )
+              if old not in text:
+                  raise SystemExit("Unable to insert compileSdkMinor = 1")
+              text = text.replace(old, new, 1)
+              path.write_text(text)
+              print("Applied compileSdkMinor = 1")
+          else:
+              print("compileSdkMinor = 1 already configured")
+          PYTHON
+
       - name: Validate package files
         run: |
           chmod +x ./gradlew scripts/verify-android17.sh
@@ -57,7 +91,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           # Only stage paths that actually exist in the repository.
-          git add gradle .github
+          git add app/build.gradle.kts scripts/verify-android17.sh gradle .github
           if [ -f docs/build/BUILD_ENVIRONMENT.md ]; then
             git add docs/build/BUILD_ENVIRONMENT.md
           fi
@@ -69,5 +103,5 @@ jobs:
             echo 'No package metadata changes.'
             exit 0
           fi
-          git commit -m 'chore(ci): refresh Android build packages'
+          git commit -m 'chore(ci): align Android 17.1 compile SDK and CI packages'
           git push origin HEAD:${GITHUB_REF_NAME}

@@ -11,7 +11,7 @@ if [[ -z "${ANDROID_SDK_ROOT}" ]]; then
   exit 1
 fi
 
-EXPECTED_API="37.0"
+EXPECTED_PLATFORM="37.1"
 EXPECTED_BUILD_TOOLS="37.0.0"
 EXPECTED_NDK="28.2.13676358"
 EXPECTED_CMAKE="3.31.6"
@@ -33,6 +33,7 @@ WRAPPER="$ROOT_DIR/gradle/wrapper/gradle-wrapper.properties"
 
 # Source-of-truth checks.
 grep -Eq 'compileSdk[[:space:]]*=[[:space:]]*37' "$APP_GRADLE" || fail "compileSdk != 37"
+grep -Eq 'compileSdkMinor[[:space:]]*=[[:space:]]*1' "$APP_GRADLE" || fail "compileSdkMinor != 1"
 grep -Eq 'targetSdk[[:space:]]*=[[:space:]]*37' "$APP_GRADLE" || fail "targetSdk != 37"
 grep -Fq 'buildToolsVersion = "37.0.0"' "$APP_GRADLE" || fail "Build Tools != 37.0.0"
 grep -Fq 'id("com.android.application") version "9.4.0" apply false' "$ROOT_GRADLE" || fail "AGP != 9.4.0"
@@ -57,8 +58,8 @@ if ! command -v sdkmanager >/dev/null 2>&1 && [[ -x "$SDKMANAGER" ]]; then
 fi
 command -v sdkmanager >/dev/null 2>&1 || fail "sdkmanager is not available"
 
-sdkmanager --list_installed | grep -Fq "platforms;android-${EXPECTED_API}" \
-  || fail "Android ${EXPECTED_API} platform is not installed"
+sdkmanager --list_installed | grep -Fq "platforms;android-${EXPECTED_PLATFORM}" \
+  || fail "Android ${EXPECTED_PLATFORM} platform is not installed"
 sdkmanager --list_installed | grep -Fq "build-tools;${EXPECTED_BUILD_TOOLS}" \
   || fail "Build Tools ${EXPECTED_BUILD_TOOLS} are not installed"
 sdkmanager --list_installed | grep -Fq "ndk;${EXPECTED_NDK}" \
@@ -66,7 +67,7 @@ sdkmanager --list_installed | grep -Fq "ndk;${EXPECTED_NDK}" \
 sdkmanager --list_installed | grep -Fq "cmake;${EXPECTED_CMAKE}" \
   || fail "CMake ${EXPECTED_CMAKE} is not installed"
 
-[[ -d "$ANDROID_SDK_ROOT/platforms/android-${EXPECTED_API}" ]] || fail "platform directory missing"
+[[ -d "$ANDROID_SDK_ROOT/platforms/android-${EXPECTED_PLATFORM}" ]] || fail "Android ${EXPECTED_PLATFORM} platform directory missing"
 [[ -d "$ANDROID_SDK_ROOT/build-tools/${EXPECTED_BUILD_TOOLS}" ]] || fail "build-tools directory missing"
 [[ -d "$ANDROID_SDK_ROOT/ndk/${EXPECTED_NDK}" ]] || fail "NDK directory missing"
 [[ -d "$ANDROID_SDK_ROOT/cmake/${EXPECTED_CMAKE}" ]] || fail "CMake directory missing"
@@ -78,13 +79,13 @@ fi
 for workflow in .github/workflows/*.yml; do
   if [[ "$workflow" == *.yml && "$workflow" != *dependabot-auto-merge.yml ]]; then
     grep -Fq 'setup-android@v4' "$workflow" || fail "Android SDK setup missing in $workflow"
-    grep -Eq 'android-37\.0|ANDROID_API_LEVEL:.*37\.0' "$workflow" || fail "Android 17 API 37 is not declared in $workflow"
+    grep -Eq 'android-37\.1|ANDROID_PLATFORM_VERSION:.*37\.1' "$workflow" || fail "Android 17 API 37 is not declared in $workflow"
     grep -Eq '37\.0\.0|ANDROID_BUILD_TOOLS:.*37\.0\.0' "$workflow" || fail "Build Tools 37 is not declared in $workflow"
   fi
 done
 
 echo "Android 17 CI verification passed"
-echo "  API:        ${EXPECTED_API}"
+echo "  Platform:   ${EXPECTED_PLATFORM} (Android 17 / API 37)"
 echo "  Build Tools:${EXPECTED_BUILD_TOOLS}"
 echo "  NDK:        ${EXPECTED_NDK}"
 echo "  CMake:      ${EXPECTED_CMAKE}"
