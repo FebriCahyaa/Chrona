@@ -1,9 +1,7 @@
-# Third-Party Notices
+# Third-party notices
 
-## Apache License 2.0
+- Google Material Design Icons / Symbols: Apache License 2.0
+- Android Open Source Project components: license varies by component; consult the upstream file before copying source.
+- AndroidX / Jetpack: Apache License 2.0 unless otherwise stated by the component.
 
-This project may include or reference third-party assets distributed
-under the Apache License, Version 2.0.
-
-Apache License 2.0:
-https://www.apache.org/licenses/LICENSE-2.0
+Chrona's CI records exact upstream revisions for synchronized assets.

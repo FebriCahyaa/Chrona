@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.matchParentSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -167,7 +166,7 @@ fun HybridBentoCard(
 private fun BoxScope.NeumorphicHighlight(pressed: Boolean, shape: RoundedCornerShape) {
     Box(
         Modifier
-            .matchParentSize()
+            .fillMaxSize()
             .background(
                 Brush.linearGradient(
                     listOf(
@@ -186,7 +185,7 @@ private fun BoxScope.GlassHighlight(shape: RoundedCornerShape) {
     val primary = MaterialTheme.colorScheme.primary
     Box(
         Modifier
-            .matchParentSize()
+            .fillMaxSize()
             .background(
                 Brush.linearGradient(
                     listOf(Color.White.copy(alpha = 0.20f), Color.Transparent, primary.copy(alpha = 0.07f)),
@@ -196,7 +195,7 @@ private fun BoxScope.GlassHighlight(shape: RoundedCornerShape) {
     )
     Box(
         Modifier
-            .matchParentSize()
+            .fillMaxSize()
             .padding(1.dp)
             .border(BorderStroke(1.dp, Color.White.copy(alpha = 0.14f)), shape),
     )

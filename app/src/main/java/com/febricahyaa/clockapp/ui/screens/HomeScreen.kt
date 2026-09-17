@@ -101,6 +101,8 @@ fun HomeScreen(
     }
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
+        val contentMaxWidth = maxWidth
+
         Column(
             Modifier
                 .fillMaxSize()
@@ -182,7 +184,7 @@ fun HomeScreen(
                 HybridBentoCard(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(if (maxWidth < 390.dp) 350.dp else 372.dp),
+                        .height(if (contentMaxWidth < 390.dp) 350.dp else 372.dp),
                     themeMode = themeMode,
                 ) {
                     ClockHero(
