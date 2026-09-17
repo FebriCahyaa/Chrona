@@ -7,7 +7,6 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
-import android.graphics.Paint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.border
@@ -47,7 +46,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -138,29 +136,31 @@ fun HybridBentoCard(
                 if (isNeumorphic) {
                     Modifier.drawBehind {
                         val light = if (darkMode) {
-                            Color.White.copy(alpha = 0.18f)
+                            Color.White.copy(alpha = 0.12f)
                         } else {
                             Color.White.copy(alpha = 0.78f)
                         }
                         val dark = if (darkMode) {
-                            Color.Black.copy(alpha = 0.78f)
+                            Color.Black.copy(alpha = 0.46f)
                         } else {
-                            Color.Black.copy(alpha = 0.20f)
+                            Color.Black.copy(alpha = 0.16f)
                         }
                         val offsetPx = 6.dp.toPx()
-                        val blurPx = 18.dp.toPx()
                         val radiusPx = 30.dp.toPx()
-                        val paint = Paint().apply {
-                            isAntiAlias = true
-                            style = Paint.Style.FILL
-                            color = fill.toArgb()
-                        }
-                        paint.setShadowLayer(blurPx, -offsetPx, -offsetPx, light.toArgb())
-                        drawContext.canvas.nativeCanvas.drawRoundRect(0f, 0f, size.width, size.height, radiusPx, radiusPx, paint)
-                        paint.clearShadowLayer()
-                        paint.setShadowLayer(blurPx, offsetPx, offsetPx, dark.toArgb())
-                        drawContext.canvas.nativeCanvas.drawRoundRect(0f, 0f, size.width, size.height, radiusPx, radiusPx, paint)
-                        paint.clearShadowLayer()
+                        // Compose-native layered shadows avoid Android Canvas interop and remain
+                        // stable across the Android 17 toolchain.
+                        drawRoundRect(
+                            color = dark,
+                            topLeft = androidx.compose.ui.geometry.Offset(offsetPx, offsetPx),
+                            size = size,
+                            cornerRadius = androidx.compose.ui.geometry.CornerRadius(radiusPx, radiusPx),
+                        )
+                        drawRoundRect(
+                            color = light,
+                            topLeft = androidx.compose.ui.geometry.Offset(-offsetPx, -offsetPx),
+                            size = size,
+                            cornerRadius = androidx.compose.ui.geometry.CornerRadius(radiusPx, radiusPx),
+                        )
                     }
                 } else {
                     Modifier.shadow(elevation, shape, clip = false)

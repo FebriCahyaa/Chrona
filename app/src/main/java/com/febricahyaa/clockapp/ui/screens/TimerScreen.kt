@@ -52,6 +52,7 @@ fun TimerScreen(
         (remainingSeconds.toFloat() / totalSeconds).coerceIn(0f, 1f)
     }
     val trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = .08f)
+    val primaryColor = MaterialTheme.colorScheme.primary
 
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
         Spacer(Modifier.height(12.dp))
@@ -69,7 +70,7 @@ fun TimerScreen(
                     Canvas(Modifier.fillMaxSize().padding(18.dp)) {
                         val stroke = 14.dp.toPx()
                         drawArc(trackColor, -90f, 360f, false, style = androidx.compose.ui.graphics.drawscope.Stroke(stroke, cap = StrokeCap.Round))
-                        drawArc(MaterialTheme.colorScheme.primary, -90f, 360f * progress, false, style = androidx.compose.ui.graphics.drawscope.Stroke(stroke, cap = StrokeCap.Round))
+                        drawArc(primaryColor, -90f, 360f * progress, false, style = androidx.compose.ui.graphics.drawscope.Stroke(stroke, cap = StrokeCap.Round))
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(formatTimer(remainingSeconds), fontSize = 50.sp, fontWeight = FontWeight.Light, letterSpacing = (-1.5).sp)
