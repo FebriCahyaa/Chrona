@@ -16,7 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Alarm
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilterChip
@@ -54,7 +54,7 @@ fun AlarmScreen(alarms: List<AlarmItem>, glass: Boolean, onBack: () -> Unit, onA
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
         Spacer(Modifier.height(12.dp))
         ScreenHeader("Alarm", "Wake up to a better day", actions = {
-            IconCircleButton(Icons.AutoMirrored.Filled.ArrowBack, onBack, contentDescription = "Back")
+            IconCircleButton(Icons.Filled.ArrowBack, onBack, contentDescription = "Back")
             IconCircleButton(Icons.Filled.Add, { showAdd = true }, active = true, contentDescription = "Add alarm")
         })
         Spacer(Modifier.height(14.dp))

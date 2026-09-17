@@ -30,6 +30,12 @@ val releaseSigningConfigured = listOf(
 ).all { !it.isNullOrBlank() }
 
 android {
+    lint {
+        baseline = file("lint-baseline.xml")
+        abortOnError = true
+        checkReleaseBuilds = true
+        disable += "MissingTranslation"
+    }
     namespace = "com.febricahyaa.clockapp"
     compileSdk = 36
     ndkVersion = "28.2.13676358"
