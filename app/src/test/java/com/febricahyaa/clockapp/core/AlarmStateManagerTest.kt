@@ -15,7 +15,7 @@ import java.time.LocalTime
 class AlarmStateManagerTest {
     @Test
     fun oneShotAlarmIsDisabledAfterTrigger() {
-        val repo = FakeAlarmRepository(listOf(AlarmItem(1L, LocalTime.of(8, 0))))
+        val repo = FakeAlarmRepository(listOf(AlarmItem(1L, LocalTime.of(8, 0), label = "", enabled = true, repeatDays = emptySet())))
         val scheduler = FakeAlarmScheduler()
         AlarmStateManager(repo, scheduler).onAlarmTriggered(1L)
 
@@ -28,6 +28,8 @@ class AlarmStateManagerTest {
         val alarm = AlarmItem(
             id = 2L,
             time = LocalTime.of(8, 0),
+            label = "",
+            enabled = true,
             repeatDays = setOf(DayOfWeek.MONDAY, DayOfWeek.FRIDAY),
         )
         val repo = FakeAlarmRepository(listOf(alarm))

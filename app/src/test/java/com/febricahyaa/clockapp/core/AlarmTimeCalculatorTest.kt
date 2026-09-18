@@ -18,7 +18,7 @@ class AlarmTimeCalculatorTest {
     @Test
     fun oneShotBeforeScheduledTimeUsesToday() {
         val now = Instant.parse("2026-09-17T02:00:00Z") // 09:00 Jakarta
-        val alarm = AlarmItem(1L, LocalTime.of(10, 0))
+        val alarm = AlarmItem(1L, LocalTime.of(10, 0), label = "", enabled = true, repeatDays = emptySet())
 
         val result = AlarmTimeCalculator.nextTriggerMillis(
             alarm,
@@ -32,7 +32,7 @@ class AlarmTimeCalculatorTest {
     @Test
     fun oneShotAtScheduledTimeMovesToTomorrow() {
         val now = Instant.parse("2026-09-17T03:00:00Z")
-        val alarm = AlarmItem(1L, LocalTime.of(10, 0))
+        val alarm = AlarmItem(1L, LocalTime.of(10, 0), label = "", enabled = true, repeatDays = emptySet())
 
         val result = AlarmTimeCalculator.nextTriggerMillis(
             alarm,
@@ -46,7 +46,7 @@ class AlarmTimeCalculatorTest {
     @Test
     fun repeatingAlarmSelectsNextMatchingDay() {
         val now = Instant.parse("2026-09-17T03:00:00Z") // Thursday 10:00 Jakarta
-        val alarm = AlarmItem(1L, LocalTime.of(8, 0), repeatDays = setOf(DayOfWeek.FRIDAY))
+        val alarm = AlarmItem(1L, LocalTime.of(8, 0), label = "", enabled = true, repeatDays = setOf(DayOfWeek.FRIDAY))
 
         val result = AlarmTimeCalculator.nextTriggerMillis(
             alarm,

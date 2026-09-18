@@ -270,13 +270,24 @@ private fun WorldClockCard(
 
 private data class CityVisual(val topHue: Float, val bottomHue: Float, val buildingHeights: List<Float>)
 
+/**
+ * Returns deterministic HSV hues that are always valid for Compose Color.hsv.
+ * floorMod avoids the Int.MIN_VALUE edge case that makes abs(Int.MIN_VALUE)
+ * negative and keeps both hue values inside [0, 360).
+ */
+internal fun cityThumbnailHues(cityHash: Int): Pair<Float, Float> {
+    val seed = Math.floorMod(cityHash, 360)
+    val bottom = Math.floorMod(seed + 34, 360)
+    return seed.toFloat() to bottom.toFloat()
+}
+
 @Composable
 private fun CityThumbnail(city: String, modifier: Modifier = Modifier) {
     val visual = remember(city) {
-        val seed = Math.floorMod(city.hashCode(), 360)
+        val (topHue, bottomHue) = cityThumbnailHues(city.hashCode())
         CityVisual(
-            topHue = seed.toFloat(),
-            bottomHue = Math.floorMod(seed + 34, 360).toFloat(),
+            topHue = topHue,
+            bottomHue = bottomHue,
             buildingHeights = List(6) { index -> 0.22f + ((index + city.length) % 4) * 0.10f },
         )
     }

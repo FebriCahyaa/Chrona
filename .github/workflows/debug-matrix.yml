@@ -21,7 +21,7 @@ env:
   ANDROID_PLATFORM_VERSION: '37'
   ANDROID_PLATFORM_MINOR: '1'
   ANDROID_PLATFORM_PACKAGE: 'platforms/android-37.1'
-  GRADLE_VERSION: '9.7.0'
+  GRADLE_VERSION: '9.7.1'
   ANDROID_BUILD_TOOLS: '37.0.0'
   ANDROID_NDK_VERSION: '28.2.13676358'
   ANDROID_CMAKE_VERSION: '3.31.5'
@@ -32,7 +32,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
-      max-parallel: 2
       matrix:
         include:
           - { task: audit, os: ubuntu-24.04 }
@@ -102,10 +101,10 @@ jobs:
           set -euo pipefail
           case '${{ matrix.task }}' in
             audit) bash scripts/source-audit.sh ;;
-            unit) bash scripts/gradle-with-retry.sh --no-daemon --stacktrace test ;;
-            lint) bash scripts/gradle-with-retry.sh --no-daemon --stacktrace lint ;;
+            unit) ./gradlew --no-daemon --stacktrace test ;;
+            lint) ./gradlew --no-daemon --stacktrace lint ;;
             android17) bash scripts/verify-android17.sh ;;
-            assemble) bash scripts/gradle-with-retry.sh --no-daemon --stacktrace assembleDebug ;;
+            assemble) ./gradlew --no-daemon --stacktrace assembleDebug ;;
             *) echo "Unknown task: ${{ matrix.task }}"; exit 2 ;;
           esac
       - name: Upload debug APK
