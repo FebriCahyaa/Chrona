@@ -11,6 +11,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -24,6 +27,7 @@ fun ChronaRootNavigation(
     destinationContent: @Composable (
         destination: AppDestination,
         navigation: ChronaNavigationActions,
+        backStackEntry: NavBackStackEntry,
     ) -> Unit,
 ) {
     val navigation = remember(navController) { ChronaNavigationActions(navController) }
@@ -43,66 +47,86 @@ fun ChronaRootNavigation(
                 popEnterTransition = { ChronaNavigationMotion.popEnter() },
                 popExitTransition = { ChronaNavigationMotion.popExit() },
             ) {
-                composable(ChronaRoutes.CLOCK) {
+                composable(ChronaRoutes.CLOCK) { backStackEntry ->
                     ChronaDestinationScope(
                         destination = AppDestination.CLOCK,
                         animatedVisibilityScope = this@composable,
+                        backStackEntry = backStackEntry,
                         destinationContent = destinationContent,
                         navigation = navigation,
                     )
                 }
-                composable(ChronaRoutes.ALARM) {
+                composable(ChronaRoutes.ALARM) { backStackEntry ->
                     ChronaDestinationScope(
                         destination = AppDestination.ALARM,
                         animatedVisibilityScope = this@composable,
+                        backStackEntry = backStackEntry,
                         destinationContent = destinationContent,
                         navigation = navigation,
                     )
                 }
-                composable(ChronaRoutes.WORLD) {
+                composable(ChronaRoutes.WORLD) { backStackEntry ->
                     ChronaDestinationScope(
                         destination = AppDestination.WORLD,
                         animatedVisibilityScope = this@composable,
+                        backStackEntry = backStackEntry,
                         destinationContent = destinationContent,
                         navigation = navigation,
                     )
                 }
-                composable(ChronaRoutes.WORLD_SEARCH) {
+                composable(
+                    route = ChronaRoutes.WORLD_DETAIL,
+                    arguments = listOf(navArgument("zoneId") { type = NavType.StringType }),
+                ) { backStackEntry ->
+                    ChronaDestinationScope(
+                        destination = AppDestination.WORLD_DETAIL,
+                        animatedVisibilityScope = this@composable,
+                        backStackEntry = backStackEntry,
+                        destinationContent = destinationContent,
+                        navigation = navigation,
+                    )
+                }
+                composable(ChronaRoutes.WORLD_SEARCH) { backStackEntry ->
                     ChronaDestinationScope(
                         destination = AppDestination.WORLD_SEARCH,
                         animatedVisibilityScope = this@composable,
+                        backStackEntry = backStackEntry,
                         destinationContent = destinationContent,
                         navigation = navigation,
                     )
                 }
-                composable(ChronaRoutes.TIMER) {
+                composable(ChronaRoutes.TIMER) { backStackEntry ->
                     ChronaDestinationScope(
                         destination = AppDestination.TIMER,
                         animatedVisibilityScope = this@composable,
+                        backStackEntry = backStackEntry,
                         destinationContent = destinationContent,
                         navigation = navigation,
                     )
                 }
-                composable(ChronaRoutes.STOPWATCH) {
+                composable(ChronaRoutes.STOPWATCH) { backStackEntry ->
                     ChronaDestinationScope(
                         destination = AppDestination.STOPWATCH,
                         animatedVisibilityScope = this@composable,
+                        backStackEntry = backStackEntry,
                         destinationContent = destinationContent,
                         navigation = navigation,
                     )
                 }
-                composable(ChronaRoutes.SETTINGS) {
+                composable(ChronaRoutes.SETTINGS) { backStackEntry ->
                     ChronaDestinationScope(
                         destination = AppDestination.SETTINGS,
                         animatedVisibilityScope = this@composable,
+                        backStackEntry = backStackEntry,
                         destinationContent = destinationContent,
                         navigation = navigation,
                     )
                 }
-                composable(ChronaRoutes.LEGAL) {
+                composable(ChronaRoutes.LEGAL) { backStackEntry ->
                     ChronaDestinationScope(
                         destination = AppDestination.LEGAL,
                         animatedVisibilityScope = this@composable,
+                        backStackEntry = backStackEntry,
                         destinationContent = destinationContent,
                         navigation = navigation,
                     )
@@ -116,15 +140,17 @@ fun ChronaRootNavigation(
 private fun ChronaDestinationScope(
     destination: AppDestination,
     animatedVisibilityScope: AnimatedContentScope,
+    backStackEntry: NavBackStackEntry,
     destinationContent: @Composable (
         AppDestination,
         ChronaNavigationActions,
+        NavBackStackEntry,
     ) -> Unit,
     navigation: ChronaNavigationActions,
 ) {
     CompositionLocalProvider(
         LocalChronaAnimatedVisibilityScope provides animatedVisibilityScope,
     ) {
-        destinationContent(destination, navigation)
+        destinationContent(destination, navigation, backStackEntry)
     }
 }

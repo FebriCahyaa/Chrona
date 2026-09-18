@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -77,6 +78,7 @@ fun WorldClockScreen(
     onRemove: (WorldClockItem) -> Unit,
     onToggleFavorite: (String) -> Unit,
     onOpenSearch: () -> Unit,
+    onOpenDetail: (WorldClockItem) -> Unit,
     onBack: () -> Unit,
 ) {
     val haptics = LocalHapticFeedback.current
@@ -139,7 +141,7 @@ fun WorldClockScreen(
 
                 if (visible.isEmpty()) {
                     item(contentType = "empty") {
-                        ChronaCard(Modifier.fillMaxWidth().chronaSharedBounds(ChronaMotionKeys.worldClockCard(item.id)), glass = glass) {
+                        ChronaCard(Modifier.fillMaxWidth(), glass = glass) {
                             Column(
                                 Modifier.fillMaxWidth().padding(28.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -175,6 +177,7 @@ fun WorldClockScreen(
                             glass = glass,
                             onRemove = { onRemove(item) },
                             onToggleFavorite = { onToggleFavorite(item.city) },
+                            onOpenDetail = { onOpenDetail(item) },
                         )
                     }
                     item(contentType = "footer") { Spacer(Modifier.height(86.dp)) }
@@ -193,6 +196,7 @@ private fun WorldClockCard(
     glass: Boolean,
     onRemove: () -> Unit,
     onToggleFavorite: () -> Unit,
+    onOpenDetail: () -> Unit,
 ) {
     val epochMillis by epochMillisState
     val systemZone = remember { ZoneId.systemDefault() }
@@ -221,7 +225,13 @@ private fun WorldClockCard(
     }
     val utc = remember(zoned) { ChronaTimeEngine.utcOffset(zoneId, epochMillis) }
 
-    ChronaCard(Modifier.fillMaxWidth(), glass = glass) {
+    ChronaCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onOpenDetail)
+            .chronaSharedBounds(ChronaMotionKeys.worldClockCard(item.id)),
+        glass = glass,
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(14.dp),
             verticalAlignment = Alignment.CenterVertically,

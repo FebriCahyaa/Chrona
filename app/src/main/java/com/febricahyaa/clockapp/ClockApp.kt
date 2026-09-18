@@ -31,6 +31,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavBackStackEntry
 import com.febricahyaa.clockapp.di.AppContainer
 import com.febricahyaa.clockapp.di.AppViewModelFactory
 import com.febricahyaa.clockapp.model.AppThemeMode
@@ -48,6 +49,7 @@ import com.febricahyaa.clockapp.ui.screens.SettingsScreen
 import com.febricahyaa.clockapp.ui.screens.StopwatchScreen
 import com.febricahyaa.clockapp.ui.screens.TimerScreen
 import com.febricahyaa.clockapp.ui.screens.WorldClockScreen
+import com.febricahyaa.clockapp.ui.screens.WorldClockDetailScreen
 import com.febricahyaa.clockapp.ui.screens.WorldClockSearchScreen
 import com.febricahyaa.clockapp.ui.theme.ChronaTheme
 import com.febricahyaa.clockapp.ui.viewmodel.AlarmViewModel
@@ -153,7 +155,7 @@ fun ClockApp() {
             ) {
                 ChronaAmbientBackdrop()
 
-                ChronaRootNavigation { destination, navigation ->
+                ChronaRootNavigation { destination, navigation, backStackEntry ->
                     ChronaDestinationContent(
                         destination = destination,
                         navigation = navigation,
@@ -171,6 +173,7 @@ fun ClockApp() {
                         timerViewModel = timerViewModel,
                         stopwatchState = stopwatchState,
                         stopwatchViewModel = stopwatchViewModel,
+                        backStackEntry = backStackEntry,
                     )
                 }
             }
@@ -196,6 +199,7 @@ private fun ChronaDestinationContent(
     timerViewModel: TimerViewModel,
     stopwatchState: com.febricahyaa.clockapp.ui.viewmodel.StopwatchUiState,
     stopwatchViewModel: StopwatchViewModel,
+    backStackEntry: NavBackStackEntry,
 ) {
     ChronaScreenSurface {
         when (destination) {
@@ -219,8 +223,37 @@ private fun ChronaDestinationContent(
                 onRemove = worldClockViewModel::remove,
                 onToggleFavorite = worldClockViewModel::toggleFavorite,
                 onOpenSearch = { navigation.navigate(AppDestination.WORLD_SEARCH) },
+                onOpenDetail = { item -> navigation.openWorldClockDetail(item.zoneId) },
                 onBack = { navigation.back() },
             )
+
+            AppDestination.WORLD_DETAIL -> {
+                val zoneId = backStackEntry.arguments?.getString("zoneId")
+                val item = worldClockState.items.firstOrNull { it.zoneId == zoneId }
+                if (item == null) {
+                    WorldClockDetailScreen(
+                        item = WorldClockItem(
+                            id = zoneId?.hashCode()?.toLong() ?: 0L,
+                            city = zoneId?.substringAfterLast('/') ?: "World Clock",
+                            zoneId = zoneId ?: "UTC",
+                        ),
+                        favorite = false,
+                        use24HourFormat = settingsState.use24HourFormat,
+                        glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
+                        onToggleFavorite = {},
+                        onBack = { navigation.back() },
+                    )
+                } else {
+                    WorldClockDetailScreen(
+                        item = item,
+                        favorite = item.city in worldClockState.favorites,
+                        use24HourFormat = settingsState.use24HourFormat,
+                        glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
+                        onToggleFavorite = { worldClockViewModel.toggleFavorite(item.city) },
+                        onBack = { navigation.back() },
+                    )
+                }
+            }
 
             AppDestination.WORLD_SEARCH -> WorldClockSearchScreen(
                 existingZoneIds = worldClockState.items.mapTo(mutableSetOf()) { it.zoneId },

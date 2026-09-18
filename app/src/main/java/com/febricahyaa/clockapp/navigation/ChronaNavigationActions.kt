@@ -27,5 +27,13 @@ class ChronaNavigationActions(
         }
     }
 
+    /** Opens a city detail route using an encoded query argument so Zone IDs may contain '/'. */
+    fun openWorldClockDetail(zoneId: String) {
+        navController.navigate(ChronaRoutes.worldDetail(zoneId)) {
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
     fun back(): Boolean = navController.popBackStack()
 }

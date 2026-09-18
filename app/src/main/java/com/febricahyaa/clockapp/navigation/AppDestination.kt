@@ -8,6 +8,7 @@ enum class AppDestination {
     ALARM,
     WORLD,
     WORLD_SEARCH,
+    WORLD_DETAIL,
     TIMER,
     STOPWATCH,
     SETTINGS,

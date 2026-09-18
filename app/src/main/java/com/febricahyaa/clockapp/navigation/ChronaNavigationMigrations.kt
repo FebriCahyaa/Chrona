@@ -8,6 +8,7 @@ fun AppDestination.route(): String = when (this) {
     AppDestination.ALARM -> ChronaRoutes.ALARM
     AppDestination.WORLD -> ChronaRoutes.WORLD
     AppDestination.WORLD_SEARCH -> ChronaRoutes.WORLD_SEARCH
+    AppDestination.WORLD_DETAIL -> ChronaRoutes.WORLD_DETAIL
     AppDestination.TIMER -> ChronaRoutes.TIMER
     AppDestination.STOPWATCH -> ChronaRoutes.STOPWATCH
     AppDestination.SETTINGS -> ChronaRoutes.SETTINGS
