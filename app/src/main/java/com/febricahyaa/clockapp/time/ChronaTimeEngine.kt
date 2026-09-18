@@ -29,6 +29,14 @@ interface ChronaTimeEngine : AutoCloseable {
 
     fun currentElapsedRealtimeMillis(): Long
 
+    /**
+     * Enables or disables high-frequency foreground rendering work.
+     *
+     * Timer and stopwatch semantics remain monotonic even while the app is
+     * backgrounded; only UI pulse generation is suspended.
+     */
+    fun setForegroundActive(active: Boolean)
+
     suspend fun restoreStopwatch(
         elapsedMillis: Long,
         laps: List<StopwatchLap>,
@@ -90,6 +98,18 @@ class DefaultChronaTimeEngine(
 
     override fun currentElapsedRealtimeMillis(): Long = monotonicClock.elapsedRealtime()
 
+    override fun setForegroundActive(active: Boolean) {
+        synchronized(tickerLock) {
+            foregroundActive = active
+            if (!active) {
+                tickerJob?.cancel()
+                tickerJob = null
+            } else {
+                ensureTickerLocked()
+            }
+        }
+    }
+
     private var stopwatchStartedAt: Long? = null
     private var stopwatchAccumulatedMillis = 0L
     private var stopwatchLaps = emptyList<StopwatchLap>()
@@ -100,6 +120,8 @@ class DefaultChronaTimeEngine(
 
     private val tickerLock = Any()
     private var tickerJob: Job? = null
+    @Volatile
+    private var foregroundActive = true
 
     override suspend fun restoreStopwatch(
         elapsedMillis: Long,
@@ -237,22 +259,33 @@ class DefaultChronaTimeEngine(
 
     private fun ensureTicker() {
         synchronized(tickerLock) {
-            if (tickerJob?.isActive == true) return
+            ensureTickerLocked()
+        }
+    }
 
-            tickerJob = scope.launch(Dispatchers.Default) {
-                while (isActive) {
-                    val pulseMillis = stateMutex.withLock {
-                        refreshStateLocked(monotonicClock.elapsedRealtime())
-                        when {
-                            stopwatchStartedAt != null -> STOPWATCH_PULSE_MILLIS
-                            timerEndAt != null -> TIMER_PULSE_MILLIS
-                            else -> null
-                        }
+    private fun ensureTickerLocked() {
+        if (!foregroundActive || tickerJob?.isActive == true) return
+
+        tickerJob = scope.launch(Dispatchers.Default) {
+            while (isActive) {
+                val pulseMillis = stateMutex.withLock {
+                    val now = monotonicClock.elapsedRealtime()
+                    refreshStateLocked(now)
+                    when {
+                        ChronaTickerEligibilityPolicy.shouldTick(
+                            foreground = foregroundActive,
+                            active = stopwatchStartedAt != null,
+                        ) -> STOPWATCH_PULSE_MILLIS
+                        ChronaTickerEligibilityPolicy.shouldTick(
+                            foreground = foregroundActive,
+                            active = timerEndAt != null,
+                        ) -> TIMER_PULSE_MILLIS
+                        else -> null
                     }
-
-                    pulseMillis ?: break
-                    delay(pulseMillis)
                 }
+
+                pulseMillis ?: break
+                delay(pulseMillis)
             }
         }
     }

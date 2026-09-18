@@ -60,6 +60,7 @@ import com.febricahyaa.clockapp.ui.viewmodel.SettingsViewModel
 import com.febricahyaa.clockapp.ui.viewmodel.StopwatchViewModel
 import com.febricahyaa.clockapp.ui.viewmodel.TimerViewModel
 import com.febricahyaa.clockapp.ui.viewmodel.WorldClockViewModel
+import com.febricahyaa.clockapp.time.ChronaRuntimeLifecycleEffect
 import com.febricahyaa.clockapp.time.LocalChronaTimeEngine
 
 @Composable
@@ -82,11 +83,8 @@ fun ClockApp() {
 
     val settingsState by settingsViewModel.state.collectAsStateWithLifecycle()
     val onboardingState by onboardingViewModel.state.collectAsStateWithLifecycle()
-    val updateState by updateViewModel.state.collectAsStateWithLifecycle()
-    val alarms by alarmViewModel.alarms.collectAsStateWithLifecycle()
-    val worldClockState by worldClockViewModel.state.collectAsStateWithLifecycle()
-    val timerState by timerViewModel.state.collectAsStateWithLifecycle()
-    val stopwatchState by stopwatchViewModel.state.collectAsStateWithLifecycle()
+
+    ChronaRuntimeLifecycleEffect(container.timeEngine)
 
     val notificationPermission = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -168,15 +166,10 @@ fun ClockApp() {
                         container = container,
                         settingsViewModel = settingsViewModel,
                         settingsState = settingsState,
-                        updateState = updateState,
                         updateViewModel = updateViewModel,
-                        alarms = alarms,
                         alarmViewModel = alarmViewModel,
-                        worldClockState = worldClockState,
                         worldClockViewModel = worldClockViewModel,
-                        timerState = timerState,
                         timerViewModel = timerViewModel,
-                        stopwatchState = stopwatchState,
                         stopwatchViewModel = stopwatchViewModel,
                         backStackEntry = backStackEntry,
                     )
@@ -195,45 +188,50 @@ private fun ChronaDestinationContent(
     container: AppContainer,
     settingsViewModel: SettingsViewModel,
     settingsState: com.febricahyaa.clockapp.ui.viewmodel.SettingsUiState,
-    updateState: com.febricahyaa.clockapp.ui.viewmodel.UpdateUiState,
     updateViewModel: AppUpdateViewModel,
-    alarms: List<com.febricahyaa.clockapp.model.AlarmItem>,
     alarmViewModel: AlarmViewModel,
-    worldClockState: com.febricahyaa.clockapp.ui.viewmodel.WorldClockUiState,
     worldClockViewModel: WorldClockViewModel,
-    timerState: com.febricahyaa.clockapp.ui.viewmodel.TimerUiState,
     timerViewModel: TimerViewModel,
-    stopwatchState: com.febricahyaa.clockapp.ui.viewmodel.StopwatchUiState,
     stopwatchViewModel: StopwatchViewModel,
     backStackEntry: NavBackStackEntry,
 ) {
     ChronaScreenSurface {
         when (destination) {
-            AppDestination.CLOCK -> ChronaBentoHomeScreen(
-                use24HourFormat = settingsState.use24HourFormat,
-                showSeconds = settingsState.settings.showSeconds,
-                alarms = alarms,
-                timerRemainingSeconds = timerState.remainingSeconds,
-                timerRunning = timerState.isRunning,
-                themeMode = settingsState.settings.themeMode,
-                onThemeModeChange = settingsViewModel::updateThemeMode,
-                onNavigate = navigation::navigate,
-                onOpenSettings = { navigation.navigate(AppDestination.SETTINGS) },
-            )
+            AppDestination.CLOCK -> {
+                val alarms by alarmViewModel.alarms.collectAsStateWithLifecycle()
+                val timerState by timerViewModel.state.collectAsStateWithLifecycle()
 
-            AppDestination.WORLD -> WorldClockScreen(
-                items = worldClockState.items,
-                favorites = worldClockState.favorites,
+                ChronaBentoHomeScreen(
+                    use24HourFormat = settingsState.use24HourFormat,
+                    showSeconds = settingsState.settings.showSeconds,
+                    alarms = alarms,
+                    timerRemainingSeconds = timerState.remainingSeconds,
+                    timerRunning = timerState.isRunning,
+                    themeMode = settingsState.settings.themeMode,
+                    onThemeModeChange = settingsViewModel::updateThemeMode,
+                    onNavigate = navigation::navigate,
+                    onOpenSettings = { navigation.navigate(AppDestination.SETTINGS) },
+                )
+            }
+
+            AppDestination.WORLD -> {
+                val worldClockState by worldClockViewModel.state.collectAsStateWithLifecycle()
+
+                WorldClockScreen(
+                    items = worldClockState.items,
+                    favorites = worldClockState.favorites,
                 use24HourFormat = settingsState.use24HourFormat,
                 glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
                 onRemove = worldClockViewModel::remove,
                 onToggleFavorite = worldClockViewModel::toggleFavorite,
                 onOpenSearch = { navigation.navigate(AppDestination.WORLD_SEARCH) },
-                onOpenDetail = { item -> navigation.openWorldClockDetail(item.zoneId) },
-                onBack = { navigation.back() },
-            )
+                    onOpenDetail = { item -> navigation.openWorldClockDetail(item.zoneId) },
+                    onBack = { navigation.back() },
+                )
+            }
 
             AppDestination.WORLD_DETAIL -> {
+                val worldClockState by worldClockViewModel.state.collectAsStateWithLifecycle()
                 val zoneId = backStackEntry.arguments?.getString("zoneId")
                 val item = worldClockState.items.firstOrNull { it.zoneId == zoneId }
                 if (item == null) {
@@ -261,8 +259,11 @@ private fun ChronaDestinationContent(
                 }
             }
 
-            AppDestination.WORLD_SEARCH -> WorldClockSearchScreen(
-                existingZoneIds = worldClockState.items.mapTo(mutableSetOf()) { it.zoneId },
+            AppDestination.WORLD_SEARCH -> {
+                val worldClockState by worldClockViewModel.state.collectAsStateWithLifecycle()
+
+                WorldClockSearchScreen(
+                    existingZoneIds = worldClockState.items.mapTo(mutableSetOf()) { it.zoneId },
                 onAdd = { city, _, zoneId ->
                     worldClockViewModel.add(
                         WorldClockItem(
@@ -273,10 +274,14 @@ private fun ChronaDestinationContent(
                     )
                     navigation.replaceCurrent(AppDestination.WORLD)
                 },
-                onBack = { navigation.back() },
-            )
+                    onBack = { navigation.back() },
+                )
+            }
 
-            AppDestination.TIMER -> TimerScreen(
+            AppDestination.TIMER -> {
+                val timerState by timerViewModel.state.collectAsStateWithLifecycle()
+
+                TimerScreen(
                 totalSeconds = timerState.totalSeconds,
                 remainingSeconds = timerState.remainingSeconds,
                 running = timerState.isRunning,
@@ -290,10 +295,14 @@ private fun ChronaDestinationContent(
                 },
                 onReset = timerViewModel::reset,
                 onSetPreset = timerViewModel::setPreset,
-                onBack = { navigation.back() },
-            )
+                    onBack = { navigation.back() },
+                )
+            }
 
-            AppDestination.STOPWATCH -> StopwatchScreen(
+            AppDestination.STOPWATCH -> {
+                val stopwatchState by stopwatchViewModel.state.collectAsStateWithLifecycle()
+
+                StopwatchScreen(
                 elapsedMillis = stopwatchState.elapsedMillis,
                 isRunning = stopwatchState.isRunning,
                 laps = stopwatchState.laps,
@@ -301,10 +310,14 @@ private fun ChronaDestinationContent(
                 onToggleRun = stopwatchViewModel::toggleRun,
                 onLap = stopwatchViewModel::lap,
                 onReset = stopwatchViewModel::reset,
-                onBack = { navigation.back() },
-            )
+                    onBack = { navigation.back() },
+                )
+            }
 
-            AppDestination.ALARM -> AlarmScreen(
+            AppDestination.ALARM -> {
+                val alarms by alarmViewModel.alarms.collectAsStateWithLifecycle()
+
+                AlarmScreen(
                 alarms = alarms,
                 use24HourFormat = settingsState.use24HourFormat,
                 glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
@@ -322,10 +335,14 @@ private fun ChronaDestinationContent(
                     }
                 },
                 onDelete = alarmViewModel::delete,
-                onUpdate = alarmViewModel::update,
-            )
+                    onUpdate = alarmViewModel::update,
+                )
+            }
 
-            AppDestination.SETTINGS -> SettingsScreen(
+            AppDestination.SETTINGS -> {
+                val updateState by updateViewModel.state.collectAsStateWithLifecycle()
+
+                SettingsScreen(
                 settings = settingsState.settings,
                 use24HourFormat = settingsState.use24HourFormat,
                 onThemeModeChange = settingsViewModel::updateThemeMode,
@@ -352,8 +369,9 @@ private fun ChronaDestinationContent(
                         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                     }
                 },
-                onBack = { navigation.back() },
-            )
+                    onBack = { navigation.back() },
+                )
+            }
 
             AppDestination.LEGAL -> LegalScreen(onBack = { navigation.back() })
         }
