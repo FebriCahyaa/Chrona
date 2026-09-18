@@ -5,6 +5,7 @@ package com.febricahyaa.clockapp.ui.screens
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -70,6 +71,10 @@ fun OnboardingScreen(onComplete: () -> Unit) {
     var page by remember { mutableIntStateOf(0) }
     val current = pages[page]
 
+    BackHandler {
+        if (page > 0) page--
+    }
+
     Box(Modifier.fillMaxSize()) {
         ChronaAmbientBackdrop()
         Column(
@@ -127,6 +132,13 @@ fun OnboardingScreen(onComplete: () -> Unit) {
             }
 
             Spacer(Modifier.height(22.dp))
+            if (page > 0) {
+                androidx.compose.material3.TextButton(
+                    onClick = onComplete,
+                ) {
+                    Text("Skip")
+                }
+            }
             Button(
                 onClick = {
                     if (page == pages.lastIndex) onComplete() else page++

@@ -17,29 +17,47 @@ import java.io.IOException
 private val Context.chronaOnboardingDataStore: DataStore<Preferences> by
     preferencesDataStore(name = "chrona_onboarding")
 
-/** Small, transactional bootstrap state kept separately from feature settings. */
+/** Persistent bootstrap state kept separately from feature settings. */
+data class OnboardingPreferences(
+    val completed: Boolean = false,
+    val notificationPermissionPrompted: Boolean = false,
+)
+
 interface OnboardingRepository {
-    val completed: Flow<Boolean>
+    val preferences: Flow<OnboardingPreferences>
     suspend fun complete()
+    suspend fun markNotificationPermissionPrompted()
 }
 
 class DataStoreOnboardingRepository(context: Context) : OnboardingRepository {
     private val appContext = context.applicationContext
 
-    override val completed: Flow<Boolean> = appContext.chronaOnboardingDataStore.data
+    override val preferences: Flow<OnboardingPreferences> = appContext.chronaOnboardingDataStore.data
         .catch { error ->
             if (error is IOException) emit(emptyPreferences())
             else throw error
         }
-        .map { preferences -> preferences[KEY_COMPLETED] ?: false }
+        .map { values ->
+            OnboardingPreferences(
+                completed = values[KEY_COMPLETED] ?: false,
+                notificationPermissionPrompted = values[KEY_NOTIFICATION_PERMISSION_PROMPTED] ?: false,
+            )
+        }
 
     override suspend fun complete() {
-        appContext.chronaOnboardingDataStore.edit { preferences ->
-            preferences[KEY_COMPLETED] = true
+        appContext.chronaOnboardingDataStore.edit { values ->
+            values[KEY_COMPLETED] = true
+        }
+    }
+
+    override suspend fun markNotificationPermissionPrompted() {
+        appContext.chronaOnboardingDataStore.edit { values ->
+            values[KEY_NOTIFICATION_PERMISSION_PROMPTED] = true
         }
     }
 
     private companion object {
         val KEY_COMPLETED = booleanPreferencesKey("completed")
+        val KEY_NOTIFICATION_PERMISSION_PROMPTED = booleanPreferencesKey("notification_permission_prompted")
     }
 }

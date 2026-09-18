@@ -13,13 +13,18 @@ import kotlinx.coroutines.launch
 
 data class OnboardingUiState(
     val completed: Boolean = false,
+    val notificationPermissionPrompted: Boolean = false,
     val isLoaded: Boolean = false,
 )
 
 class OnboardingViewModel(private val repository: OnboardingRepository) : ViewModel() {
-    val state: StateFlow<OnboardingUiState> = repository.completed
-        .map { completed ->
-            OnboardingUiState(completed = completed, isLoaded = true)
+    val state: StateFlow<OnboardingUiState> = repository.preferences
+        .map { preferences ->
+            OnboardingUiState(
+                completed = preferences.completed,
+                notificationPermissionPrompted = preferences.notificationPermissionPrompted,
+                isLoaded = true,
+            )
         }
         .stateIn(
             viewModelScope,
@@ -28,6 +33,12 @@ class OnboardingViewModel(private val repository: OnboardingRepository) : ViewMo
         )
 
     fun complete() {
+        if (state.value.completed) return
         viewModelScope.launch { repository.complete() }
+    }
+
+    fun markNotificationPermissionPrompted() {
+        if (state.value.notificationPermissionPrompted) return
+        viewModelScope.launch { repository.markNotificationPermissionPrompted() }
     }
 }

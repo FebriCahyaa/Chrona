@@ -13,6 +13,9 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Headers
 import java.io.IOException
@@ -53,7 +56,7 @@ interface GitHubReleaseApi {
         "User-Agent: Chrona-Android",
     )
     @GET("repos/FebriCahyaa/Chrona/releases/latest")
-    suspend fun getLatestRelease(): GitHubReleaseDto
+    suspend fun getLatestRelease(): Response<GitHubReleaseDto>
 }
 
 interface AppUpdateRepository {
@@ -66,6 +69,7 @@ class GitHubReleaseRepository(
     private val api: GitHubReleaseApi = createApi(),
 ) : AppUpdateRepository {
     private val appContext = context.applicationContext
+    private val checkMutex = Mutex()
 
     override val snapshot: Flow<AppUpdateSnapshot> = appContext.chronaUpdateDataStore.data
         .catch { error ->
@@ -84,15 +88,28 @@ class GitHubReleaseRepository(
             )
         }
 
-    override suspend fun checkLatest(): AppUpdateSnapshot {
-        val release = api.getLatestRelease()
+    override suspend fun checkLatest(): AppUpdateSnapshot = checkMutex.withLock {
+        val response = api.getLatestRelease()
+        if (!response.isSuccessful) {
+            throw GitHubReleaseException(response.code())
+        }
+
+        val release = response.body() ?: throw GitHubReleaseException(200, "GitHub returned an empty release response")
+        if (release.draft || release.prerelease) {
+            throw GitHubReleaseException(200, "GitHub latest release was not stable")
+        }
+
         val latestVersion = normalizeVersion(release.tag_name)
+        require(isSemverLike(latestVersion)) {
+            "GitHub latest release has an invalid version tag: ${release.tag_name}"
+        }
         val apkUrl = release.assets
             .firstOrNull { it.name.endsWith(".apk", ignoreCase = true) }
             ?.browser_download_url
 
+        val checkedAt = System.currentTimeMillis()
         appContext.chronaUpdateDataStore.edit { preferences ->
-            preferences[KEY_LAST_CHECKED_AT] = System.currentTimeMillis()
+            preferences[KEY_LAST_CHECKED_AT] = checkedAt
             preferences[KEY_LATEST_VERSION] = latestVersion
             preferences[KEY_RELEASE_NAME] = release.name ?: "Chrona $latestVersion"
             preferences[KEY_RELEASE_URL] = release.html_url
@@ -103,8 +120,8 @@ class GitHubReleaseRepository(
                 ?: preferences.remove(KEY_PUBLISHED_AT)
         }
 
-        return AppUpdateSnapshot(
-            lastCheckedAt = System.currentTimeMillis(),
+        AppUpdateSnapshot(
+            lastCheckedAt = checkedAt,
             latestVersion = latestVersion,
             releaseName = release.name ?: "Chrona $latestVersion",
             releaseUrl = release.html_url,
@@ -130,6 +147,9 @@ class GitHubReleaseRepository(
         fun normalizeVersion(value: String): String =
             value.trim().removePrefix("v").removePrefix("V")
 
+        fun isSemverLike(value: String): Boolean =
+            value.trim().matches(Regex("\\d+(?:\\.\\d+){0,3}(?:[-+][0-9A-Za-z.-]+)?"))
+
         val KEY_LAST_CHECKED_AT = longPreferencesKey("last_checked_at")
         val KEY_LATEST_VERSION = stringPreferencesKey("latest_version")
         val KEY_RELEASE_NAME = stringPreferencesKey("release_name")
@@ -139,6 +159,18 @@ class GitHubReleaseRepository(
         val KEY_PUBLISHED_AT = stringPreferencesKey("published_at")
     }
 }
+
+
+class GitHubReleaseException(
+    val httpCode: Int,
+    override val message: String = when (httpCode) {
+        403 -> "GitHub API access was denied."
+        404 -> "No published Chrona release was found."
+        429 -> "GitHub API rate limit reached."
+        in 500..599 -> "GitHub is temporarily unavailable."
+        else -> "GitHub release check failed (HTTP $httpCode)."
+    },
+) : IOException(message)
 
 object AppVersionComparator {
     fun isNewer(current: String, candidate: String): Boolean {

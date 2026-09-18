@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.febricahyaa.clockapp.BuildConfig
 import com.febricahyaa.clockapp.data.update.AppUpdateRepository
 import com.febricahyaa.clockapp.data.update.AppUpdateSnapshot
+import com.febricahyaa.clockapp.data.update.GitHubReleaseException
 import com.febricahyaa.clockapp.data.update.AppVersionComparator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -39,7 +40,7 @@ class AppUpdateViewModel(private val repository: AppUpdateRepository) : ViewMode
                 .onFailure { throwable ->
                     _state.value = _state.value.copy(
                         isChecking = false,
-                        errorMessage = throwable.message ?: "Unable to check for updates.",
+                        errorMessage = throwable.toUserMessage(),
                     )
                 }
                 .onSuccess { snapshot ->
@@ -62,3 +63,14 @@ data class UpdateUiState(
     val isUpdateAvailable: Boolean = false,
     val errorMessage: String? = null,
 )
+
+private fun Throwable.toUserMessage(): String = when (this) {
+    is GitHubReleaseException -> when (httpCode) {
+        403 -> "GitHub temporarily denied the release request."
+        404 -> "No published Chrona release is available yet."
+        429 -> "GitHub rate limit reached. Try again later."
+        in 500..599 -> "GitHub is temporarily unavailable. Try again later."
+        else -> message ?: "GitHub release check failed."
+    }
+    else -> message ?: "Unable to check for updates."
+}

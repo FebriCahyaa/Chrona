@@ -7,7 +7,6 @@ import android.app.AlarmManager
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
-import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -28,6 +27,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.core.content.ContextCompat
+import android.content.pm.PackageManager
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -110,9 +111,24 @@ fun ClockApp() {
         }
     }
 
-    val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
-    LaunchedEffect(onboardingState.completed) {
-        if (onboardingState.completed && Build.VERSION.SDK_INT >= 33) {
+    val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        onboardingViewModel.markNotificationPermissionPrompted()
+    }
+    LaunchedEffect(
+        onboardingState.completed,
+        onboardingState.notificationPermissionPrompted,
+    ) {
+        if (!onboardingState.completed || onboardingState.notificationPermissionPrompted) return@LaunchedEffect
+        if (Build.VERSION.SDK_INT < 33) return@LaunchedEffect
+
+        val permissionGranted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.POST_NOTIFICATIONS,
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (permissionGranted) {
+            onboardingViewModel.markNotificationPermissionPrompted()
+        } else {
             notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
@@ -257,6 +273,17 @@ fun ClockApp() {
                             onAccentChange = settingsViewModel::updateAccent,
                             onFormatChange = settingsViewModel::updateUse24HourFormat,
                             onShowSecondsChange = settingsViewModel::updateShowSeconds,
+                            notificationPermissionGranted = Build.VERSION < 33 ||
+                                ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.POST_NOTIFICATIONS,
+                                ) == PackageManager.PERMISSION_GRANTED,
+                            onOpenNotificationSettings = {
+                                val intent = Intent("android.settings.APP_NOTIFICATION_SETTINGS").apply {
+                                    putExtra("android.provider.extra.APP_PACKAGE", context.packageName)
+                                }
+                                context.startActivity(intent)
+                            },
                             onOpenLegal = { navigate(AppDestination.LEGAL) },
                             updateState = updateState,
                             onCheckForUpdates = updateViewModel::checkNow,

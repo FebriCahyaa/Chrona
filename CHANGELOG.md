@@ -1,3 +1,16 @@
+## 0.6.0 — Production Hardening / UX Integration
+
+- Harden onboarding persistence with a dedicated notification-permission prompt marker and idempotent completion handling.
+- Add onboarding system-back handling and a real Skip action.
+- Prevent the background GitHub updater from performing release checks before onboarding has completed.
+- Serialize GitHub release requests so foreground and WorkManager checks cannot overlap on the shared repository instance.
+- Validate GitHub release tags before accepting release metadata.
+- Distinguish transient GitHub failures (HTTP 429/5xx and network I/O) from terminal HTTP failures such as 403/404 for WorkManager retry behavior.
+- Surface actionable updater errors in Settings instead of a generic failure string.
+- Refactor Settings into focused appearance, clock, notification, update, and about sections while preserving the existing public Settings API.
+- Add notification permission status and a direct route to Android notification settings.
+- Bump the application to version `0.6.0` (`versionCode` 33).
+
 ## 0.10.1 — Edge-to-Edge / CI Resolution Reliability
 
 - Fix `scripts/verify-android17.sh` to validate `ChronaBentoHomeScreen.kt` after the Dashboard rename.
