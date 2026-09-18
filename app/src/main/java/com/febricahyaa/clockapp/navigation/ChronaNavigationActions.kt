@@ -9,7 +9,17 @@ class ChronaNavigationActions(
 ) {
 
     fun navigate(destination: AppDestination) {
+        if (destination == AppDestination.CLOCK) {
+            navController.popBackStack(ChronaRoutes.CLOCK, inclusive = false)
+            return
+        }
+
         navController.navigate(destination.route()) {
+            if (ChronaNavigationPolicy.isPrimaryTimeTool(destination)) {
+                popUpTo(ChronaRoutes.CLOCK) {
+                    saveState = true
+                }
+            }
             launchSingleTop = true
             restoreState = true
         }
@@ -36,4 +46,14 @@ class ChronaNavigationActions(
     }
 
     fun back(): Boolean = navController.popBackStack()
+}
+
+internal object ChronaNavigationPolicy {
+    fun isPrimaryTimeTool(destination: AppDestination): Boolean = when (destination) {
+        AppDestination.ALARM,
+        AppDestination.WORLD,
+        AppDestination.TIMER,
+        AppDestination.STOPWATCH -> true
+        else -> false
+    }
 }
