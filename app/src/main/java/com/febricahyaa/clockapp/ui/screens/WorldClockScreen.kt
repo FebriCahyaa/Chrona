@@ -152,7 +152,9 @@ private fun WorldClockCard(
     onRemove: () -> Unit,
     onToggleFavorite: () -> Unit,
 ) {
-    val zoneId = runCatching { ZoneId.of(item.zoneId) }.getOrNull()
+    val zoneId = androidx.compose.runtime.remember(item.zoneId) {
+        runCatching { ZoneId.of(item.zoneId) }.getOrNull()
+    }
     if (zoneId == null) {
         ChronaCard(Modifier.fillMaxWidth(), glass = glass) {
             Column(Modifier.fillMaxWidth().padding(16.dp)) {
@@ -247,13 +249,16 @@ internal fun cityThumbnailHues(cityHash: Int): Pair<Float, Float> {
 
 @Composable
 private fun CityThumbnail(city: String, modifier: Modifier = Modifier) {
-    val (topHue, bottomHue) = cityThumbnailHues(city.hashCode())
-    val top = Color.hsv(topHue, 0.34f, 0.90f)
-    val bottom = Color.hsv(bottomHue, 0.46f, 0.52f)
+    val gradient = androidx.compose.runtime.remember(city) {
+        val (topHue, bottomHue) = cityThumbnailHues(city.hashCode())
+        val top = Color.hsv(topHue, 0.34f, 0.90f)
+        val bottom = Color.hsv(bottomHue, 0.46f, 0.52f)
+        Brush.verticalGradient(listOf(top, bottom))
+    }
     Box(
         modifier
             .clip(RoundedCornerShape(16.dp))
-            .background(Brush.verticalGradient(listOf(top, bottom))),
+            .background(gradient),
     ) {
         Canvas(Modifier.fillMaxSize()) {
             val base = size.height * 0.82f

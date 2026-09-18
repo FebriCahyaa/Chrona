@@ -63,7 +63,9 @@ fun rememberZonedNow(zoneId: ZoneId = ZoneId.systemDefault()): ZonedDateTime {
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             while (isActive) {
                 value = ZonedDateTime.now(zoneId)
-                delay((1000L - (System.currentTimeMillis() % 1000L)).coerceAtLeast(16L))
+                val millis = System.currentTimeMillis() % 1000L
+                val nextBoundary = if (millis == 0L) 1000L else 1000L - millis
+                delay(nextBoundary)
             }
         }
     }
