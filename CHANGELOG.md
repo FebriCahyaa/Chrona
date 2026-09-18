@@ -1,3 +1,14 @@
+## 0.10.1 — Edge-to-Edge / CI Resolution Reliability
+
+- Fix `scripts/verify-android17.sh` to validate `ChronaBentoHomeScreen.kt` after the Dashboard rename.
+- Accept the implemented `CircularProgressIndicator` as a valid timer progress surface; the verifier previously rejected the real implementation because it only looked for the wavy indicator or `drawArc`.
+- Verify Dashboard edge-to-edge and collapsing-toolbar APIs explicitly (`enableEdgeToEdge`, `Scaffold`, `LargeTopAppBar`, `exitUntilCollapsedScrollBehavior`, and the nested-scroll connection).
+- Remove the redundant legacy Kotlin `buildscript` classpath declaration so the Kotlin Gradle plugin is resolved only through the plugins DSL.
+- Prefer Gradle 9.7.0, which is within the fully supported Gradle range documented for Kotlin 2.4.20, while remaining above AGP 9.4.0's minimum Gradle requirement.
+- Add a transient Gradle dependency-resolution retry helper for Maven HTTP 429/5xx and common network failures.
+- Limit Debug Matrix concurrency to two Gradle jobs at a time to reduce synchronized Maven Central requests.
+- Keep application behavior unchanged; this release fixes verification/build infrastructure rather than timer/dashboard product behavior.
+
 <!--
 Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
 -->

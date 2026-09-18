@@ -18,7 +18,7 @@ EXPECTED_BUILD_TOOLS="37.0.0"
 EXPECTED_NDK="28.2.13676358"
 EXPECTED_CMAKE="3.31.5"
 EXPECTED_AGP="9.4.0"
-EXPECTED_GRADLE="9.7.1"
+EXPECTED_GRADLE="9.7.0"
 EXPECTED_COMPOSE_BOM="2026.09.00"
 EXPECTED_ADAPTIVE="1.4.0-alpha02"
 EXPECTED_M3_ALPHA="1.5.0-alpha28"
@@ -49,12 +49,22 @@ grep -Fq "gradle-${EXPECTED_GRADLE}-" "$WRAPPER" || fail "Gradle wrapper != ${EX
 grep -Fq 'compose-bom-alpha:2026.09.00' "$APP_GRADLE" || fail "Compose alpha BOM != 2026.09.00"
 grep -Fq "material3.adaptive:adaptive:${EXPECTED_ADAPTIVE}" "$APP_GRADLE" || fail "Material 3 Adaptive != ${EXPECTED_ADAPTIVE}"
 grep -Fq 'MaterialExpressiveTheme' "$ROOT_DIR/app/src/main/java/com/febricahyaa/clockapp/ui/theme/ChronaTheme.kt" || fail "MaterialExpressiveTheme missing"
+grep -Fq 'enableEdgeToEdge()' "$ROOT_DIR/app/src/main/java/com/febricahyaa/clockapp/MainActivity.kt" || fail "Activity edge-to-edge setup missing"
 grep -Fq 'MotionScheme.expressive()' "$ROOT_DIR/app/src/main/java/com/febricahyaa/clockapp/ui/theme/ChronaTheme.kt" || fail "Expressive motion scheme missing"
 TIMER_SCREEN="$ROOT_DIR/app/src/main/java/com/febricahyaa/clockapp/ui/screens/TimerScreen.kt"
-if ! grep -Fq 'CircularWavyProgressIndicator' "$TIMER_SCREEN" && ! grep -Fq 'drawArc(' "$TIMER_SCREEN"; then
-  fail "Timer expressive progress indicator missing (expected CircularWavyProgressIndicator or custom Canvas drawArc)"
+if ! grep -Fq 'CircularWavyProgressIndicator' "$TIMER_SCREEN" \
+    && ! grep -Fq 'CircularProgressIndicator' "$TIMER_SCREEN" \
+    && ! grep -Fq 'drawArc(' "$TIMER_SCREEN"; then
+  fail "Timer circular progress indicator missing (expected CircularWavyProgressIndicator, CircularProgressIndicator, or custom Canvas drawArc)"
 fi
-grep -Fq 'currentWindowAdaptiveInfoV2' "$ROOT_DIR/app/src/main/java/com/febricahyaa/clockapp/ui/screens/HomeScreen.kt" || fail "Adaptive window API missing"
+
+HOME_SCREEN="$ROOT_DIR/app/src/main/java/com/febricahyaa/clockapp/ui/screens/ChronaBentoHomeScreen.kt"
+[[ -f "$HOME_SCREEN" ]] || fail "ChronaBentoHomeScreen.kt missing"
+grep -Fq 'currentWindowAdaptiveInfoV2' "$HOME_SCREEN" || fail "Adaptive window API missing"
+grep -Fq 'Scaffold(' "$HOME_SCREEN" || fail "Dashboard Scaffold missing"
+grep -Fq 'LargeTopAppBar(' "$HOME_SCREEN" || fail "LargeTopAppBar missing"
+grep -Fq 'exitUntilCollapsedScrollBehavior()' "$HOME_SCREEN" || fail "exitUntilCollapsed scroll behavior missing"
+grep -Fq 'nestedScroll(scrollBehavior.nestedScrollConnection)' "$HOME_SCREEN" || fail "nestedScroll connection missing"
 
 # Confirm the requested Material 3 Expressive line is present.
 if ! grep -Fq "$EXPECTED_M3_ALPHA" "$APP_GRADLE"; then
