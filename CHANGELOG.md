@@ -1,3 +1,24 @@
+
+## 0.5.0 — 2026-09-18
+
+### 🏗️ Foundation
+- Release built from the verified repository source.
+
+### ⚙️ Build System
+- Release APK assembled by GitHub Actions.
+- Release checks completed before publication.
+
+### 🔐 Security
+- APK signature verified with apksigner.
+- SHA-256 checksum generated for the APK artifact.
+
+### 📦 Build Metadata
+- Commit: `6f43c9be2fc012dbd82d90324c74560f6f0806ab`
+- versionCode: `34`
+- SHA-256: `4f11bd56156730c320ab56a819fcbf918422c46581a7b44d53ec483678c7a613`
+
+### ⚠️ Known Issues
+- Only issues confirmed by CI or documented source audit belong here.
 ## 0.6.0 — Production Hardening / UX Integration
 
 - Harden onboarding persistence with a dedicated notification-permission prompt marker and idempotent completion handling.
