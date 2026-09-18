@@ -59,12 +59,23 @@ if ! grep -Fq 'CircularWavyProgressIndicator' "$TIMER_SCREEN" \
 fi
 
 HOME_SCREEN="$ROOT_DIR/app/src/main/java/com/febricahyaa/clockapp/ui/screens/ChronaBentoHomeScreen.kt"
+LEGACY_HOME_SCREEN="$ROOT_DIR/app/src/main/java/com/febricahyaa/clockapp/ui/screens/HomeScreen.kt"
+LEGACY_SLIDER="$ROOT_DIR/app/src/main/java/com/febricahyaa/clockapp/ui/components/ChronaAnimatedSlider.kt"
+[[ ! -f "$LEGACY_HOME_SCREEN" ]] || fail "stale HomeScreen.kt remains after Dashboard rename"
+[[ ! -f "$LEGACY_SLIDER" ]] || fail "obsolete ChronaAnimatedSlider.kt remains after keypad timer refactor"
 [[ -f "$HOME_SCREEN" ]] || fail "ChronaBentoHomeScreen.kt missing"
 grep -Fq 'currentWindowAdaptiveInfoV2' "$HOME_SCREEN" || fail "Adaptive window API missing"
 grep -Fq 'Scaffold(' "$HOME_SCREEN" || fail "Dashboard Scaffold missing"
 grep -Fq 'LargeTopAppBar(' "$HOME_SCREEN" || fail "LargeTopAppBar missing"
 grep -Fq 'exitUntilCollapsedScrollBehavior()' "$HOME_SCREEN" || fail "exitUntilCollapsed scroll behavior missing"
 grep -Fq 'nestedScroll(scrollBehavior.nestedScrollConnection)' "$HOME_SCREEN" || fail "nestedScroll connection missing"
+grep -Fq 'private enum class ClockDisplayMode' "$HOME_SCREEN" || fail "ClockDisplayMode missing"
+[[ "$(grep -Fc 'private enum class ClockDisplayMode' "$HOME_SCREEN")" -eq 1 ]] || fail "duplicate ClockDisplayMode declaration"
+[[ "$(grep -Fc 'fun AnalogClockUI(hour: Int, minute: Int, second: Float)' "$HOME_SCREEN")" -eq 1 ]] || fail "duplicate AnalogClockUI declaration"
+grep -Fq 'private enum class TimerSegment' "$TIMER_SCREEN" || fail "TimerSegment declaration missing"
+grep -Fq 'import androidx.compose.material3.SearchBarValue' "$ROOT_DIR/app/src/main/java/com/febricahyaa/clockapp/ui/screens/WorldClockSearchScreen.kt" || fail "SearchBarValue import missing"
+grep -Fq 'searchBarState.currentValue == SearchBarValue.Expanded' "$ROOT_DIR/app/src/main/java/com/febricahyaa/clockapp/ui/screens/WorldClockSearchScreen.kt" || fail "SearchBarState currentValue check missing"
+grep -Fq 'import com.febricahyaa.clockapp.model.TimeZoneCatalog' "$ROOT_DIR/app/src/main/java/com/febricahyaa/clockapp/ui/screens/WorldClockSearchScreen.kt" || fail "TimeZoneCatalog import missing"
 
 # Confirm the requested Material 3 Expressive line is present.
 if ! grep -Fq "$EXPECTED_M3_ALPHA" "$APP_GRADLE"; then

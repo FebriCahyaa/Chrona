@@ -26,6 +26,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.SearchBarValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSearchBarState
 import androidx.activity.compose.BackHandler
@@ -40,6 +41,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.febricahyaa.clockapp.model.TimeZoneCatalog
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -60,7 +62,7 @@ fun WorldClockSearchScreen(
         searchBarState.animateToExpanded()
     }
 
-    BackHandler(enabled = searchBarState.isExpanded) {
+    BackHandler(enabled = searchBarState.currentValue == SearchBarValue.Expanded) {
         haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
         scope.launch { searchBarState.animateToCollapsed() }
     }

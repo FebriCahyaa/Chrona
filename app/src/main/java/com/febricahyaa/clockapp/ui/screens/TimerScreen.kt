@@ -55,6 +55,8 @@ import com.febricahyaa.clockapp.ui.components.ChronaCard
 import com.febricahyaa.clockapp.ui.components.IconCircleButton
 import com.febricahyaa.clockapp.ui.components.ScreenHeader
 
+private enum class TimerSegment { HOURS, MINUTES, SECONDS }
+
 /**
  * Chrona timer editor deliberately avoids a seek/slider interaction.
  * Digits are entered from right to left as HHMMSS, matching the mental model
