@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -36,6 +37,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -45,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -53,6 +56,7 @@ import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.unit.sp
 import com.febricahyaa.clockapp.model.AlarmItem
 import com.febricahyaa.clockapp.model.AppThemeMode
@@ -158,24 +162,39 @@ fun ChronaBentoHomeScreen(
                     }
                 }
             } else {
-                HeroCard(
-                    modifier = Modifier.fillMaxWidth().height(heroHeight),
-                    themeMode = themeMode,
-                    now = now,
-                    dateText = dateText,
-                    displayMode = clockDisplayMode,
-                    use24HourFormat = use24HourFormat,
-                    showSeconds = showSeconds,
-                    onToggleDisplay = { clockDisplayMode = clockDisplayMode.toggle() },
-                )
-                ActionGrid(
-                    themeMode = themeMode,
-                    nextAlarm = alarmTime,
-                    alarmMeta = alarmMeta,
-                    timerRemainingSeconds = timerRemainingSeconds,
-                    timerRunning = timerRunning,
-                    onNavigate = onNavigate,
-                )
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 6.dp),
+                ) {
+                    HeroCard(
+                        modifier = Modifier.fillMaxWidth().height(heroHeight),
+                        themeMode = themeMode,
+                        now = now,
+                        dateText = dateText,
+                        displayMode = clockDisplayMode,
+                        use24HourFormat = use24HourFormat,
+                        showSeconds = showSeconds,
+                        onToggleDisplay = { clockDisplayMode = clockDisplayMode.toggle() },
+                    )
+                    Box(
+                        Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(horizontal = 10.dp)
+                            .offset(y = 74.dp)
+                            .zIndex(2f),
+                    ) {
+                        FloatingActionGrid(
+                            themeMode = themeMode,
+                            nextAlarm = alarmTime,
+                            alarmMeta = alarmMeta,
+                            timerRemainingSeconds = timerRemainingSeconds,
+                            timerRunning = timerRunning,
+                            onNavigate = onNavigate,
+                        )
+                    }
+                }
+                Spacer(Modifier.height(78.dp))
                 BentoInfoCard(themeMode)
             }
             Spacer(Modifier.height(12.dp))
@@ -201,6 +220,72 @@ private fun HeroCard(
         themeMode = themeMode,
     ) {
         ClockHero(now, dateText, displayMode, use24HourFormat, showSeconds, onToggleDisplay)
+    }
+}
+
+@Composable
+private fun FloatingActionGrid(
+    themeMode: AppThemeMode,
+    nextAlarm: String,
+    alarmMeta: String,
+    timerRemainingSeconds: Int,
+    timerRunning: Boolean,
+    onNavigate: (AppDestination) -> Unit,
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(12.dp, RoundedCornerShape(30.dp)),
+        shape = RoundedCornerShape(30.dp),
+        color = MaterialTheme.colorScheme.background.copy(alpha = 0.92f),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.10f)),
+        tonalElevation = 3.dp,
+    ) {
+        Column(
+            Modifier.padding(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TimeActionCard(
+                    modifier = Modifier.weight(1f).height(136.dp).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_ALARM),
+                    themeMode = themeMode,
+                    icon = Icons.Filled.AccessAlarm,
+                    eyebrow = if (nextAlarm == "Not set") "ALARM" else "NEXT ALARM",
+                    title = "Alarm",
+                    value = nextAlarm,
+                    meta = alarmMeta,
+                    onClick = { onNavigate(AppDestination.ALARM) },
+                )
+                TimeActionCard(
+                    modifier = Modifier.weight(1f).height(136.dp).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_TIMER),
+                    themeMode = themeMode,
+                    icon = Icons.Filled.Timer,
+                    eyebrow = if (timerRunning) "LIVE" else "TIMER",
+                    title = "Timer",
+                    value = formatBentoTimer(timerRemainingSeconds),
+                    meta = if (timerRunning) "Counting down" else "Ready when you are",
+                    onClick = { onNavigate(AppDestination.TIMER) },
+                )
+            }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                UtilityCard(
+                    modifier = Modifier.weight(1f).height(110.dp).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_WORLD_CLOCK),
+                    themeMode = themeMode,
+                    icon = Icons.Filled.Public,
+                    title = "World Clock",
+                    subtitle = "Cities & time zones",
+                    onClick = { onNavigate(AppDestination.WORLD) },
+                )
+                UtilityCard(
+                    modifier = Modifier.weight(1f).height(110.dp).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_STOPWATCH),
+                    themeMode = themeMode,
+                    icon = Icons.Filled.AccessTime,
+                    title = "Stopwatch",
+                    subtitle = "Precise elapsed time",
+                    onClick = { onNavigate(AppDestination.STOPWATCH) },
+                )
+            }
+        }
     }
 }
 
