@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
+<resources>
+    <color name="window_background">#111419</color>
+    <color name="icon_background">#171B20</color>
+    <color name="icon_accent">#FFAA7D</color>
+    <color name="icon_foreground">#FFF4EC</color>
+</resources>

@@ -170,24 +170,26 @@ fun ScreenHeader(
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     Row(
-        Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        verticalAlignment = Alignment.Top,
+        Modifier
+            .fillMaxWidth()
+            .padding(top = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         if (onBack != null) {
             IconCircleButton(
                 icon = Icons.AutoMirrored.Filled.ArrowBack,
                 onClick = onBack,
                 contentDescription = "Back",
-                modifier = Modifier.size(42.dp),
+                modifier = Modifier.size(44.dp),
             )
         }
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.headlineMedium)
-            Spacer(Modifier.height(3.dp))
+            Spacer(Modifier.height(2.dp))
             Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), content = actions)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically, content = actions)
     }
 }
 
@@ -204,29 +206,10 @@ fun SectionEyebrow(text: String) {
 
 @Composable
 fun ChronaBackdrop(glass: Boolean) {
-    val primary = MaterialTheme.colorScheme.primary
-    val secondary = MaterialTheme.colorScheme.tertiary
-    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        Canvas(Modifier.fillMaxSize()) {
-            drawCircle(
-                primary.copy(alpha = if (glass) 0.22f else 0.045f),
-                radius = size.minDimension * 0.78f,
-                center = androidx.compose.ui.geometry.Offset(size.width * 1.06f, size.height * 0.08f),
-            )
-            drawCircle(
-                secondary.copy(alpha = if (glass) 0.16f else 0.035f),
-                radius = size.minDimension * 0.56f,
-                center = androidx.compose.ui.geometry.Offset(-size.width * 0.12f, size.height * 0.78f),
-            )
-            if (glass) {
-                drawCircle(
-                    Color.White.copy(alpha = 0.055f),
-                    radius = size.minDimension * 0.36f,
-                    center = androidx.compose.ui.geometry.Offset(size.width * 0.35f, size.height * 0.36f),
-                )
-            }
-        }
-    }
+    // Kept as a compatibility surface for older callers. The new root shell
+    // owns the ambient background so individual screens remain stable during
+    // destination animation.
+    ChronaAmbientBackdrop()
 }
 
 @Composable

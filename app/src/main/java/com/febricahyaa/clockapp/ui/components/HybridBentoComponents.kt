@@ -2,11 +2,9 @@
 
 package com.febricahyaa.clockapp.ui.components
 
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -41,7 +39,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -52,15 +49,42 @@ import androidx.compose.ui.unit.sp
 import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.ui.theme.ClockMotion
 
+/**
+ * One full-screen visual surface used behind every destination.
+ * Keeping the destination surface opaque-ish prevents screen ghosting during
+ * AnimatedContent while retaining a whisper of the ambient background.
+ */
 @Composable
-fun ChronaGlassBackdrop(modifier: Modifier = Modifier) {
-    // Deliberately solid: decorative gradients/blur create visual artifacts on stopwatch/world-clock screens.
+fun ChronaScreenSurface(content: @Composable BoxScope.() -> Unit) {
     Box(
-        modifier
+        Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.985f)),
+        content = content,
     )
 }
+
+@Composable
+fun ChronaAmbientBackdrop(modifier: Modifier = Modifier) {
+    val primary = MaterialTheme.colorScheme.primary
+    val tertiary = MaterialTheme.colorScheme.tertiary
+    androidx.compose.foundation.Canvas(modifier.fillMaxSize()) {
+        drawCircle(
+            color = primary.copy(alpha = 0.055f),
+            radius = size.minDimension * 0.78f,
+            center = androidx.compose.ui.geometry.Offset(size.width * 1.05f, size.height * 0.04f),
+        )
+        drawCircle(
+            color = tertiary.copy(alpha = 0.04f),
+            radius = size.minDimension * 0.56f,
+            center = androidx.compose.ui.geometry.Offset(-size.width * 0.08f, size.height * 0.82f),
+        )
+    }
+}
+
+/** Backward-compatible alias for legacy callers. */
+@Composable
+fun ChronaGlassBackdrop(modifier: Modifier = Modifier) = ChronaAmbientBackdrop(modifier)
 
 @Composable
 fun HybridBentoCard(
@@ -71,79 +95,39 @@ fun HybridBentoCard(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
-    val shape = RoundedCornerShape(30.dp)
-    val isNeumorphic = themeMode == AppThemeMode.NEUMORPHIC
-    val darkMode = isSystemInDarkTheme()
+    val shape = RoundedCornerShape(28.dp)
+    val isSoft = themeMode == AppThemeMode.NEUMORPHIC
 
     val scale by animateFloatAsState(
-        targetValue = if (pressed) 0.985f else 1f,
+        targetValue = if (pressed) 0.992f else 1f,
         animationSpec = ClockMotion.tactileSpring,
         label = "bento-scale",
     )
-    val elevation by animateDpAsState(
-        targetValue = when {
-            isNeumorphic && pressed -> 0.dp
-            isNeumorphic -> 10.dp
-            pressed -> 3.dp
-            else -> 13.dp
-        },
-        animationSpec = androidx.compose.animation.core.spring(
-            dampingRatio = 0.78f,
-            stiffness = 520f,
-        ),
-        label = "bento-elevation",
-    )
-    val fill = when {
-        isNeumorphic && pressed -> MaterialTheme.colorScheme.surfaceContainerLow
-        isNeumorphic -> MaterialTheme.colorScheme.surface
-        else -> MaterialTheme.colorScheme.surface.copy(alpha = 0.66f)
+
+    val fill = if (isSoft) {
+        MaterialTheme.colorScheme.surface
+    } else {
+        MaterialTheme.colorScheme.surfaceContainerLow
+    }
+
+    val elevation = when {
+        pressed -> 2.dp
+        isSoft -> 8.dp
+        else -> 4.dp
     }
 
     Box(
         modifier
-            .clip(shape)
-            .then(
-                if (isNeumorphic) {
-                    Modifier.drawBehind {
-                        val light = if (darkMode) {
-                            Color.White.copy(alpha = 0.24f)
-                        } else {
-                            Color.White.copy(alpha = 0.78f)
-                        }
-                        val dark = if (darkMode) {
-                            Color.Black.copy(alpha = 0.58f)
-                        } else {
-                            Color.Black.copy(alpha = 0.16f)
-                        }
-                        val offsetPx = 6.dp.toPx()
-                        val radiusPx = 30.dp.toPx()
-                        // Compose-native layered shadows avoid Android Canvas interop and remain
-                        // stable across the Android 17 toolchain.
-                        drawRoundRect(
-                            color = dark,
-                            topLeft = androidx.compose.ui.geometry.Offset(offsetPx, offsetPx),
-                            size = size,
-                            cornerRadius = androidx.compose.ui.geometry.CornerRadius(radiusPx, radiusPx),
-                        )
-                        drawRoundRect(
-                            color = light,
-                            topLeft = androidx.compose.ui.geometry.Offset(-offsetPx, -offsetPx),
-                            size = size,
-                            cornerRadius = androidx.compose.ui.geometry.CornerRadius(radiusPx, radiusPx),
-                        )
-                    }
-                } else {
-                    Modifier.shadow(elevation, shape, clip = false)
-                }
-            )
+            .shadow(elevation, shape, clip = false)
             .background(fill, shape)
             .border(
                 BorderStroke(
                     1.dp,
-                    MaterialTheme.colorScheme.onSurface.copy(alpha = if (pressed) 0.15f else 0.09f),
+                    MaterialTheme.colorScheme.outline.copy(alpha = if (pressed) 0.24f else 0.12f),
                 ),
                 shape,
             )
+            .clip(shape)
             .then(
                 onClick?.let {
                     Modifier.clickable(
@@ -155,7 +139,7 @@ fun HybridBentoCard(
                 } ?: Modifier,
             ),
     ) {
-        if (isNeumorphic) NeumorphicHighlight(pressed, shape) else GlassHighlight(shape)
+        if (isSoft) NeumorphicHighlight(pressed, shape) else MaterialSurfaceSheen(shape)
         Column(
             Modifier
                 .fillMaxWidth()
@@ -176,9 +160,9 @@ private fun BoxScope.NeumorphicHighlight(pressed: Boolean, shape: RoundedCornerS
             .background(
                 Brush.linearGradient(
                     listOf(
-                        Color.White.copy(alpha = if (pressed) 0.10f else 0.74f),
+                        Color.White.copy(alpha = if (pressed) 0.08f else 0.58f),
                         Color.Transparent,
-                        Color(0xFF7C8797).copy(alpha = if (pressed) 0.22f else 0.15f),
+                        MaterialTheme.colorScheme.primary.copy(alpha = if (pressed) 0.025f else 0.045f),
                     ),
                 ),
                 shape,
@@ -187,39 +171,36 @@ private fun BoxScope.NeumorphicHighlight(pressed: Boolean, shape: RoundedCornerS
 }
 
 @Composable
-private fun BoxScope.GlassHighlight(shape: RoundedCornerShape) {
-    val primary = MaterialTheme.colorScheme.primary
+private fun BoxScope.MaterialSurfaceSheen(shape: RoundedCornerShape) {
     Box(
         Modifier
             .fillMaxSize()
             .background(
                 Brush.linearGradient(
-                    listOf(Color.White.copy(alpha = 0.20f), Color.Transparent, primary.copy(alpha = 0.07f)),
+                    listOf(
+                        Color.White.copy(alpha = 0.08f),
+                        Color.Transparent,
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.025f),
+                    ),
                 ),
                 shape,
             ),
-    )
-    Box(
-        Modifier
-            .fillMaxSize()
-            .padding(1.dp)
-            .border(BorderStroke(1.dp, Color.White.copy(alpha = 0.14f)), shape),
     )
 }
 
 @Composable
 fun BentoIcon(
     icon: ImageVector,
-    modifier: Modifier = Modifier.size(46.dp),
+    modifier: Modifier = Modifier.size(44.dp),
     tint: Color = MaterialTheme.colorScheme.primary,
 ) {
     Box(
         modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.70f)),
+            .clip(RoundedCornerShape(15.dp))
+            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.82f)),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(22.dp))
+        Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(21.dp))
     }
 }
 
@@ -243,12 +224,12 @@ fun BentoIconButton(
         modifier = modifier,
         shape = CircleShape,
         color = if (active) {
-            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.86f)
+            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.96f)
         } else {
-            MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.72f)
+            MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.92f)
         },
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.10f)),
-        shadowElevation = if (pressed) 1.dp else 4.dp,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.14f)),
+        shadowElevation = if (pressed) 1.dp else 3.dp,
         onClick = onClick,
         interactionSource = interactionSource,
     ) {
@@ -274,25 +255,25 @@ fun ThemeToggle(
     onModeChange: (AppThemeMode) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val materialSelected = mode == AppThemeMode.MATERIAL_YOU
+    val dynamicSelected = mode == AppThemeMode.MATERIAL_YOU
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(22.dp),
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.70f),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.09f)),
-        shadowElevation = 4.dp,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.12f)),
+        shadowElevation = 2.dp,
     ) {
         Row(Modifier.padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
             ThemeChip(
                 icon = Icons.Filled.Palette,
                 label = "Soft",
-                selected = !materialSelected,
+                selected = !dynamicSelected,
                 onClick = { onModeChange(AppThemeMode.NEUMORPHIC) },
             )
             ThemeChip(
                 icon = Icons.Filled.AutoAwesome,
-                label = "You",
-                selected = materialSelected,
+                label = "Dynamic",
+                selected = dynamicSelected,
                 onClick = { onModeChange(AppThemeMode.MATERIAL_YOU) },
             )
         }
@@ -315,7 +296,7 @@ private fun RowScope.ThemeChip(icon: ImageVector, label: String, selected: Boole
         ) {
             Icon(icon, contentDescription = null, modifier = Modifier.size(14.dp))
             Spacer(Modifier.size(5.dp))
-            Text(label, fontSize = 10.sp)
+            Text(label, fontSize = 10.sp, maxLines = 1)
         }
     }
 }

@@ -35,11 +35,13 @@ import java.util.Locale
 @Composable
 fun NightstandDialog(use24HourFormat: Boolean, showSeconds: Boolean, onDismiss: () -> Unit) {
     val now = rememberZonedNow()
-    val pattern = if (use24HourFormat) "HH:mm" else "hh:mm"
+    val pattern = if (use24HourFormat) "HH:mm" else "h:mm"
     val locale = LocalConfiguration.current.locales[0]
     val value = now.format(DateTimeFormatter.ofPattern(pattern, locale))
-    val hour = value.substring(0, 2)
-    val minute = value.substring(3, 5)
+    val parts = value.split(":", limit = 2)
+    val hour = parts.getOrElse(0) { "00" }
+    val minute = parts.getOrElse(1) { "00" }
+    val period = if (use24HourFormat) "" else now.format(DateTimeFormatter.ofPattern("a", locale))
     val seconds = now.format(DateTimeFormatter.ofPattern("ss", locale))
 
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
@@ -49,9 +51,18 @@ fun NightstandDialog(use24HourFormat: Boolean, showSeconds: Boolean, onDismiss: 
                     Text(now.format(DateTimeFormatter.ofPattern("EEE, MMM d, yyyy", Locale.ENGLISH)), fontSize = 14.sp, color = Color(0xFF77736D))
                     Spacer(Modifier.padding(8.dp))
                     Text(hour, fontSize = 134.sp, lineHeight = 120.sp, fontWeight = FontWeight.Light, color = Color(0xFFF4F0EA), letterSpacing = (-5).sp)
-                    Text(minute, fontSize = 134.sp, lineHeight = 120.sp, fontWeight = FontWeight.Light, style = TextStyle(brush = Brush.linearGradient(listOf(Color(0xFFFFE5D5), Color(0xFFF39A69)))), letterSpacing = (-5).sp)
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Text(minute, fontSize = 134.sp, lineHeight = 120.sp, fontWeight = FontWeight.Light, style = TextStyle(brush = Brush.linearGradient(listOf(Color(0xFFFFE5D5), Color(0xFFF39A69)))), letterSpacing = (-5).sp)
+                        if (period.isNotEmpty()) Text(period, fontSize = 24.sp, fontWeight = FontWeight.Medium, color = Color(0xFFF39A69), modifier = Modifier.padding(start = 8.dp, bottom = 18.dp))
+                    }
                     if (showSeconds) Text("$seconds", fontSize = 12.sp, letterSpacing = 4.sp, color = Color(0xFF6D6963), modifier = Modifier.padding(top = 6.dp))
-                    Text("INDONESIA  •  UTC+7", fontSize = 10.sp, letterSpacing = 3.sp, color = Color(0xFF65615B), modifier = Modifier.padding(top = 18.dp))
+                    Text(
+                        "${now.zone.id.replace('_', ' ')}  •  ${now.offset}",
+                        fontSize = 10.sp,
+                        letterSpacing = 2.sp,
+                        color = Color(0xFF65615B),
+                        modifier = Modifier.padding(top = 18.dp),
+                    )
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.padding(top = 24.dp)) {
                         Surface(color = Color.White.copy(alpha = .055f), shape = RoundedCornerShape(20.dp)) {
                             Row(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {

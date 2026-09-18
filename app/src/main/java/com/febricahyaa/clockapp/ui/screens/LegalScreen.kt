@@ -81,9 +81,9 @@ fun LegalDialog(onDismiss: () -> Unit) {
 @Composable
 private fun LegalTopBar(title: String, onBack: () -> Unit) {
     Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-        Surface(onClick = onBack, modifier = Modifier.size(36.dp), shape = CircleShape, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.07f)) {
+        Surface(onClick = onBack, modifier = Modifier.size(44.dp), shape = CircleShape, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.07f)) {
             Box(contentAlignment = Alignment.Center) {
-                Icon(Icons.Filled.ArrowBackIosNew, contentDescription = "Kembali", modifier = Modifier.size(15.dp), tint = MaterialTheme.colorScheme.onSurface)
+                Icon(Icons.Filled.ArrowBackIosNew, contentDescription = "Kembali", modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurface)
             }
         }
         Spacer(Modifier.size(12.dp))
@@ -115,7 +115,7 @@ private fun LegalHub(onOpenNotices: () -> Unit, onOpenLicense: () -> Unit) {
         }
         Spacer(Modifier.height(28.dp))
         Row(Modifier.fillMaxWidth().padding(horizontal = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Filled.Gavel, contentDescription = null, modifier = Modifier.size(15.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            Icon(Icons.Filled.Gavel, contentDescription = null, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.size(6.dp))
             Text(
                 "Dokumen legal Chrona, termasuk pemberitahuan hak cipta dan lisensi penggunaan aplikasi.",

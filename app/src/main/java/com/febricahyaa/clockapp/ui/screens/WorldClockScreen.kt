@@ -21,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.AlertDialog
@@ -37,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.text.font.FontWeight
@@ -51,7 +53,6 @@ import com.febricahyaa.clockapp.ui.components.IconCircleButton
 import com.febricahyaa.clockapp.ui.components.ScreenHeader
 import com.febricahyaa.clockapp.ui.components.rememberZonedNow
 import java.time.ZoneId
-import kotlin.math.abs
 
 private fun regionOf(zoneId: String): String = when {
     zoneId.startsWith("Asia/") -> "Asia"
@@ -75,55 +76,68 @@ fun WorldClockScreen(
 ) {
     var showAdd by rememberSaveable { mutableStateOf(false) }
     var region by rememberSaveable { mutableStateOf("All") }
-    val visible = items.filter { item -> region == "All" || (region == "Favorites" && item.city in favorites) || regionOf(item.zoneId) == region }
+    val visible = items.filter { item ->
+        region == "All" ||
+            (region == "Favorites" && item.city in favorites) ||
+            regionOf(item.zoneId) == region
+    }
 
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(8.dp))
         ScreenHeader(
             title = "World Clock",
             subtitle = "Different places, same moment",
             onBack = onBack,
             actions = {
-            IconCircleButton(Icons.Filled.Add, { showAdd = true }, active = true, contentDescription = "Add city")
-        })
-        Spacer(Modifier.height(14.dp))
+                IconCircleButton(Icons.Filled.Add, { showAdd = true }, active = true, contentDescription = "Add city")
+            },
+        )
+        Spacer(Modifier.height(16.dp))
+
         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
             listOf("All", "Favorites", "Asia", "Europe", "Americas", "Oceania", "Africa").forEach { r ->
-                GlassPill(selected = region == r, onClick = { region = r }) { Text(r, fontSize = 10.sp) }
+                GlassPill(selected = region == r, onClick = { region = r }) { Text(r, fontSize = 11.sp) }
             }
         }
         Spacer(Modifier.height(12.dp))
+
         Box(Modifier.fillMaxWidth().weight(1f)) {
             if (visible.isEmpty()) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     ChronaCard(Modifier.fillMaxWidth(), glass = glass) {
                         Column(Modifier.fillMaxWidth().padding(30.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("No cities here yet", fontWeight = FontWeight.SemiBold)
+                            Text("No cities here yet", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                             Spacer(Modifier.height(5.dp))
                             Text("Add another timezone to build your world.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Spacer(Modifier.height(12.dp))
+                            TextButton(onClick = { showAdd = true }) { Text("Add city") }
                         }
                     }
                 }
             } else {
-                LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                items(visible, key = { it.id }) { item ->
-                    WorldClockCard(
-                        item = item,
-                        favorite = favorites.contains(item.city),
-                        use24HourFormat = use24HourFormat,
-                        glass = glass,
-                        onRemove = { onRemove(item) },
-                        onToggleFavorite = { onToggleFavorite(item.city) },
-                    )
-                }
-                item { Spacer(Modifier.height(18.dp)) }
+                LazyColumn(
+                    Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    items(visible, key = { it.id }) { item ->
+                        WorldClockCard(
+                            item = item,
+                            favorite = favorites.contains(item.city),
+                            use24HourFormat = use24HourFormat,
+                            glass = glass,
+                            onRemove = { onRemove(item) },
+                            onToggleFavorite = { onToggleFavorite(item.city) },
+                        )
+                    }
+                    item { Spacer(Modifier.height(18.dp)) }
                 }
             }
         }
     }
+
     if (showAdd) {
-        AddCityDialog(items.map { it.zoneId }.toSet(), onDismiss = { showAdd = false }) {
-            onAdd(WorldClockItem(System.currentTimeMillis(), it.city, it.zoneId))
+        AddCityDialog(items.map { it.zoneId }.toSet(), onDismiss = { showAdd = false }) { entry ->
+            onAdd(WorldClockItem(System.currentTimeMillis(), entry.city, entry.zoneId))
             showAdd = false
         }
     }
@@ -141,19 +155,11 @@ private fun WorldClockCard(
     val zoneId = runCatching { ZoneId.of(item.zoneId) }.getOrNull()
     if (zoneId == null) {
         ChronaCard(Modifier.fillMaxWidth(), glass = glass) {
-            Column(Modifier.fillMaxWidth().padding(13.dp)) {
-                Text(item.city, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
-                Spacer(Modifier.height(3.dp))
-                Text(
-                    "Invalid timezone",
-                    fontSize = 10.sp,
-                    color = MaterialTheme.colorScheme.error,
-                )
-                Text(
-                    item.zoneId,
-                    fontSize = 9.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+            Column(Modifier.fillMaxWidth().padding(16.dp)) {
+                Text(item.city, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.height(4.dp))
+                Text("Invalid timezone", fontSize = 12.sp, color = MaterialTheme.colorScheme.error)
+                Text(item.zoneId, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         return
@@ -166,27 +172,41 @@ private fun WorldClockCard(
     val date = ChronaTimeEngine.date(epochMillis, now.zone)
     val deltaSeconds = now.offset.totalSeconds - localNow.offset.totalSeconds
     val delta = formatOffsetDelta(deltaSeconds)
+
     ChronaCard(Modifier.fillMaxWidth(), glass = glass) {
         Row(Modifier.fillMaxWidth().padding(13.dp), verticalAlignment = Alignment.CenterVertically) {
-            CityThumbnail(item.city, Modifier.size(62.dp))
+            CityThumbnail(item.city, Modifier.size(76.dp))
             Spacer(Modifier.size(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(item.city, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
-                Text(countryOf(item.zoneId), fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(ChronaTimeEngine.utcOffset(now.zone, epochMillis), fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(item.city, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
+                Text(countryOf(item.zoneId), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(3.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(7.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(ChronaTimeEngine.utcOffset(now.zone, epochMillis), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("•", fontSize = 10.sp, color = MaterialTheme.colorScheme.outline)
+                    Text(delta, fontSize = 11.sp, color = MaterialTheme.colorScheme.primary)
+                }
             }
             Column(horizontalAlignment = Alignment.End) {
-                Text(time, fontSize = 24.sp, fontWeight = FontWeight.Light)
-                Text(date, fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(delta, fontSize = 9.sp, color = MaterialTheme.colorScheme.primary)
+                Text(time, fontSize = 25.sp, fontWeight = FontWeight.Light)
+                Text(date, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(4.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    IconCircleButton(
+                        if (favorite) Icons.Filled.Star else Icons.Filled.StarBorder,
+                        onToggleFavorite,
+                        modifier = Modifier.size(38.dp),
+                        active = favorite,
+                        contentDescription = if (favorite) "Remove favorite" else "Add favorite",
+                    )
+                    IconCircleButton(
+                        Icons.Filled.DeleteOutline,
+                        onRemove,
+                        modifier = Modifier.size(38.dp),
+                        contentDescription = "Remove city",
+                    )
+                }
             }
-            IconCircleButton(
-                if (favorite) Icons.Filled.Star else Icons.Filled.StarBorder,
-                onToggleFavorite,
-                modifier = Modifier.padding(start = 6.dp),
-                active = favorite,
-                contentDescription = "Favorite",
-            )
         }
     }
 }
@@ -218,13 +238,7 @@ private fun countryOf(zoneId: String) = when {
     else -> "World"
 }
 
-/**
- * Returns deterministic, Compose-safe HSV hues for a city thumbnail.
- *
- * floorMod is intentionally used instead of abs/hash % 360 because
- * abs(Int.MIN_VALUE) remains negative and would otherwise make Color.hsv
- * throw during composition. The returned range is always [0, 360).
- */
+/** Returns two deterministic HSV hues in [0, 360), safe for Color.hsv. */
 internal fun cityThumbnailHues(cityHash: Int): Pair<Float, Float> {
     val seed = Math.floorMod(cityHash, 360)
     val bottom = Math.floorMod(seed + 34, 360)
@@ -234,21 +248,35 @@ internal fun cityThumbnailHues(cityHash: Int): Pair<Float, Float> {
 @Composable
 private fun CityThumbnail(city: String, modifier: Modifier = Modifier) {
     val (topHue, bottomHue) = cityThumbnailHues(city.hashCode())
-    val top = Color.hsv(topHue, .34f, .82f)
-    val bottom = Color.hsv(bottomHue, .48f, .48f)
-    Box(modifier.clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
+    val top = Color.hsv(topHue, 0.34f, 0.90f)
+    val bottom = Color.hsv(bottomHue, 0.46f, 0.52f)
+    Box(
+        modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(Brush.verticalGradient(listOf(top, bottom))),
+    ) {
         Canvas(Modifier.fillMaxSize()) {
-            val base = size.height * .82f
-            val path = Path().apply { moveTo(0f, base); lineTo(size.width, base); lineTo(size.width, size.height); lineTo(0f, size.height); close() }
-            drawPath(path, Color.Black.copy(alpha = .25f))
-            val widths = listOf(.14f,.12f,.18f,.10f,.17f,.13f)
-            var x = size.width * .02f
-            widths.forEachIndexed { i, w ->
-                val h = size.height * (.20f + ((i + city.length) % 4) * .11f)
-                drawRect(Color.Black.copy(alpha = .50f), topLeft = Offset(x, base - h), size = androidx.compose.ui.geometry.Size(size.width * w, h))
-                x += size.width * (w + .045f)
+            val base = size.height * 0.82f
+            val path = Path().apply {
+                moveTo(0f, base)
+                lineTo(size.width, base)
+                lineTo(size.width, size.height)
+                lineTo(0f, size.height)
+                close()
             }
-            drawCircle(Color.White.copy(alpha = .55f), radius = size.minDimension * .045f, center = Offset(size.width * .78f, size.height * .20f))
+            drawPath(path, Color.Black.copy(alpha = 0.22f))
+            val widths = listOf(0.14f, 0.12f, 0.18f, 0.10f, 0.17f, 0.13f)
+            var x = size.width * 0.02f
+            widths.forEachIndexed { i, w ->
+                val h = size.height * (0.20f + ((i + city.length) % 4) * 0.11f)
+                drawRect(
+                    Color.Black.copy(alpha = 0.42f),
+                    topLeft = Offset(x, base - h),
+                    size = androidx.compose.ui.geometry.Size(size.width * w, h),
+                )
+                x += size.width * (w + 0.045f)
+            }
+            drawCircle(Color.White.copy(alpha = 0.55f), radius = size.minDimension * 0.045f, center = Offset(size.width * 0.78f, size.height * 0.20f))
         }
     }
 }
@@ -256,19 +284,28 @@ private fun CityThumbnail(city: String, modifier: Modifier = Modifier) {
 @Composable
 private fun AddCityDialog(alreadyAdded: Set<String>, onDismiss: () -> Unit, onPick: (TimeZoneCatalog.Entry) -> Unit) {
     var query by rememberSaveable { mutableStateOf("") }
-    val filtered = TimeZoneCatalog.entries.filter { it.zoneId !in alreadyAdded && (query.isBlank() || it.city.contains(query, true) || it.country.contains(query, true)) }
+    val filtered = TimeZoneCatalog.entries.filter { entry ->
+        entry.zoneId !in alreadyAdded &&
+            (query.isBlank() || entry.city.contains(query, true) || entry.country.contains(query, true))
+    }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Add city") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedTextField(value = query, onValueChange = { query = it }, modifier = Modifier.fillMaxWidth(), singleLine = true, placeholder = { Text("Search city or country") })
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = { query = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    placeholder = { Text("Search city or country") },
+                )
                 LazyColumn(Modifier.height(280.dp)) {
                     items(filtered) { entry ->
                         TextButton(onClick = { onPick(entry) }, modifier = Modifier.fillMaxWidth()) {
                             Column(Modifier.fillMaxWidth()) {
                                 Text(entry.city, fontWeight = FontWeight.Medium)
-                                Text("${entry.country} • ${regionOf(entry.zoneId)}", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("${entry.country} • ${regionOf(entry.zoneId)}", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     }
