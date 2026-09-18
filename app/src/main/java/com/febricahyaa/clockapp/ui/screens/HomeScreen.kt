@@ -92,8 +92,8 @@ fun HomeScreen(
         next.repeatDays.isEmpty() -> "One time"
         else -> "Repeats"
     }
-    val windowAdaptiveInfo = androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2()
-    val isWideWindow = windowAdaptiveInfo.windowSizeClass.windowWidthSizeClass == androidx.window.core.layout.WindowWidthSizeClass.EXPANDED
+    @Suppress("DEPRECATION")
+    val isWideWindow = androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2().windowSizeClass.windowWidthSizeClass == androidx.window.core.layout.WindowWidthSizeClass.EXPANDED
     val dateText = buildDateText(now, locale)
     val heroHeight = if (isWideWindow) 430.dp else 365.dp
 
