@@ -57,6 +57,8 @@ import androidx.compose.ui.unit.sp
 import com.febricahyaa.clockapp.model.AlarmItem
 import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.navigation.AppDestination
+import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
+import com.febricahyaa.clockapp.navigation.chronaSharedBounds
 import com.febricahyaa.clockapp.ui.components.BentoIcon
 import com.febricahyaa.clockapp.ui.components.BentoIconButton
 import com.febricahyaa.clockapp.ui.components.ChronaScaffold
@@ -194,7 +196,10 @@ private fun HeroCard(
     showSeconds: Boolean,
     onToggleDisplay: () -> Unit,
 ) {
-    HybridBentoCard(modifier = modifier, themeMode = themeMode) {
+    HybridBentoCard(
+        modifier = modifier.chronaSharedBounds(ChronaMotionKeys.DASHBOARD_HERO_CLOCK),
+        themeMode = themeMode,
+    ) {
         ClockHero(now, dateText, displayMode, use24HourFormat, showSeconds, onToggleDisplay)
     }
 }
