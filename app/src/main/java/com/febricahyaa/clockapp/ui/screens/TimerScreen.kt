@@ -17,6 +17,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -59,6 +60,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import kotlin.math.min
 import com.febricahyaa.clockapp.core.TimerDurationInput
 import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
 import com.febricahyaa.clockapp.navigation.chronaSharedBounds
@@ -171,149 +173,159 @@ fun TimerScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(paddingValues)
-                .padding(horizontal = 20.dp, vertical = 4.dp)
+                .padding(horizontal = 16.dp, vertical = 4.dp)
                 .chronaSharedBounds(ChronaMotionKeys.DASHBOARD_TIMER),
         ) {
-            ChronaCard(
-            modifier = Modifier
-                .animateContentSize()
-                .widthIn(max = 560.dp)
-                .fillMaxWidth()
-                .align(Alignment.CenterHorizontally),
-            glass = glass,
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 18.dp, vertical = 20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
+            BoxWithConstraints(
+                modifier = Modifier.fillMaxWidth(),
             ) {
-                AnimatedContent(
-                    targetState = motionState,
-                    transitionSpec = {
-                        (fadeIn(
-                            animationSpec = tween(
-                                ChronaMotionTokens.SpatialDurationMillis,
-                                easing = ChronaMotionTokens.SpatialEasing,
-                            ),
-                        ) + scaleIn(
-                            initialScale = 0.96f,
-                            animationSpec = tween(
-                                ChronaMotionTokens.SpatialDurationMillis,
-                                easing = ChronaMotionTokens.SpatialEasing,
-                            ),
-                        )).togetherWith(
-                            fadeOut(
-                                animationSpec = tween(
-                                    ChronaMotionTokens.MicroDurationMillis,
-                                    easing = ChronaMotionTokens.SpatialEasing,
-                                ),
-                            ) + scaleOut(
-                                targetScale = 1.02f,
-                                animationSpec = tween(
-                                    ChronaMotionTokens.MicroDurationMillis,
-                                    easing = ChronaMotionTokens.SpatialEasing,
-                                ),
-                            ),
-                        ).using(SizeTransform(clip = false))
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = "timer-state-spatial-motion",
-                ) { state ->
-                    when (state) {
-                        ChronaTimeToolMotionState.IDLE -> {
-                            TimerDurationDisplay(
-                                inputDigits = inputDigits,
-                                enabled = canEdit,
-                                modifier = Modifier.chronaSharedBounds(ChronaMotionKeys.TIMER_EDITOR),
-                            )
-                            Spacer(Modifier.height(8.dp))
-                            Text(
-                                text = "Enter digits as HHMMSS",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.fillMaxWidth(),
-                            )
-                            Spacer(Modifier.height(18.dp))
-                            TimerKeypad(
-                                enabled = canEdit,
-                                onDigit = ::addDigit,
-                                onDelete = ::deleteDigit,
-                                onClear = ::clearDigits,
-                            )
-                            Spacer(Modifier.height(16.dp))
-                            QuickDurations(
-                                enabled = canEdit,
-                                onSelect = { seconds ->
-                                    haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                                    inputDigits = TimerDurationInput.toDigits(seconds)
-                                    inputDirty = true
-                                },
-                                onCommit = { seconds -> onSetPreset(seconds) },
-                            )
-                            Spacer(Modifier.height(10.dp))
+                val heroSize = min(maxWidth.value - 24f, 360f).coerceAtLeast(240f).dp
+                val heroScale = (heroSize.value / 320f).coerceIn(0.78f, 1.12f)
+                val heroStroke = (14f * heroScale).coerceIn(11f, 18f).dp
+
+                ChronaCard(
+                    modifier = Modifier
+                        .animateContentSize()
+                        .widthIn(max = 560.dp)
+                        .fillMaxWidth()
+                        .align(Alignment.CenterHorizontally),
+                    glass = glass,
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 18.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        AnimatedContent(
+                            targetState = motionState,
+                            transitionSpec = {
+                                (fadeIn(
+                                    animationSpec = tween(
+                                        ChronaMotionTokens.SpatialDurationMillis,
+                                        easing = ChronaMotionTokens.SpatialEasing,
+                                    ),
+                                ) + scaleIn(
+                                    initialScale = 0.94f,
+                                    animationSpec = tween(
+                                        ChronaMotionTokens.SpatialDurationMillis,
+                                        easing = ChronaMotionTokens.SpatialEasing,
+                                    ),
+                                )).togetherWith(
+                                    fadeOut(
+                                        animationSpec = tween(
+                                            ChronaMotionTokens.MicroDurationMillis,
+                                            easing = ChronaMotionTokens.SpatialEasing,
+                                        ),
+                                    ) + scaleOut(
+                                        targetScale = 1.02f,
+                                        animationSpec = tween(
+                                            ChronaMotionTokens.MicroDurationMillis,
+                                            easing = ChronaMotionTokens.SpatialEasing,
+                                        ),
+                                    ),
+                                ).using(SizeTransform(clip = false))
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            label = "timer-state-spatial-motion",
+                        ) { state ->
+                            when (state) {
+                                ChronaTimeToolMotionState.IDLE -> {
+                                    TimerHeroEditor(
+                                        inputDigits = inputDigits,
+                                        enabled = canEdit,
+                                        heroSize = heroSize,
+                                        heroStroke = heroStroke,
+                                        heroScale = heroScale,
+                                        modifier = Modifier.chronaSharedBounds(ChronaMotionKeys.TIMER_EDITOR),
+                                    )
+                                    Spacer(Modifier.height(14.dp))
+                                    TimerKeypad(
+                                        enabled = canEdit,
+                                        onDigit = ::addDigit,
+                                        onDelete = ::deleteDigit,
+                                        onClear = ::clearDigits,
+                                    )
+                                    Spacer(Modifier.height(12.dp))
+                                    QuickDurations(
+                                        enabled = canEdit,
+                                        onSelect = { seconds ->
+                                            haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                                            inputDigits = TimerDurationInput.toDigits(seconds)
+                                            inputDirty = true
+                                        },
+                                        onCommit = { seconds -> onSetPreset(seconds) },
+                                    )
+                                }
+
+                                ChronaTimeToolMotionState.RUNNING,
+                                ChronaTimeToolMotionState.PAUSED,
+                                ChronaTimeToolMotionState.COMPLETED,
+                                -> {
+                                    CountdownIndicator(
+                                        progress = animatedProgress,
+                                        remainingSeconds = remainingSeconds,
+                                        running = running,
+                                        pulse = pulse,
+                                        heroSize = heroSize,
+                                        heroStroke = heroStroke,
+                                        heroScale = heroScale,
+                                        modifier = Modifier.chronaSharedBounds(ChronaMotionKeys.TIMER_EDITOR),
+                                    )
+                                    Spacer(Modifier.height(12.dp))
+                                    Text(
+                                        text = when (state) {
+                                            ChronaTimeToolMotionState.RUNNING -> "Running from elapsed real time"
+                                            ChronaTimeToolMotionState.COMPLETED -> "Timer complete"
+                                            else -> "Paused — resume when you're ready"
+                                        },
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.fillMaxWidth(),
+                                    )
+                                }
+                            }
                         }
 
-                        ChronaTimeToolMotionState.RUNNING,
-                        ChronaTimeToolMotionState.PAUSED,
-                        ChronaTimeToolMotionState.COMPLETED,
-                        -> {
-                            CountdownIndicator(
-                                progress = animatedProgress,
-                                remainingSeconds = remainingSeconds,
-                                running = running,
-                                pulse = pulse,
-                                modifier = Modifier.chronaSharedBounds(ChronaMotionKeys.TIMER_EDITOR),
-                            )
-                            Spacer(Modifier.height(16.dp))
-                            Text(
-                                text = when (state) {
-                                    ChronaTimeToolMotionState.RUNNING -> "Running from elapsed real time"
-                                    ChronaTimeToolMotionState.COMPLETED -> "Timer complete"
-                                    else -> "Paused — resume when you're ready"
+                        Spacer(Modifier.height(18.dp))
+                        val primaryActionLabel = when {
+                            motionState == ChronaTimeToolMotionState.COMPLETED -> "Reset"
+                            running -> "Pause"
+                            remainingSeconds != totalSeconds -> "Resume"
+                            else -> "Start"
+                        }
+                        Button(
+                            onClick = {
+                                haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                when {
+                                    motionState == ChronaTimeToolMotionState.COMPLETED -> onReset()
+                                    !running && remainingSeconds == totalSeconds -> {
+                                        commitDraft()
+                                        onToggle()
+                                    }
+                                    else -> onToggle()
+                                }
+                            },
+                            enabled = motionState == ChronaTimeToolMotionState.COMPLETED ||
+                                if (running) true else draftSeconds > 0 || remainingSeconds > 0,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
+                        ) {
+                            Icon(
+                                imageVector = when {
+                                    motionState == ChronaTimeToolMotionState.COMPLETED -> Icons.Filled.Refresh
+                                    running -> Icons.Filled.Pause
+                                    else -> Icons.Filled.PlayArrow
                                 },
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.fillMaxWidth(),
+                                contentDescription = null,
                             )
-                            Spacer(Modifier.height(18.dp))
+                            Spacer(Modifier.size(8.dp))
+                            Text(primaryActionLabel, style = MaterialTheme.typography.labelLarge)
                         }
                     }
                 }
-
-                val primaryActionLabel = when {
-                    motionState == ChronaTimeToolMotionState.COMPLETED -> "Reset"
-                    running -> "Pause"
-                    remainingSeconds != totalSeconds -> "Resume"
-                    else -> "Start"
-                }
-                Button(
-                    onClick = {
-                        haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                        when {
-                            motionState == ChronaTimeToolMotionState.COMPLETED -> onReset()
-                            !running && remainingSeconds == totalSeconds -> {
-                                commitDraft()
-                                onToggle()
-                            }
-                            else -> onToggle()
-                        }
-                    },
-                    enabled = motionState == ChronaTimeToolMotionState.COMPLETED ||
-                        if (running) true else draftSeconds > 0 || remainingSeconds > 0,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                ) {
-                    Icon(
-                        imageVector = if (running) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                        contentDescription = null,
-                    )
-                    Spacer(Modifier.size(8.dp))
-                    Text(primaryActionLabel, style = MaterialTheme.typography.labelLarge)
-                }
             }
-        }
 
         Spacer(Modifier.height(12.dp))
         Text(
@@ -332,11 +344,14 @@ private fun CountdownIndicator(
     remainingSeconds: Int,
     running: Boolean,
     pulse: Float,
+    heroSize: androidx.compose.ui.unit.Dp,
+    heroStroke: androidx.compose.ui.unit.Dp,
+    heroScale: Float,
     modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier
-            .size(286.dp)
+            .size(heroSize)
             .graphicsLayer {
                 scaleX = if (running) pulse else 1f
                 scaleY = if (running) pulse else 1f
@@ -346,7 +361,7 @@ private fun CountdownIndicator(
         CircularProgressIndicator(
             progress = { progress },
             modifier = Modifier.fillMaxSize(),
-            strokeWidth = 16.dp,
+            strokeWidth = heroStroke,
             strokeCap = StrokeCap.Round,
             color = MaterialTheme.colorScheme.primary,
             trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.10f),
@@ -354,12 +369,63 @@ private fun CountdownIndicator(
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = TimerDurationInput.format(remainingSeconds),
-                style = MaterialTheme.typography.displayLarge,
+                style = when {
+                    heroScale >= 1.04f -> MaterialTheme.typography.displayLarge
+                    heroScale <= 0.88f -> MaterialTheme.typography.headlineLarge
+                    else -> MaterialTheme.typography.displayMedium
+                },
                 fontWeight = FontWeight.Light,
             )
             Text(
                 text = if (running) "Running" else if (remainingSeconds == 0) "Complete" else "Paused",
                 style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun TimerHeroEditor(
+    inputDigits: String,
+    enabled: Boolean,
+    heroSize: androidx.compose.ui.unit.Dp,
+    heroStroke: androidx.compose.ui.unit.Dp,
+    heroScale: Float,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .size(heroSize),
+        contentAlignment = Alignment.Center,
+    ) {
+        CircularProgressIndicator(
+            progress = { 1f },
+            modifier = Modifier.fillMaxSize(),
+            strokeWidth = heroStroke,
+            strokeCap = StrokeCap.Round,
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.24f),
+            trackColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(24.dp * heroScale.coerceAtLeast(0.88f)),
+        ) {
+            Text(
+                text = "Set duration",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(6.dp))
+            TimerDurationDisplay(
+                inputDigits = inputDigits,
+                enabled = enabled,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Spacer(Modifier.height(6.dp))
+            Text(
+                text = "HH : MM : SS",
+                style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
