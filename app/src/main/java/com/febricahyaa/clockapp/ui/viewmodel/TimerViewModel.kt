@@ -99,7 +99,7 @@ class TimerViewModel(
 
     private fun start() {
         val durationMillis = timeEngine.state.value.timer.remainingMillis.coerceAtLeast(1_000L)
-        val endAtEpochMillis = System.currentTimeMillis() + durationMillis
+        val endAtEpochMillis = timeEngine.currentEpochMillis() + durationMillis
 
         viewModelScope.launch {
             timeEngine.startTimer(durationMillis)
@@ -153,7 +153,7 @@ class TimerViewModel(
 
     private suspend fun persistCurrentState(
         endAtEpochMillis: Long = if (_state.value.isRunning) {
-            System.currentTimeMillis() + (_state.value.remainingSeconds * 1_000L)
+            timeEngine.currentEpochMillis() + (_state.value.remainingSeconds * 1_000L)
         } else {
             0L
         },
@@ -185,7 +185,7 @@ class TimerViewModel(
 
     private fun remainingSeconds(endAtEpochMillis: Long): Int {
         if (endAtEpochMillis <= 0L) return 0
-        val remainingMillis = endAtEpochMillis - System.currentTimeMillis()
+        val remainingMillis = endAtEpochMillis - timeEngine.currentEpochMillis()
         return if (remainingMillis <= 0L) {
             0
         } else {

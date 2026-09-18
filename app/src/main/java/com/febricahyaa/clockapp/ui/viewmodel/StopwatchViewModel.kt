@@ -2,7 +2,6 @@
 
 package com.febricahyaa.clockapp.ui.viewmodel
 
-import android.os.SystemClock
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.febricahyaa.clockapp.data.StopwatchRepository
@@ -77,7 +76,7 @@ class StopwatchViewModel(
 
     private suspend fun restore() {
         val snapshot = repository.load()
-        val now = SystemClock.elapsedRealtime()
+        val now = timeEngine.currentElapsedRealtimeMillis()
         val canResume = snapshot.running &&
             snapshot.startElapsedRealtimeMillis > 0L &&
             snapshot.startElapsedRealtimeMillis <= now
@@ -107,7 +106,7 @@ class StopwatchViewModel(
 
     private suspend fun persistCurrentState() {
         val stopwatch = timeEngine.state.value.stopwatch
-        val now = SystemClock.elapsedRealtime()
+        val now = timeEngine.currentElapsedRealtimeMillis()
 
         _state.value = StopwatchUiState(
             elapsedMillis = stopwatch.elapsedMillis,

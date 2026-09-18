@@ -6,6 +6,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +21,13 @@ import kotlin.math.max
 interface ChronaTimeEngine : AutoCloseable {
 
     val state: StateFlow<ChronaTimeState>
+
+    /** Shared wall-clock stream for foreground clock surfaces. */
+    val wallClockMillis: StateFlow<Long>
+
+    fun currentEpochMillis(): Long
+
+    fun currentElapsedRealtimeMillis(): Long
 
     suspend fun restoreStopwatch(
         elapsedMillis: Long,
@@ -52,6 +62,7 @@ interface ChronaTimeEngine : AutoCloseable {
 class DefaultChronaTimeEngine(
     private val scope: CoroutineScope,
     private val monotonicClock: ChronaMonotonicClock = AndroidChronaMonotonicClock,
+    private val wallClock: ChronaWallClock = AndroidChronaWallClock,
 ) : ChronaTimeEngine {
 
     private val stateMutex = Mutex()
@@ -63,6 +74,21 @@ class DefaultChronaTimeEngine(
     )
 
     override val state: StateFlow<ChronaTimeState> = _state.asStateFlow()
+
+    override val wallClockMillis: StateFlow<Long> = flow {
+        while (kotlinx.coroutines.currentCoroutineContext().isActive) {
+            emit(wallClock.epochMillis())
+            delay(WALL_CLOCK_PULSE_MILLIS)
+        }
+    }.stateIn(
+        scope = scope,
+        started = SharingStarted.WhileSubscribed(stopTimeoutMillis = WALL_CLOCK_STOP_TIMEOUT_MILLIS),
+        initialValue = wallClock.epochMillis(),
+    )
+
+    override fun currentEpochMillis(): Long = wallClock.epochMillis()
+
+    override fun currentElapsedRealtimeMillis(): Long = monotonicClock.elapsedRealtime()
 
     private var stopwatchStartedAt: Long? = null
     private var stopwatchAccumulatedMillis = 0L
@@ -215,18 +241,17 @@ class DefaultChronaTimeEngine(
 
             tickerJob = scope.launch(Dispatchers.Default) {
                 while (isActive) {
-                    val shouldContinue = stateMutex.withLock {
+                    val pulseMillis = stateMutex.withLock {
                         refreshStateLocked(monotonicClock.elapsedRealtime())
-                        val stopwatchActive = stopwatchStartedAt != null
-                        val timerActive = timerEndAt != null
-                        stopwatchActive || timerActive
+                        when {
+                            stopwatchStartedAt != null -> STOPWATCH_PULSE_MILLIS
+                            timerEndAt != null -> TIMER_PULSE_MILLIS
+                            else -> null
+                        }
                     }
 
-                    if (!shouldContinue) break
-
-                    val now = monotonicClock.elapsedRealtime()
-                    val nextSecondBoundary = 1_000L - Math.floorMod(now, 1_000L)
-                    delay(nextSecondBoundary.coerceAtLeast(16L))
+                    pulseMillis ?: break
+                    delay(pulseMillis)
                 }
             }
         }
@@ -272,5 +297,13 @@ class DefaultChronaTimeEngine(
             tickerJob?.cancel()
             tickerJob = null
         }
+    }
+
+    private companion object {
+        const val WALL_CLOCK_PULSE_MILLIS = 250L
+        const val WALL_CLOCK_STOP_TIMEOUT_MILLIS = 5_000L
+        const val IDLE_PULSE_MILLIS = 250L
+        const val TIMER_PULSE_MILLIS = 100L
+        const val STOPWATCH_PULSE_MILLIS = 50L
     }
 }

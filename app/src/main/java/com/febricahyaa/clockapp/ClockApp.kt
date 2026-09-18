@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -59,6 +60,7 @@ import com.febricahyaa.clockapp.ui.viewmodel.SettingsViewModel
 import com.febricahyaa.clockapp.ui.viewmodel.StopwatchViewModel
 import com.febricahyaa.clockapp.ui.viewmodel.TimerViewModel
 import com.febricahyaa.clockapp.ui.viewmodel.WorldClockViewModel
+import com.febricahyaa.clockapp.time.LocalChronaTimeEngine
 
 @Composable
 fun ClockApp() {
@@ -132,7 +134,10 @@ fun ClockApp() {
     }
 
     ChronaTheme(settingsState.settings) {
-        when {
+        CompositionLocalProvider(
+            LocalChronaTimeEngine provides container.timeEngine,
+        ) {
+            when {
             !onboardingState.isLoaded -> {
                 Box(
                     Modifier
@@ -178,6 +183,7 @@ fun ClockApp() {
                 }
             }
         }
+    }
     }
 }
 

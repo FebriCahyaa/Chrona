@@ -36,9 +36,6 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,10 +47,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.febricahyaa.clockapp.model.AppThemeMode
+import com.febricahyaa.clockapp.time.LocalChronaTimeEngine
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 
 val LocalAccentGradient = compositionLocalOf {
     Brush.linearGradient(listOf(Color(0xFFFFD4BD), Color(0xFFFF8E62)))
@@ -61,15 +57,12 @@ val LocalAccentGradient = compositionLocalOf {
 
 @Composable
 fun rememberEpochMillisNowState(): State<Long> {
-    val lifecycleOwner = LocalLifecycleOwner.current
-    return produceState(initialValue = System.currentTimeMillis(), lifecycleOwner) {
-        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            while (isActive) {
-                value = System.currentTimeMillis()
-                val remainder = Math.floorMod(value, 1_000L)
-                delay((1_000L - remainder).coerceAtLeast(16L))
-            }
-        }
+    val timeEngine = LocalChronaTimeEngine.current
+    return produceState(
+        initialValue = timeEngine.currentEpochMillis(),
+        timeEngine,
+    ) {
+        timeEngine.wallClockMillis.collect { value = it }
     }
 }
 

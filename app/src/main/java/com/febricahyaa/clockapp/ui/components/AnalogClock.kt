@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,12 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.repeatOnLifecycle
 import com.febricahyaa.clockapp.core.NativeClock
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.delay
 
 private data class AnalogAngles(val hour: Float, val minute: Float, val second: Float)
 
@@ -34,21 +28,9 @@ fun LiveAnalogClock(
     modifier: Modifier = Modifier,
     sizeFraction: Float = 0.94f,
 ) {
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val angles by produceState(
-        initialValue = AnalogAngles(0f, 0f, 0f),
-        key1 = lifecycleOwner
-    ) {
-        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            while (isActive) {
-                val now = System.currentTimeMillis()
-                val nextBoundary = 1000L - (now % 1000L)
-                val clockAngles = NativeClock.clockAngles(now)
-                value = AnalogAngles(clockAngles.hour, clockAngles.minute, clockAngles.second)
-                delay(nextBoundary.coerceAtLeast(16L))
-            }
-        }
-    }
+    val epochMillis by rememberEpochMillisNowState()
+    val angles = NativeClock.clockAngles(epochMillis)
+
 
     val primary = MaterialTheme.colorScheme.primary
     val onSurface = MaterialTheme.colorScheme.onSurface

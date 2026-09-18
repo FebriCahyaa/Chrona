@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -19,14 +18,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.repeatOnLifecycle
-import java.time.LocalDateTime
+import java.time.Instant
 import java.time.format.DateTimeFormatter
 import java.util.Locale
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 
 @Composable
 fun ClockDisplay(
@@ -35,16 +29,8 @@ fun ClockDisplay(
     compact: Boolean = false,
     lightContent: Boolean = false,
 ) {
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val now by produceState(initialValue = LocalDateTime.now(), key1 = lifecycleOwner) {
-        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            while (isActive) {
-                val current = LocalDateTime.now()
-                value = current
-                delay((1000L - (System.currentTimeMillis() % 1000L)).coerceAtLeast(16L))
-            }
-        }
-    }
+    val epochMillis by rememberEpochMillisNowState()
+    val now = Instant.ofEpochMilli(epochMillis).atZone(java.time.ZoneId.systemDefault())
     val locale = LocalConfiguration.current.locales[0]
     val formatter = DateTimeFormatter.ofPattern(
         if (use24HourFormat) "HH:mm" else "hh:mm",
