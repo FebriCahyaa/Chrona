@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.febricahyaa.clockapp.ClockApplication
+import com.febricahyaa.clockapp.timer.TimerDurabilityPolicy
 import com.febricahyaa.clockapp.timer.TimerNotification
 
 /** Reconciles persisted alarms and timers with Android after lifecycle changes. */
@@ -25,33 +26,21 @@ class BootReceiver : BroadcastReceiver() {
         app.container.alarmStateManager.rescheduleAll()
 
         val timer = app.container.timerRepository.load()
-        if (timer.completionPending) {
-            app.container.timerRepository.save(
-                timer.copy(
-                    running = false,
-                    remainingSeconds = 0,
-                    endAtEpochMillis = 0L,
-                    completionPending = false,
-                ),
-            )
-            TimerNotification.postFinished(app)
-            return
-        }
-
-        if (!timer.running) return
-
-        if (timer.endAtEpochMillis > System.currentTimeMillis()) {
-            app.container.timerScheduler.schedule(timer.endAtEpochMillis)
-        } else {
-            app.container.timerRepository.save(
-                timer.copy(
-                    running = false,
-                    remainingSeconds = 0,
-                    endAtEpochMillis = 0L,
-                    completionPending = false,
-                ),
-            )
-            TimerNotification.postFinished(app)
+        val recovery = TimerDurabilityPolicy.recover(timer, System.currentTimeMillis())
+        when (recovery) {
+            TimerDurabilityPolicy.Recovery.Expired -> {
+                val pending = TimerDurabilityPolicy.markCompletionPending(timer)
+                app.container.timerRepository.save(pending)
+                if (TimerNotification.postFinished(app)) {
+                    app.container.timerRepository.save(
+                        TimerDurabilityPolicy.clearCompletionPending(pending),
+                    )
+                }
+            }
+            is TimerDurabilityPolicy.Recovery.RestoreRunning -> {
+                app.container.timerScheduler.schedule(timer.endAtEpochMillis)
+            }
+            is TimerDurabilityPolicy.Recovery.RestorePaused -> Unit
         }
     }
 }

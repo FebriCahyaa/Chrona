@@ -81,6 +81,7 @@ class AndroidAlarmScheduler(context: Context) : AlarmSchedulerGateway {
         val receiverIntent = Intent(appContext, AlarmReceiver::class.java).apply {
             putExtra(AlarmIntentKeys.EXTRA_ALARM_ID, originalAlarmId)
             putExtra(AlarmIntentKeys.EXTRA_ALARM_LABEL, label)
+            putExtra(AlarmIntentKeys.EXTRA_ALARM_IS_SNOOZE, true)
         }
         val operationPendingIntent = PendingIntent.getBroadcast(
             appContext,

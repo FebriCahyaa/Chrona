@@ -2,7 +2,6 @@
 
 package com.febricahyaa.clockapp.timer
 
-import android.os.Build
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -14,28 +13,21 @@ class TimerReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
         val app = context.applicationContext as ClockApplication
         val snapshot = app.container.timerRepository.load()
-        val expiredRunningTimer = snapshot.running &&
-            snapshot.endAtEpochMillis > 0L &&
-            snapshot.endAtEpochMillis <= System.currentTimeMillis()
+        val recovery = TimerDurabilityPolicy.recover(snapshot, System.currentTimeMillis())
+        if (recovery !is TimerDurabilityPolicy.Recovery.Expired) return
 
-        // AlarmManager is the durable expiry signal. completionPending is only
-        // an optimization for an already-alive ViewModel and must not be
-        // required when the process was killed before the ticker reached zero.
-        if (!snapshot.completionPending && !expiredRunningTimer) return
+        // Persist the pending completion before invoking any Android side effect.
+        // If the process dies between these operations, the completion remains
+        // recoverable on the next boot/app launch.
+        val pending = TimerDurabilityPolicy.markCompletionPending(snapshot)
+        app.container.timerRepository.save(pending)
 
-        app.container.timerRepository.save(
-            snapshot.copy(
-                running = false,
-                remainingSeconds = 0,
-                endAtEpochMillis = 0L,
-                completionPending = false,
-            ),
-        )
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !app.container.alarmScheduler.canScheduleExactAlarms()) {
-            TimerNotification.postFinished(context)
-            return
+        runCatching {
+            ContextCompat.startForegroundService(context, Intent(context, TimerService::class.java))
+        }.onFailure {
+            if (TimerNotification.postFinished(context)) {
+                app.container.timerRepository.save(TimerDurabilityPolicy.clearCompletionPending(pending))
+            }
         }
-        ContextCompat.startForegroundService(context, Intent(context, TimerService::class.java))
     }
 }

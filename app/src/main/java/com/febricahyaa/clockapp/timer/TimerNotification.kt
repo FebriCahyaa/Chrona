@@ -41,9 +41,12 @@ object TimerNotification {
         .setAutoCancel(true)
         .build()
 
-    fun postFinished(context: Context) {
-        val manager = context.getSystemService(NotificationManager::class.java) ?: return
-        runCatching { manager.notify(NOTIFICATION_ID, buildSimple(context)) }
+    fun postFinished(context: Context): Boolean {
+        val manager = context.getSystemService(NotificationManager::class.java) ?: return false
+        return runCatching {
+            manager.notify(NOTIFICATION_ID, buildSimple(context))
+            true
+        }.getOrDefault(false)
     }
 
     fun cancel(context: Context) {

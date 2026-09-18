@@ -27,14 +27,7 @@ class TimerService : Service() {
         }
 
         val snapshot = app.container.timerRepository.load()
-        app.container.timerRepository.save(
-            snapshot.copy(
-                running = false,
-                remainingSeconds = 0,
-                endAtEpochMillis = 0L,
-                completionPending = false,
-            ),
-        )
+        app.container.timerRepository.save(TimerDurabilityPolicy.clearCompletionPending(snapshot))
         app.container.alarmSoundPlayer.start()
         return START_NOT_STICKY
     }

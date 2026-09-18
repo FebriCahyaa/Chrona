@@ -14,4 +14,5 @@ object AlarmIntentKeys {
     const val EXTRA_ALARM_HOUR = "extra_alarm_hour"
     const val EXTRA_ALARM_MINUTE = "extra_alarm_minute"
     const val EXTRA_ALARM_REPEAT_DAYS = "extra_alarm_repeat_days"
+    const val EXTRA_ALARM_IS_SNOOZE = "extra_alarm_is_snooze"
 }

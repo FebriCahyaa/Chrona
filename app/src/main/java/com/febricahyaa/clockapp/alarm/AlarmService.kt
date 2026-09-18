@@ -8,6 +8,7 @@ import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import com.febricahyaa.clockapp.ClockApplication
+import com.febricahyaa.clockapp.core.AlarmTriggerPolicy
 
 /**
  * Owns the alarm-ringing lifecycle. AlarmReceiver remains intentionally tiny:
@@ -30,6 +31,12 @@ class AlarmService : Service() {
 
         currentAlarmId = alarmId
         val label = intent?.getStringExtra(AlarmIntentKeys.EXTRA_ALARM_LABEL).orEmpty()
+        val isSnooze = intent?.getBooleanExtra(AlarmIntentKeys.EXTRA_ALARM_IS_SNOOZE, false) ?: false
+        val alarm = appContainer.alarmRepository.load().firstOrNull { it.id == alarmId }
+        if (!AlarmTriggerPolicy.shouldRing(alarm, isSnooze)) {
+            stopSelf(startId)
+            return START_NOT_STICKY
+        }
         val notification = AlarmNotificationFactory.build(this, alarmId, label)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -42,12 +49,14 @@ class AlarmService : Service() {
             startForeground(AlarmReceiver.notificationId(alarmId), notification)
         }
 
-        val alarm = appContainer.alarmRepository.load().firstOrNull { it.id == alarmId }
+        // Reconcile durable alarm state before starting any user-visible side
+        // effect. If sound startup fails or the process dies immediately after
+        // this point, the alarm is still correctly consumed/re-scheduled.
+        appContainer.alarmStateManager.onAlarmTriggered(alarmId)
         appContainer.alarmSoundPlayer.start(
             ringtoneUri = alarm?.ringtoneUri,
             vibrate = alarm?.vibrate ?: true,
         )
-        appContainer.alarmStateManager.onAlarmTriggered(alarmId)
         return START_NOT_STICKY
     }
 

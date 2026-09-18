@@ -21,6 +21,10 @@ class AlarmActionReceiver : BroadcastReceiver() {
         val app = appContext as ClockApplication
         val alarmId = intent.getLongExtra(AlarmIntentKeys.EXTRA_ALARM_ID, -1L)
 
+        // Commit the trigger transition even if the foreground service is
+        // dismissed before it reaches AlarmStateManager. This keeps one-shot
+        // alarms disabled and repeating alarms reconciled across process death.
+        app.container.alarmStateManager.onAlarmTriggered(alarmId)
         app.container.alarmSoundPlayer.stop()
         appContext.stopService(Intent(appContext, AlarmService::class.java))
         AlarmReceiver.cancelNotification(appContext, alarmId)

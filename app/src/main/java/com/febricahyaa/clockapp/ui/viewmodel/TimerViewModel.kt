@@ -8,6 +8,7 @@ import com.febricahyaa.clockapp.core.config.AppDefaults
 import com.febricahyaa.clockapp.data.TimerRepository
 import com.febricahyaa.clockapp.model.TimerSnapshot
 import com.febricahyaa.clockapp.time.ChronaTimeEngine
+import com.febricahyaa.clockapp.timer.TimerDurabilityPolicy
 import com.febricahyaa.clockapp.timer.TimerSchedulerGateway
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -75,17 +76,17 @@ class TimerViewModel(
     fun setPreset(totalSeconds: Int) {
         val safe = totalSeconds.coerceAtLeast(1)
         viewModelScope.launch {
-            scheduler.cancel()
             timeEngine.configureTimer(safe * 1_000L)
             persistCurrentState()
+            scheduler.cancel()
         }
     }
 
     fun reset() {
         viewModelScope.launch {
-            scheduler.cancel()
             timeEngine.resetTimer()
             persistCurrentState()
+            scheduler.cancel()
         }
     }
 
@@ -103,51 +104,50 @@ class TimerViewModel(
 
         viewModelScope.launch {
             timeEngine.startTimer(durationMillis)
-            scheduler.schedule(endAtEpochMillis)
             persistCurrentState(endAtEpochMillis = endAtEpochMillis)
+            scheduler.schedule(endAtEpochMillis)
         }
     }
 
     private fun pause() {
         viewModelScope.launch {
             timeEngine.pauseTimer()
-            scheduler.cancel()
             persistCurrentState()
+            scheduler.cancel()
         }
     }
 
     private suspend fun restore() {
         val snapshot = repository.load()
-        val remaining = if (snapshot.running) {
-            remainingSeconds(snapshot.endAtEpochMillis)
-        } else {
-            snapshot.remainingSeconds
-        }.coerceAtLeast(0)
-
-        if (snapshot.running && remaining > 0) {
-            scheduler.schedule(snapshot.endAtEpochMillis)
-            timeEngine.restoreTimer(
-                durationMillis = snapshot.totalSeconds.coerceAtLeast(1) * 1_000L,
-                remainingMillis = remaining * 1_000L,
-                running = true,
-            )
-        } else {
-            if (snapshot.running) {
-                repository.save(
-                    snapshot.copy(
-                        running = false,
-                        remainingSeconds = 0,
-                        endAtEpochMillis = 0L,
-                        completionPending = true,
-                    ),
+        when (val recovery = TimerDurabilityPolicy.recover(
+            snapshot,
+            timeEngine.currentEpochMillis(),
+        )) {
+            is TimerDurabilityPolicy.Recovery.RestoreRunning -> {
+                scheduler.schedule(snapshot.endAtEpochMillis)
+                timeEngine.restoreTimer(
+                    durationMillis = snapshot.totalSeconds.coerceAtLeast(1) * 1_000L,
+                    remainingMillis = recovery.remainingMillis,
+                    running = true,
                 )
             }
-
-            timeEngine.restoreTimer(
-                durationMillis = snapshot.totalSeconds.coerceAtLeast(1) * 1_000L,
-                remainingMillis = remaining,
-                running = false,
-            )
+            is TimerDurabilityPolicy.Recovery.RestorePaused -> {
+                timeEngine.restoreTimer(
+                    durationMillis = snapshot.totalSeconds.coerceAtLeast(1) * 1_000L,
+                    remainingMillis = recovery.remainingMillis,
+                    running = false,
+                )
+            }
+            TimerDurabilityPolicy.Recovery.Expired -> {
+                repository.save(
+                    TimerDurabilityPolicy.markCompletionPending(snapshot),
+                )
+                timeEngine.restoreTimer(
+                    durationMillis = snapshot.totalSeconds.coerceAtLeast(1) * 1_000L,
+                    remainingMillis = 0L,
+                    running = false,
+                )
+            }
         }
     }
 
@@ -183,13 +183,4 @@ class TimerViewModel(
         )
     }
 
-    private fun remainingSeconds(endAtEpochMillis: Long): Int {
-        if (endAtEpochMillis <= 0L) return 0
-        val remainingMillis = endAtEpochMillis - timeEngine.currentEpochMillis()
-        return if (remainingMillis <= 0L) {
-            0
-        } else {
-            ((remainingMillis + 999L) / 1_000L).toInt()
-        }
-    }
 }
