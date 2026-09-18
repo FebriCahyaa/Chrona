@@ -16,9 +16,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -34,25 +37,27 @@ import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Vibration
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.key
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,9 +71,9 @@ import com.febricahyaa.clockapp.model.AlarmItem
 import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
 import com.febricahyaa.clockapp.navigation.chronaSharedBounds
 import com.febricahyaa.clockapp.ui.components.ChronaCard
+import com.febricahyaa.clockapp.ui.components.ChronaScaffold
 import com.febricahyaa.clockapp.ui.components.GradientIconBox
 import com.febricahyaa.clockapp.ui.components.IconCircleButton
-import com.febricahyaa.clockapp.ui.components.ChronaScaffold
 import com.febricahyaa.clockapp.ui.theme.ClockMotion
 import java.time.DayOfWeek
 import java.time.LocalTime
@@ -85,6 +90,7 @@ private val ALARM_DAYS = listOf(
 )
 
 @Composable
+@Suppress("UNUSED_PARAMETER")
 fun AlarmScreen(
     alarms: List<AlarmItem>,
     use24HourFormat: Boolean,
@@ -94,7 +100,7 @@ fun AlarmScreen(
     onToggle: (AlarmItem, Boolean) -> Unit,
     onDelete: (AlarmItem) -> Unit,
     onUpdate: (AlarmItem) -> Unit,
-    onEdit: () -> Unit,
+    onEdit: () -> Unit = {},
 ) {
     val haptics = LocalHapticFeedback.current
     var editorAlarmId by rememberSaveable { mutableStateOf<Long?>(null) }
@@ -106,7 +112,7 @@ fun AlarmScreen(
         actions = {
             IconCircleButton(
                 icon = Icons.Filled.Add,
-                onClick = { editorAlarmId = -1L },
+                onClick = { editorAlarmId = NEW_ALARM_ID },
                 active = true,
                 contentDescription = "Add alarm",
             )
@@ -121,63 +127,70 @@ fun AlarmScreen(
         ) {
             Spacer(Modifier.height(4.dp))
 
-        if (alarms.isEmpty()) {
-            ChronaCard(
-                Modifier.widthIn(max = 560.dp).fillMaxWidth().align(Alignment.CenterHorizontally),
-                glass = glass,
-            ) {
-                Column(
-                    Modifier.fillMaxWidth().padding(30.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
+            if (alarms.isEmpty()) {
+                ChronaCard(
+                    Modifier
+                        .widthIn(max = 560.dp)
+                        .fillMaxWidth()
+                        .align(Alignment.CenterHorizontally),
+                    glass = glass,
                 ) {
-                    GradientIconBox(Icons.Filled.Alarm)
-                    Spacer(Modifier.height(12.dp))
-                    Text("No alarms yet", style = MaterialTheme.typography.titleMedium)
-                    Spacer(Modifier.height(5.dp))
-                    Text(
-                        "Create a schedule and tune repeat, sound and vibration from the same card.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Spacer(Modifier.height(14.dp))
-                    TextButton(onClick = {
-                        haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                        editorAlarmId = -1L
-                    }) { Text("Create alarm", style = MaterialTheme.typography.labelLarge) }
+                    Column(
+                        Modifier.fillMaxWidth().padding(30.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        GradientIconBox(Icons.Filled.Alarm)
+                        Spacer(Modifier.height(12.dp))
+                        Text("No alarms yet", style = MaterialTheme.typography.titleMedium)
+                        Spacer(Modifier.height(5.dp))
+                        Text(
+                            "Create a schedule and tune repeat, sound and vibration from the same editor.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Spacer(Modifier.height(14.dp))
+                        TextButton(
+                            onClick = {
+                                haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                editorAlarmId = NEW_ALARM_ID
+                            },
+                        ) {
+                            Text("Create alarm", style = MaterialTheme.typography.labelLarge)
+                        }
+                    }
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    items(alarms, key = { it.id }, contentType = { "alarm" }) { alarm ->
+                        ExpandableAlarmCard(
+                            alarm = alarm,
+                            use24HourFormat = use24HourFormat,
+                            glass = glass,
+                            onToggle = { enabled ->
+                                haptics.performHapticFeedback(
+                                    if (enabled) HapticFeedbackType.ToggleOn else HapticFeedbackType.ToggleOff,
+                                )
+                                onToggle(alarm, enabled)
+                            },
+                            onDelete = {
+                                haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                onDelete(alarm)
+                            },
+                            onUpdate = onUpdate,
+                            onEdit = { editorAlarmId = alarm.id },
+                        )
+                    }
+                    item { Spacer(Modifier.height(18.dp)) }
                 }
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                items(alarms, key = { it.id }, contentType = { "alarm" }) { alarm ->
-                    ExpandableAlarmCard(
-                        alarm = alarm,
-                        use24HourFormat = use24HourFormat,
-                        glass = glass,
-                        onToggle = { enabled ->
-                            haptics.performHapticFeedback(
-                                if (enabled) HapticFeedbackType.ToggleOn else HapticFeedbackType.ToggleOff,
-                            )
-                            onToggle(alarm, enabled)
-                        },
-                        onDelete = {
-                            haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                            onDelete(alarm)
-                        },
-                        onUpdate = onUpdate,
-                        onEdit = { editorAlarmId = alarm.id },
-                    )
-                }
-                item { Spacer(Modifier.height(18.dp)) }
-            }
-        }
         }
     }
 
     val editorAlarm = editorAlarmId?.let { id ->
-        if (id == -1L) null else alarms.firstOrNull { it.id == id }
+        if (id == NEW_ALARM_ID) null else alarms.firstOrNull { it.id == id }
     }
 
     if (editorAlarmId != null) {
@@ -185,6 +198,7 @@ fun AlarmScreen(
             AlarmEditorSheet(
                 alarm = editorAlarm,
                 use24HourFormat = use24HourFormat,
+                glass = glass,
                 onDismiss = { editorAlarmId = null },
                 onAdd = { alarm ->
                     onAdd(alarm)
@@ -198,6 +212,9 @@ fun AlarmScreen(
         }
     }
 }
+
+private const val NEW_ALARM_ID = -1L
+
 @Composable
 private fun ExpandableAlarmCard(
     alarm: AlarmItem,
@@ -206,13 +223,14 @@ private fun ExpandableAlarmCard(
     onToggle: (Boolean) -> Unit,
     onDelete: () -> Unit,
     onUpdate: (AlarmItem) -> Unit,
+    onEdit: () -> Unit,
 ) {
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
     val locale = LocalLocale.current.platformLocale
     var expanded by rememberSaveable(alarm.id) { mutableStateOf(false) }
 
-    val timeFormatter = androidx.compose.runtime.remember(use24HourFormat, locale) {
+    val timeFormatter = remember(use24HourFormat, locale) {
         DateTimeFormatter.ofPattern(if (use24HourFormat) "HH:mm" else "h:mm", locale)
     }
     val timeText = alarm.time.format(timeFormatter)
@@ -243,22 +261,21 @@ private fun ExpandableAlarmCard(
     fun openRingtonePicker() {
         val existingUri = alarm.ringtoneUri?.let(Uri::parse)
             ?: RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM)
-        val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER).apply {
-            putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)
-            putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Alarm sound")
-            putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, true)
-            putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, existingUri)
-        }
-        ringtonePicker.launch(intent)
+        ringtonePicker.launch(
+            Intent(RingtoneManager.ACTION_RINGTONE_PICKER).apply {
+                putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)
+                putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Alarm sound")
+                putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, true)
+                putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, existingUri)
+            },
+        )
     }
 
     ChronaCard(
         modifier = Modifier
             .animateContentSize(animationSpec = ClockMotion.alarmExpand)
             .fillMaxWidth(),
-        onClick = {
-            expanded = !expanded
-        },
+        onClick = { expanded = !expanded },
         glass = glass,
     ) {
         Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp)) {
@@ -381,19 +398,311 @@ private fun AlarmOptionRow(
         Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.bodyMedium)
-            Text(value, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                value,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
         trailing?.invoke()
         if (onClick != null) {
             TextButton(onClick = {
                 haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
                 onClick()
-            }) { Text("Change", style = MaterialTheme.typography.labelLarge) }
+            }) {
+                Text("Change", style = MaterialTheme.typography.labelLarge)
+            }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)\n@Composable\nprivate fun AlarmEditorSheet(\n    alarm: AlarmItem?,\n    use24HourFormat: Boolean,\n    onDismiss: () -> Unit,\n    onAdd: (AlarmItem) -> Unit,\n    onUpdate: (AlarmItem) -> Unit,\n) {\n    val haptics = LocalHapticFeedback.current\n    val context = LocalContext.current\n    val isEditing = alarm != null\n    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)\n    val initialAlarm = alarm ?: AlarmItem(\n        id = 0L,\n        time = LocalTime.now(),\n        label = "",\n        enabled = true,\n        repeatDays = emptySet(),\n    )\n    val picker = rememberTimePickerState(\n        initialHour = initialAlarm.time.hour,\n        initialMinute = initialAlarm.time.minute,\n        is24Hour = use24HourFormat,\n    )\n    var label by rememberSaveable(initialAlarm.id) { mutableStateOf(initialAlarm.label) }\n    var days by rememberSaveable(initialAlarm.id) { mutableStateOf(initialAlarm.repeatDays) }\n    var vibrate by rememberSaveable(initialAlarm.id) { mutableStateOf(initialAlarm.vibrate) }\n    var ringtoneUri by rememberSaveable(initialAlarm.id) { mutableStateOf(initialAlarm.ringtoneUri) }\n    var ringtoneName by rememberSaveable(initialAlarm.id) { mutableStateOf(initialAlarm.ringtoneName) }\n\n    val ringtonePicker = rememberLauncherForActivityResult(\n        contract = ActivityResultContracts.StartActivityForResult(),\n    ) { result ->\n        if (result.resultCode != Activity.RESULT_OK) return@rememberLauncherForActivityResult\n        val pickedUri = result.data?.let { data ->\n            androidx.core.content.IntentCompat.getParcelableExtra(\n                data,\n                RingtoneManager.EXTRA_RINGTONE_PICKED_URI,\n                Uri::class.java,\n            )\n        }\n        ringtoneUri = pickedUri?.toString()\n        ringtoneName = pickedUri?.let { RingtoneManager.getRingtone(context, it)?.getTitle(context) }\n            ?: "Silent"\n        haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)\n    }\n\n    fun openRingtonePicker() {\n        val existingUri = ringtoneUri?.let(Uri::parse)\n            ?: RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM)\n        ringtonePicker.launch(Intent(RingtoneManager.ACTION_RINGTONE_PICKER).apply {\n            putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)\n            putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Alarm sound")\n            putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, true)\n            putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, existingUri)\n        })\n    }\n\n    ModalBottomSheet(\n        onDismissRequest = onDismiss,\n        sheetState = sheetState,\n    ) {\n        Column(\n            modifier = Modifier\n                .fillMaxWidth()\n                .widthIn(max = 620.dp)\n                .align(Alignment.CenterHorizontally)\n                .animateContentSize(animationSpec = ClockMotion.alarmExpand)\n                .padding(horizontal = 20.dp)\n                .padding(bottom = 28.dp)\n                .chronaSharedBounds(ChronaMotionKeys.ALARM_EDITOR),\n            verticalArrangement = Arrangement.spacedBy(14.dp),\n        ) {\n            Text(\n                text = if (isEditing) "Edit alarm" else "New alarm",\n                style = MaterialTheme.typography.headlineSmall,\n                fontWeight = FontWeight.SemiBold,\n            )\n            Text(\n                text = "Set time, repetition, label and alert behavior in one place.",\n                style = MaterialTheme.typography.bodyMedium,\n                color = MaterialTheme.colorScheme.onSurfaceVariant,\n            )\n            TimePicker(state = picker)\n            OutlinedTextField(\n                value = label,\n                onValueChange = { label = it },\n                label = { Text("Label") },\n                modifier = Modifier.fillMaxWidth(),\n                singleLine = true,\n            )\n            Text("Repeat", style = MaterialTheme.typography.labelLarge)\n            Row(\n                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),\n                horizontalArrangement = Arrangement.spacedBy(7.dp),\n            ) {\n                ALARM_DAYS.forEach { (day, short) ->\n                    FilterChip(\n                        selected = day in days,\n                        onClick = {\n                            haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)\n                            days = if (day in days) days - day else days + day\n                        },\n                        label = { Text(short) },\n                    )\n                }\n            }\n            AlarmOptionRow(\n                icon = Icons.Filled.MusicNote,\n                title = "Alarm sound",\n                value = ringtoneName,\n                onClick = ::openRingtonePicker,\n            )\n            AlarmOptionRow(\n                icon = Icons.Filled.Vibration,\n                title = "Vibrate",\n                value = if (vibrate) "On" else "Off",\n                trailing = {\n                    Switch(\n                        checked = vibrate,\n                        onCheckedChange = { enabled ->\n                            vibrate = enabled\n                            haptics.performHapticFeedback(\n                                if (enabled) HapticFeedbackType.ToggleOn else HapticFeedbackType.ToggleOff,\n                            )\n                        },\n                    )\n                },\n            )\n            Row(\n                modifier = Modifier.fillMaxWidth(),\n                horizontalArrangement = Arrangement.spacedBy(10.dp),\n            ) {\n                TextButton(\n                    onClick = onDismiss,\n                    modifier = Modifier.weight(1f),\n                ) { Text("Cancel") }\n                Button(\n                    onClick = {\n                        val updated = AlarmItem(\n                            id = alarm?.id ?: System.currentTimeMillis(),\n                            time = LocalTime.of(picker.hour, picker.minute),\n                            label = label,\n                            enabled = alarm?.enabled ?: true,\n                            repeatDays = days,\n                            ringtoneUri = ringtoneUri,\n                            ringtoneName = ringtoneName,\n                            vibrate = vibrate,\n                        )\n                        haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)\n                        if (isEditing) onUpdate(updated) else onAdd(updated)\n                    },\n                    modifier = Modifier.weight(1f),\n                ) {\n                    Text(if (isEditing) "Save changes" else "Create alarm")\n                }\n            }\n        }\n    }\n}
+@Composable
+private fun AlarmEditorSheet(
+    alarm: AlarmItem?,
+    use24HourFormat: Boolean,
+    glass: Boolean,
+    onDismiss: () -> Unit,
+    onAdd: (AlarmItem) -> Unit,
+    onUpdate: (AlarmItem) -> Unit,
+) {
+    val haptics = LocalHapticFeedback.current
+    val context = LocalContext.current
+    val locale = LocalLocale.current.platformLocale
+    val isEditing = alarm != null
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val initialAlarm = remember(alarm?.id) {
+        alarm ?: AlarmItem(
+            id = 0L,
+            time = LocalTime.now(),
+            label = "",
+            enabled = true,
+            repeatDays = emptySet(),
+        )
+    }
+    val picker = rememberTimePickerState(
+        initialHour = initialAlarm.time.hour,
+        initialMinute = initialAlarm.time.minute,
+        is24Hour = use24HourFormat,
+    )
+    var label by rememberSaveable(initialAlarm.id) { mutableStateOf(initialAlarm.label) }
+    var days by remember(initialAlarm.id) { mutableStateOf(initialAlarm.repeatDays) }
+    var vibrate by rememberSaveable(initialAlarm.id) { mutableStateOf(initialAlarm.vibrate) }
+    var enabled by rememberSaveable(initialAlarm.id) { mutableStateOf(initialAlarm.enabled) }
+    var ringtoneUri by rememberSaveable(initialAlarm.id) { mutableStateOf(initialAlarm.ringtoneUri) }
+    var ringtoneName by rememberSaveable(initialAlarm.id) { mutableStateOf(initialAlarm.ringtoneName) }
+
+    val timeFormatter = remember(use24HourFormat, locale) {
+        DateTimeFormatter.ofPattern(if (use24HourFormat) "HH:mm" else "h:mm", locale)
+    }
+
+    val ringtonePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult(),
+    ) { result ->
+        if (result.resultCode != Activity.RESULT_OK) return@rememberLauncherForActivityResult
+        val pickedUri = result.data?.let { data ->
+            androidx.core.content.IntentCompat.getParcelableExtra(
+                data,
+                RingtoneManager.EXTRA_RINGTONE_PICKED_URI,
+                Uri::class.java,
+            )
+        }
+        ringtoneUri = pickedUri?.toString()
+        ringtoneName = pickedUri?.let { RingtoneManager.getRingtone(context, it)?.getTitle(context) }
+            ?: "Silent"
+        haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
+    }
+
+    fun openRingtonePicker() {
+        val existingUri = ringtoneUri?.let(Uri::parse)
+            ?: RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM)
+        ringtonePicker.launch(
+            Intent(RingtoneManager.ACTION_RINGTONE_PICKER).apply {
+                putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)
+                putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Alarm sound")
+                putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, true)
+                putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, existingUri)
+            },
+        )
+    }
+
+    val selectedTime = LocalTime.of(picker.hour, picker.minute)
+    val selectedTimeText = selectedTime.format(timeFormatter)
+    val selectedPeriod = if (use24HourFormat) null else if (selectedTime.hour < 12) "AM" else "PM"
+    val repeatSummary = repeatLabel(days)
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.surface,
+        tonalElevation = 4.dp,
+        dragHandle = { BottomSheetDefaults.DragHandle() },
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.94f)
+                .imePadding()
+                .navigationBarsPadding()
+                .widthIn(max = 720.dp)
+                .align(Alignment.CenterHorizontally)
+                .chronaSharedBounds(ChronaMotionKeys.ALARM_EDITOR),
+        ) {
+            Column(
+                modifier = Modifier.padding(horizontal = 24.dp),
+            ) {
+                Text(
+                    text = if (isEditing) "Edit alarm" else "New alarm",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.ExtraBold,
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = if (isEditing) {
+                        "Tune this schedule without leaving the alarm list."
+                    } else {
+                        "Build a complete schedule with time, repeat and alert behavior."
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(top = 16.dp))
+
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                    start = 24.dp,
+                    end = 24.dp,
+                    top = 18.dp,
+                    bottom = 24.dp,
+                ),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                item {
+                    ChronaCard(glass = glass) {
+                        Column(
+                            Modifier.fillMaxWidth().padding(18.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Row(verticalAlignment = Alignment.Bottom) {
+                                Text(
+                                    selectedTimeText,
+                                    style = MaterialTheme.typography.displayLarge,
+                                    fontWeight = FontWeight.Light,
+                                )
+                                if (selectedPeriod != null) {
+                                    Spacer(Modifier.size(8.dp))
+                                    Text(
+                                        selectedPeriod,
+                                        style = MaterialTheme.typography.titleLarge,
+                                        color = MaterialTheme.colorScheme.primary,
+                                    )
+                                }
+                            }
+                            Spacer(Modifier.height(6.dp))
+                            Text(
+                                "Tap the dial to set the alarm time",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Spacer(Modifier.height(12.dp))
+                            TimePicker(state = picker)
+                        }
+                    }
+                }
+
+                item {
+                    Text("Schedule", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                }
+
+                item {
+                    ChronaCard(glass = glass) {
+                        Column(Modifier.fillMaxWidth().padding(18.dp)) {
+                            OutlinedTextField(
+                                value = label,
+                                onValueChange = { label = it },
+                                label = { Text("Label") },
+                                placeholder = { Text("e.g. Wake up") },
+                                modifier = Modifier.fillMaxWidth(),
+                                singleLine = true,
+                            )
+                            Spacer(Modifier.height(16.dp))
+                            Text("Repeat", style = MaterialTheme.typography.labelLarge)
+                            Spacer(Modifier.height(8.dp))
+                            Row(
+                                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                                horizontalArrangement = Arrangement.spacedBy(7.dp),
+                            ) {
+                                ALARM_DAYS.forEach { (day, short) ->
+                                    FilterChip(
+                                        selected = day in days,
+                                        onClick = {
+                                            haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                                            days = if (day in days) days - day else days + day
+                                        },
+                                        label = { Text(short) },
+                                    )
+                                }
+                            }
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                repeatSummary,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
+
+                item {
+                    Text("Alert behavior", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                }
+
+                item {
+                    ChronaCard(glass = glass) {
+                        Column(Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 10.dp)) {
+                            AlarmOptionRow(
+                                icon = Icons.Filled.MusicNote,
+                                title = "Alarm sound",
+                                value = ringtoneName,
+                                onClick = ::openRingtonePicker,
+                            )
+                            AlarmOptionRow(
+                                icon = Icons.Filled.Vibration,
+                                title = "Vibrate",
+                                value = if (vibrate) "On" else "Off",
+                                trailing = {
+                                    Switch(
+                                        checked = vibrate,
+                                        onCheckedChange = { next ->
+                                            vibrate = next
+                                            haptics.performHapticFeedback(
+                                                if (next) HapticFeedbackType.ToggleOn else HapticFeedbackType.ToggleOff,
+                                            )
+                                        },
+                                    )
+                                },
+                            )
+                            AlarmOptionRow(
+                                icon = Icons.Filled.Alarm,
+                                title = "Alarm enabled",
+                                value = if (enabled) "Active" else "Disabled",
+                                trailing = {
+                                    Switch(
+                                        checked = enabled,
+                                        onCheckedChange = { next ->
+                                            enabled = next
+                                            haptics.performHapticFeedback(
+                                                if (next) HapticFeedbackType.ToggleOn else HapticFeedbackType.ToggleOff,
+                                            )
+                                        },
+                                    )
+                                },
+                            )
+                        }
+                    }
+                }
+            }
+
+            HorizontalDivider()
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 14.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text("Cancel")
+                }
+                Button(
+                    onClick = {
+                        val updated = AlarmItem(
+                            id = alarm?.id ?: System.currentTimeMillis(),
+                            time = selectedTime,
+                            label = label.trim(),
+                            enabled = enabled,
+                            repeatDays = days,
+                            ringtoneUri = ringtoneUri,
+                            ringtoneName = ringtoneName,
+                            vibrate = vibrate,
+                        )
+                        haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                        if (isEditing) onUpdate(updated) else onAdd(updated)
+                    },
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(if (isEditing) "Save changes" else "Create alarm")
+                }
+            }
+        }
+    }
+}
+
 private fun repeatLabel(days: Set<DayOfWeek>): String = when {
     days.isEmpty() -> "Once"
     days.size == 7 -> "Every day"
