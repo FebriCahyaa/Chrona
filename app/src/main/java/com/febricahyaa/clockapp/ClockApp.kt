@@ -30,6 +30,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.febricahyaa.clockapp.di.AppViewModelFactory
 import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.model.WorldClockItem
@@ -68,11 +69,11 @@ fun ClockApp() {
     val timerViewModel: TimerViewModel = viewModel(factory = viewModelFactory)
     val stopwatchViewModel: StopwatchViewModel = viewModel(factory = viewModelFactory)
 
-    val settingsState by androidx.lifecycle.compose.collectAsStateWithLifecycle(settingsViewModel.state)
-    val alarms by androidx.lifecycle.compose.collectAsStateWithLifecycle(alarmViewModel.alarms)
-    val worldClockState by androidx.lifecycle.compose.collectAsStateWithLifecycle(worldClockViewModel.state)
-    val timerState by androidx.lifecycle.compose.collectAsStateWithLifecycle(timerViewModel.state)
-    val stopwatchState by androidx.lifecycle.compose.collectAsStateWithLifecycle(stopwatchViewModel.state)
+    val settingsState by settingsViewModel.state.collectAsStateWithLifecycle()
+    val alarms by alarmViewModel.alarms.collectAsStateWithLifecycle()
+    val worldClockState by worldClockViewModel.state.collectAsStateWithLifecycle()
+    val timerState by timerViewModel.state.collectAsStateWithLifecycle()
+    val stopwatchState by stopwatchViewModel.state.collectAsStateWithLifecycle()
 
     var backStack by rememberSaveable { mutableStateOf(listOf(AppDestination.CLOCK.name)) }
 
