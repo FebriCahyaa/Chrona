@@ -31,7 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.febricahyaa.clockapp.ui.components.ChronaCard
 import com.febricahyaa.clockapp.ui.components.GlassPill
 import com.febricahyaa.clockapp.ui.components.IconCircleButton
 import com.febricahyaa.clockapp.ui.components.ScreenHeader
@@ -48,7 +47,7 @@ fun StopwatchScreen(
     onReset: () -> Unit,
     onBack: () -> Unit,
 ) {
-    Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
+    Column(Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
         Spacer(Modifier.height(12.dp))
         ScreenHeader(title = "Stopwatch", subtitle = "Track every second", onBack = onBack, actions = { IconCircleButton(Icons.Filled.Refresh, onReset) })
         Spacer(Modifier.height(8.dp))

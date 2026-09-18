@@ -37,7 +37,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.text.font.FontWeight
@@ -237,7 +236,7 @@ private fun CityThumbnail(city: String, modifier: Modifier = Modifier) {
     val (topHue, bottomHue) = cityThumbnailHues(city.hashCode())
     val top = Color.hsv(topHue, .34f, .82f)
     val bottom = Color.hsv(bottomHue, .48f, .48f)
-    Box(modifier.clip(RoundedCornerShape(16.dp)).background(Brush.verticalGradient(listOf(top, bottom)))) {
+    Box(modifier.clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
         Canvas(Modifier.fillMaxSize()) {
             val base = size.height * .82f
             val path = Path().apply { moveTo(0f, base); lineTo(size.width, base); lineTo(size.width, size.height); lineTo(0f, size.height); close() }

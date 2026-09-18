@@ -2,10 +2,8 @@
 
 package com.febricahyaa.clockapp.ui.components
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -41,11 +39,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -57,38 +53,12 @@ import com.febricahyaa.clockapp.ui.theme.ClockMotion
 
 @Composable
 fun ChronaGlassBackdrop(modifier: Modifier = Modifier) {
-    val primary = MaterialTheme.colorScheme.primary
-    val secondary = MaterialTheme.colorScheme.tertiary
-
+    // Deliberately solid: decorative gradients/blur create visual artifacts on stopwatch/world-clock screens.
     Box(
         modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
-    ) {
-        Box(
-            Modifier
-                .align(Alignment.TopEnd)
-                .padding(top = 16.dp, end = 4.dp)
-                .size(240.dp)
-                .blur(76.dp)
-                .background(primary.copy(alpha = 0.23f), CircleShape),
-        )
-        Box(
-            Modifier
-                .align(Alignment.BottomStart)
-                .padding(start = 10.dp, bottom = 100.dp)
-                .size(260.dp)
-                .blur(90.dp)
-                .background(secondary.copy(alpha = 0.16f), CircleShape),
-        )
-        Box(
-            Modifier
-                .align(Alignment.Center)
-                .size(150.dp)
-                .blur(72.dp)
-                .background(primary.copy(alpha = 0.06f), CircleShape),
-        )
-    }
+    )
 }
 
 @Composable
@@ -116,18 +86,17 @@ fun HybridBentoCard(
             pressed -> 3.dp
             else -> 13.dp
         },
-        animationSpec = tween(140),
+        animationSpec = androidx.compose.animation.core.spring(
+            dampingRatio = 0.78f,
+            stiffness = 520f,
+        ),
         label = "bento-elevation",
     )
-    val fill by animateColorAsState(
-        targetValue = when {
-            isNeumorphic && pressed -> MaterialTheme.colorScheme.surfaceContainerLow
-            isNeumorphic -> MaterialTheme.colorScheme.surface
-            else -> MaterialTheme.colorScheme.surface.copy(alpha = 0.66f)
-        },
-        animationSpec = tween(180),
-        label = "bento-fill",
-    )
+    val fill = when {
+        isNeumorphic && pressed -> MaterialTheme.colorScheme.surfaceContainerLow
+        isNeumorphic -> MaterialTheme.colorScheme.surface
+        else -> MaterialTheme.colorScheme.surface.copy(alpha = 0.66f)
+    }
 
     Box(
         modifier
@@ -136,12 +105,12 @@ fun HybridBentoCard(
                 if (isNeumorphic) {
                     Modifier.drawBehind {
                         val light = if (darkMode) {
-                            Color.White.copy(alpha = 0.12f)
+                            Color.White.copy(alpha = 0.24f)
                         } else {
                             Color.White.copy(alpha = 0.78f)
                         }
                         val dark = if (darkMode) {
-                            Color.Black.copy(alpha = 0.46f)
+                            Color.Black.copy(alpha = 0.58f)
                         } else {
                             Color.Black.copy(alpha = 0.16f)
                         }
