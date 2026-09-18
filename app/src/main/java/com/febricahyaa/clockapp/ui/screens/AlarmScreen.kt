@@ -112,13 +112,18 @@ fun AlarmScreen(
             )
         },
     ) { paddingValues ->
-        Column(Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 20.dp)) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 20.dp)
+                .chronaSharedBounds(ChronaMotionKeys.DASHBOARD_ALARM),
+        ) {
             Spacer(Modifier.height(4.dp))
 
         if (alarms.isEmpty()) {
             ChronaCard(
-                Modifier.chronaSharedBounds(ChronaMotionKeys.DASHBOARD_ALARM)
-                    .widthIn(max = 560.dp).fillMaxWidth().align(Alignment.CenterHorizontally),
+                Modifier.widthIn(max = 560.dp).fillMaxWidth().align(Alignment.CenterHorizontally),
                 glass = glass,
             ) {
                 Column(

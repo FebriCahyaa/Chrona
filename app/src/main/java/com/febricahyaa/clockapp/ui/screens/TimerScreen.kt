@@ -171,11 +171,11 @@ fun TimerScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(paddingValues)
-                .padding(horizontal = 20.dp, vertical = 4.dp),
+                .padding(horizontal = 20.dp, vertical = 4.dp)
+                .chronaSharedBounds(ChronaMotionKeys.DASHBOARD_TIMER),
         ) {
             ChronaCard(
             modifier = Modifier
-                .chronaSharedBounds(ChronaMotionKeys.DASHBOARD_TIMER)
                 .animateContentSize()
                 .widthIn(max = 560.dp)
                 .fillMaxWidth()

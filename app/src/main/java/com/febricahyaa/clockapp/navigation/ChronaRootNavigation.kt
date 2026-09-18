@@ -38,6 +38,10 @@ fun ChronaRootNavigation(
                 navController = navController,
                 startDestination = startDestination,
                 modifier = Modifier.fillMaxSize(),
+                enterTransition = { ChronaNavigationMotion.enter() },
+                exitTransition = { ChronaNavigationMotion.exit() },
+                popEnterTransition = { ChronaNavigationMotion.popEnter() },
+                popExitTransition = { ChronaNavigationMotion.popExit() },
             ) {
                 composable(ChronaRoutes.CLOCK) {
                     ChronaDestinationScope(

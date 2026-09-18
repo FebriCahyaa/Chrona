@@ -110,7 +110,8 @@ fun WorldClockScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 20.dp),
+                .padding(horizontal = 20.dp)
+                .chronaSharedBounds(ChronaMotionKeys.DASHBOARD_WORLD_CLOCK),
         ) {
             Spacer(Modifier.height(4.dp))
 
