@@ -146,6 +146,15 @@ jobs:
           echo "Release versionName: $VERSION"
           echo "Release versionCode: $NEXT_VERSION_CODE"
 
+      - name: Run Phase 6A static release gate
+        env:
+          CHRONA_RELEASE_VERSION: ${{ env.CHRONA_RELEASE_VERSION }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x ./scripts/phase6-release-gate.sh
+          ./scripts/phase6-release-gate.sh "$CHRONA_RELEASE_VERSION"
+
       - name: Run tests and lint
         shell: bash
         run: |
