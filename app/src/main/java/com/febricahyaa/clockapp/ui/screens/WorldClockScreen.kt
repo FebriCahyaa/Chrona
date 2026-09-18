@@ -52,6 +52,8 @@ import com.febricahyaa.clockapp.ui.components.ChronaCard
 import com.febricahyaa.clockapp.ui.components.ChronaScaffold
 import com.febricahyaa.clockapp.ui.components.rememberEpochMillisNowState
 import com.febricahyaa.clockapp.ui.components.IconCircleButton
+import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
+import com.febricahyaa.clockapp.navigation.chronaSharedBounds
 import java.time.Instant
 import java.time.ZoneId
 
@@ -136,7 +138,7 @@ fun WorldClockScreen(
 
                 if (visible.isEmpty()) {
                     item(contentType = "empty") {
-                        ChronaCard(Modifier.fillMaxWidth(), glass = glass) {
+                        ChronaCard(Modifier.fillMaxWidth().chronaSharedBounds(ChronaMotionKeys.worldClockCard(item.id)), glass = glass) {
                             Column(
                                 Modifier.fillMaxWidth().padding(28.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally,

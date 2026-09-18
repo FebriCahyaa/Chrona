@@ -3,6 +3,7 @@ package com.febricahyaa.clockapp.navigation
 
 /** Stable shared-element keys. Keep these values backward compatible across destinations. */
 object ChronaMotionKeys {
+    fun worldClockCard(id: Long): String = "world-clock-card:$id"
     const val DASHBOARD_HERO_CLOCK = "dashboard.hero.clock"
     const val DASHBOARD_WORLD_CLOCK = "dashboard.card.world-clock"
     const val DASHBOARD_ALARM = "dashboard.card.alarm"
