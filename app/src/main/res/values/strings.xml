@@ -126,7 +126,7 @@
     <string name="alarm_editor_edit_subtitle">Tune this schedule without leaving the alarm list.</string>
     <string name="alarm_editor_schedule_section">Schedule</string>
     <string name="alarm_editor_alert_section">Alert behavior</string>
-    <string name="alarm_time_hint">Tap the dial to set the alarm time</string>
+    <string name="alarm_time_hint">Enter time as HHMM</string>
     <string name="alarm_label">Label</string>
     <string name="alarm_label_hint">e.g. Wake up</string>
     <string name="alarm_cancel">Cancel</string>

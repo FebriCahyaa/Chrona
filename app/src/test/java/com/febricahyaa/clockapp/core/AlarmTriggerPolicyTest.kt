@@ -9,7 +9,6 @@ import org.junit.Test
 import java.time.LocalTime
 
 class AlarmTriggerPolicyTest {
-
     @Test
     fun disabledAlarmIsNotValidForNormalTrigger() {
         val alarm = AlarmItem(
@@ -19,13 +18,7 @@ class AlarmTriggerPolicyTest {
             enabled = false,
             repeatDays = emptySet(),
         )
-
-        assertFalse(
-            AlarmTriggerPolicy.shouldRing(
-                alarm = alarm,
-                isSnooze = false,
-            ),
-        )
+        assertFalse(AlarmTriggerPolicy.shouldRing(alarm, isSnooze = false))
     }
 
     @Test
@@ -37,29 +30,12 @@ class AlarmTriggerPolicyTest {
             enabled = false,
             repeatDays = emptySet(),
         )
-
-        assertTrue(
-            AlarmTriggerPolicy.shouldRing(
-                alarm = alarm,
-                isSnooze = true,
-            ),
-        )
+        assertTrue(AlarmTriggerPolicy.shouldRing(alarm, isSnooze = true))
     }
 
     @Test
     fun missingAlarmCannotRingNormally() {
-        assertFalse(
-            AlarmTriggerPolicy.shouldRing(
-                alarm = null,
-                isSnooze = false,
-            ),
-        )
-
-        assertTrue(
-            AlarmTriggerPolicy.shouldRing(
-                alarm = null,
-                isSnooze = true,
-            ),
-        )
+        assertFalse(AlarmTriggerPolicy.shouldRing(null, isSnooze = false))
+        assertTrue(AlarmTriggerPolicy.shouldRing(null, isSnooze = true))
     }
 }

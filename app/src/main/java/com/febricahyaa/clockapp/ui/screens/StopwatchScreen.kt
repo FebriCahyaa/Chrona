@@ -205,12 +205,14 @@ private fun StopwatchLapHistory(
     ) {
         Text(
             text = stringResource(R.string.stopwatch_lap_history),
+            modifier = Modifier.padding(horizontal = 24.dp),
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.SemiBold,
         )
         Spacer(Modifier.height(8.dp))
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 24.dp),
         ) {
             itemsIndexed(laps.asReversed()) { index, total ->
                 val n = laps.size - index

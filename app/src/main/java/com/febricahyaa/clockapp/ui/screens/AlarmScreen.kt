@@ -31,7 +31,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Alarm
+import androidx.compose.material.icons.filled.Backspace
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -49,9 +51,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -446,11 +446,14 @@ private fun AlarmEditorSheet(
             repeatDays = emptySet(),
         )
     }
-    val picker = rememberTimePickerState(
-        initialHour = initialAlarm.time.hour,
-        initialMinute = initialAlarm.time.minute,
-        is24Hour = use24HourFormat,
-    )
+    // Alarm editing is intentionally keypad-driven. The stored representation is always HHMM,
+    // while the preview respects the user's 12/24-hour display preference.
+    var timeDigits by rememberSaveable(initialAlarm.id) {
+        mutableStateOf(
+            initialAlarm.time.hour.toString().padStart(2, '0') +
+                initialAlarm.time.minute.toString().padStart(2, '0'),
+        )
+    }
     val silentRingtoneLabel = stringResource(R.string.alarm_ringtone_silent)
     val ringtonePickerTitle = stringResource(R.string.alarm_ringtone_picker_title)
     var label by rememberSaveable(initialAlarm.id) { mutableStateOf(initialAlarm.label) }
@@ -499,10 +502,54 @@ private fun AlarmEditorSheet(
         )
     }
 
-    val selectedTime = LocalTime.of(picker.hour, picker.minute)
-    val selectedTimeText = selectedTime.format(timeFormatter)
-    val selectedPeriod = if (use24HourFormat) null else stringResource(if (selectedTime.hour < 12) R.string.time_am else R.string.time_pm)
-    val repeatSummary = repeatLabel(days, locale, stringResource(R.string.alarm_repeat_once), stringResource(R.string.alarm_repeat_every_day))
+    val parsedTime = remember(timeDigits) { parseAlarmTimeDigits(timeDigits) }
+    val selectedTime = parsedTime ?: initialAlarm.time
+    val selectedTimeText = if (parsedTime == null) {
+        "--:--"
+    } else {
+        selectedTime.format(timeFormatter)
+    }
+    val selectedPeriod = if (use24HourFormat || parsedTime == null) {
+        null
+    } else {
+        stringResource(if (selectedTime.hour < 12) R.string.time_am else R.string.time_pm)
+    }
+    val repeatSummary = repeatLabel(
+        days = days,
+        locale = locale,
+        onceLabel = stringResource(R.string.alarm_repeat_once),
+        everyDayLabel = stringResource(R.string.alarm_repeat_every_day),
+    )
+
+    fun handleDigit(digit: Int) {
+        if (timeDigits.length >= 4) return
+        val candidate = timeDigits + digit
+        val valid = when (candidate.length) {
+            1 -> digit <= 2
+            2 -> candidate.toIntOrNull()?.let { it in 0..23 } == true
+            3 -> candidate.last().digitToInt() <= 5
+            4 -> parseAlarmTimeDigits(candidate) != null
+            else -> false
+        }
+        if (valid) {
+            timeDigits = candidate
+            haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
+        } else {
+            haptics.performHapticFeedback(HapticFeedbackType.Reject)
+        }
+    }
+
+    fun handleDelete() {
+        if (timeDigits.isNotEmpty()) {
+            timeDigits = timeDigits.dropLast(1)
+            haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
+        }
+    }
+
+    fun handleClear() {
+        timeDigits = ""
+        haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -556,19 +603,21 @@ private fun AlarmEditorSheet(
                 item {
                     ChronaCard(glass = glass) {
                         Column(
-                            Modifier.fillMaxWidth().padding(18.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 18.dp, vertical = 20.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             Row(verticalAlignment = Alignment.Bottom) {
                                 Text(
-                                    selectedTimeText,
+                                    text = selectedTimeText,
                                     style = MaterialTheme.typography.displayLarge,
                                     fontWeight = FontWeight.Light,
                                 )
                                 if (selectedPeriod != null) {
                                     Spacer(Modifier.size(8.dp))
                                     Text(
-                                        selectedPeriod,
+                                        text = selectedPeriod,
                                         style = MaterialTheme.typography.titleLarge,
                                         color = MaterialTheme.colorScheme.primary,
                                     )
@@ -576,12 +625,17 @@ private fun AlarmEditorSheet(
                             }
                             Spacer(Modifier.height(6.dp))
                             Text(
-                                stringResource(R.string.alarm_time_hint),
+                                text = stringResource(R.string.alarm_time_hint),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
-                            Spacer(Modifier.height(12.dp))
-                            TimePicker(state = picker)
+                            Spacer(Modifier.height(16.dp))
+                            AlarmTimeKeypad(
+                                enabled = true,
+                                onDigit = ::handleDigit,
+                                onDelete = ::handleDelete,
+                                onClear = ::handleClear,
+                            )
                         }
                     }
                 }
@@ -714,12 +768,121 @@ private fun AlarmEditorSheet(
                         if (isEditing) onUpdate(updated) else onAdd(updated)
                     },
                     modifier = Modifier.weight(1f),
+                    enabled = parsedTime != null,
                 ) {
-                    Text(if (isEditing) stringResource(R.string.alarm_save_changes) else stringResource(R.string.alarm_create_action))
+                    Text(
+                        text = if (isEditing) {
+                            stringResource(R.string.alarm_save_changes)
+                        } else {
+                            stringResource(R.string.alarm_create_action)
+                        },
+                    )
                 }
             }
         }
     }
+}
+
+@Composable
+private fun AlarmTimeKeypad(
+    enabled: Boolean,
+    onDigit: (Int) -> Unit,
+    onDelete: () -> Unit,
+    onClear: () -> Unit,
+) {
+    val rows = listOf(
+        listOf(1, 2, 3),
+        listOf(4, 5, 6),
+        listOf(7, 8, 9),
+    )
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        rows.forEach { row ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                row.forEach { digit ->
+                    AlarmKeypadButton(
+                        text = digit.toString(),
+                        enabled = enabled,
+                        modifier = Modifier.weight(1f),
+                        onClick = { onDigit(digit) },
+                    )
+                }
+            }
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            AlarmKeypadButton(
+                icon = Icons.Filled.Clear,
+                contentDescription = stringResource(R.string.timer_clear_input),
+                enabled = enabled,
+                modifier = Modifier.weight(1f),
+                onClick = onClear,
+            )
+            AlarmKeypadButton(
+                text = "0",
+                enabled = enabled,
+                modifier = Modifier.weight(1f),
+                onClick = { onDigit(0) },
+            )
+            AlarmKeypadButton(
+                icon = Icons.Filled.Backspace,
+                contentDescription = stringResource(R.string.timer_delete_digit),
+                enabled = enabled,
+                modifier = Modifier.weight(1f),
+                onClick = onDelete,
+            )
+        }
+    }
+}
+
+@Composable
+private fun AlarmKeypadButton(
+    modifier: Modifier,
+    enabled: Boolean,
+    onClick: () -> Unit,
+    text: String? = null,
+    icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
+    contentDescription: String? = null,
+) {
+    val haptics = LocalHapticFeedback.current
+    androidx.compose.material3.FilledTonalButton(
+        onClick = {
+            haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
+            onClick()
+        },
+        enabled = enabled,
+        modifier = modifier.height(62.dp),
+        shape = MaterialTheme.shapes.large,
+    ) {
+        when {
+            text != null -> Text(
+                text = text,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Medium,
+            )
+            icon != null -> Icon(
+                imageVector = icon,
+                contentDescription = contentDescription,
+                modifier = Modifier.size(24.dp),
+            )
+        }
+    }
+}
+
+private fun parseAlarmTimeDigits(digits: String): LocalTime? {
+    if (digits.length != 4) return null
+    val hour = digits.substring(0, 2).toIntOrNull() ?: return null
+    val minute = digits.substring(2, 4).toIntOrNull() ?: return null
+    if (hour !in 0..23 || minute !in 0..59) return null
+    return LocalTime.of(hour, minute)
 }
 
 private fun repeatLabel(

@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
@@ -54,9 +55,11 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.unit.sp
 import com.febricahyaa.clockapp.R
@@ -104,7 +107,6 @@ fun ChronaBentoHomeScreen(
     val windowAdaptiveInfo = androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2()
     val isWideWindow = windowAdaptiveInfo.windowSizeClass.windowWidthSizeClass == androidx.window.core.layout.WindowWidthSizeClass.EXPANDED
     val dateText = buildDateText(now, locale)
-    val heroHeight = if (isWideWindow) 430.dp else 365.dp
     val scrollState = rememberScrollState()
 
     ChronaScaffold(
@@ -142,7 +144,7 @@ fun ChronaBentoHomeScreen(
                     verticalAlignment = Alignment.Top,
                 ) {
                     HeroCard(
-                        modifier = Modifier.weight(1.26f).height(heroHeight),
+                        modifier = Modifier.weight(1.26f).heightIn(min = 360.dp),
                         themeMode = themeMode,
                         now = now,
                         dateText = dateText,
@@ -170,7 +172,7 @@ fun ChronaBentoHomeScreen(
                         .padding(bottom = 6.dp),
                 ) {
                     HeroCard(
-                        modifier = Modifier.fillMaxWidth().height(heroHeight),
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 340.dp),
                         themeMode = themeMode,
                         now = now,
                         dateText = dateText,
@@ -401,7 +403,12 @@ private fun ClockHero(
             )
         }
 
-        Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 18.dp),
+            contentAlignment = Alignment.Center,
+        ) {
             AnimatedContent(
                 targetState = displayMode,
                 transitionSpec = {
@@ -410,8 +417,18 @@ private fun ClockHero(
                 label = "clock-style-transition",
             ) { mode ->
                 when (mode) {
-                    ClockDisplayMode.DIGITAL -> DigitalClockUI(now.hour, now.minute, now.second, use24HourFormat, showSeconds)
-                    ClockDisplayMode.ANALOG -> AnalogClockUI(now.hour, now.minute, now.second + now.nano / 1_000_000_000f)
+                    ClockDisplayMode.DIGITAL -> DigitalClockUI(
+                        now.hour,
+                        now.minute,
+                        now.second,
+                        use24HourFormat,
+                        showSeconds,
+                    )
+                    ClockDisplayMode.ANALOG -> AnalogClockUI(
+                        now.hour,
+                        now.minute,
+                        now.second + now.nano / 1_000_000_000f,
+                    )
                 }
             }
         }
@@ -429,9 +446,32 @@ private fun DigitalClockUI(hour24: Int, minute: Int, second: Int, use24HourForma
     val hour = if (use24HourFormat) hour24 else ((hour24 + 11) % 12) + 1
     val secondsProgress by animateFloatAsState(second / 59f, tween(850), label = "seconds-progress")
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.Center) {
-            Text(hour.toString().padStart(2, '0'), fontSize = 76.sp, lineHeight = 78.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-4.5).sp)
-            Text(":${minute.toString().padStart(2, '0')}", fontSize = 76.sp, lineHeight = 78.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-4.5).sp, color = MaterialTheme.colorScheme.primary)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+        ) {
+            val heroClockStyle = MaterialTheme.typography.displayLarge.copy(
+                platformStyle = PlatformTextStyle(includeFontPadding = false),
+                lineHeight = 1.em,
+                fontSize = 76.sp,
+                letterSpacing = (-4.5).sp,
+            )
+            Text(
+                text = hour.toString().padStart(2, '0'),
+                style = heroClockStyle,
+                fontWeight = FontWeight.ExtraBold,
+                maxLines = 1,
+                softWrap = false,
+            )
+            Text(
+                text = ":${minute.toString().padStart(2, '0')}",
+                style = heroClockStyle,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.primary,
+                maxLines = 1,
+                softWrap = false,
+            )
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             if (!use24HourFormat) {

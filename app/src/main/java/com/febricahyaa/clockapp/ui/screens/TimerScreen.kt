@@ -236,6 +236,8 @@ fun TimerScreen(
                         ) { state ->
                             when (state) {
                                 ChronaTimeToolMotionState.IDLE -> {
+                                    // Keep the hierarchy strictly vertical: hero -> quick add -> keypad.
+                                    // Quick durations never share a layout container with keypad cells.
                                     TimerHeroEditor(
                                         inputDigits = inputDigits,
                                         enabled = canEdit,
@@ -244,14 +246,7 @@ fun TimerScreen(
                                         heroScale = heroScale,
                                         modifier = Modifier.chronaSharedBounds(ChronaMotionKeys.TIMER_EDITOR),
                                     )
-                                    Spacer(Modifier.height(14.dp))
-                                    TimerKeypad(
-                                        enabled = canEdit,
-                                        onDigit = ::addDigit,
-                                        onDelete = ::deleteDigit,
-                                        onClear = ::clearDigits,
-                                    )
-                                    Spacer(Modifier.height(12.dp))
+                                    Spacer(Modifier.height(16.dp))
                                     QuickDurations(
                                         enabled = canEdit,
                                         onSelect = { seconds ->
@@ -260,6 +255,13 @@ fun TimerScreen(
                                             inputDirty = true
                                         },
                                         onCommit = { seconds -> onSetPreset(seconds) },
+                                    )
+                                    Spacer(Modifier.height(18.dp))
+                                    TimerKeypad(
+                                        enabled = canEdit,
+                                        onDigit = ::addDigit,
+                                        onDelete = ::deleteDigit,
+                                        onClear = ::clearDigits,
                                     )
                                 }
 
