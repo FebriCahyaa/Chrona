@@ -23,6 +23,33 @@ Chrona release notes are evidence-based. Completed entries describe changes that
 - Replaced repository CI SDK package management with the official Android CLI (`android sdk`).
 - Added scheduled package-maintenance source synchronization for Gradle and Android 17 toolchain pins.
 
+## Unreleased — Phase 2 — Onboarding & Updates
+
+- Added a first-run onboarding flow backed by Preferences DataStore, so completion persists transactionally across app restarts.
+- Added a GitHub Releases updater for the public `FebriCahyaa/Chrona` repository using Retrofit 3.0.0.
+- Added a lifecycle-safe update status surface in Settings with manual update checks and a release link when a newer version is available.
+- Added a persistent WorkManager job that checks for releases every 24 hours when network connectivity is available, with exponential retry backoff.
+- Added semantic version comparison and unit coverage for GitHub release tag handling.
+
+### ⚙️ Build System
+
+- Bumped application `versionName` to `0.5.0`.
+- Bumped application `versionCode` from `31` to `32`.
+- Added AndroidX DataStore Preferences `1.2.1`.
+- Added WorkManager `2.11.2`.
+- Added Retrofit `3.0.0` and Gson converter `3.0.0`.
+
+### 🔐 Privacy & Control
+
+- Onboarding state remains local to the device.
+- Update checking reads the public GitHub Releases API; no GitHub account or access token is required.
+- Chrona does not silently install APKs; the user opens the published release page explicitly.
+
+### ⚠️ Validation
+
+- Static source validation and patch checks are required before merge.
+- Full Android compilation must be confirmed by the networked GitHub Actions build host.
+
 ## Unreleased — Production UI/UX Refactor
 
 ### 🎨 UI / UX

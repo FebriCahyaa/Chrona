@@ -23,13 +23,15 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,6 +45,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.febricahyaa.clockapp.BuildConfig
 import com.febricahyaa.clockapp.core.ChronaTimeEngine
 import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.model.ClockSettings
@@ -52,7 +55,11 @@ import com.febricahyaa.clockapp.ui.components.HybridBentoCard
 import com.febricahyaa.clockapp.ui.components.SectionEyebrow
 import com.febricahyaa.clockapp.ui.components.rememberZonedNow
 import com.febricahyaa.clockapp.ui.theme.accentGradientColors
+import com.febricahyaa.clockapp.ui.viewmodel.UpdateUiState
+import java.time.Instant
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 
 @Composable
 fun SettingsSheetContent(
@@ -63,6 +70,9 @@ fun SettingsSheetContent(
     onFormatChange: (Boolean) -> Unit,
     onShowSecondsChange: (Boolean) -> Unit,
     onOpenLegal: () -> Unit = {},
+    updateState: UpdateUiState = UpdateUiState(),
+    onCheckForUpdates: () -> Unit = {},
+    onOpenUpdate: () -> Unit = {},
     modifier: Modifier = Modifier,
     showSectionHeader: Boolean = true,
 ) {
@@ -141,6 +151,15 @@ fun SettingsSheetContent(
         PreferenceRow("Show seconds", "Show the live seconds readout in the hero clock", settings.showSeconds, onShowSecondsChange)
 
         Spacer(Modifier.height(18.dp))
+        SectionTitle(Icons.Filled.SystemUpdate, "App updates")
+        Spacer(Modifier.height(9.dp))
+        UpdateSection(
+            state = updateState,
+            onCheckForUpdates = onCheckForUpdates,
+            onOpenUpdate = onOpenUpdate,
+        )
+
+        Spacer(Modifier.height(18.dp))
         SectionTitle(Icons.Filled.Gavel, "About")
         Spacer(Modifier.height(9.dp))
         Surface(
@@ -171,6 +190,9 @@ fun SettingsScreen(
     onFormatChange: (Boolean) -> Unit,
     onShowSecondsChange: (Boolean) -> Unit,
     onOpenLegal: () -> Unit,
+    updateState: UpdateUiState = UpdateUiState(),
+    onCheckForUpdates: () -> Unit = {},
+    onOpenUpdate: () -> Unit = {},
     onBack: () -> Unit,
 ) {
     ChronaScaffold(
@@ -186,11 +208,124 @@ fun SettingsScreen(
             onFormatChange = onFormatChange,
             onShowSecondsChange = onShowSecondsChange,
             onOpenLegal = onOpenLegal,
+            updateState = updateState,
+            onCheckForUpdates = onCheckForUpdates,
+            onOpenUpdate = onOpenUpdate,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(paddingValues),
             showSectionHeader = false,
         )
+    }
+}
+
+
+@Composable
+private fun UpdateSection(
+    state: UpdateUiState,
+    onCheckForUpdates: () -> Unit,
+    onOpenUpdate: () -> Unit,
+) {
+    val snapshot = state.snapshot
+    val checkedLabel = snapshot.lastCheckedAt.takeIf { it > 0L }?.let { timestamp ->
+        runCatching {
+            Instant.ofEpochMilli(timestamp)
+                .atZone(ZoneId.systemDefault())
+                .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT))
+        }.getOrNull()
+    }
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.10f)),
+    ) {
+        Column(Modifier.fillMaxWidth().padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        when {
+                            state.isChecking -> "Checking for updates"
+                            state.isUpdateAvailable -> "Update available"
+                            snapshot.latestVersion != null -> "Chrona is up to date"
+                            else -> "Updates not checked yet"
+                        },
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Spacer(Modifier.height(3.dp))
+                    Text(
+                        "Current ${BuildConfig.VERSION_NAME}" +
+                            (snapshot.latestVersion?.let { " · Latest $it" } ?: ""),
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    if (checkedLabel != null) {
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            "Last checked $checkedLabel",
+                            fontSize = 10.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+
+                if (state.isChecking) {
+                    CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
+                }
+            }
+
+            if (!state.errorMessage.isNullOrBlank()) {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "Couldn’t check for updates. Please try again.",
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+
+            Spacer(Modifier.height(10.dp))
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Surface(
+                    onClick = onCheckForUpdates,
+                    enabled = !state.isChecking,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(14.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                ) {
+                    Row(
+                        Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 11.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(Icons.Filled.Refresh, null, Modifier.size(17.dp))
+                        Spacer(Modifier.size(7.dp))
+                        Text("Check now", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+
+                if (state.isUpdateAvailable && !snapshot.releaseUrl.isNullOrBlank()) {
+                    Surface(
+                        onClick = onOpenUpdate,
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(14.dp),
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.10f)),
+                    ) {
+                        Box(
+                            Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 11.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text("View release", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

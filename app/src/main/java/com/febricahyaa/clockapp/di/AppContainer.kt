@@ -9,6 +9,10 @@ import com.febricahyaa.clockapp.alarm.AlarmSoundGateway
 import com.febricahyaa.clockapp.alarm.AndroidAlarmScheduler
 import com.febricahyaa.clockapp.alarm.AndroidAlarmSoundPlayer
 import com.febricahyaa.clockapp.data.AlarmRepository
+import com.febricahyaa.clockapp.data.onboarding.DataStoreOnboardingRepository
+import com.febricahyaa.clockapp.data.onboarding.OnboardingRepository
+import com.febricahyaa.clockapp.data.update.AppUpdateRepository
+import com.febricahyaa.clockapp.data.update.GitHubReleaseRepository
 import com.febricahyaa.clockapp.data.SettingsRepository
 import com.febricahyaa.clockapp.data.SharedPreferencesStopwatchRepository
 import com.febricahyaa.clockapp.data.SharedPreferencesTimerRepository
@@ -49,6 +53,8 @@ interface AppContainer {
     val timerRepository: TimerRepository
     val timerScheduler: TimerSchedulerGateway
     val stopwatchRepository: StopwatchRepository
+    val onboardingRepository: OnboardingRepository
+    val updateRepository: AppUpdateRepository
 }
 
 /** Default, Android-backed [AppContainer]. Created once in [com.febricahyaa.clockapp.ClockApplication]. */
@@ -86,6 +92,14 @@ class DefaultAppContainer(context: Context) : AppContainer {
 
     override val stopwatchRepository: StopwatchRepository by lazy {
         SharedPreferencesStopwatchRepository(appContext)
+    }
+
+    override val onboardingRepository: OnboardingRepository by lazy {
+        DataStoreOnboardingRepository(appContext)
+    }
+
+    override val updateRepository: AppUpdateRepository by lazy {
+        GitHubReleaseRepository(appContext)
     }
 
     // `by lazy`: a single shared instance for the app's lifetime, matching

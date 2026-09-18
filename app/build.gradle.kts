@@ -46,8 +46,8 @@ android {
         applicationId = "com.febricahyaa.clockapp"
         minSdk = 26
         targetSdk = 37
-        versionCode = 31
-        versionName = "0.4.0"
+        versionCode = 32
+        versionName = "0.5.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
@@ -172,9 +172,13 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.10.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.10.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
+    implementation("androidx.datastore:datastore-preferences:1.2.1")
+    implementation("androidx.work:work-runtime-ktx:2.11.2")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    implementation("com.squareup.retrofit2:retrofit:3.0.0")
+    implementation("com.squareup.retrofit2:converter-gson:3.0.0")
 
     // Material 3 Expressive / Android 17 UI stack. The alpha BOM is intentional:
     // it exposes the latest Material 3 Expressive APIs (1.5.0-alpha28) and

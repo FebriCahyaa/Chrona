@@ -5,6 +5,7 @@ package com.febricahyaa.clockapp
 import android.app.Application
 import com.febricahyaa.clockapp.di.AppContainer
 import com.febricahyaa.clockapp.notification.ChronaNotificationChannels
+import com.febricahyaa.clockapp.update.AppUpdateScheduler
 import com.febricahyaa.clockapp.di.DefaultAppContainer
 
 class ClockApplication : Application() {
@@ -30,6 +31,7 @@ class ClockApplication : Application() {
         super.onCreate()
         container = DefaultAppContainer(this)
         ChronaNotificationChannels.createAll(this)
+        AppUpdateScheduler.schedule(this)
     }
 
 }

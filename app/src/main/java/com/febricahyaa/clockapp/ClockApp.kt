@@ -29,8 +29,8 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.febricahyaa.clockapp.di.AppViewModelFactory
 import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.model.WorldClockItem
@@ -41,6 +41,7 @@ import com.febricahyaa.clockapp.ui.components.ChronaScreenSurface
 import com.febricahyaa.clockapp.ui.screens.AlarmScreen
 import com.febricahyaa.clockapp.ui.screens.ChronaBentoHomeScreen
 import com.febricahyaa.clockapp.ui.screens.LegalScreen
+import com.febricahyaa.clockapp.ui.screens.OnboardingScreen
 import com.febricahyaa.clockapp.ui.screens.SettingsScreen
 import com.febricahyaa.clockapp.ui.screens.StopwatchScreen
 import com.febricahyaa.clockapp.ui.screens.TimerScreen
@@ -48,6 +49,8 @@ import com.febricahyaa.clockapp.ui.screens.WorldClockScreen
 import com.febricahyaa.clockapp.ui.screens.WorldClockSearchScreen
 import com.febricahyaa.clockapp.ui.theme.ChronaTheme
 import com.febricahyaa.clockapp.ui.viewmodel.AlarmViewModel
+import com.febricahyaa.clockapp.ui.viewmodel.AppUpdateViewModel
+import com.febricahyaa.clockapp.ui.viewmodel.OnboardingViewModel
 import com.febricahyaa.clockapp.ui.viewmodel.SettingsViewModel
 import com.febricahyaa.clockapp.ui.viewmodel.StopwatchViewModel
 import com.febricahyaa.clockapp.ui.viewmodel.TimerViewModel
@@ -64,12 +67,16 @@ fun ClockApp() {
     val viewModelFactory = remember(container) { AppViewModelFactory(container) }
 
     val settingsViewModel: SettingsViewModel = viewModel(factory = viewModelFactory)
+    val onboardingViewModel: OnboardingViewModel = viewModel(factory = viewModelFactory)
+    val updateViewModel: AppUpdateViewModel = viewModel(factory = viewModelFactory)
     val alarmViewModel: AlarmViewModel = viewModel(factory = viewModelFactory)
     val worldClockViewModel: WorldClockViewModel = viewModel(factory = viewModelFactory)
     val timerViewModel: TimerViewModel = viewModel(factory = viewModelFactory)
     val stopwatchViewModel: StopwatchViewModel = viewModel(factory = viewModelFactory)
 
     val settingsState by settingsViewModel.state.collectAsStateWithLifecycle()
+    val onboardingState by onboardingViewModel.state.collectAsStateWithLifecycle()
+    val updateState by updateViewModel.state.collectAsStateWithLifecycle()
     val alarms by alarmViewModel.alarms.collectAsStateWithLifecycle()
     val worldClockState by worldClockViewModel.state.collectAsStateWithLifecycle()
     val timerState by timerViewModel.state.collectAsStateWithLifecycle()
@@ -104,8 +111,10 @@ fun ClockApp() {
     }
 
     val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
-    LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= 33) notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+    LaunchedEffect(onboardingState.completed) {
+        if (onboardingState.completed && Build.VERSION.SDK_INT >= 33) {
+            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
     }
 
     androidx.compose.runtime.DisposableEffect(view, darkSystemBars) {
@@ -127,20 +136,36 @@ fun ClockApp() {
     }
 
     ChronaTheme(settingsState.settings) {
-        Box(
-            Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-        ) {
-            ChronaAmbientBackdrop()
+        when {
+            !onboardingState.isLoaded -> {
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background),
+                    contentAlignment = androidx.compose.ui.Alignment.Center,
+                ) {
+                    androidx.compose.material3.CircularProgressIndicator()
+                }
+            }
 
-            ChronaNavigationHost(
-                current = currentDestination,
-                previous = previousDestination,
-                canGoBack = backStack.size > 1,
-                onBack = ::goBack,
-            ) { destination ->
-                ChronaScreenSurface {
+            !onboardingState.completed -> {
+                OnboardingScreen(onComplete = onboardingViewModel::complete)
+            }
+
+            else -> Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background),
+            ) {
+                ChronaAmbientBackdrop()
+
+                ChronaNavigationHost(
+                    current = currentDestination,
+                    previous = previousDestination,
+                    canGoBack = backStack.size > 1,
+                    onBack = ::goBack,
+                ) { destination ->
+                    ChronaScreenSurface {
                     when (destination) {
                         AppDestination.CLOCK -> ChronaBentoHomeScreen(
                             use24HourFormat = settingsState.use24HourFormat,
@@ -233,10 +258,19 @@ fun ClockApp() {
                             onFormatChange = settingsViewModel::updateUse24HourFormat,
                             onShowSecondsChange = settingsViewModel::updateShowSeconds,
                             onOpenLegal = { navigate(AppDestination.LEGAL) },
+                            updateState = updateState,
+                            onCheckForUpdates = updateViewModel::checkNow,
+                            onOpenUpdate = {
+                                val url = updateState.snapshot.releaseUrl ?: updateState.snapshot.apkUrl
+                                if (!url.isNullOrBlank()) {
+                                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                                }
+                            },
                             onBack = ::goBack,
                         )
 
                         AppDestination.LEGAL -> LegalScreen(onBack = ::goBack)
+                    }
                     }
                 }
             }
