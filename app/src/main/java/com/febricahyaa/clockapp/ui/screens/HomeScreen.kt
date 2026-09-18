@@ -12,7 +12,6 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -98,7 +97,7 @@ fun HomeScreen(
     val dateText = buildDateText(now, locale)
     val heroHeight = if (isWideWindow) 430.dp else 365.dp
 
-    BoxWithConstraints(Modifier.fillMaxSize()) {
+    Box(Modifier.fillMaxSize()) {
         Column(
             Modifier
                 .fillMaxSize()
