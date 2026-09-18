@@ -65,8 +65,6 @@ import androidx.compose.ui.zIndex
 import com.febricahyaa.clockapp.model.AlarmItem
 import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.navigation.AppDestination
-import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
-import com.febricahyaa.clockapp.navigation.chronaSharedBounds
 import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.ui.components.BentoIcon
 import com.febricahyaa.clockapp.ui.components.BentoIconButton
@@ -229,7 +227,7 @@ private fun HeroCard(
     onToggleDisplay: () -> Unit,
 ) {
     HybridBentoCard(
-        modifier = modifier.chronaSharedBounds(ChronaMotionKeys.DASHBOARD_HERO_CLOCK),
+        modifier = modifier,
         themeMode = themeMode,
     ) {
         ClockHero(now, dateText, displayMode, use24HourFormat, showSeconds, onToggleDisplay)
@@ -262,7 +260,7 @@ private fun FloatingActionGrid(
         ) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 TimeActionCard(
-                    modifier = Modifier.weight(1f).height(136.dp).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_ALARM),
+                    modifier = Modifier.weight(1f).height(136.dp),
                     themeMode = themeMode,
                     icon = Icons.Filled.AccessAlarm,
                     eyebrow = if (hasNextAlarm) stringResource(R.string.home_next_alarm_label) else stringResource(R.string.home_alarm_label),
@@ -272,7 +270,7 @@ private fun FloatingActionGrid(
                     onClick = { onNavigate(AppDestination.ALARM) },
                 )
                 TimeActionCard(
-                    modifier = Modifier.weight(1f).height(136.dp).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_TIMER),
+                    modifier = Modifier.weight(1f).height(136.dp),
                     themeMode = themeMode,
                     icon = Icons.Filled.Timer,
                     eyebrow = if (timerRunning) stringResource(R.string.home_timer_live_label) else stringResource(R.string.home_timer_label),
@@ -284,7 +282,7 @@ private fun FloatingActionGrid(
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 UtilityCard(
-                    modifier = Modifier.weight(1f).height(110.dp).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_WORLD_CLOCK),
+                    modifier = Modifier.weight(1f).height(110.dp),
                     themeMode = themeMode,
                     icon = Icons.Filled.Public,
                     title = stringResource(R.string.home_world_clock_title),
@@ -292,7 +290,7 @@ private fun FloatingActionGrid(
                     onClick = { onNavigate(AppDestination.WORLD) },
                 )
                 UtilityCard(
-                    modifier = Modifier.weight(1f).height(110.dp).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_STOPWATCH),
+                    modifier = Modifier.weight(1f).height(110.dp),
                     themeMode = themeMode,
                     icon = Icons.Filled.AccessTime,
                     title = stringResource(R.string.home_stopwatch_title),
@@ -317,7 +315,7 @@ private fun ActionGrid(
 ) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         TimeActionCard(
-            modifier = Modifier.weight(1f).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_ALARM),
+            modifier = Modifier.weight(1f),
             themeMode = themeMode,
             icon = Icons.Filled.AccessAlarm,
             eyebrow = if (hasNextAlarm) stringResource(R.string.home_next_alarm_label) else stringResource(R.string.home_alarm_label),
@@ -327,7 +325,7 @@ private fun ActionGrid(
             onClick = { onNavigate(AppDestination.ALARM) },
         )
         TimeActionCard(
-            modifier = Modifier.weight(1f).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_TIMER),
+            modifier = Modifier.weight(1f),
             themeMode = themeMode,
             icon = Icons.Filled.Timer,
             eyebrow = if (timerRunning) stringResource(R.string.home_timer_live_label) else stringResource(R.string.home_timer_label),
@@ -339,7 +337,7 @@ private fun ActionGrid(
     }
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         UtilityCard(
-            modifier = Modifier.weight(1f).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_WORLD_CLOCK),
+            modifier = Modifier.weight(1f),
             themeMode = themeMode,
             icon = Icons.Filled.Public,
             title = stringResource(R.string.home_world_clock_title),
@@ -347,7 +345,7 @@ private fun ActionGrid(
             onClick = { onNavigate(AppDestination.WORLD) },
         )
         UtilityCard(
-            modifier = Modifier.weight(1f).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_STOPWATCH),
+            modifier = Modifier.weight(1f),
             themeMode = themeMode,
             icon = Icons.Filled.AccessTime,
             title = stringResource(R.string.home_stopwatch_title),

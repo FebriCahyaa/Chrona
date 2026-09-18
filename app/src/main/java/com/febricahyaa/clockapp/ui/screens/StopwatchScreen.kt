@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -41,8 +42,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import com.febricahyaa.clockapp.R
-import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
-import com.febricahyaa.clockapp.navigation.chronaSharedBounds
 import com.febricahyaa.clockapp.ui.components.ChronaCard
 import com.febricahyaa.clockapp.ui.components.ChronaScaffold
 import com.febricahyaa.clockapp.ui.components.GlassPill
@@ -79,8 +78,9 @@ fun StopwatchScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .navigationBarsPadding()
                 .padding(horizontal = 20.dp, vertical = 8.dp)
-                .chronaSharedBounds(ChronaMotionKeys.DASHBOARD_STOPWATCH),
+                ,
         ) {
             StopwatchTimeSurface(
                 elapsedMillis = elapsedMillis,
@@ -124,7 +124,7 @@ private fun StopwatchTimeSurface(
 
     Box(
         modifier = modifier
-            .chronaSharedBounds(ChronaMotionKeys.STOPWATCH_STATE_SURFACE),
+            ,
         contentAlignment = Alignment.Center,
     ) {
         AnimatedContent(

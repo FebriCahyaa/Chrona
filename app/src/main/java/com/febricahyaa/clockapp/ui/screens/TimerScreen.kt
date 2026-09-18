@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -64,8 +65,6 @@ import androidx.compose.ui.unit.dp
 import kotlin.math.min
 import com.febricahyaa.clockapp.core.TimerDurationInput
 import com.febricahyaa.clockapp.R
-import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
-import com.febricahyaa.clockapp.navigation.chronaSharedBounds
 import com.febricahyaa.clockapp.ui.components.ChronaCard
 import com.febricahyaa.clockapp.ui.components.IconCircleButton
 import com.febricahyaa.clockapp.ui.components.ChronaScaffold
@@ -176,7 +175,7 @@ fun TimerScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp, vertical = 4.dp)
-                .chronaSharedBounds(ChronaMotionKeys.DASHBOARD_TIMER),
+                ,
         ) {
             BoxWithConstraints(
                 modifier = Modifier.fillMaxWidth(),
@@ -244,7 +243,7 @@ fun TimerScreen(
                                         heroSize = heroSize,
                                         heroStroke = heroStroke,
                                         heroScale = heroScale,
-                                        modifier = Modifier.chronaSharedBounds(ChronaMotionKeys.TIMER_EDITOR),
+                                        modifier = Modifier,
                                     )
                                     Spacer(Modifier.height(16.dp))
                                     QuickDurations(
@@ -277,7 +276,7 @@ fun TimerScreen(
                                         heroSize = heroSize,
                                         heroStroke = heroStroke,
                                         heroScale = heroScale,
-                                        modifier = Modifier.chronaSharedBounds(ChronaMotionKeys.TIMER_EDITOR),
+                                        modifier = Modifier,
                                     )
                                     Spacer(Modifier.height(12.dp))
                                     Text(

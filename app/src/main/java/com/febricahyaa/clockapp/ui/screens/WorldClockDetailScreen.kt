@@ -33,8 +33,6 @@ import androidx.compose.ui.res.stringResource
 import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.time.ChronaTimeFormatter
 import com.febricahyaa.clockapp.model.WorldClockItem
-import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
-import com.febricahyaa.clockapp.navigation.chronaSharedBounds
 import com.febricahyaa.clockapp.ui.components.ChronaCard
 import com.febricahyaa.clockapp.ui.components.ChronaScaffold
 import com.febricahyaa.clockapp.ui.components.IconCircleButton
@@ -99,8 +97,7 @@ fun WorldClockDetailScreen(
         ) {
             ChronaCard(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .chronaSharedBounds(ChronaMotionKeys.worldClockCard(item.id)),
+                    .fillMaxWidth(),
                 glass = glass,
             ) {
                 Column(Modifier.fillMaxWidth().padding(22.dp)) {

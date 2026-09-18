@@ -70,8 +70,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.febricahyaa.clockapp.model.AlarmItem
-import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
-import com.febricahyaa.clockapp.navigation.chronaSharedBounds
 import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.ui.components.ChronaCard
 import com.febricahyaa.clockapp.ui.components.ChronaScaffold
@@ -117,7 +115,7 @@ fun AlarmScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(horizontal = 20.dp)
-                .chronaSharedBounds(ChronaMotionKeys.DASHBOARD_ALARM),
+                ,
         ) {
             Spacer(Modifier.height(4.dp))
 
@@ -570,7 +568,7 @@ private fun AlarmEditorSheet(
                 .navigationBarsPadding()
                 .widthIn(max = 720.dp)
                 .align(Alignment.CenterHorizontally)
-                .chronaSharedBounds(ChronaMotionKeys.ALARM_EDITOR),
+                ,
         ) {
             Column(
                 modifier = Modifier.padding(horizontal = 24.dp),

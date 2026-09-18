@@ -36,7 +36,6 @@ import com.febricahyaa.clockapp.navigation.ChronaNavigationActions
 import com.febricahyaa.clockapp.navigation.ChronaRootNavigation
 import com.febricahyaa.clockapp.time.ChronaRuntimeLifecycleEffect
 import com.febricahyaa.clockapp.time.LocalChronaTimeEngine
-import com.febricahyaa.clockapp.ui.components.ChronaAmbientBackdrop
 import com.febricahyaa.clockapp.ui.components.ChronaScreenSurface
 import com.febricahyaa.clockapp.ui.screens.AlarmScreen
 import com.febricahyaa.clockapp.ui.screens.ChronaBentoHomeScreen
@@ -134,8 +133,6 @@ fun ClockApp() {
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background),
             ) {
-                ChronaAmbientBackdrop()
-
                 ChronaRootNavigation { destination, navigation, backStackEntry ->
                     ChronaDestinationContent(
                         destination = destination,

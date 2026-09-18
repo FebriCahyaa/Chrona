@@ -51,8 +51,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.febricahyaa.clockapp.model.TimeZoneCatalog
 import com.febricahyaa.clockapp.model.WorldClockItem
-import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
-import com.febricahyaa.clockapp.navigation.chronaSharedBounds
 import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.time.ChronaTimeFormatter
 import com.febricahyaa.clockapp.ui.components.ChronaCard
@@ -127,7 +125,7 @@ fun WorldClockScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(horizontal = 20.dp)
-                .chronaSharedBounds(ChronaMotionKeys.DASHBOARD_WORLD_CLOCK),
+                ,
         ) {
             Spacer(Modifier.height(4.dp))
 
@@ -240,8 +238,7 @@ private fun WorldClockCard(
     ChronaCard(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(role = Role.Button, onClick = onOpenDetail)
-            .chronaSharedBounds(ChronaMotionKeys.worldClockCard(item.id)),
+            .clickable(role = Role.Button, onClick = onOpenDetail),
         glass = glass,
     ) {
         Row(

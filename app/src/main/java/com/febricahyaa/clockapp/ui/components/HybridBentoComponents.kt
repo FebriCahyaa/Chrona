@@ -54,18 +54,23 @@ import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.ui.theme.ClockMotion
 
 /**
- * One full-screen visual surface used behind every destination.
- * Keeping the destination surface opaque-ish prevents screen ghosting during
- * AnimatedContent while retaining a whisper of the ambient background.
+ * One full-screen opaque visual surface used behind every destination.
+ * Destination surfaces must completely cover the parent so stale navigation
+ * entries cannot visually bleed through during a composition/frame switch.
  */
 @Composable
 fun ChronaScreenSurface(content: @Composable BoxScope.() -> Unit) {
     Box(
         Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.985f)),
-        content = content,
-    )
+            .background(MaterialTheme.colorScheme.background),
+    ) {
+        ChronaAmbientBackdrop()
+        Box(
+            Modifier.fillMaxSize(),
+            content = content,
+        )
+    }
 }
 
 @Composable

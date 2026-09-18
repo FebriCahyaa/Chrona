@@ -2,10 +2,8 @@
 
 package com.febricahyaa.clockapp.navigation
 
-import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavBackStackEntry
@@ -48,7 +46,6 @@ fun ChronaRootNavigation(
         composable(ChronaRoutes.CLOCK) { backStackEntry ->
             ChronaDestinationScope(
                 destination = AppDestination.CLOCK,
-                animatedVisibilityScope = this@composable,
                 backStackEntry = backStackEntry,
                 destinationContent = destinationContent,
                 navigation = navigation,
@@ -57,7 +54,6 @@ fun ChronaRootNavigation(
         composable(ChronaRoutes.ALARM) { backStackEntry ->
             ChronaDestinationScope(
                 destination = AppDestination.ALARM,
-                animatedVisibilityScope = this@composable,
                 backStackEntry = backStackEntry,
                 destinationContent = destinationContent,
                 navigation = navigation,
@@ -66,7 +62,6 @@ fun ChronaRootNavigation(
         composable(ChronaRoutes.WORLD) { backStackEntry ->
             ChronaDestinationScope(
                 destination = AppDestination.WORLD,
-                animatedVisibilityScope = this@composable,
                 backStackEntry = backStackEntry,
                 destinationContent = destinationContent,
                 navigation = navigation,
@@ -78,7 +73,6 @@ fun ChronaRootNavigation(
         ) { backStackEntry ->
             ChronaDestinationScope(
                 destination = AppDestination.WORLD_DETAIL,
-                animatedVisibilityScope = this@composable,
                 backStackEntry = backStackEntry,
                 destinationContent = destinationContent,
                 navigation = navigation,
@@ -87,7 +81,6 @@ fun ChronaRootNavigation(
         composable(ChronaRoutes.WORLD_SEARCH) { backStackEntry ->
             ChronaDestinationScope(
                 destination = AppDestination.WORLD_SEARCH,
-                animatedVisibilityScope = this@composable,
                 backStackEntry = backStackEntry,
                 destinationContent = destinationContent,
                 navigation = navigation,
@@ -96,7 +89,6 @@ fun ChronaRootNavigation(
         composable(ChronaRoutes.TIMER) { backStackEntry ->
             ChronaDestinationScope(
                 destination = AppDestination.TIMER,
-                animatedVisibilityScope = this@composable,
                 backStackEntry = backStackEntry,
                 destinationContent = destinationContent,
                 navigation = navigation,
@@ -105,7 +97,6 @@ fun ChronaRootNavigation(
         composable(ChronaRoutes.STOPWATCH) { backStackEntry ->
             ChronaDestinationScope(
                 destination = AppDestination.STOPWATCH,
-                animatedVisibilityScope = this@composable,
                 backStackEntry = backStackEntry,
                 destinationContent = destinationContent,
                 navigation = navigation,
@@ -114,7 +105,6 @@ fun ChronaRootNavigation(
         composable(ChronaRoutes.SETTINGS) { backStackEntry ->
             ChronaDestinationScope(
                 destination = AppDestination.SETTINGS,
-                animatedVisibilityScope = this@composable,
                 backStackEntry = backStackEntry,
                 destinationContent = destinationContent,
                 navigation = navigation,
@@ -123,7 +113,6 @@ fun ChronaRootNavigation(
         composable(ChronaRoutes.LEGAL) { backStackEntry ->
             ChronaDestinationScope(
                 destination = AppDestination.LEGAL,
-                animatedVisibilityScope = this@composable,
                 backStackEntry = backStackEntry,
                 destinationContent = destinationContent,
                 navigation = navigation,
@@ -135,7 +124,6 @@ fun ChronaRootNavigation(
 @Composable
 private fun ChronaDestinationScope(
     destination: AppDestination,
-    animatedVisibilityScope: AnimatedContentScope,
     backStackEntry: NavBackStackEntry,
     destinationContent: @Composable (
         AppDestination,
@@ -144,9 +132,5 @@ private fun ChronaDestinationScope(
     ) -> Unit,
     navigation: ChronaNavigationActions,
 ) {
-    CompositionLocalProvider(
-        LocalChronaAnimatedVisibilityScope provides animatedVisibilityScope,
-    ) {
-        destinationContent(destination, navigation, backStackEntry)
-    }
+    destinationContent(destination, navigation, backStackEntry)
 }

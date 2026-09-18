@@ -109,14 +109,15 @@ fun WorldClockSearchScreen(
             inputField = inputField,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
         )
-        ExpandedFullScreenSearchBar(
-            state = searchBarState,
-            inputField = inputField,
-        ) {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
+        if (searchBarState.currentValue == SearchBarValue.Expanded) {
+            ExpandedFullScreenSearchBar(
+                state = searchBarState,
+                inputField = inputField,
             ) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
                 items(results, key = { it.zoneId }, contentType = { "timezone-search" }) { entry ->
                     ListItem(
                         onClick = {
@@ -148,6 +149,7 @@ fun WorldClockSearchScreen(
                         },
                     ) {
                         Text(entry.city, style = MaterialTheme.typography.titleMedium)
+                    }
                     }
                 }
             }
