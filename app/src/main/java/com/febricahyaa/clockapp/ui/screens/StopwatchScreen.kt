@@ -2,6 +2,14 @@
 
 package com.febricahyaa.clockapp.ui.screens
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,6 +44,9 @@ import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
 import com.febricahyaa.clockapp.navigation.chronaSharedBounds
 import com.febricahyaa.clockapp.ui.components.IconCircleButton
 import com.febricahyaa.clockapp.ui.components.ChronaScaffold
+import com.febricahyaa.clockapp.ui.motion.ChronaTimeToolMotionState
+import com.febricahyaa.clockapp.ui.motion.stopwatchMotionState
+import com.febricahyaa.clockapp.ui.theme.ChronaMotionTokens
 import java.util.Locale
 
 @Composable
@@ -58,28 +69,80 @@ fun StopwatchScreen(
         Column(Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 20.dp).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_STOPWATCH)) {
             Spacer(Modifier.height(4.dp))
 
-        if (laps.isEmpty()) {
-            Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(formatStopwatch(elapsedMillis), fontSize = 62.sp, fontWeight = FontWeight.Light, letterSpacing = (-2.5).sp)
-                    Spacer(Modifier.height(7.dp))
-                    Text(if (isRunning) "Recording time" else "Ready", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Spacer(Modifier.height(28.dp))
-                    StopwatchControls(isRunning, onLap, onToggleRun, onReset)
+        val motionState = stopwatchMotionState(elapsedMillis, isRunning)
+        Column(Modifier.fillMaxWidth().weight(1f)) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .chronaSharedBounds(ChronaMotionKeys.STOPWATCH_STATE_SURFACE),
+                contentAlignment = Alignment.Center,
+            ) {
+                AnimatedContent(
+                    targetState = motionState,
+                    transitionSpec = {
+                        (fadeIn(
+                            tween(
+                                ChronaMotionTokens.SpatialDurationMillis,
+                                easing = ChronaMotionTokens.SpatialEasing,
+                            ),
+                        ) + scaleIn(
+                            initialScale = 0.96f,
+                            animationSpec = tween(
+                                ChronaMotionTokens.SpatialDurationMillis,
+                                easing = ChronaMotionTokens.SpatialEasing,
+                            ),
+                        )).togetherWith(
+                            fadeOut(
+                                tween(
+                                    ChronaMotionTokens.MicroDurationMillis,
+                                    easing = ChronaMotionTokens.SpatialEasing,
+                                ),
+                            ) + scaleOut(
+                                targetScale = 1.02f,
+                                animationSpec = tween(
+                                    ChronaMotionTokens.MicroDurationMillis,
+                                    easing = ChronaMotionTokens.SpatialEasing,
+                                ),
+                            ),
+                        ).using(SizeTransform(clip = false))
+                    },
+                    label = "stopwatch-state-spatial-motion",
+                ) { state ->
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            formatStopwatch(elapsedMillis),
+                            fontSize = if (laps.isEmpty()) 62.sp else 58.sp,
+                            fontWeight = FontWeight.Light,
+                            letterSpacing = if (laps.isEmpty()) (-2.5).sp else (-2.2).sp,
+                        )
+                        Spacer(Modifier.height(7.dp))
+                        Text(
+                            text = when (state) {
+                                ChronaTimeToolMotionState.IDLE -> "Ready"
+                                ChronaTimeToolMotionState.RUNNING -> "Recording time"
+                                ChronaTimeToolMotionState.PAUSED -> "Paused"
+                                ChronaTimeToolMotionState.COMPLETED -> "Completed"
+                            },
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Spacer(Modifier.height(28.dp))
+                        StopwatchControls(isRunning, onLap, onToggleRun, onReset)
+                    }
                 }
             }
-        } else {
-            Column(Modifier.fillMaxWidth().weight(1f)) {
-                Box(Modifier.fillMaxWidth().padding(vertical = 16.dp), contentAlignment = Alignment.Center) {
-                    Text(formatStopwatch(elapsedMillis), fontSize = 58.sp, fontWeight = FontWeight.Light, letterSpacing = (-2.2).sp)
-                }
-                StopwatchControls(isRunning, onLap, onToggleRun, onReset)
+
+            if (laps.isNotEmpty()) {
                 Spacer(Modifier.height(18.dp))
                 LazyColumn(Modifier.fillMaxWidth().weight(1f)) {
                     itemsIndexed(laps.asReversed()) { index, total ->
                         val n = laps.size - index
                         val previous = if (n > 1) laps[n - 2] else 0L
-                        Row(Modifier.fillMaxWidth().padding(vertical = 13.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Row(
+                            Modifier.fillMaxWidth().padding(vertical = 13.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
                             Text("Lap $n", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text("+${formatStopwatch(total - previous)}", fontSize = 13.sp, fontWeight = FontWeight.Medium)
                             Text(formatStopwatch(total), fontSize = 12.sp)

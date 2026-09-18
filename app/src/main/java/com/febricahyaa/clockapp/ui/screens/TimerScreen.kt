@@ -2,7 +2,14 @@
 
 package com.febricahyaa.clockapp.ui.screens
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
@@ -58,6 +65,9 @@ import com.febricahyaa.clockapp.navigation.chronaSharedBounds
 import com.febricahyaa.clockapp.ui.components.ChronaCard
 import com.febricahyaa.clockapp.ui.components.IconCircleButton
 import com.febricahyaa.clockapp.ui.components.ChronaScaffold
+import com.febricahyaa.clockapp.ui.motion.ChronaTimeToolMotionState
+import com.febricahyaa.clockapp.ui.motion.timerMotionState
+import com.febricahyaa.clockapp.ui.theme.ChronaMotionTokens
 
 private enum class TimerSegment { HOURS, MINUTES, SECONDS }
 
@@ -89,6 +99,11 @@ fun TimerScreen(
     }
 
     val draftSeconds = remember(inputDigits) { TimerDurationInput.toSeconds(inputDigits) }
+    val motionState = timerMotionState(
+        totalSeconds = totalSeconds,
+        remainingSeconds = remainingSeconds,
+        running = running,
+    )
     val progressTarget = if (totalSeconds > 0) {
         (remainingSeconds.toFloat() / totalSeconds).coerceIn(0f, 1f)
     } else {
@@ -173,60 +188,101 @@ fun TimerScreen(
                     .padding(horizontal = 18.dp, vertical = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                if (running || remainingSeconds != totalSeconds) {
-                    CountdownIndicator(
-                        progress = animatedProgress,
-                        remainingSeconds = remainingSeconds,
-                        running = running,
-                        pulse = pulse,
-                        modifier = Modifier.chronaSharedBounds(ChronaMotionKeys.TIMER_EDITOR),
-                    )
-                    Spacer(Modifier.height(16.dp))
-                    Text(
-                        text = if (running) {
-                            "Running from elapsed real time"
-                        } else if (remainingSeconds == 0) {
-                            "Timer complete"
-                        } else {
-                            "Paused — resume when you're ready"
-                        },
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Spacer(Modifier.height(18.dp))
-                } else {
-                    TimerDurationDisplay(
-                        inputDigits = inputDigits,
-                        enabled = canEdit,
-                        modifier = Modifier.chronaSharedBounds(ChronaMotionKeys.TIMER_EDITOR),
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        text = "Enter digits as HHMMSS",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Spacer(Modifier.height(18.dp))
-                    TimerKeypad(
-                        enabled = canEdit,
-                        onDigit = ::addDigit,
-                        onDelete = ::deleteDigit,
-                        onClear = ::clearDigits,
-                    )
-                    Spacer(Modifier.height(16.dp))
-                    QuickDurations(
-                        enabled = canEdit,
-                        onSelect = { seconds ->
-                            haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                            inputDigits = TimerDurationInput.toDigits(seconds)
-                            inputDirty = true
-                        },
-                        onCommit = { seconds -> onSetPreset(seconds) },
-                    )
-                    Spacer(Modifier.height(10.dp))
+                AnimatedContent(
+                    targetState = motionState,
+                    transitionSpec = {
+                        (fadeIn(
+                            animationSpec = tween(
+                                ChronaMotionTokens.SpatialDurationMillis,
+                                easing = ChronaMotionTokens.SpatialEasing,
+                            ),
+                        ) + scaleIn(
+                            initialScale = 0.96f,
+                            animationSpec = tween(
+                                ChronaMotionTokens.SpatialDurationMillis,
+                                easing = ChronaMotionTokens.SpatialEasing,
+                            ),
+                        )).togetherWith(
+                            fadeOut(
+                                animationSpec = tween(
+                                    ChronaMotionTokens.MicroDurationMillis,
+                                    easing = ChronaMotionTokens.SpatialEasing,
+                                ),
+                            ) + scaleOut(
+                                targetScale = 1.02f,
+                                animationSpec = tween(
+                                    ChronaMotionTokens.MicroDurationMillis,
+                                    easing = ChronaMotionTokens.SpatialEasing,
+                                ),
+                            ),
+                        ).using(SizeTransform(clip = false))
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = "timer-state-spatial-motion",
+                ) { state ->
+                    when (state) {
+                        ChronaTimeToolMotionState.IDLE -> {
+                            TimerDurationDisplay(
+                                inputDigits = inputDigits,
+                                enabled = canEdit,
+                                modifier = Modifier.chronaSharedBounds(ChronaMotionKeys.TIMER_EDITOR),
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                text = "Enter digits as HHMMSS",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                            Spacer(Modifier.height(18.dp))
+                            TimerKeypad(
+                                enabled = canEdit,
+                                onDigit = ::addDigit,
+                                onDelete = ::deleteDigit,
+                                onClear = ::clearDigits,
+                            )
+                            Spacer(Modifier.height(16.dp))
+                            QuickDurations(
+                                enabled = canEdit,
+                                onSelect = { seconds ->
+                                    haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                                    inputDigits = TimerDurationInput.toDigits(seconds)
+                                    inputDirty = true
+                                },
+                                onCommit = { seconds -> onSetPreset(seconds) },
+                            )
+                            Spacer(Modifier.height(10.dp))
+                        }
+
+                        ChronaTimeToolMotionState.RUNNING,
+                        ChronaTimeToolMotionState.PAUSED,
+                        ChronaTimeToolMotionState.COMPLETED,
+                        -> {
+                            CountdownIndicator(
+                                progress = animatedProgress,
+                                remainingSeconds = remainingSeconds,
+                                running = running,
+                                pulse = pulse,
+                                modifier = Modifier.chronaSharedBounds(ChronaMotionKeys.TIMER_EDITOR),
+                            )
+                            Spacer(Modifier.height(16.dp))
+                            Text(
+                                text = when (state) {
+                                    ChronaTimeToolMotionState.RUNNING -> "Running from elapsed real time"
+                                    ChronaTimeToolMotionState.COMPLETED -> "Timer complete"
+                                    else -> "Paused — resume when you're ready"
+                                },
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                            Spacer(Modifier.height(18.dp))
+                        }
+                    }
                 }
 
                 val primaryActionLabel = when {
+                    motionState == ChronaTimeToolMotionState.COMPLETED -> "Reset"
                     running -> "Pause"
                     remainingSeconds != totalSeconds -> "Resume"
                     else -> "Start"
@@ -234,10 +290,17 @@ fun TimerScreen(
                 Button(
                     onClick = {
                         haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                        if (!running && remainingSeconds == totalSeconds) commitDraft()
-                        onToggle()
+                        when {
+                            motionState == ChronaTimeToolMotionState.COMPLETED -> onReset()
+                            !running && remainingSeconds == totalSeconds -> {
+                                commitDraft()
+                                onToggle()
+                            }
+                            else -> onToggle()
+                        }
                     },
-                    enabled = if (running) true else draftSeconds > 0 || remainingSeconds > 0,
+                    enabled = motionState == ChronaTimeToolMotionState.COMPLETED ||
+                        if (running) true else draftSeconds > 0 || remainingSeconds > 0,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),

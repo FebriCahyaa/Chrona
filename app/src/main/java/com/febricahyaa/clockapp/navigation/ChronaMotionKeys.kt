@@ -11,4 +11,6 @@ object ChronaMotionKeys {
     const val DASHBOARD_STOPWATCH = "dashboard.card.stopwatch"
     const val ALARM_EDITOR = "editor.alarm"
     const val TIMER_EDITOR = "editor.timer"
+    const val TIMER_STATE_SURFACE = "state.timer"
+    const val STOPWATCH_STATE_SURFACE = "state.stopwatch"
 }
