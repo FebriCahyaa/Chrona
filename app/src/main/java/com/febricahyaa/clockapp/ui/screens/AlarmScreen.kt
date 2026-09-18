@@ -29,11 +29,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Vibration
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,9 +45,11 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -89,9 +94,10 @@ fun AlarmScreen(
     onToggle: (AlarmItem, Boolean) -> Unit,
     onDelete: (AlarmItem) -> Unit,
     onUpdate: (AlarmItem) -> Unit,
+    onEdit: () -> Unit,
 ) {
     val haptics = LocalHapticFeedback.current
-    var showAdd by rememberSaveable { mutableStateOf(false) }
+    var editorAlarmId by rememberSaveable { mutableStateOf<Long?>(null) }
 
     ChronaScaffold(
         title = "Alarm",
@@ -100,7 +106,7 @@ fun AlarmScreen(
         actions = {
             IconCircleButton(
                 icon = Icons.Filled.Add,
-                onClick = { showAdd = true },
+                onClick = { editorAlarmId = -1L },
                 active = true,
                 contentDescription = "Add alarm",
             )
@@ -131,7 +137,7 @@ fun AlarmScreen(
                     Spacer(Modifier.height(14.dp))
                     TextButton(onClick = {
                         haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                        showAdd = true
+                        editorAlarmId = -1L
                     }) { Text("Create alarm", style = MaterialTheme.typography.labelLarge) }
                 }
             }
@@ -156,6 +162,7 @@ fun AlarmScreen(
                             onDelete(alarm)
                         },
                         onUpdate = onUpdate,
+                        onEdit = { editorAlarmId = alarm.id },
                     )
                 }
                 item { Spacer(Modifier.height(18.dp)) }
@@ -164,15 +171,28 @@ fun AlarmScreen(
         }
     }
 
-    if (showAdd) {
-        AddAlarmDialog(
-            use24HourFormat = use24HourFormat,
-            onDismiss = { showAdd = false },
-            onAdd = onAdd,
-        )
+    val editorAlarm = editorAlarmId?.let { id ->
+        if (id == -1L) null else alarms.firstOrNull { it.id == id }
+    }
+
+    if (editorAlarmId != null) {
+        key(editorAlarmId) {
+            AlarmEditorSheet(
+                alarm = editorAlarm,
+                use24HourFormat = use24HourFormat,
+                onDismiss = { editorAlarmId = null },
+                onAdd = { alarm ->
+                    onAdd(alarm)
+                    editorAlarmId = null
+                },
+                onUpdate = { alarm ->
+                    onUpdate(alarm)
+                    editorAlarmId = null
+                },
+            )
+        }
     }
 }
-
 @Composable
 private fun ExpandableAlarmCard(
     alarm: AlarmItem,
@@ -322,6 +342,11 @@ private fun ExpandableAlarmCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End,
                 ) {
+                    TextButton(onClick = onEdit) {
+                        Icon(Icons.Filled.Edit, contentDescription = null)
+                        Spacer(Modifier.size(6.dp))
+                        Text("Edit")
+                    }
                     IconButton(
                         onClick = onDelete,
                         modifier = Modifier.size(44.dp),
@@ -363,72 +388,7 @@ private fun AlarmOptionRow(
     }
 }
 
-@Composable
-private fun AddAlarmDialog(
-    use24HourFormat: Boolean,
-    onDismiss: () -> Unit,
-    onAdd: (AlarmItem) -> Unit,
-) {
-    val haptics = LocalHapticFeedback.current
-    val picker = rememberTimePickerState(is24Hour = use24HourFormat)
-    var label by rememberSaveable { mutableStateOf("") }
-    var days by rememberSaveable { mutableStateOf(setOf<DayOfWeek>()) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Add alarm", style = MaterialTheme.typography.headlineSmall) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(13.dp)) {
-                TimePicker(state = picker)
-                OutlinedTextField(
-                    value = label,
-                    onValueChange = { label = it },
-                    label = { Text("Label") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                )
-                Text("Repeat", style = MaterialTheme.typography.labelLarge)
-                Row(
-                    Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(7.dp),
-                ) {
-                    ALARM_DAYS.forEach { (day, short) ->
-                        FilterChip(
-                            selected = day in days,
-                            onClick = {
-                                haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                                days = if (day in days) days - day else days + day
-                            },
-                            label = { Text(short) },
-                        )
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = {
-                haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                onAdd(
-                    AlarmItem(
-                        id = System.currentTimeMillis(),
-                        time = LocalTime.of(picker.hour, picker.minute),
-                        label = label,
-                        enabled = true,
-                        repeatDays = days,
-                    ),
-                )
-                onDismiss()
-            }) { Text("Save") }
-        },
-        dismissButton = {
-            TextButton(onClick = {
-                haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                onDismiss()
-            }) { Text("Cancel") }
-        },
-    )
-}
-
+@OptIn(ExperimentalMaterial3Api::class)\n@Composable\nprivate fun AlarmEditorSheet(\n    alarm: AlarmItem?,\n    use24HourFormat: Boolean,\n    onDismiss: () -> Unit,\n    onAdd: (AlarmItem) -> Unit,\n    onUpdate: (AlarmItem) -> Unit,\n) {\n    val haptics = LocalHapticFeedback.current\n    val context = LocalContext.current\n    val isEditing = alarm != null\n    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)\n    val initialAlarm = alarm ?: AlarmItem(\n        id = 0L,\n        time = LocalTime.now(),\n        label = "",\n        enabled = true,\n        repeatDays = emptySet(),\n    )\n    val picker = rememberTimePickerState(\n        initialHour = initialAlarm.time.hour,\n        initialMinute = initialAlarm.time.minute,\n        is24Hour = use24HourFormat,\n    )\n    var label by rememberSaveable(initialAlarm.id) { mutableStateOf(initialAlarm.label) }\n    var days by rememberSaveable(initialAlarm.id) { mutableStateOf(initialAlarm.repeatDays) }\n    var vibrate by rememberSaveable(initialAlarm.id) { mutableStateOf(initialAlarm.vibrate) }\n    var ringtoneUri by rememberSaveable(initialAlarm.id) { mutableStateOf(initialAlarm.ringtoneUri) }\n    var ringtoneName by rememberSaveable(initialAlarm.id) { mutableStateOf(initialAlarm.ringtoneName) }\n\n    val ringtonePicker = rememberLauncherForActivityResult(\n        contract = ActivityResultContracts.StartActivityForResult(),\n    ) { result ->\n        if (result.resultCode != Activity.RESULT_OK) return@rememberLauncherForActivityResult\n        val pickedUri = result.data?.let { data ->\n            androidx.core.content.IntentCompat.getParcelableExtra(\n                data,\n                RingtoneManager.EXTRA_RINGTONE_PICKED_URI,\n                Uri::class.java,\n            )\n        }\n        ringtoneUri = pickedUri?.toString()\n        ringtoneName = pickedUri?.let { RingtoneManager.getRingtone(context, it)?.getTitle(context) }\n            ?: "Silent"\n        haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)\n    }\n\n    fun openRingtonePicker() {\n        val existingUri = ringtoneUri?.let(Uri::parse)\n            ?: RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM)\n        ringtonePicker.launch(Intent(RingtoneManager.ACTION_RINGTONE_PICKER).apply {\n            putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)\n            putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Alarm sound")\n            putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, true)\n            putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, existingUri)\n        })\n    }\n\n    ModalBottomSheet(\n        onDismissRequest = onDismiss,\n        sheetState = sheetState,\n    ) {\n        Column(\n            modifier = Modifier\n                .fillMaxWidth()\n                .widthIn(max = 620.dp)\n                .align(Alignment.CenterHorizontally)\n                .animateContentSize(animationSpec = ClockMotion.alarmExpand)\n                .padding(horizontal = 20.dp)\n                .padding(bottom = 28.dp)\n                .chronaSharedBounds(ChronaMotionKeys.ALARM_EDITOR),\n            verticalArrangement = Arrangement.spacedBy(14.dp),\n        ) {\n            Text(\n                text = if (isEditing) "Edit alarm" else "New alarm",\n                style = MaterialTheme.typography.headlineSmall,\n                fontWeight = FontWeight.SemiBold,\n            )\n            Text(\n                text = "Set time, repetition, label and alert behavior in one place.",\n                style = MaterialTheme.typography.bodyMedium,\n                color = MaterialTheme.colorScheme.onSurfaceVariant,\n            )\n            TimePicker(state = picker)\n            OutlinedTextField(\n                value = label,\n                onValueChange = { label = it },\n                label = { Text("Label") },\n                modifier = Modifier.fillMaxWidth(),\n                singleLine = true,\n            )\n            Text("Repeat", style = MaterialTheme.typography.labelLarge)\n            Row(\n                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),\n                horizontalArrangement = Arrangement.spacedBy(7.dp),\n            ) {\n                ALARM_DAYS.forEach { (day, short) ->\n                    FilterChip(\n                        selected = day in days,\n                        onClick = {\n                            haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)\n                            days = if (day in days) days - day else days + day\n                        },\n                        label = { Text(short) },\n                    )\n                }\n            }\n            AlarmOptionRow(\n                icon = Icons.Filled.MusicNote,\n                title = "Alarm sound",\n                value = ringtoneName,\n                onClick = ::openRingtonePicker,\n            )\n            AlarmOptionRow(\n                icon = Icons.Filled.Vibration,\n                title = "Vibrate",\n                value = if (vibrate) "On" else "Off",\n                trailing = {\n                    Switch(\n                        checked = vibrate,\n                        onCheckedChange = { enabled ->\n                            vibrate = enabled\n                            haptics.performHapticFeedback(\n                                if (enabled) HapticFeedbackType.ToggleOn else HapticFeedbackType.ToggleOff,\n                            )\n                        },\n                    )\n                },\n            )\n            Row(\n                modifier = Modifier.fillMaxWidth(),\n                horizontalArrangement = Arrangement.spacedBy(10.dp),\n            ) {\n                TextButton(\n                    onClick = onDismiss,\n                    modifier = Modifier.weight(1f),\n                ) { Text("Cancel") }\n                Button(\n                    onClick = {\n                        val updated = AlarmItem(\n                            id = alarm?.id ?: System.currentTimeMillis(),\n                            time = LocalTime.of(picker.hour, picker.minute),\n                            label = label,\n                            enabled = alarm?.enabled ?: true,\n                            repeatDays = days,\n                            ringtoneUri = ringtoneUri,\n                            ringtoneName = ringtoneName,\n                            vibrate = vibrate,\n                        )\n                        haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)\n                        if (isEditing) onUpdate(updated) else onAdd(updated)\n                    },\n                    modifier = Modifier.weight(1f),\n                ) {\n                    Text(if (isEditing) "Save changes" else "Create alarm")\n                }\n            }\n        }\n    }\n}
 private fun repeatLabel(days: Set<DayOfWeek>): String = when {
     days.isEmpty() -> "Once"
     days.size == 7 -> "Every day"

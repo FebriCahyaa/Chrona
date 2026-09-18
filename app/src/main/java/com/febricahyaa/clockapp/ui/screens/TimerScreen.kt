@@ -179,6 +179,7 @@ fun TimerScreen(
                         remainingSeconds = remainingSeconds,
                         running = running,
                         pulse = pulse,
+                        modifier = Modifier.chronaSharedBounds(ChronaMotionKeys.TIMER_EDITOR),
                     )
                     Spacer(Modifier.height(16.dp))
                     Text(
@@ -197,6 +198,7 @@ fun TimerScreen(
                     TimerDurationDisplay(
                         inputDigits = inputDigits,
                         enabled = canEdit,
+                        modifier = Modifier.chronaSharedBounds(ChronaMotionKeys.TIMER_EDITOR),
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
@@ -267,9 +269,10 @@ private fun CountdownIndicator(
     remainingSeconds: Int,
     running: Boolean,
     pulse: Float,
+    modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .size(286.dp)
             .graphicsLayer {
                 scaleX = if (running) pulse else 1f
@@ -304,6 +307,7 @@ private fun CountdownIndicator(
 private fun TimerDurationDisplay(
     inputDigits: String,
     enabled: Boolean,
+    modifier: Modifier = Modifier,
 ) {
     val parsed = TimerDurationInput.parse(inputDigits) ?: com.febricahyaa.clockapp.core.TimerDuration(0, 0, 0)
     val activePart = when {
@@ -311,7 +315,10 @@ private fun TimerDurationDisplay(
         inputDigits.length >= 3 -> TimerSegment.MINUTES
         else -> TimerSegment.SECONDS
     }
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         DurationPart("%02d".format(parsed.hours), "h", activePart == TimerSegment.HOURS, enabled)
         DurationPart("%02d".format(parsed.minutes), "m", activePart == TimerSegment.MINUTES, enabled)
         DurationPart("%02d".format(parsed.seconds), "s", activePart == TimerSegment.SECONDS, enabled)

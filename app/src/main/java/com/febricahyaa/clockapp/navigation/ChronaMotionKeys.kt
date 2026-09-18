@@ -9,4 +9,6 @@ object ChronaMotionKeys {
     const val DASHBOARD_ALARM = "dashboard.card.alarm"
     const val DASHBOARD_TIMER = "dashboard.card.timer"
     const val DASHBOARD_STOPWATCH = "dashboard.card.stopwatch"
+    const val ALARM_EDITOR = "editor.alarm"
+    const val TIMER_EDITOR = "editor.timer"
 }
