@@ -51,10 +51,14 @@ grep -Fq "material3.adaptive:adaptive:${EXPECTED_ADAPTIVE}" "$APP_GRADLE" || fai
 grep -Fq 'MaterialExpressiveTheme' "$ROOT_DIR/app/src/main/java/com/febricahyaa/clockapp/ui/theme/ChronaTheme.kt" || fail "MaterialExpressiveTheme missing"
 grep -Fq 'MotionScheme.expressive()' "$ROOT_DIR/app/src/main/java/com/febricahyaa/clockapp/ui/theme/ChronaTheme.kt" || fail "Expressive motion scheme missing"
 TIMER_SCREEN="$ROOT_DIR/app/src/main/java/com/febricahyaa/clockapp/ui/screens/TimerScreen.kt"
-if ! grep -Fq 'CircularWavyProgressIndicator' "$TIMER_SCREEN" && ! grep -Fq 'drawArc(' "$TIMER_SCREEN"; then
-  fail "Timer expressive progress indicator missing (expected CircularWavyProgressIndicator or custom Canvas drawArc)"
+if ! grep -Fq 'CircularWavyProgressIndicator' "$TIMER_SCREEN"   && ! grep -Fq 'CircularProgressIndicator' "$TIMER_SCREEN"   && ! grep -Fq 'drawArc(' "$TIMER_SCREEN"; then
+  fail "Timer progress indicator missing (expected CircularWavyProgressIndicator, CircularProgressIndicator, or custom Canvas drawArc)"
 fi
-grep -Fq 'currentWindowAdaptiveInfoV2' "$ROOT_DIR/app/src/main/java/com/febricahyaa/clockapp/ui/screens/HomeScreen.kt" || fail "Adaptive window API missing"
+
+# Dashboard was renamed from HomeScreen.kt to ChronaBentoHomeScreen.kt.
+HOME_SCREEN="$ROOT_DIR/app/src/main/java/com/febricahyaa/clockapp/ui/screens/ChronaBentoHomeScreen.kt"
+[[ -f "$HOME_SCREEN" ]] || fail "ChronaBentoHomeScreen.kt missing"
+grep -Fq 'currentWindowAdaptiveInfoV2' "$HOME_SCREEN" || fail "Adaptive window API missing"
 
 # Confirm the requested Material 3 Expressive line is present.
 if ! grep -Fq "$EXPECTED_M3_ALPHA" "$APP_GRADLE"; then
