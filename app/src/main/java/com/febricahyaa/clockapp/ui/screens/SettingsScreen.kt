@@ -2,11 +2,17 @@
 
 package com.febricahyaa.clockapp.ui.screens
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
@@ -17,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -48,7 +55,7 @@ fun SettingsSheetContent(
         modifier
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 22.dp)
+            .padding(horizontal = 18.dp)
             .padding(bottom = 34.dp),
     ) {
         if (showSectionHeader) {
@@ -65,41 +72,181 @@ fun SettingsSheetContent(
             Spacer(Modifier.height(4.dp))
         }
 
-        SettingsPreviewCard(
-            settings = settings,
-            use24HourFormat = use24HourFormat,
-        )
-        Spacer(Modifier.height(20.dp))
+        BoxWithConstraints(
+            modifier = Modifier
+                .fillMaxWidth()
+                .widthIn(max = 1180.dp),
+        ) {
+            when (chronaSettingsWindowClass(maxWidth.value.toInt())) {
+                ChronaSettingsWindowClass.EXPANDED -> SettingsExpandedDashboard(
+                    settings = settings,
+                    use24HourFormat = use24HourFormat,
+                    onThemeModeChange = onThemeModeChange,
+                    onAccentChange = onAccentChange,
+                    onFormatChange = onFormatChange,
+                    onShowSecondsChange = onShowSecondsChange,
+                    onOpenNotificationSettings = onOpenNotificationSettings,
+                    notificationPermissionGranted = notificationPermissionGranted,
+                    onOpenLegal = onOpenLegal,
+                    updateState = updateState,
+                    onCheckForUpdates = onCheckForUpdates,
+                    onOpenUpdate = onOpenUpdate,
+                )
 
-        SettingsAppearanceSection(
-            settings = settings,
-            onThemeModeChange = onThemeModeChange,
-            onAccentChange = onAccentChange,
-        )
-        Spacer(Modifier.height(18.dp))
+                ChronaSettingsWindowClass.MEDIUM -> SettingsMediumDashboard(
+                    settings = settings,
+                    use24HourFormat = use24HourFormat,
+                    onThemeModeChange = onThemeModeChange,
+                    onAccentChange = onAccentChange,
+                    onFormatChange = onFormatChange,
+                    onShowSecondsChange = onShowSecondsChange,
+                    onOpenNotificationSettings = onOpenNotificationSettings,
+                    notificationPermissionGranted = notificationPermissionGranted,
+                    onOpenLegal = onOpenLegal,
+                    updateState = updateState,
+                    onCheckForUpdates = onCheckForUpdates,
+                    onOpenUpdate = onOpenUpdate,
+                )
 
-        SettingsClockSection(
-            settings = settings,
-            use24HourFormat = use24HourFormat,
-            onFormatChange = onFormatChange,
-            onShowSecondsChange = onShowSecondsChange,
-        )
-        Spacer(Modifier.height(18.dp))
+                ChronaSettingsWindowClass.COMPACT -> SettingsCompactDashboard(
+                    settings = settings,
+                    use24HourFormat = use24HourFormat,
+                    onThemeModeChange = onThemeModeChange,
+                    onAccentChange = onAccentChange,
+                    onFormatChange = onFormatChange,
+                    onShowSecondsChange = onShowSecondsChange,
+                    onOpenNotificationSettings = onOpenNotificationSettings,
+                    notificationPermissionGranted = notificationPermissionGranted,
+                    onOpenLegal = onOpenLegal,
+                    updateState = updateState,
+                    onCheckForUpdates = onCheckForUpdates,
+                    onOpenUpdate = onOpenUpdate,
+                )
+            }
+        }
+    }
+}
 
-        SettingsNotificationsSection(
-            permissionGranted = notificationPermissionGranted,
-            onOpenNotificationSettings = onOpenNotificationSettings,
-        )
-        Spacer(Modifier.height(18.dp))
+@Composable
+private fun SettingsCompactDashboard(
+    settings: ClockSettings,
+    use24HourFormat: Boolean,
+    onThemeModeChange: (AppThemeMode) -> Unit,
+    onAccentChange: (ThemeAccent) -> Unit,
+    onFormatChange: (Boolean) -> Unit,
+    onShowSecondsChange: (Boolean) -> Unit,
+    onOpenNotificationSettings: () -> Unit,
+    notificationPermissionGranted: Boolean,
+    onOpenLegal: () -> Unit,
+    updateState: UpdateUiState,
+    onCheckForUpdates: () -> Unit,
+    onOpenUpdate: () -> Unit,
+) {
+    SettingsPreviewCard(settings, use24HourFormat)
+    Spacer(Modifier.height(18.dp))
+    SettingsAppearanceSection(settings, onThemeModeChange, onAccentChange)
+    Spacer(Modifier.height(18.dp))
+    SettingsClockSection(settings, use24HourFormat, onFormatChange, onShowSecondsChange)
+    Spacer(Modifier.height(18.dp))
+    SettingsNotificationsSection(notificationPermissionGranted, onOpenNotificationSettings)
+    Spacer(Modifier.height(18.dp))
+    SettingsUpdateSection(updateState, onCheckForUpdates, onOpenUpdate)
+    Spacer(Modifier.height(18.dp))
+    SettingsAboutSection(onOpenLegal)
+}
 
-        SettingsUpdateSection(
-            state = updateState,
-            onCheckForUpdates = onCheckForUpdates,
-            onOpenUpdate = onOpenUpdate,
-        )
-        Spacer(Modifier.height(18.dp))
+@Composable
+private fun SettingsMediumDashboard(
+    settings: ClockSettings,
+    use24HourFormat: Boolean,
+    onThemeModeChange: (AppThemeMode) -> Unit,
+    onAccentChange: (ThemeAccent) -> Unit,
+    onFormatChange: (Boolean) -> Unit,
+    onShowSecondsChange: (Boolean) -> Unit,
+    onOpenNotificationSettings: () -> Unit,
+    notificationPermissionGranted: Boolean,
+    onOpenLegal: () -> Unit,
+    updateState: UpdateUiState,
+    onCheckForUpdates: () -> Unit,
+    onOpenUpdate: () -> Unit,
+) {
+    SettingsPreviewCard(settings, use24HourFormat)
+    Spacer(Modifier.height(14.dp))
+    Row(
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
+        verticalAlignment = Alignment.Top,
+    ) {
+        SettingsDashboardPanel(Modifier.weight(1f)) {
+            SettingsAppearanceSection(settings, onThemeModeChange, onAccentChange)
+            Spacer(Modifier.height(22.dp))
+            SettingsClockSection(settings, use24HourFormat, onFormatChange, onShowSecondsChange)
+        }
+        SettingsDashboardPanel(Modifier.weight(1f)) {
+            SettingsNotificationsSection(notificationPermissionGranted, onOpenNotificationSettings)
+            Spacer(Modifier.height(22.dp))
+            SettingsUpdateSection(updateState, onCheckForUpdates, onOpenUpdate)
+            Spacer(Modifier.height(22.dp))
+            SettingsAboutSection(onOpenLegal)
+        }
+    }
+}
 
-        SettingsAboutSection(onOpenLegal = onOpenLegal)
+@Composable
+private fun SettingsExpandedDashboard(
+    settings: ClockSettings,
+    use24HourFormat: Boolean,
+    onThemeModeChange: (AppThemeMode) -> Unit,
+    onAccentChange: (ThemeAccent) -> Unit,
+    onFormatChange: (Boolean) -> Unit,
+    onShowSecondsChange: (Boolean) -> Unit,
+    onOpenNotificationSettings: () -> Unit,
+    notificationPermissionGranted: Boolean,
+    onOpenLegal: () -> Unit,
+    updateState: UpdateUiState,
+    onCheckForUpdates: () -> Unit,
+    onOpenUpdate: () -> Unit,
+) {
+    Row(
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
+        verticalAlignment = Alignment.Top,
+    ) {
+        SettingsDashboardPanel(Modifier.weight(1.15f)) {
+            SettingsPreviewCard(settings, use24HourFormat)
+            Spacer(Modifier.height(18.dp))
+            SettingsClockSection(settings, use24HourFormat, onFormatChange, onShowSecondsChange)
+        }
+        SettingsDashboardPanel(Modifier.weight(1f)) {
+            SettingsAppearanceSection(settings, onThemeModeChange, onAccentChange)
+        }
+        SettingsDashboardPanel(Modifier.weight(1f)) {
+            SettingsNotificationsSection(notificationPermissionGranted, onOpenNotificationSettings)
+            Spacer(Modifier.height(20.dp))
+            SettingsUpdateSection(updateState, onCheckForUpdates, onOpenUpdate)
+            Spacer(Modifier.height(20.dp))
+            SettingsAboutSection(onOpenLegal)
+        }
+    }
+}
+
+@Composable
+private fun SettingsDashboardPanel(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(26.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        border = BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outline.copy(alpha = 0.09f),
+        ),
+    ) {
+        Column(Modifier.fillMaxWidth().padding(16.dp)) {
+            content()
+        }
     }
 }
 
