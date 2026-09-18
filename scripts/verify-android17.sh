@@ -13,9 +13,10 @@ fi
 
 EXPECTED_PLATFORM="37"
 EXPECTED_PLATFORM_MINOR="1"
+EXPECTED_PLATFORM_PACKAGE="platforms/android-37.1"
 EXPECTED_BUILD_TOOLS="37.0.0"
 EXPECTED_NDK="28.2.13676358"
-EXPECTED_CMAKE="3.31.6"
+EXPECTED_CMAKE="3.31.5"
 EXPECTED_AGP="9.4.0"
 EXPECTED_GRADLE="9.7.1"
 EXPECTED_COMPOSE_BOM="2026.09.00"
@@ -66,7 +67,7 @@ fi
 command -v android >/dev/null 2>&1 || fail "Android CLI (android) is not available"
 android --version >/dev/null 2>&1 || fail "Android CLI cannot execute"
 
-android --sdk="${ANDROID_SDK_ROOT}" sdk list "platforms/android-${EXPECTED_PLATFORM}" --all >/dev/null 2>&1 \
+android --sdk="${ANDROID_SDK_ROOT}" sdk list "${EXPECTED_PLATFORM_PACKAGE}" --all >/dev/null 2>&1 \
   || fail "Android ${EXPECTED_PLATFORM} platform metadata is not available"
 android --sdk="${ANDROID_SDK_ROOT}" sdk list "build-tools/${EXPECTED_BUILD_TOOLS}" --all >/dev/null 2>&1 \
   || fail "Build Tools ${EXPECTED_BUILD_TOOLS} metadata is not available"
@@ -75,7 +76,7 @@ android --sdk="${ANDROID_SDK_ROOT}" sdk list "ndk/${EXPECTED_NDK}" --all >/dev/n
 android --sdk="${ANDROID_SDK_ROOT}" sdk list "cmake/${EXPECTED_CMAKE}" --all >/dev/null 2>&1 \
   || fail "CMake ${EXPECTED_CMAKE} metadata is not available"
 
-[[ -d "$ANDROID_SDK_ROOT/platforms/android-${EXPECTED_PLATFORM}" ]] || fail "Android ${EXPECTED_PLATFORM} platform directory missing (ensure setup-android installs platforms;android-${EXPECTED_PLATFORM})"
+[[ -d "$ANDROID_SDK_ROOT/${EXPECTED_PLATFORM_PACKAGE}" ]] || fail "Android ${EXPECTED_PLATFORM}.${EXPECTED_PLATFORM_MINOR} platform directory missing (expected ${ANDROID_SDK_ROOT}/${EXPECTED_PLATFORM_PACKAGE})"
 [[ -d "$ANDROID_SDK_ROOT/build-tools/${EXPECTED_BUILD_TOOLS}" ]] || fail "build-tools directory missing"
 [[ -d "$ANDROID_SDK_ROOT/ndk/${EXPECTED_NDK}" ]] || fail "NDK directory missing"
 [[ -d "$ANDROID_SDK_ROOT/cmake/${EXPECTED_CMAKE}" ]] || fail "CMake directory missing"
@@ -86,14 +87,14 @@ fi
 
 for workflow in .github/workflows/*.yml; do
   if [[ "$workflow" == *.yml && "$workflow" != *dependabot-auto-merge.yml ]]; then
-    grep -Fq 'setup-android@v4' "$workflow" || fail "Android SDK setup missing in $workflow"
-    grep -Eq 'android-37|ANDROID_PLATFORM_VERSION:.*37' "$workflow" || fail "Android 17 API 37 is not declared in $workflow"
+    grep -Fq 'setup-android@v4' "$workflow" || fail "Android SDK tooling setup missing in $workflow"
+    grep -Eq 'android-37\.1|ANDROID_PLATFORM_PACKAGE:.*platforms/android-37\.1|ANDROID_PLATFORM_VERSION:.*37' "$workflow" || fail "Android 17 API 37.1 is not declared in $workflow"
     grep -Eq '37\.0\.0|ANDROID_BUILD_TOOLS:.*37\.0\.0' "$workflow" || fail "Build Tools 37 is not declared in $workflow"
   fi
 done
 
 echo "Android 17 CI verification passed"
-echo "  Platform:   ${EXPECTED_PLATFORM} (Android 17 / API 37, extension ${EXPECTED_PLATFORM_MINOR})"
+echo "  Platform:   ${EXPECTED_PLATFORM}.${EXPECTED_PLATFORM_MINOR} (Android 17 / API 37.1)"
 echo "  Build Tools:${EXPECTED_BUILD_TOOLS}"
 echo "  NDK:        ${EXPECTED_NDK}"
 echo "  CMake:      ${EXPECTED_CMAKE}"
