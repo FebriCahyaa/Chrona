@@ -211,18 +211,22 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                         Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        OnboardingMiniCard(
-                            modifier = Modifier.weight(1f),
-                            icon = Icons.Filled.Alarm,
-                            title = R.string.onboarding_alarm_title,
-                            body = R.string.onboarding_alarm_body,
-                        )
-                        OnboardingMiniCard(
-                            modifier = Modifier.weight(1f),
-                            icon = Icons.Filled.Timer,
-                            title = R.string.onboarding_timer_title,
-                            body = R.string.onboarding_timer_body,
-                        )
+                        Box(Modifier.weight(1f)) {
+                            OnboardingMiniCard(
+                                modifier = Modifier.fillMaxWidth(),
+                                icon = Icons.Filled.Alarm,
+                                title = R.string.onboarding_alarm_title,
+                                body = R.string.onboarding_alarm_body,
+                            )
+                        }
+                        Box(Modifier.weight(1f)) {
+                            OnboardingMiniCard(
+                                modifier = Modifier.fillMaxWidth(),
+                                icon = Icons.Filled.Timer,
+                                title = R.string.onboarding_timer_title,
+                                body = R.string.onboarding_timer_body,
+                            )
+                        }
                     }
                 }
             }

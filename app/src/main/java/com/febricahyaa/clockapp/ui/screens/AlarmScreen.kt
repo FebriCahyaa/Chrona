@@ -182,12 +182,14 @@ fun AlarmScreen(
         }
     }
 
-    val editorAlarm = editorAlarmId?.let { id ->
-        if (id == NEW_ALARM_ID) null else alarms.firstOrNull { it.id == id }
+    val editorId = editorAlarmId
+    val editorAlarm = when {
+        editorId == null || editorId == NEW_ALARM_ID -> null
+        else -> alarms.firstOrNull { alarm -> alarm.id == editorId }
     }
 
-    if (editorAlarmId != null) {
-        key(editorAlarmId) {
+    if (editorId != null) {
+        key(editorId) {
             AlarmEditorSheet(
                 alarm = editorAlarm,
                 use24HourFormat = use24HourFormat,
@@ -253,7 +255,7 @@ private fun ExpandableAlarmCard(
     }
 
     fun openRingtonePicker() {
-        val existingUri = alarm.ringtoneUri?.let(Uri::parse)
+        val existingUri = alarm.ringtoneUri?.let { value -> Uri.parse(value) }
             ?: RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM)
         ringtonePicker.launch(
             Intent(RingtoneManager.ACTION_RINGTONE_PICKER).apply {
@@ -292,7 +294,16 @@ private fun ExpandableAlarmCard(
                     }
                     Spacer(Modifier.height(3.dp))
                     Text(
-                        text = alarm.label.ifBlank { repeatLabel(alarm.repeatDays) },
+                        text = if (alarm.label.isBlank()) {
+                            repeatLabel(
+                                days = alarm.repeatDays,
+                                locale = locale,
+                                onceLabel = stringResource(R.string.alarm_repeat_once),
+                                everyDayLabel = stringResource(R.string.alarm_repeat_every_day),
+                            )
+                        } else {
+                            alarm.label
+                        },
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
@@ -337,7 +348,7 @@ private fun ExpandableAlarmCard(
                     icon = Icons.Filled.MusicNote,
                     title = stringResource(R.string.alarm_sound),
                     value = alarm.ringtoneName.ifBlank { stringResource(R.string.alarm_default_ringtone) },
-                    onClick = ::openRingtonePicker,
+                    onClick = { openRingtonePicker() },
                 )
                 AlarmOptionRow(
                     icon = Icons.Filled.Vibration,
@@ -469,7 +480,7 @@ private fun AlarmEditorSheet(
     }
 
     fun openRingtonePicker() {
-        val existingUri = ringtoneUri?.let(Uri::parse)
+        val existingUri = ringtoneUri?.let { value -> Uri.parse(value) }
             ?: RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM)
         ringtonePicker.launch(
             Intent(RingtoneManager.ACTION_RINGTONE_PICKER).apply {
@@ -577,9 +588,9 @@ private fun AlarmEditorSheet(
                         Column(Modifier.fillMaxWidth().padding(18.dp)) {
                             OutlinedTextField(
                                 value = label,
-                                onValueChange = { label = it },
-                                label = { Text(stringResource(R.string.alarm_label)) },
-                                placeholder = { Text(stringResource(R.string.alarm_label_hint)) },
+                                onValueChange = { value: String -> label = value },
+                                label = { Text(text = stringResource(R.string.alarm_label)) },
+                                placeholder = { Text(text = stringResource(R.string.alarm_label_hint)) },
                                 modifier = Modifier.fillMaxWidth(),
                                 singleLine = true,
                             )
@@ -622,8 +633,12 @@ private fun AlarmEditorSheet(
                             AlarmOptionRow(
                                 icon = Icons.Filled.MusicNote,
                                 title = stringResource(R.string.alarm_sound),
-                                value = ringtoneName.ifBlank { stringResource(R.string.alarm_default_ringtone) },
-                                onClick = ::openRingtonePicker,
+                                value = if (ringtoneName.isBlank()) {
+                                    stringResource(R.string.alarm_default_ringtone)
+                                } else {
+                                    ringtoneName
+                                },
+                                onClick = { openRingtonePicker() },
                             )
                             AlarmOptionRow(
                                 icon = Icons.Filled.Vibration,

@@ -108,7 +108,7 @@ fun WorldClockDetailScreen(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        CityThumbnailDetail(item.city, Modifier.size(96.dp))
+                        CityThumbnail(item.city, Modifier.size(96.dp))
                         Spacer(Modifier.width(16.dp))
                         Column(Modifier.weight(1f)) {
                             Text(item.city, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)

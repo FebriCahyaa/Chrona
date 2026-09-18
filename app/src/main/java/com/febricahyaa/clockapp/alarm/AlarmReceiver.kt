@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.content.ContextCompat
 import com.febricahyaa.clockapp.ClockApplication
+import com.febricahyaa.clockapp.core.AlarmTriggerPolicy
 
 /** Exact-alarm entry point. Long-running work is delegated to AlarmService. */
 class AlarmReceiver : BroadcastReceiver() {

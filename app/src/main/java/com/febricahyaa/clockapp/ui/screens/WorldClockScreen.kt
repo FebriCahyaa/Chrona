@@ -142,10 +142,9 @@ fun WorldClockScreen(
                         WorldRegion.entries.forEach { option ->
                             FilterChip(
                                 selected = region == option,
-                                onClick = { regionKey = option.name },
                                 onClick = {
                                     haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                                    region = option
+                                    regionKey = option.name
                                 },
                                 label = { Text(stringResource(option.labelRes), style = MaterialTheme.typography.labelLarge) },
                             )
@@ -298,7 +297,7 @@ internal fun cityThumbnailHues(cityHash: Int): Pair<Float, Float> {
 }
 
 @Composable
-private fun CityThumbnail(city: String, modifier: Modifier = Modifier) {
+internal fun CityThumbnail(city: String, modifier: Modifier = Modifier) {
     val visual = remember(city) {
         val (topHue, bottomHue) = cityThumbnailHues(city.hashCode())
         CityVisual(
