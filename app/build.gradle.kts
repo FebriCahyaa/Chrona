@@ -121,6 +121,10 @@ val verifyReleaseSigning = tasks.register("verifyReleaseSigning") {
     group = "verification"
     description = "Verify that the required Chrona release signing environment is configured."
 
+    notCompatibleWithConfigurationCache(
+        "Release signing verification currently captures Gradle script state."
+    )
+
     doLast {
         if (!releaseSigningConfigured) {
             throw GradleException(
