@@ -57,7 +57,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -480,8 +480,11 @@ private fun AlarmEditorSheet(
     }
 
     fun openRingtonePicker() {
-        val existingUri = ringtoneUri?.let { value -> Uri.parse(value) }
-            ?: RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM)
+        val existingUri: Uri? = if (ringtoneUri.isNullOrBlank()) {
+            RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM)
+        } else {
+            Uri.parse(requireNotNull(ringtoneUri))
+        }
         ringtonePicker.launch(
             Intent(RingtoneManager.ACTION_RINGTONE_PICKER).apply {
                 putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)

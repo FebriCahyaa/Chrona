@@ -21,7 +21,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.weight
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -211,7 +211,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                         Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        Box(Modifier.weight(1f)) {
+                        Box(Modifier.fillMaxWidth(0.47f)) {
                             OnboardingMiniCard(
                                 modifier = Modifier.fillMaxWidth(),
                                 icon = Icons.Filled.Alarm,
@@ -219,7 +219,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                                 body = R.string.onboarding_alarm_body,
                             )
                         }
-                        Box(Modifier.weight(1f)) {
+                        Box(Modifier.fillMaxWidth(0.47f)) {
                             OnboardingMiniCard(
                                 modifier = Modifier.fillMaxWidth(),
                                 icon = Icons.Filled.Timer,
@@ -261,7 +261,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                     val active = index == page
                     Surface(
                         modifier = Modifier
-                            .weight(if (active) 2f else 1f)
+                            .fillMaxWidth(if (active) 0.14f else 0.07f)
                             .height(7.dp),
                         shape = RoundedCornerShape(999.dp),
                         color = if (active) {
@@ -299,7 +299,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                 if (page > 0) {
                     androidx.compose.material3.OutlinedButton(
                         onClick = { goTo(onboardingPreviousPage(page)) },
-                        modifier = Modifier.weight(0.8f),
+                        modifier = Modifier.widthIn(min = 96.dp),
                         shape = RoundedCornerShape(18.dp),
                     ) {
                         Text(stringResource(R.string.nav_back))
@@ -311,7 +311,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                         if (page == pages.lastIndex) finish()
                         else goTo(onboardingNextPage(page))
                     },
-                    modifier = Modifier.weight(1.4f),
+                    modifier = Modifier.widthIn(min = 128.dp),
                     shape = RoundedCornerShape(18.dp),
                 ) {
                     Text(if (page == pages.lastIndex) stringResource(R.string.onboarding_get_started) else stringResource(R.string.onboarding_continue))

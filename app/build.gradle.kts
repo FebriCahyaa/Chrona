@@ -183,6 +183,7 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.navigation:navigation-compose:2.10.0")
     implementation("androidx.compose.animation:animation")
+    implementation("androidx.compose.runtime:runtime-saveable")
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
     implementation("com.squareup.retrofit2:converter-gson:3.0.0")
 
