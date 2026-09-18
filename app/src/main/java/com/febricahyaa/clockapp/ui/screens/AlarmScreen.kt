@@ -67,6 +67,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.model.AlarmItem
 import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
 import com.febricahyaa.clockapp.navigation.chronaSharedBounds
@@ -78,16 +79,7 @@ import com.febricahyaa.clockapp.ui.theme.ClockMotion
 import java.time.DayOfWeek
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-
-private val ALARM_DAYS = listOf(
-    DayOfWeek.MONDAY to "Mon",
-    DayOfWeek.TUESDAY to "Tue",
-    DayOfWeek.WEDNESDAY to "Wed",
-    DayOfWeek.THURSDAY to "Thu",
-    DayOfWeek.FRIDAY to "Fri",
-    DayOfWeek.SATURDAY to "Sat",
-    DayOfWeek.SUNDAY to "Sun",
-)
+import java.time.format.TextStyle
 
 @Composable
 @Suppress("UNUSED_PARAMETER")
@@ -106,15 +98,15 @@ fun AlarmScreen(
     var editorAlarmId by rememberSaveable { mutableStateOf<Long?>(null) }
 
     ChronaScaffold(
-        title = "Alarm",
-        subtitle = "Schedules that stay editable without leaving the list",
+        title = stringResource(R.string.alarm_screen_title),
+        subtitle = stringResource(R.string.alarm_screen_subtitle),
         onBack = onBack,
         actions = {
             IconCircleButton(
                 icon = Icons.Filled.Add,
                 onClick = { editorAlarmId = NEW_ALARM_ID },
                 active = true,
-                contentDescription = "Add alarm",
+                contentDescription = stringResource(R.string.alarm_add_action),
             )
         },
     ) { paddingValues ->
@@ -141,10 +133,10 @@ fun AlarmScreen(
                     ) {
                         GradientIconBox(Icons.Filled.Alarm)
                         Spacer(Modifier.height(12.dp))
-                        Text("No alarms yet", style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.alarm_empty_title), style = MaterialTheme.typography.titleMedium)
                         Spacer(Modifier.height(5.dp))
                         Text(
-                            "Create a schedule and tune repeat, sound and vibration from the same editor.",
+                            stringResource(R.string.alarm_empty_subtitle),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -155,7 +147,7 @@ fun AlarmScreen(
                                 editorAlarmId = NEW_ALARM_ID
                             },
                         ) {
-                            Text("Create alarm", style = MaterialTheme.typography.labelLarge)
+                            Text(stringResource(R.string.alarm_create_action), style = MaterialTheme.typography.labelLarge)
                         }
                     }
                 }
@@ -228,13 +220,14 @@ private fun ExpandableAlarmCard(
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
     val locale = LocalLocale.current.platformLocale
+    val silentRingtoneLabel = stringResource(R.string.alarm_ringtone_silent)
     var expanded by rememberSaveable(alarm.id) { mutableStateOf(false) }
 
     val timeFormatter = remember(use24HourFormat, locale) {
         DateTimeFormatter.ofPattern(if (use24HourFormat) "HH:mm" else "h:mm", locale)
     }
     val timeText = alarm.time.format(timeFormatter)
-    val period = if (use24HourFormat) null else if (alarm.time.hour < 12) "AM" else "PM"
+    val period = if (use24HourFormat) null else stringResource(if (alarm.time.hour < 12) R.string.time_am else R.string.time_pm)
 
     val ringtonePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult(),
@@ -248,7 +241,7 @@ private fun ExpandableAlarmCard(
             )
         }
         val name = pickedUri?.let { RingtoneManager.getRingtone(context, it)?.getTitle(context) }
-            ?: "Silent"
+            ?: silentRingtoneLabel
         haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
         onUpdate(
             alarm.copy(
@@ -264,7 +257,7 @@ private fun ExpandableAlarmCard(
         ringtonePicker.launch(
             Intent(RingtoneManager.ACTION_RINGTONE_PICKER).apply {
                 putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)
-                putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Alarm sound")
+                putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, context.getString(R.string.alarm_ringtone_picker_title))
                 putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, true)
                 putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, existingUri)
             },
@@ -308,20 +301,21 @@ private fun ExpandableAlarmCard(
                 Spacer(Modifier.size(6.dp))
                 Icon(
                     imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
-                    contentDescription = if (expanded) "Collapse alarm options" else "Expand alarm options",
+                    contentDescription = if (expanded) stringResource(R.string.alarm_collapse) else stringResource(R.string.alarm_expand),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
             if (expanded) {
                 Spacer(Modifier.height(14.dp))
-                Text("Repeat", style = MaterialTheme.typography.labelLarge)
+                Text(stringResource(R.string.alarm_repeat), style = MaterialTheme.typography.labelLarge)
                 Spacer(Modifier.height(8.dp))
                 Row(
                     Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    ALARM_DAYS.forEach { (day, short) ->
+                    DayOfWeek.values().forEach { day ->
+                        val short = day.getDisplayName(TextStyle.SHORT, locale)
                         FilterChip(
                             selected = day in alarm.repeatDays,
                             onClick = {
@@ -340,14 +334,14 @@ private fun ExpandableAlarmCard(
                 Spacer(Modifier.height(8.dp))
                 AlarmOptionRow(
                     icon = Icons.Filled.MusicNote,
-                    title = "Alarm sound",
-                    value = alarm.ringtoneName,
+                    title = stringResource(R.string.alarm_sound),
+                    value = alarm.ringtoneName.ifBlank { stringResource(R.string.alarm_default_ringtone) },
                     onClick = ::openRingtonePicker,
                 )
                 AlarmOptionRow(
                     icon = Icons.Filled.Vibration,
-                    title = "Vibrate",
-                    value = if (alarm.vibrate) "On" else "Off",
+                    title = stringResource(R.string.alarm_vibrate),
+                    value = if (alarm.vibrate) stringResource(R.string.alarm_value_on) else stringResource(R.string.alarm_value_off),
                     trailing = {
                         Switch(
                             checked = alarm.vibrate,
@@ -367,13 +361,13 @@ private fun ExpandableAlarmCard(
                     TextButton(onClick = onEdit) {
                         Icon(Icons.Filled.Edit, contentDescription = null)
                         Spacer(Modifier.size(6.dp))
-                        Text("Edit")
+                        Text(stringResource(R.string.alarm_edit_action))
                     }
                     IconButton(
                         onClick = onDelete,
                         modifier = Modifier.size(44.dp),
                     ) {
-                        Icon(Icons.Filled.DeleteOutline, contentDescription = "Delete alarm")
+                        Icon(Icons.Filled.DeleteOutline, contentDescription = stringResource(R.string.alarm_delete_action))
                     }
                 }
             }
@@ -410,7 +404,7 @@ private fun AlarmOptionRow(
                 haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
                 onClick()
             }) {
-                Text("Change", style = MaterialTheme.typography.labelLarge)
+                Text(stringResource(R.string.alarm_change), style = MaterialTheme.typography.labelLarge)
             }
         }
     }
@@ -444,6 +438,7 @@ private fun AlarmEditorSheet(
         initialMinute = initialAlarm.time.minute,
         is24Hour = use24HourFormat,
     )
+    val silentRingtoneLabel = stringResource(R.string.alarm_ringtone_silent)
     var label by rememberSaveable(initialAlarm.id) { mutableStateOf(initialAlarm.label) }
     var days by remember(initialAlarm.id) { mutableStateOf(initialAlarm.repeatDays) }
     var vibrate by rememberSaveable(initialAlarm.id) { mutableStateOf(initialAlarm.vibrate) }
@@ -468,7 +463,7 @@ private fun AlarmEditorSheet(
         }
         ringtoneUri = pickedUri?.toString()
         ringtoneName = pickedUri?.let { RingtoneManager.getRingtone(context, it)?.getTitle(context) }
-            ?: "Silent"
+            ?: silentRingtoneLabel
         haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
     }
 
@@ -478,7 +473,7 @@ private fun AlarmEditorSheet(
         ringtonePicker.launch(
             Intent(RingtoneManager.ACTION_RINGTONE_PICKER).apply {
                 putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)
-                putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Alarm sound")
+                putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, context.getString(R.string.alarm_ringtone_picker_title))
                 putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, true)
                 putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, existingUri)
             },
@@ -487,8 +482,8 @@ private fun AlarmEditorSheet(
 
     val selectedTime = LocalTime.of(picker.hour, picker.minute)
     val selectedTimeText = selectedTime.format(timeFormatter)
-    val selectedPeriod = if (use24HourFormat) null else if (selectedTime.hour < 12) "AM" else "PM"
-    val repeatSummary = repeatLabel(days)
+    val selectedPeriod = if (use24HourFormat) null else stringResource(if (selectedTime.hour < 12) R.string.time_am else R.string.time_pm)
+    val repeatSummary = repeatLabel(days, locale, stringResource(R.string.alarm_repeat_once), stringResource(R.string.alarm_repeat_every_day))
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -511,16 +506,16 @@ private fun AlarmEditorSheet(
                 modifier = Modifier.padding(horizontal = 24.dp),
             ) {
                 Text(
-                    text = if (isEditing) "Edit alarm" else "New alarm",
+                    text = if (isEditing) stringResource(R.string.alarm_editor_edit_title) else stringResource(R.string.alarm_editor_new_title),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.ExtraBold,
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
                     text = if (isEditing) {
-                        "Tune this schedule without leaving the alarm list."
+                        stringResource(R.string.alarm_editor_edit_subtitle)
                     } else {
-                        "Build a complete schedule with time, repeat and alert behavior."
+                        stringResource(R.string.alarm_editor_new_subtitle)
                     },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -562,7 +557,7 @@ private fun AlarmEditorSheet(
                             }
                             Spacer(Modifier.height(6.dp))
                             Text(
-                                "Tap the dial to set the alarm time",
+                                stringResource(R.string.alarm_time_hint),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -573,7 +568,7 @@ private fun AlarmEditorSheet(
                 }
 
                 item {
-                    Text("Schedule", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.alarm_editor_schedule_section), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 }
 
                 item {
@@ -582,19 +577,20 @@ private fun AlarmEditorSheet(
                             OutlinedTextField(
                                 value = label,
                                 onValueChange = { label = it },
-                                label = { Text("Label") },
-                                placeholder = { Text("e.g. Wake up") },
+                                label = { Text(stringResource(R.string.alarm_label)) },
+                                placeholder = { Text(stringResource(R.string.alarm_label_hint)) },
                                 modifier = Modifier.fillMaxWidth(),
                                 singleLine = true,
                             )
                             Spacer(Modifier.height(16.dp))
-                            Text("Repeat", style = MaterialTheme.typography.labelLarge)
+                            Text(stringResource(R.string.alarm_repeat), style = MaterialTheme.typography.labelLarge)
                             Spacer(Modifier.height(8.dp))
                             Row(
                                 Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                                 horizontalArrangement = Arrangement.spacedBy(7.dp),
                             ) {
-                                ALARM_DAYS.forEach { (day, short) ->
+                                DayOfWeek.values().forEach { day ->
+                        val short = day.getDisplayName(TextStyle.SHORT, locale)
                                     FilterChip(
                                         selected = day in days,
                                         onClick = {
@@ -616,7 +612,7 @@ private fun AlarmEditorSheet(
                 }
 
                 item {
-                    Text("Alert behavior", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.alarm_editor_alert_section), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 }
 
                 item {
@@ -624,14 +620,14 @@ private fun AlarmEditorSheet(
                         Column(Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 10.dp)) {
                             AlarmOptionRow(
                                 icon = Icons.Filled.MusicNote,
-                                title = "Alarm sound",
-                                value = ringtoneName,
+                                title = stringResource(R.string.alarm_sound),
+                                value = ringtoneName.ifBlank { stringResource(R.string.alarm_default_ringtone) },
                                 onClick = ::openRingtonePicker,
                             )
                             AlarmOptionRow(
                                 icon = Icons.Filled.Vibration,
-                                title = "Vibrate",
-                                value = if (vibrate) "On" else "Off",
+                                title = stringResource(R.string.alarm_vibrate),
+                                value = if (vibrate) stringResource(R.string.alarm_value_on) else stringResource(R.string.alarm_value_off),
                                 trailing = {
                                     Switch(
                                         checked = vibrate,
@@ -646,8 +642,8 @@ private fun AlarmEditorSheet(
                             )
                             AlarmOptionRow(
                                 icon = Icons.Filled.Alarm,
-                                title = "Alarm enabled",
-                                value = if (enabled) "Active" else "Disabled",
+                                title = stringResource(R.string.alarm_enabled),
+                                value = if (enabled) stringResource(R.string.alarm_status_active) else stringResource(R.string.alarm_status_disabled),
                                 trailing = {
                                     Switch(
                                         checked = enabled,
@@ -677,7 +673,7 @@ private fun AlarmEditorSheet(
                     onClick = onDismiss,
                     modifier = Modifier.weight(1f),
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.alarm_cancel))
                 }
                 Button(
                     onClick = {
@@ -696,17 +692,21 @@ private fun AlarmEditorSheet(
                     },
                     modifier = Modifier.weight(1f),
                 ) {
-                    Text(if (isEditing) "Save changes" else "Create alarm")
+                    Text(if (isEditing) stringResource(R.string.alarm_save_changes) else stringResource(R.string.alarm_create_action))
                 }
             }
         }
     }
 }
 
-private fun repeatLabel(days: Set<DayOfWeek>): String = when {
-    days.isEmpty() -> "Once"
-    days.size == 7 -> "Every day"
-    else -> days.sortedBy { it.value }.joinToString("  ") { day ->
-        ALARM_DAYS.first { it.first == day }.second
-    }
+private fun repeatLabel(
+    days: Set<DayOfWeek>,
+    locale: java.util.Locale,
+    onceLabel: String,
+    everyDayLabel: String,
+): String = when {
+    days.isEmpty() -> onceLabel
+    days.size == 7 -> everyDayLabel
+    else -> days.sortedBy { it.value }
+        .joinToString("  ") { it.getDisplayName(TextStyle.SHORT, locale) }
 }

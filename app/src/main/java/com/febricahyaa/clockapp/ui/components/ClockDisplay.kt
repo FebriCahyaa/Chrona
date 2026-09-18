@@ -2,6 +2,8 @@
 
 package com.febricahyaa.clockapp.ui.components
 
+import com.febricahyaa.clockapp.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.time.Instant
 import java.time.format.DateTimeFormatter
-import java.util.Locale
+import java.time.format.FormatStyle
 
 @Composable
 fun ClockDisplay(
@@ -40,7 +42,7 @@ fun ClockDisplay(
     val hour = value.substring(0, 2)
     val minute = value.substring(3, 5)
     val seconds = now.format(DateTimeFormatter.ofPattern("ss", locale))
-    val date = now.format(DateTimeFormatter.ofPattern("EEE, MMM d, yyyy", Locale.ENGLISH))
+    val date = now.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale))
     val primary = if (lightContent) Color.White else MaterialTheme.colorScheme.onSurface
     val secondary = if (lightContent) Color.White.copy(alpha = .72f) else MaterialTheme.colorScheme.onSurfaceVariant
     val accent = if (lightContent) Color(0xFFFFD0B1) else MaterialTheme.colorScheme.primary
@@ -53,7 +55,7 @@ fun ClockDisplay(
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (!use24HourFormat) androidx.compose.material3.Text(now.format(DateTimeFormatter.ofPattern("a", locale)), color = secondary, fontSize = 12.sp, letterSpacing = 2.sp)
-            if (showSeconds) androidx.compose.material3.Text("  •  $seconds", color = secondary, fontSize = 12.sp)
+            if (showSeconds) androidx.compose.material3.Text(stringResource(R.string.home_seconds_suffix, seconds), color = secondary, fontSize = 12.sp)
         }
         Spacer(Modifier.height(1.dp))
         androidx.compose.material3.Text(date, color = secondary, style = TextStyle(fontSize = if (compact) 11.sp else 14.sp, fontWeight = FontWeight.Medium))

@@ -1,0 +1,33 @@
+feat(phase4): rebuild stopwatch as classic vertical time surface
+
+Problem:
+- Stopwatch hierarchy mixed the primary timer, controls, and lap history inside multiple weighted containers.
+- The selected Classic Vertical concept requires one dominant time surface, predictable vertical rhythm, and fixed bottom controls.
+
+Changes:
+- Rebuild StopwatchScreen around a weighted primary time surface.
+- Give the time surface an explicit weight(1f) layout contract.
+- Move lap history into a dedicated weighted ChronaCard when laps exist.
+- Keep controls fixed at the bottom of the screen.
+- Disable Lap while the stopwatch is paused or idle.
+- Preserve dashboard and state shared-motion keys.
+- Add Phase 4C documentation, manifest, validation, deletion report, and changelog.
+
+Behavior:
+- Stopwatch time remains the dominant visual element.
+- Controls stay anchored to the bottom.
+- Lap history expands into its own vertical area without pushing controls off-screen.
+- Existing ViewModel, repository, navigation, scheduler, and ChronaTimeEngine behavior remain unchanged.
+
+Validation:
+- Static source audit passed.
+- Reference/import audit passed.
+- No files deleted.
+- Full Gradle compilation remains subject to the configured build environment.
+
+Files:
+- Modified StopwatchScreen.kt.
+- Added Phase 4C documentation and metadata.
+
+Risks:
+- Final typography and spacing need physical-device verification across narrow and landscape displays.

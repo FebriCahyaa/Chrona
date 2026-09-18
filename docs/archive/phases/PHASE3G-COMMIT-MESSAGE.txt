@@ -1,0 +1,34 @@
+feat(phase3): add world clock detail shared transition
+
+Problem:
+- World Clock cards had stable shared keys but no detail destination to complete the city-level spatial transition.
+- Zone IDs contain '/', making raw path parameters unsafe for a slash-delimited route.
+- WorldClockScreen contained an out-of-scope item.id reference in its empty state.
+
+Changes:
+- Add WORLD_DETAIL destination and encoded query route.
+- Add navigation.openWorldClockDetail(zoneId).
+- Register World Clock detail in the Navigation Compose graph.
+- Pass NavBackStackEntry into destination content for route argument access.
+- Add WorldClockDetailScreen with live time, timezone metadata, and favorite control.
+- Make World Clock cards clickable and share their city key with the detail hero surface.
+- Fix the empty-state item.id regression.
+- Add focused route/motion tests and Phase 3G documentation.
+
+Behavior:
+- Tapping a saved World Clock city navigates to its detail surface with the same shared-bounds identity.
+- Zone IDs are encoded safely in the query parameter and decoded by Navigation Compose.
+- Favorite state remains backed by WorldClockViewModel.
+- Dashboard → World Clock motion remains unchanged.
+- Existing repositories, scheduler, timer engine, and other destinations remain unchanged.
+
+Validation:
+- git diff --check passed.
+- Static route, shared-key, and callback audits passed.
+- Full Gradle compilation is blocked by unavailable Gradle distribution networking.
+
+Files:
+- Added WorldClockDetailScreen.kt.
+- Added ChronaWorldClockRouteTest.kt.
+- Modified ClockApp.kt, navigation contracts, and WorldClockScreen.kt.
+- No files deleted.

@@ -42,6 +42,8 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.model.TimeZoneCatalog
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import kotlinx.coroutines.launch
@@ -76,9 +78,9 @@ fun WorldClockSearchScreen(
                 haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
                 scope.launch { searchBarState.animateToCollapsed() }
             },
-            placeholder = { Text("Search a city or country", style = MaterialTheme.typography.bodyLarge) },
+            placeholder = { Text(stringResource(R.string.world_search_hint), style = MaterialTheme.typography.bodyLarge) },
             leadingIcon = {
-                Icon(Icons.Filled.Search, contentDescription = "Search")
+                Icon(Icons.Filled.Search, contentDescription = stringResource(R.string.nav_search))
             },
             trailingIcon = {
                 IconButton(
@@ -87,7 +89,7 @@ fun WorldClockSearchScreen(
                         scope.launch { searchBarState.animateToCollapsed() }
                     },
                 ) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Close search")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.world_search_close))
                 }
             },
         )
@@ -130,7 +132,7 @@ fun WorldClockSearchScreen(
                             Icon(Icons.Filled.LocationCity, contentDescription = null)
                         },
                         trailingContent = {
-                            Icon(Icons.Filled.Add, contentDescription = "Add ${entry.city}")
+                            Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.world_search_add_city, entry.city))
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -168,12 +170,12 @@ private fun WorldClockSearchIdle(
                 haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
                 onBack()
             }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to World Clock")
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.world_search_back))
             }
             Column(Modifier.weight(1f).padding(start = 4.dp)) {
-                Text("Add city", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Medium)
+                Text(stringResource(R.string.world_add_city), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Medium)
                 Text(
-                    if (searchText.isBlank()) "Search 25 curated timezones" else "${results.size} matching cities",
+                    if (searchText.isBlank()) stringResource(R.string.world_search_summary) else stringResource(R.string.world_search_matches, results.size),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -191,7 +193,7 @@ private fun WorldClockSearchIdle(
                         )
                     },
                     leadingContent = { Icon(Icons.Filled.LocationCity, contentDescription = null) },
-                    trailingContent = { Icon(Icons.Filled.Add, contentDescription = "Add ${entry.city}") },
+                    trailingContent = { Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.world_search_add_city, entry.city)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp)

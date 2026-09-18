@@ -1,0 +1,21 @@
+Phase 6A — Static Release Gate
+
+Added:
+- scripts/phase6-release-gate.sh
+- docs/build/BUILD_ENVIRONMENT.md
+- docs/release/RELEASE_SIGNING.md
+- docs/release/RELEASE_CHANGELOG_AUTOMATION.md
+- PHASE6A-STATIC-RELEASE-GATE.md
+- PHASE6A-VALIDATION.md
+- PHASE6A-CHANGELOG.md
+- PHASE6A-COMMIT-MESSAGE.txt
+- PHASE6A-FINAL.md
+- PHASE6A-MANIFEST.txt
+- PHASE6A-DELETED_FILES.txt
+
+Modified:
+- .github/workflows/release.yml
+- ROADMAP-PHASES.md
+
+Deleted:
+- None

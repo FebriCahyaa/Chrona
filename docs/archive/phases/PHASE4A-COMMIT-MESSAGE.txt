@@ -1,0 +1,38 @@
+feat(phase4): rebuild onboarding as interactive bento experience
+
+Problem:
+- The selected Interactive Bento onboarding concept was not yet reflected in the implementation.
+- Existing onboarding was a mostly linear icon/title/body sequence with limited direct interaction.
+
+Changes:
+- Rebuild OnboardingScreen around a responsive Bento-style composition.
+- Add interactive hero previews for local time, World Clock, and update concepts.
+- Add supporting Alarm and Timer Bento cards.
+- Add tappable progress indicators and a stable step counter.
+- Add Back handling and explicit Skip onboarding behavior.
+- Reuse ChronaMotionTokens for page transitions.
+- Add pure onboarding navigation tests for page-boundary behavior.
+
+Behavior:
+- First launch opens directly into the Interactive Bento onboarding experience.
+- Page changes animate horizontally with fade.
+- Back moves to the previous page and is disabled at the first page.
+- Get started and Skip both continue through the existing OnboardingViewModel completion path.
+- Existing DataStore persistence and notification permission orchestration remain unchanged.
+
+Validation:
+- Static source audit passed.
+- git diff --check passed.
+- Local verification commit is generated during packaging and is not pushed to the user repository.
+- Onboarding navigation boundary tests added.
+- No source files deleted.
+- Full Gradle Android build/test remains pending environment/network availability.
+
+Files:
+- Modified OnboardingScreen.kt.
+- Added ChronaOnboardingNavigationTest.kt.
+- Added Phase 4A documentation and manifest files.
+
+Risks:
+- Final accessibility and animation feel still require runtime/device verification.
+- World Clock preview values are informational onboarding content, not persisted city selections.

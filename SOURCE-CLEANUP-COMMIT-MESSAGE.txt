@@ -1,0 +1,43 @@
+chore(cleanup): normalize resources and remove source duplication
+
+Problem:
+- User-facing UI strings were duplicated across Kotlin sources while res/values had drifted from the current UI.
+- Legacy locale keys and completed phase artifacts cluttered the active tree.
+- Java contained duplicate platform time formatting, pure math, and widget-provider implementations.
+
+Changes:
+- Move user-facing Compose copy into Android string resources.
+- Rebuild the default string keyset and synchronize Indonesian resources.
+- Preserve reviewed non-Indonesian translation subsets with English fallback.
+- Move legal user-facing text into non-translatable Android resources without changing wording.
+- Add shared ChronaTimeFormatter in Kotlin.
+- Migrate ClockTimeMath and ChronaClockWidgetProvider from Java to Kotlin.
+- Remove the duplicate Java ChronaTimeEngine.
+- Keep ChronaNativeBridge.java as the dedicated JNI/platform boundary.
+- Preserve C++ JNI ABI literals as technical runtime contracts.
+- Add resource-audit.py and formatter tests.
+- Archive completed phase artifacts under docs/archive/phases/.
+- Update architecture/localization documentation.
+
+Behavior:
+- User-facing copy now resolves through Android resources.
+- Date/time formatting follows the current locale consistently.
+- JNI/native runtime contracts remain unchanged.
+- Existing feature behavior and persistence contracts are preserved.
+
+Validation:
+- resource-audit.py: PASS.
+- XML parse: PASS.
+- Kotlin production core compile/smoke: PASS.
+- C++20/JNI compile: PASS.
+- Java JNI boundary compile: PASS.
+- Full Gradle Android compile remains blocked by Gradle 9.7.1 distribution DNS/network availability.
+
+Files:
+- Added ClockTimeMath.kt, ChronaTimeFormatter.kt, ChronaClockWidgetProvider.kt, resource-audit.py, resource/localization documentation and cleanup handoff files.
+- Removed duplicate ChronaTimeEngine.java, ClockTimeMath.java, widget provider Java, LegalContent.kt, and Java-only math test.
+- Updated UI sources and Android resource XML files.
+
+Risks:
+- Existing non-Indonesian locales may fall back to English for newly introduced keys.
+- Final physical-device visual verification remains part of CI/device QA.

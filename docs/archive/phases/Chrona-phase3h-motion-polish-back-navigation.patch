@@ -1,0 +1,250 @@
+From eed12193ef7ec655f6dcb871ee589fbf9afca737 Mon Sep 17 00:00:00 2001
+From: Chrona Phase Builder <chrona-builder@localhost>
+Date: Fri, 18 Sep 2026 15:31:37 +0000
+Subject: [PATCH] feat(phase3): polish spatial navigation and close phase 3
+
+---
+ PHASE3-FINAL.md                               | 30 +++++++++++++++++++
+ PHASE3H-CHANGELOG.md                          |  9 ++++++
+ PHASE3H-COMMIT-MESSAGE.txt                    | 29 ++++++++++++++++++
+ PHASE3H-DELETED_FILES.txt                     |  1 +
+ PHASE3H-MANIFEST.txt                          | 18 +++++++++++
+ PHASE3H-MOTION-POLISH-BACK-NAVIGATION.md      | 21 +++++++++++++
+ PHASE3H-VALIDATION.md                         |  7 +++++
+ .../navigation/ChronaNavigationActions.kt     | 20 +++++++++++++
+ .../ChronaNavigationStackPolicyTest.kt        | 23 ++++++++++++++
+ 9 files changed, 158 insertions(+)
+ create mode 100644 PHASE3-FINAL.md
+ create mode 100644 PHASE3H-CHANGELOG.md
+ create mode 100644 PHASE3H-COMMIT-MESSAGE.txt
+ create mode 100644 PHASE3H-DELETED_FILES.txt
+ create mode 100644 PHASE3H-MANIFEST.txt
+ create mode 100644 PHASE3H-MOTION-POLISH-BACK-NAVIGATION.md
+ create mode 100644 PHASE3H-VALIDATION.md
+ create mode 100644 app/src/test/java/com/febricahyaa/clockapp/navigation/ChronaNavigationStackPolicyTest.kt
+
+diff --git a/PHASE3-FINAL.md b/PHASE3-FINAL.md
+new file mode 100644
+index 0000000..438505d
+--- /dev/null
++++ b/PHASE3-FINAL.md
+@@ -0,0 +1,30 @@
++# Chrona Phase 3 — Final Handoff
++
++## Scope
++Phase 3 — Dashboard Spatial Motion is complete at Phase 3H.
++
++## Completed sequence
++- Phase 3A — Dashboard spatial-motion foundation
++- Phase 3B — World Clock city shared transitions
++- Phase 3C — Dashboard action-card transitions
++- Phase 3D — Alarm and Timer editor motion surfaces
++- Phase 3E — Timer and Stopwatch state-driven motion
++- Phase 3F — Unified navigation motion choreography
++- Phase 3G — World Clock detail shared transition
++- Phase 3H — Motion polish and back-navigation stack normalization
++
++## Phase 3 exit criteria
++- Stable shared-motion keys exist for Dashboard and primary time tools.
++- World Clock has a city-level detail destination and shared identity.
++- Alarm editor is a Material 3 bottom-sheet surface.
++- Timer and Stopwatch lifecycle states have explicit motion identities.
++- Navigation has unified enter/exit/pop transitions.
++- Primary time tools return to Dashboard through normalized back-stack behavior.
++- World Clock detail/search and utility destinations retain nested stack behavior.
++- No Phase 3 source files were deleted.
++
++## Validation boundary
++Static source validation is complete. Full Gradle build/test remains pending in an environment with the configured Gradle 9.7.1 distribution available.
++
++## Next phase
++Phase 4 should move from motion architecture into the next planned product/UI milestone, without reopening the Phase 3 architecture unless device validation identifies a concrete regression.
+diff --git a/PHASE3H-CHANGELOG.md b/PHASE3H-CHANGELOG.md
+new file mode 100644
+index 0000000..ec88b8e
+--- /dev/null
++++ b/PHASE3H-CHANGELOG.md
+@@ -0,0 +1,9 @@
++# Phase 3H Changelog
++
++- Normalized primary time-tool navigation to the Dashboard root.
++- Preserved nested World Clock detail/search flows.
++- Preserved Settings and Legal stack behavior.
++- Added focused navigation stack policy tests.
++- Closed the planned Phase 3 spatial-motion scope.
++
++- Added PHASE3-FINAL.md as the Phase 3 handoff and exit-criteria record.
+diff --git a/PHASE3H-COMMIT-MESSAGE.txt b/PHASE3H-COMMIT-MESSAGE.txt
+new file mode 100644
+index 0000000..533081e
+--- /dev/null
++++ b/PHASE3H-COMMIT-MESSAGE.txt
+@@ -0,0 +1,29 @@
++feat(phase3): polish spatial navigation and close phase 3
++
++Problem:
++- Primary time-tool destinations could accumulate unnecessary back-stack entries.
++- Shared spatial motion was implemented, but stack semantics were not yet normalized.
++
++Changes:
++- Normalize Alarm, World Clock, Timer, and Stopwatch navigation to the Dashboard root.
++- Preserve World Clock detail/search nesting.
++- Preserve Settings and Legal as normal stack destinations.
++- Add focused navigation policy tests and Phase 3H documentation.
++
++Behavior:
++- Back from a primary time tool returns directly to Dashboard.
++- World Clock detail/search retains its local navigation hierarchy.
++- Existing enter/exit/pop transitions remain active.
++
++Validation:
++- Static source validation passed.
++- Full Gradle build/test remains blocked by unavailable Gradle distribution networking.
++
++Files:
++- Modified ChronaNavigationActions.kt.
++- Added ChronaNavigationStackPolicyTest.kt.
++- Added Phase 3H documentation/manifest files.
++
++Risks:
++- Final animation smoothness still needs physical-device verification.
++- No experimental predictive-back API was introduced.
+diff --git a/PHASE3H-DELETED_FILES.txt b/PHASE3H-DELETED_FILES.txt
+new file mode 100644
+index 0000000..043aec9
+--- /dev/null
++++ b/PHASE3H-DELETED_FILES.txt
+@@ -0,0 +1 @@
++No files deleted in Phase 3H.
+diff --git a/PHASE3H-MANIFEST.txt b/PHASE3H-MANIFEST.txt
+new file mode 100644
+index 0000000..5ca061f
+--- /dev/null
++++ b/PHASE3H-MANIFEST.txt
+@@ -0,0 +1,18 @@
++PHASE 3H — MOTION POLISH & BACK NAVIGATION
++
++ADDED
++- app/src/test/java/com/febricahyaa/clockapp/navigation/ChronaNavigationStackPolicyTest.kt
++- PHASE3H-MOTION-POLISH-BACK-NAVIGATION.md
++- PHASE3H-MANIFEST.txt
++- PHASE3H-DELETED_FILES.txt
++- PHASE3H-CHANGELOG.md
++- PHASE3H-VALIDATION.md
++- PHASE3H-COMMIT-MESSAGE.txt
++- PHASE3-FINAL.md
++- Chrona-phase3h-motion-polish-back-navigation.patch
++
++MODIFIED
++- app/src/main/java/com/febricahyaa/clockapp/navigation/ChronaNavigationActions.kt
++
++DELETED
++- none
+diff --git a/PHASE3H-MOTION-POLISH-BACK-NAVIGATION.md b/PHASE3H-MOTION-POLISH-BACK-NAVIGATION.md
+new file mode 100644
+index 0000000..07ab56f
+--- /dev/null
++++ b/PHASE3H-MOTION-POLISH-BACK-NAVIGATION.md
+@@ -0,0 +1,21 @@
++# Phase 3H — Motion Polish & Back Navigation
++
++## Goal
++Close the Dashboard Spatial Motion phase by making navigation stack behavior predictable and keeping shared-motion surfaces intact.
++
++## Changes
++- Normalize Alarm, World Clock, Timer, and Stopwatch navigation to the Dashboard root.
++- Preserve World Clock detail/search, Settings, and Legal as stack destinations.
++- Keep the existing navigation-level enter/exit/pop motion contract.
++- Avoid introducing experimental predictive-back APIs.
++
++## Back behavior
++- Primary time tool → system/app back returns to Dashboard.
++- World Clock → City Detail → back returns to World Clock.
++- World Clock → Search → back remains within the World Clock flow.
++- Settings and Legal remain ordinary stack destinations.
++
++## Phase 3 closure
++This completes the planned Phase 3 spatial-motion foundation: stable motion keys, destination shared bounds, detail motion, unified navigation transitions, and predictable back-stack behavior.
++
++Visual tuning on physical devices is considered validation/refinement, not a new architectural phase.
+diff --git a/PHASE3H-VALIDATION.md b/PHASE3H-VALIDATION.md
+new file mode 100644
+index 0000000..3da52ae
+--- /dev/null
++++ b/PHASE3H-VALIDATION.md
+@@ -0,0 +1,7 @@
++# Phase 3H Validation
++
++PASS — source audit for navigation policy.
++PASS — no files deleted.
++PASS — primary destination policy covers Alarm, World Clock, Timer, Stopwatch.
++PASS — World Clock Detail/Search, Settings, and Legal remain outside the primary pop-up policy.
++PENDING — full Gradle test/build; environment cannot resolve services.gradle.org for Gradle 9.7.1.
+diff --git a/app/src/main/java/com/febricahyaa/clockapp/navigation/ChronaNavigationActions.kt b/app/src/main/java/com/febricahyaa/clockapp/navigation/ChronaNavigationActions.kt
+index 7522d2e..cedc193 100644
+--- a/app/src/main/java/com/febricahyaa/clockapp/navigation/ChronaNavigationActions.kt
++++ b/app/src/main/java/com/febricahyaa/clockapp/navigation/ChronaNavigationActions.kt
+@@ -9,7 +9,17 @@ class ChronaNavigationActions(
+ ) {
+ 
+     fun navigate(destination: AppDestination) {
++        if (destination == AppDestination.CLOCK) {
++            navController.popBackStack(ChronaRoutes.CLOCK, inclusive = false)
++            return
++        }
++
+         navController.navigate(destination.route()) {
++            if (ChronaNavigationPolicy.isPrimaryTimeTool(destination)) {
++                popUpTo(ChronaRoutes.CLOCK) {
++                    saveState = true
++                }
++            }
+             launchSingleTop = true
+             restoreState = true
+         }
+@@ -37,3 +47,13 @@ class ChronaNavigationActions(
+ 
+     fun back(): Boolean = navController.popBackStack()
+ }
++
++internal object ChronaNavigationPolicy {
++    fun isPrimaryTimeTool(destination: AppDestination): Boolean = when (destination) {
++        AppDestination.ALARM,
++        AppDestination.WORLD,
++        AppDestination.TIMER,
++        AppDestination.STOPWATCH -> true
++        else -> false
++    }
++}
+diff --git a/app/src/test/java/com/febricahyaa/clockapp/navigation/ChronaNavigationStackPolicyTest.kt b/app/src/test/java/com/febricahyaa/clockapp/navigation/ChronaNavigationStackPolicyTest.kt
+new file mode 100644
+index 0000000..7e13994
+--- /dev/null
++++ b/app/src/test/java/com/febricahyaa/clockapp/navigation/ChronaNavigationStackPolicyTest.kt
+@@ -0,0 +1,23 @@
++package com.febricahyaa.clockapp.navigation
++
++import org.junit.Assert.assertFalse
++import org.junit.Assert.assertTrue
++import org.junit.Test
++
++class ChronaNavigationStackPolicyTest {
++    @Test
++    fun primaryTimeToolsAreNormalizedToDashboardRoot() {
++        assertTrue(ChronaNavigationPolicy.isPrimaryTimeTool(AppDestination.ALARM))
++        assertTrue(ChronaNavigationPolicy.isPrimaryTimeTool(AppDestination.WORLD))
++        assertTrue(ChronaNavigationPolicy.isPrimaryTimeTool(AppDestination.TIMER))
++        assertTrue(ChronaNavigationPolicy.isPrimaryTimeTool(AppDestination.STOPWATCH))
++    }
++
++    @Test
++    fun detailAndUtilityDestinationsRemainOutsidePrimaryPolicy() {
++        assertFalse(ChronaNavigationPolicy.isPrimaryTimeTool(AppDestination.WORLD_DETAIL))
++        assertFalse(ChronaNavigationPolicy.isPrimaryTimeTool(AppDestination.WORLD_SEARCH))
++        assertFalse(ChronaNavigationPolicy.isPrimaryTimeTool(AppDestination.SETTINGS))
++        assertFalse(ChronaNavigationPolicy.isPrimaryTimeTool(AppDestination.LEGAL))
++    }
++}
+-- 
+2.47.3
+

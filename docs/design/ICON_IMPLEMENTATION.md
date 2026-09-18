@@ -40,7 +40,7 @@ A normal third-party application cannot request that the system launcher repaint
 Chrona uses three practical surfaces instead:
 
 1. **Live in-app analog clock** — `LiveAnalogClock.kt`. It updates once per second while the Activity is RESUMED and suspends when the UI is not visible.
-2. **Home-screen widget** — `ChronaClockWidgetProvider.java` + `widget_chrona_clock.xml`. The widget uses `TextClock`, allowing Android to update the displayed time without Chrona waking itself every second.
+2. **Home-screen widget** — `ChronaClockWidgetProvider.kt` + `widget_chrona_clock.xml`. The widget uses `TextClock`, allowing Android to update the displayed time without Chrona waking itself every second.
 3. **Static adaptive app icon** — the three-layer icon above, with a monochrome variant for themed icon systems.
 
 ## Custom launcher / OEM implementation

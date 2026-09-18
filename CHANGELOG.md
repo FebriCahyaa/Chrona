@@ -1,3 +1,12 @@
+## Unreleased — Phase 5A — Unified Time Engine Hardening
+
+- Added an injectable wall-clock source and application-scoped shared wall-clock StateFlow.
+- Exposed monotonic and wall-clock reads through the shared ChronaTimeEngine.
+- Replaced independent foreground clock polling loops with the shared engine flow.
+- Changed active engine refresh cadence to 50ms for stopwatch and 100ms for timer; wall-clock UI projection refreshes at 250ms.
+- Removed one-second fixed-delay timing loops from foreground engine/UI paths.
+- Migrated Timer and Stopwatch ViewModels to the shared engine clock APIs.
+- Added focused ChronaTimeEngine smoke/unit coverage for monotonic elapsed and timer boundary behavior.
 
 ## 0.5.0 — 2026-09-18
 

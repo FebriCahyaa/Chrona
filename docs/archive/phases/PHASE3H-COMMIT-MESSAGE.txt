@@ -1,0 +1,29 @@
+feat(phase3): polish spatial navigation and close phase 3
+
+Problem:
+- Primary time-tool destinations could accumulate unnecessary back-stack entries.
+- Shared spatial motion was implemented, but stack semantics were not yet normalized.
+
+Changes:
+- Normalize Alarm, World Clock, Timer, and Stopwatch navigation to the Dashboard root.
+- Preserve World Clock detail/search nesting.
+- Preserve Settings and Legal as normal stack destinations.
+- Add focused navigation policy tests and Phase 3H documentation.
+
+Behavior:
+- Back from a primary time tool returns directly to Dashboard.
+- World Clock detail/search retains its local navigation hierarchy.
+- Existing enter/exit/pop transitions remain active.
+
+Validation:
+- Static source validation passed.
+- Full Gradle build/test remains blocked by unavailable Gradle distribution networking.
+
+Files:
+- Modified ChronaNavigationActions.kt.
+- Added ChronaNavigationStackPolicyTest.kt.
+- Added Phase 3H documentation/manifest files.
+
+Risks:
+- Final animation smoothness still needs physical-device verification.
+- No experimental predictive-back API was introduced.

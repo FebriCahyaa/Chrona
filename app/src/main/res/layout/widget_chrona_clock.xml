@@ -12,6 +12,6 @@
         android:gravity="center"
         android:textColor="#FFF4EC"
         android:textSize="42sp"
-        android:format24Hour="HH:mm"
-        android:format12Hour="h:mm a" />
+        android:format24Hour="@string/widget_format_24h"
+        android:format12Hour="@string/widget_format_12h" />
 </FrameLayout>

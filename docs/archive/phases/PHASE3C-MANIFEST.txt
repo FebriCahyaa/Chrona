@@ -1,0 +1,4 @@
+Phase 3C — Dashboard action-card motion
+Added: PHASE3C-MOTION-CARDS.md, PHASE3C-MANIFEST.txt
+Modified: ChronaBentoHomeScreen.kt, AlarmScreen.kt, TimerScreen.kt, StopwatchScreen.kt
+Deleted: none

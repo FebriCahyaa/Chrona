@@ -1,0 +1,35 @@
+feat(phase4): transform settings into an adaptive dashboard
+
+Problem:
+- Settings remained a mostly linear list even though the selected concept requires an adaptive dashboard.
+- Responsive behavior was implicit rather than represented by a testable layout policy.
+
+Changes:
+- Add ChronaSettingsWindowClass and pure breakpoint mapping.
+- Add compact, medium, and expanded Settings compositions.
+- Add bounded dashboard width for expanded layouts.
+- Preserve existing section components and state callbacks.
+- Add unit tests for compact, medium, and expanded breakpoints.
+- Mark Phase 4F complete in ROADMAP-PHASES.md.
+
+Behavior:
+- Compact phones use a single vertical settings flow.
+- Medium widths use a preview plus two-column settings dashboard.
+- Expanded widths use three independently balanced settings panels.
+- Existing persistence, notification settings, updater, and legal navigation behavior remains unchanged.
+
+Validation:
+- Static source audit passed.
+- Layout breakpoint unit tests added.
+- No files deleted.
+- Full Gradle execution remains subject to the configured Android build environment.
+
+Files:
+- SettingsScreen.kt
+- ChronaSettingsWindowClass.kt
+- ChronaSettingsWindowClassTest.kt
+- ROADMAP-PHASES.md
+- Phase 4F documentation
+
+Risks:
+- Exact visual spacing requires runtime verification across device widths.

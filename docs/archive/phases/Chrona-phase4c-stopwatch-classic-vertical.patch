@@ -1,0 +1,509 @@
+From 7aa21eec68779b9f07cadf52fbe88a68d7525451 Mon Sep 17 00:00:00 2001
+From: Chrona Phase Builder <chrona@local.invalid>
+Date: Fri, 18 Sep 2026 15:42:39 +0000
+Subject: [PATCH] feat(phase4): rebuild stopwatch as classic vertical time
+ surface
+
+---
+ PHASE4C-CHANGELOG.md                          |  18 ++
+ PHASE4C-COMMIT-MESSAGE.txt                    |  33 +++
+ PHASE4C-DELETED_FILES.txt                     |   1 +
+ PHASE4C-MANIFEST.txt                          |  15 +
+ PHASE4C-STOPWATCH-CLASSIC-VERTICAL.md         |  21 ++
+ PHASE4C-VALIDATION.md                         |   9 +
+ .../clockapp/ui/screens/StopwatchScreen.kt    | 279 ++++++++++++------
+ 7 files changed, 289 insertions(+), 87 deletions(-)
+ create mode 100644 PHASE4C-CHANGELOG.md
+ create mode 100644 PHASE4C-COMMIT-MESSAGE.txt
+ create mode 100644 PHASE4C-DELETED_FILES.txt
+ create mode 100644 PHASE4C-MANIFEST.txt
+ create mode 100644 PHASE4C-STOPWATCH-CLASSIC-VERTICAL.md
+ create mode 100644 PHASE4C-VALIDATION.md
+
+diff --git a/PHASE4C-CHANGELOG.md b/PHASE4C-CHANGELOG.md
+new file mode 100644
+index 0000000..7c4a93e
+--- /dev/null
++++ b/PHASE4C-CHANGELOG.md
+@@ -0,0 +1,18 @@
++# Phase 4C Changelog
++
++## Added
++- Classic vertical Stopwatch layout.
++- Dominant weighted time surface.
++- Dedicated lap history surface.
++- Fixed bottom action row.
++- Running-only lap interaction.
++- Preserved shared spatial motion contracts.
++
++## Preserved
++- ChronaTimeEngine state ownership.
++- StopwatchViewModel persistence behavior.
++- Existing navigation route.
++- Existing formatStopwatch output contract.
++
++## Removed
++- None.
+diff --git a/PHASE4C-COMMIT-MESSAGE.txt b/PHASE4C-COMMIT-MESSAGE.txt
+new file mode 100644
+index 0000000..f0fe067
+--- /dev/null
++++ b/PHASE4C-COMMIT-MESSAGE.txt
+@@ -0,0 +1,33 @@
++feat(phase4): rebuild stopwatch as classic vertical time surface
++
++Problem:
++- Stopwatch hierarchy mixed the primary timer, controls, and lap history inside multiple weighted containers.
++- The selected Classic Vertical concept requires one dominant time surface, predictable vertical rhythm, and fixed bottom controls.
++
++Changes:
++- Rebuild StopwatchScreen around a weighted primary time surface.
++- Give the time surface an explicit weight(1f) layout contract.
++- Move lap history into a dedicated weighted ChronaCard when laps exist.
++- Keep controls fixed at the bottom of the screen.
++- Disable Lap while the stopwatch is paused or idle.
++- Preserve dashboard and state shared-motion keys.
++- Add Phase 4C documentation, manifest, validation, deletion report, and changelog.
++
++Behavior:
++- Stopwatch time remains the dominant visual element.
++- Controls stay anchored to the bottom.
++- Lap history expands into its own vertical area without pushing controls off-screen.
++- Existing ViewModel, repository, navigation, scheduler, and ChronaTimeEngine behavior remain unchanged.
++
++Validation:
++- Static source audit passed.
++- Reference/import audit passed.
++- No files deleted.
++- Full Gradle compilation remains subject to the configured build environment.
++
++Files:
++- Modified StopwatchScreen.kt.
++- Added Phase 4C documentation and metadata.
++
++Risks:
++- Final typography and spacing need physical-device verification across narrow and landscape displays.
+diff --git a/PHASE4C-DELETED_FILES.txt b/PHASE4C-DELETED_FILES.txt
+new file mode 100644
+index 0000000..b0047fa
+--- /dev/null
++++ b/PHASE4C-DELETED_FILES.txt
+@@ -0,0 +1 @@
++None
+diff --git a/PHASE4C-MANIFEST.txt b/PHASE4C-MANIFEST.txt
+new file mode 100644
+index 0000000..8c24fa1
+--- /dev/null
++++ b/PHASE4C-MANIFEST.txt
+@@ -0,0 +1,15 @@
++Phase 4C — Stopwatch Classic Vertical
++
++MODIFIED
++- app/src/main/java/com/febricahyaa/clockapp/ui/screens/StopwatchScreen.kt
++
++ADDED
++- PHASE4C-STOPWATCH-CLASSIC-VERTICAL.md
++- PHASE4C-MANIFEST.txt
++- PHASE4C-DELETED_FILES.txt
++- PHASE4C-CHANGELOG.md
++- PHASE4C-VALIDATION.md
++- PHASE4C-COMMIT-MESSAGE.txt
++
++DELETED
++- None
+diff --git a/PHASE4C-STOPWATCH-CLASSIC-VERTICAL.md b/PHASE4C-STOPWATCH-CLASSIC-VERTICAL.md
+new file mode 100644
+index 0000000..c8aff05
+--- /dev/null
++++ b/PHASE4C-STOPWATCH-CLASSIC-VERTICAL.md
+@@ -0,0 +1,21 @@
++# Phase 4C — Stopwatch Classic Vertical
++
++Phase 4C rebuilds the Stopwatch destination around the selected **Classic Vertical** concept.
++
++## Goals
++
++- Keep the elapsed-time surface visually dominant.
++- Use an explicit `weight(1f)` layout contract for the primary time surface.
++- Keep lap history in a separate bounded vertical surface when data exists.
++- Keep actions fixed at the bottom and easy to reach.
++- Preserve the Phase 3 shared-transition keys and ChronaTimeEngine integration.
++
++## Behavior
++
++The destination is now organized as:
++
++1. Primary stopwatch time surface (`weight(1f)`).
++2. Lap history (`weight(1f)`) when laps exist.
++3. Fixed action row at the bottom.
++
++Lap recording is disabled while the stopwatch is not running. Existing ViewModel, repository, persistence, scheduling, navigation, and engine contracts are unchanged.
+diff --git a/PHASE4C-VALIDATION.md b/PHASE4C-VALIDATION.md
+new file mode 100644
+index 0000000..707c2e9
+--- /dev/null
++++ b/PHASE4C-VALIDATION.md
+@@ -0,0 +1,9 @@
++# Phase 4C Validation
++
++- StopwatchScreen source replaced with the Classic Vertical hierarchy.
++- Explicit `.weight(1f)` is present on the primary Stopwatch time surface.
++- Lap history uses a second weighted region only when laps exist.
++- Bottom controls are outside weighted content and remain fixed.
++- `StopwatchViewModel`, `ChronaTimeEngine`, navigation routes, and repositories were not modified.
++- No files deleted.
++- Full Gradle test/build was not claimed as successful in this environment.
+diff --git a/app/src/main/java/com/febricahyaa/clockapp/ui/screens/StopwatchScreen.kt b/app/src/main/java/com/febricahyaa/clockapp/ui/screens/StopwatchScreen.kt
+index eeb7169..cc4dfa1 100644
+--- a/app/src/main/java/com/febricahyaa/clockapp/ui/screens/StopwatchScreen.kt
++++ b/app/src/main/java/com/febricahyaa/clockapp/ui/screens/StopwatchScreen.kt
+@@ -3,12 +3,12 @@
+ package com.febricahyaa.clockapp.ui.screens
+ 
+ import androidx.compose.animation.AnimatedContent
++import androidx.compose.animation.SizeTransform
+ import androidx.compose.animation.fadeIn
+ import androidx.compose.animation.fadeOut
+ import androidx.compose.animation.scaleIn
+ import androidx.compose.animation.scaleOut
+ import androidx.compose.animation.togetherWith
+-import androidx.compose.animation.SizeTransform
+ import androidx.compose.animation.core.tween
+ import androidx.compose.foundation.layout.Arrangement
+ import androidx.compose.foundation.layout.Box
+@@ -39,11 +39,12 @@ import androidx.compose.ui.Modifier
+ import androidx.compose.ui.text.font.FontWeight
+ import androidx.compose.ui.unit.dp
+ import androidx.compose.ui.unit.sp
+-import com.febricahyaa.clockapp.ui.components.GlassPill
+ import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
+ import com.febricahyaa.clockapp.navigation.chronaSharedBounds
+-import com.febricahyaa.clockapp.ui.components.IconCircleButton
++import com.febricahyaa.clockapp.ui.components.ChronaCard
+ import com.febricahyaa.clockapp.ui.components.ChronaScaffold
++import com.febricahyaa.clockapp.ui.components.GlassPill
++import com.febricahyaa.clockapp.ui.components.IconCircleButton
+ import com.febricahyaa.clockapp.ui.motion.ChronaTimeToolMotionState
+ import com.febricahyaa.clockapp.ui.motion.stopwatchMotionState
+ import com.febricahyaa.clockapp.ui.theme.ChronaMotionTokens
+@@ -64,95 +65,183 @@ fun StopwatchScreen(
+         title = "Stopwatch",
+         subtitle = "Track every second",
+         onBack = onBack,
+-        actions = { IconCircleButton(Icons.Filled.Refresh, onReset, contentDescription = "Reset stopwatch") },
++        actions = {
++            IconCircleButton(
++                Icons.Filled.Refresh,
++                onReset,
++                contentDescription = "Reset stopwatch",
++            )
++        },
+     ) { paddingValues ->
+-        Column(Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 20.dp).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_STOPWATCH)) {
+-            Spacer(Modifier.height(4.dp))
+-
+-        val motionState = stopwatchMotionState(elapsedMillis, isRunning)
+-        Column(Modifier.fillMaxWidth().weight(1f)) {
+-            Box(
+-                Modifier
++        Column(
++            modifier = Modifier
++                .fillMaxSize()
++                .padding(paddingValues)
++                .padding(horizontal = 20.dp, vertical = 8.dp)
++                .chronaSharedBounds(ChronaMotionKeys.DASHBOARD_STOPWATCH),
++        ) {
++            StopwatchTimeSurface(
++                elapsedMillis = elapsedMillis,
++                isRunning = isRunning,
++                laps = laps,
++                modifier = Modifier
+                     .fillMaxWidth()
+-                    .weight(1f)
+-                    .chronaSharedBounds(ChronaMotionKeys.STOPWATCH_STATE_SURFACE),
+-                contentAlignment = Alignment.Center,
++                    .weight(1f),
++            )
++
++            if (laps.isNotEmpty()) {
++                Spacer(Modifier.height(16.dp))
++                StopwatchLapHistory(
++                    laps = laps,
++                    glass = glass,
++                    modifier = Modifier
++                        .fillMaxWidth()
++                        .weight(1f),
++                )
++            }
++
++            Spacer(Modifier.height(18.dp))
++            StopwatchControls(
++                isRunning = isRunning,
++                onLap = onLap,
++                onToggleRun = onToggleRun,
++                onReset = onReset,
++            )
++        }
++    }
++}
++
++@Composable
++private fun StopwatchTimeSurface(
++    elapsedMillis: Long,
++    isRunning: Boolean,
++    laps: List<Long>,
++    modifier: Modifier = Modifier,
++) {
++    val motionState = stopwatchMotionState(elapsedMillis, isRunning)
++
++    Box(
++        modifier = modifier
++            .chronaSharedBounds(ChronaMotionKeys.STOPWATCH_STATE_SURFACE),
++        contentAlignment = Alignment.Center,
++    ) {
++        AnimatedContent(
++            targetState = motionState,
++            transitionSpec = {
++                (fadeIn(
++                    tween(
++                        ChronaMotionTokens.SpatialDurationMillis,
++                        easing = ChronaMotionTokens.SpatialEasing,
++                    ),
++                ) + scaleIn(
++                    initialScale = 0.96f,
++                    animationSpec = tween(
++                        ChronaMotionTokens.SpatialDurationMillis,
++                        easing = ChronaMotionTokens.SpatialEasing,
++                    ),
++                )).togetherWith(
++                    fadeOut(
++                        tween(
++                            ChronaMotionTokens.MicroDurationMillis,
++                            easing = ChronaMotionTokens.SpatialEasing,
++                        ),
++                    ) + scaleOut(
++                        targetScale = 1.02f,
++                        animationSpec = tween(
++                            ChronaMotionTokens.MicroDurationMillis,
++                            easing = ChronaMotionTokens.SpatialEasing,
++                        ),
++                    ),
++                ).using(SizeTransform(clip = false))
++            },
++            label = "stopwatch-state-spatial-motion",
++        ) { state ->
++            Column(
++                horizontalAlignment = Alignment.CenterHorizontally,
++                verticalArrangement = Arrangement.Center,
+             ) {
+-                AnimatedContent(
+-                    targetState = motionState,
+-                    transitionSpec = {
+-                        (fadeIn(
+-                            tween(
+-                                ChronaMotionTokens.SpatialDurationMillis,
+-                                easing = ChronaMotionTokens.SpatialEasing,
+-                            ),
+-                        ) + scaleIn(
+-                            initialScale = 0.96f,
+-                            animationSpec = tween(
+-                                ChronaMotionTokens.SpatialDurationMillis,
+-                                easing = ChronaMotionTokens.SpatialEasing,
+-                            ),
+-                        )).togetherWith(
+-                            fadeOut(
+-                                tween(
+-                                    ChronaMotionTokens.MicroDurationMillis,
+-                                    easing = ChronaMotionTokens.SpatialEasing,
+-                                ),
+-                            ) + scaleOut(
+-                                targetScale = 1.02f,
+-                                animationSpec = tween(
+-                                    ChronaMotionTokens.MicroDurationMillis,
+-                                    easing = ChronaMotionTokens.SpatialEasing,
+-                                ),
+-                            ),
+-                        ).using(SizeTransform(clip = false))
++                Text(
++                    text = formatStopwatch(elapsedMillis),
++                    fontSize = if (elapsedMillis >= 3_600_000L) 52.sp else 68.sp,
++                    fontWeight = FontWeight.Light,
++                    letterSpacing = if (elapsedMillis >= 3_600_000L) (-2.0).sp else (-2.8).sp,
++                    maxLines = 1,
++                )
++                Spacer(Modifier.height(9.dp))
++                Text(
++                    text = when (state) {
++                        ChronaTimeToolMotionState.IDLE -> "Ready"
++                        ChronaTimeToolMotionState.RUNNING -> "Recording time"
++                        ChronaTimeToolMotionState.PAUSED -> "Paused"
++                        ChronaTimeToolMotionState.COMPLETED -> "Completed"
+                     },
+-                    label = "stopwatch-state-spatial-motion",
+-                ) { state ->
+-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+-                        Text(
+-                            formatStopwatch(elapsedMillis),
+-                            fontSize = if (laps.isEmpty()) 62.sp else 58.sp,
+-                            fontWeight = FontWeight.Light,
+-                            letterSpacing = if (laps.isEmpty()) (-2.5).sp else (-2.2).sp,
+-                        )
+-                        Spacer(Modifier.height(7.dp))
+-                        Text(
+-                            text = when (state) {
+-                                ChronaTimeToolMotionState.IDLE -> "Ready"
+-                                ChronaTimeToolMotionState.RUNNING -> "Recording time"
+-                                ChronaTimeToolMotionState.PAUSED -> "Paused"
+-                                ChronaTimeToolMotionState.COMPLETED -> "Completed"
+-                            },
+-                            fontSize = 12.sp,
+-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+-                        )
+-                        Spacer(Modifier.height(28.dp))
+-                        StopwatchControls(isRunning, onLap, onToggleRun, onReset)
+-                    }
++                    fontSize = 12.sp,
++                    color = MaterialTheme.colorScheme.onSurfaceVariant,
++                )
++                if (laps.isNotEmpty()) {
++                    Spacer(Modifier.height(7.dp))
++                    Text(
++                        text = "${laps.size} laps recorded",
++                        fontSize = 11.sp,
++                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.78f),
++                    )
+                 }
+             }
++        }
++    }
++}
+ 
+-            if (laps.isNotEmpty()) {
+-                Spacer(Modifier.height(18.dp))
+-                LazyColumn(Modifier.fillMaxWidth().weight(1f)) {
+-                    itemsIndexed(laps.asReversed()) { index, total ->
+-                        val n = laps.size - index
+-                        val previous = if (n > 1) laps[n - 2] else 0L
+-                        Row(
+-                            Modifier.fillMaxWidth().padding(vertical = 13.dp),
+-                            horizontalArrangement = Arrangement.SpaceBetween,
+-                        ) {
+-                            Text("Lap $n", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+-                            Text("+${formatStopwatch(total - previous)}", fontSize = 13.sp, fontWeight = FontWeight.Medium)
+-                            Text(formatStopwatch(total), fontSize = 12.sp)
+-                        }
+-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f))
+-                    }
++@Composable
++private fun StopwatchLapHistory(
++    laps: List<Long>,
++    glass: Boolean,
++    modifier: Modifier = Modifier,
++) {
++    ChronaCard(
++        modifier = modifier,
++        glass = glass,
++    ) {
++        Text(
++            text = "Lap history",
++            style = MaterialTheme.typography.titleSmall,
++            fontWeight = FontWeight.SemiBold,
++        )
++        Spacer(Modifier.height(8.dp))
++        LazyColumn(
++            modifier = Modifier.fillMaxWidth(),
++        ) {
++            itemsIndexed(laps.asReversed()) { index, total ->
++                val n = laps.size - index
++                val previous = if (n > 1) laps[n - 2] else 0L
++                Row(
++                    modifier = Modifier
++                        .fillMaxWidth()
++                        .padding(vertical = 11.dp),
++                    horizontalArrangement = Arrangement.SpaceBetween,
++                    verticalAlignment = Alignment.CenterVertically,
++                ) {
++                    Text(
++                        text = "Lap $n",
++                        fontSize = 12.sp,
++                        color = MaterialTheme.colorScheme.onSurfaceVariant,
++                    )
++                    Text(
++                        text = "+${formatStopwatch(total - previous)}",
++                        fontSize = 13.sp,
++                        fontWeight = FontWeight.Medium,
++                    )
++                    Text(
++                        text = formatStopwatch(total),
++                        fontSize = 12.sp,
++                    )
++                }
++                if (index != laps.lastIndex) {
++                    HorizontalDivider(
++                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f),
++                    )
+                 }
+             }
+         }
+-        }
+     }
+ }
+ 
+@@ -163,18 +252,28 @@ private fun StopwatchControls(
+     onToggleRun: () -> Unit,
+     onReset: () -> Unit,
+ ) {
+-    Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
++    Row(
++        modifier = Modifier.fillMaxWidth(),
++        horizontalArrangement = Arrangement.Center,
++        verticalAlignment = Alignment.CenterVertically,
++    ) {
+         Surface(
+             onClick = onLap,
++            enabled = isRunning,
+             modifier = Modifier.size(58.dp),
+             color = MaterialTheme.colorScheme.surfaceContainer,
+             shape = CircleShape,
+             shadowElevation = 2.dp,
+         ) {
+             Box(contentAlignment = Alignment.Center) {
+-                Icon(Icons.Filled.Flag, contentDescription = "Lap", modifier = Modifier.size(21.dp))
++                Icon(
++                    Icons.Filled.Flag,
++                    contentDescription = "Lap",
++                    modifier = Modifier.size(21.dp),
++                )
+             }
+         }
++        Spacer(Modifier.size(16.dp))
+         Surface(
+             onClick = onToggleRun,
+             modifier = Modifier.size(84.dp),
+@@ -191,7 +290,10 @@ private fun StopwatchControls(
+                 )
+             }
+         }
+-        GlassPill(onClick = onReset) { Text("Reset", fontSize = 11.sp) }
++        Spacer(Modifier.size(16.dp))
++        GlassPill(onClick = onReset) {
++            Text("Reset", fontSize = 11.sp)
++        }
+     }
+ }
+ 
+@@ -201,6 +303,9 @@ fun formatStopwatch(millis: Long): String {
+     val s = (safe / 1000) % 60
+     val m = (safe / 60000) % 60
+     val h = safe / 3600000
+-    return if (h > 0) String.format(Locale.US, "%02d:%02d:%02d.%02d", h, m, s, cs)
+-    else String.format(Locale.US, "%02d:%02d.%02d", m, s, cs)
++    return if (h > 0) {
++        String.format(Locale.US, "%02d:%02d:%02d.%02d", h, m, s, cs)
++    } else {
++        String.format(Locale.US, "%02d:%02d.%02d", m, s, cs)
++    }
+ }
+-- 
+2.47.3
+

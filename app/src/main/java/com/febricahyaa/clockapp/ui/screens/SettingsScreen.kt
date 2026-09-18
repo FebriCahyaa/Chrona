@@ -2,6 +2,8 @@
 
 package com.febricahyaa.clockapp.ui.screens
 
+import com.febricahyaa.clockapp.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -67,10 +69,10 @@ fun SettingsSheetContent(
     ) {
         if (showSectionHeader) {
             Spacer(Modifier.height(4.dp))
-            Text("Settings", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
+            Text(stringResource(R.string.settings_screen_title), fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
             Spacer(Modifier.height(3.dp))
             Text(
-                "Tune appearance, clock behavior, updates, and app information.",
+                stringResource(R.string.settings_screen_subtitle),
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -291,8 +293,8 @@ fun SettingsScreen(
     onBack: () -> Unit,
 ) {
     ChronaScaffold(
-        title = "Settings",
-        subtitle = "Tune appearance, clock behavior, and app information",
+        title = stringResource(R.string.settings_screen_title),
+        subtitle = stringResource(R.string.settings_screen_subtitle),
         onBack = onBack,
     ) { paddingValues ->
         SettingsSheetContent(

@@ -1,0 +1,23 @@
+feat(phase4): elevate dashboard hero clock with floating actions
+
+Problem:
+- The selected Dashboard concept B requires the clock to remain the primary visual anchor while quick actions feel spatially attached to it.
+- The compact layout previously placed action cards in a separate block below the Hero Clock.
+
+Changes:
+- Add FloatingActionGrid for compact Dashboard layouts.
+- Float Alarm, Timer, World Clock, and Stopwatch cards across the lower Hero Clock edge.
+- Preserve all existing shared-motion keys on the floating cards.
+- Keep the existing adaptive two-column ActionGrid for expanded windows.
+- Add Phase 4B documentation, manifest, validation, and roadmap.
+
+Behavior:
+- Compact Dashboard presents a dominant Hero Clock with an overlapping floating action surface.
+- Alarm and Timer continue showing live summary information.
+- World Clock and Stopwatch remain one-tap utility cards.
+- Existing navigation, ViewModels, repositories, scheduler, and ChronaTimeEngine remain unchanged.
+
+Validation:
+- Source import and reference audits passed.
+- No files deleted.
+- Full Gradle build/test remains blocked by Gradle 9.7.1 distribution networking.

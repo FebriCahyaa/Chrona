@@ -94,9 +94,9 @@ class GitHubReleaseRepository(
             throw GitHubReleaseException(response.code())
         }
 
-        val release = response.body() ?: throw GitHubReleaseException(200, "GitHub returned an empty release response")
+        val release = response.body() ?: throw GitHubReleaseException(200)
         if (release.draft || release.prerelease) {
-            throw GitHubReleaseException(200, "GitHub latest release was not stable")
+            throw GitHubReleaseException(200)
         }
 
         val latestVersion = normalizeVersion(release.tag_name)
@@ -163,14 +163,7 @@ class GitHubReleaseRepository(
 
 class GitHubReleaseException(
     val httpCode: Int,
-    override val message: String = when (httpCode) {
-        403 -> "GitHub API access was denied."
-        404 -> "No published Chrona release was found."
-        429 -> "GitHub API rate limit reached."
-        in 500..599 -> "GitHub is temporarily unavailable."
-        else -> "GitHub release check failed (HTTP $httpCode)."
-    },
-) : IOException(message)
+) : IOException()
 
 object AppVersionComparator {
     fun isNewer(current: String, candidate: String): Boolean {

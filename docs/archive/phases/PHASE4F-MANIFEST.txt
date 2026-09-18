@@ -1,0 +1,18 @@
+Phase 4F — Settings Adaptive Dashboard
+
+Modified:
+- app/src/main/java/com/febricahyaa/clockapp/ui/screens/SettingsScreen.kt
+- ROADMAP-PHASES.md
+
+Added:
+- app/src/main/java/com/febricahyaa/clockapp/ui/screens/ChronaSettingsWindowClass.kt
+- app/src/test/java/com/febricahyaa/clockapp/ui/screens/ChronaSettingsWindowClassTest.kt
+- PHASE4F-SETTINGS-ADAPTIVE-DASHBOARD.md
+- PHASE4F-MANIFEST.txt
+- PHASE4F-DELETED_FILES.txt
+- PHASE4F-CHANGELOG.md
+- PHASE4F-VALIDATION.md
+- PHASE4F-COMMIT-MESSAGE.txt
+
+Deleted:
+- None

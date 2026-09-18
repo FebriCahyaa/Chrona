@@ -1,0 +1,25 @@
+feat(phase5): bind runtime ticks to lifecycle and scope ui collectors
+
+Problem:
+- High-frequency timer and stopwatch ticks could continue while the app was backgrounded.
+- ClockApp collected every high-frequency ViewModel state at the root, causing unrelated destinations to recompose.
+
+Changes:
+- Add ChronaTimeEngine foreground-active lifecycle contract.
+- Add ChronaRuntimeLifecycleEffect to suspend high-frequency rendering work outside STARTED lifecycle state.
+- Add ChronaTickerEligibilityPolicy and focused pure tests.
+- Move timer, stopwatch, alarm, world-clock, and updater state collection into their active destination branches.
+- Preserve settings and onboarding root collectors for global UI/startup state.
+- Update Phase 5 roadmap and documentation.
+
+Behavior:
+- Timer and stopwatch continue to derive elapsed time from monotonic timestamps while backgrounded.
+- High-frequency engine pulses stop when the app leaves the foreground.
+- Returning to foreground reactivates the ticker and reconciles state immediately.
+- Unrelated destinations no longer recompose from inactive tool state streams.
+
+Validation:
+- Static audits passed.
+- Pure ticker eligibility policy validation passed.
+- No source files deleted.
+- Full Android Gradle test remains blocked by Gradle 9.7.1 distribution DNS resolution.

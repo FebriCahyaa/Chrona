@@ -1,0 +1,14 @@
+Phase 6C — Release Candidate & Final Release Gate
+Added:
+- scripts/phase6-rc-gate.sh
+- docs/release/RELEASE_CANDIDATE.md
+- PHASE6C-RELEASE-CANDIDATE.md
+- PHASE6C-CHANGELOG.md
+- PHASE6C-VALIDATION.md
+- PHASE6C-DELETED_FILES.txt
+- PHASE6C-MANIFEST.txt
+- PHASE6-FINAL.md
+Modified:
+- .github/workflows/release.yml
+- ROADMAP-PHASES.md
+Deleted: none

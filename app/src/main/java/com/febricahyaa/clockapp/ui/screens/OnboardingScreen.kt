@@ -53,6 +53,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import androidx.annotation.StringRes
+import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.ui.components.BentoIcon
 import com.febricahyaa.clockapp.ui.components.ChronaAmbientBackdrop
@@ -65,9 +68,9 @@ import java.time.format.DateTimeFormatter
 
 private data class OnboardingPage(
     val icon: ImageVector,
-    val eyebrow: String,
-    val title: String,
-    val body: String,
+    @StringRes val eyebrow: Int,
+    @StringRes val title: Int,
+    @StringRes val body: Int,
 )
 
 private const val ONBOARDING_PAGE_COUNT = 3
@@ -84,21 +87,21 @@ fun OnboardingScreen(onComplete: () -> Unit) {
         listOf(
             OnboardingPage(
                 icon = Icons.Filled.AccessTime,
-                eyebrow = "LOCAL TIME",
-                title = "Time, your way.",
-                body = "Your everyday time tools in one calm workspace, designed to feel immediate and effortless.",
+                eyebrow = R.string.onboarding_local_eyebrow,
+                title = R.string.onboarding_local_title,
+                body = R.string.onboarding_local_body,
             ),
             OnboardingPage(
                 icon = Icons.Filled.Public,
-                eyebrow = "WORLD CLOCK",
-                title = "See time anywhere.",
-                body = "Keep cities close, compare their local time, and open any city for a focused detail view.",
+                eyebrow = R.string.onboarding_world_eyebrow,
+                title = R.string.onboarding_world_title,
+                body = R.string.onboarding_world_body,
             ),
             OnboardingPage(
                 icon = Icons.Filled.SystemUpdate,
-                eyebrow = "UPDATES",
-                title = "Stay current, stay in control.",
-                body = "Chrona can check the public release feed in the background while leaving installation entirely in your hands.",
+                eyebrow = R.string.onboarding_updates_eyebrow,
+                title = R.string.onboarding_updates_title,
+                body = R.string.onboarding_updates_body,
             ),
         )
     }
@@ -144,13 +147,13 @@ fun OnboardingScreen(onComplete: () -> Unit) {
             ) {
                 Column {
                     Text(
-                        "Chrona",
+                        stringResource(R.string.onboarding_brand),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary,
                     )
                     Text(
-                        "A calmer way to read time",
+                        stringResource(R.string.onboarding_tagline),
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -210,34 +213,34 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                         OnboardingMiniCard(
                             modifier = Modifier.weight(1f),
                             icon = Icons.Filled.Alarm,
-                            title = "Alarm",
-                            body = "Wake up on time",
+                            title = R.string.onboarding_alarm_title,
+                            body = R.string.onboarding_alarm_body,
                         )
                         OnboardingMiniCard(
                             modifier = Modifier.weight(1f),
                             icon = Icons.Filled.Timer,
-                            title = "Timer",
-                            body = "Focus without clutter",
+                            title = R.string.onboarding_timer_title,
+                            body = R.string.onboarding_timer_body,
                         )
                     }
                 }
             }
 
             Text(
-                current.eyebrow,
+                stringResource(current.eyebrow),
                 fontSize = 11.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.primary,
                 letterSpacing = 1.2.sp,
             )
             Text(
-                current.title,
+                stringResource(current.title),
                 fontSize = 32.sp,
                 lineHeight = 36.sp,
                 fontWeight = FontWeight.ExtraBold,
             )
             Text(
-                current.body,
+                stringResource(current.body),
                 fontSize = 14.sp,
                 lineHeight = 21.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -246,7 +249,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .semantics { contentDescription = "Onboarding progress" },
+                    .semantics { contentDescription = stringResource(R.string.onboarding_progress) },
                 horizontalArrangement = Arrangement.spacedBy(7.dp),
             ) {
                 pages.indices.forEach { index ->
@@ -275,7 +278,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                     color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.52f),
                 ) {
                     Text(
-                        "Preview selected · tap the hero card again to reset",
+                        stringResource(R.string.onboarding_preview_selected),
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium,
@@ -294,7 +297,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                         modifier = Modifier.weight(0.8f),
                         shape = RoundedCornerShape(18.dp),
                     ) {
-                        Text("Back")
+                        Text(stringResource(R.string.nav_back))
                     }
                 }
 
@@ -306,7 +309,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                     modifier = Modifier.weight(1.4f),
                     shape = RoundedCornerShape(18.dp),
                 ) {
-                    Text(if (page == pages.lastIndex) "Get started" else "Continue")
+                    Text(if (page == pages.lastIndex) stringResource(R.string.onboarding_get_started) else stringResource(R.string.onboarding_continue))
                 }
             }
 
@@ -315,7 +318,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                     onClick = ::finish,
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                 ) {
-                    Text("Skip onboarding")
+                    Text(stringResource(R.string.onboarding_skip))
                 }
             }
         }
@@ -359,7 +362,7 @@ private fun OnboardingHeroCard(
                     },
                 ) {
                     Text(
-                        if (selectedPreview == 1) "Interactive" else "Tap to explore",
+                        if (selectedPreview == 1) stringResource(R.string.onboarding_interactive) else stringResource(R.string.onboarding_tap_explore),
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
@@ -392,12 +395,12 @@ private fun OnboardingHeroCard(
 
                 else -> {
                     Text(
-                        "Release feed",
+                        stringResource(R.string.onboarding_release_feed),
                         fontSize = 28.sp,
                         fontWeight = FontWeight.ExtraBold,
                     )
                     Text(
-                        "Background checks stay quiet. You decide when an update becomes an install.",
+                        stringResource(R.string.onboarding_updates_body),
                         fontSize = 13.sp,
                         lineHeight = 19.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -407,7 +410,7 @@ private fun OnboardingHeroCard(
                         color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.78f),
                     ) {
                         Text(
-                            "Latest release · ready to review",
+                            stringResource(R.string.onboarding_latest_release),
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.SemiBold,
@@ -459,10 +462,10 @@ private fun OnboardingMiniCard(
         ) {
             BentoIcon(icon, Modifier.size(40.dp))
             Column {
-                Text(title, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(title), fontSize = 13.sp, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(3.dp))
                 Text(
-                    body,
+                    stringResource(body),
                     fontSize = 10.sp,
                     lineHeight = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

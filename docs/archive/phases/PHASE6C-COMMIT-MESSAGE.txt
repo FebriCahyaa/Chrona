@@ -1,0 +1,28 @@
+feat(phase6): close release candidate gate
+
+Problem:
+- Phase 6 lacked a single final gate connecting source verification, runtime QA, and signed-artifact validation.
+- The release workflow needed an explicit RC check before repository mutation and publication.
+
+Changes:
+- Add scripts/phase6-rc-gate.sh.
+- Verify version identity, Android 17 targets, manifest export boundaries, and release workflow ordering.
+- Verify APK checksum and, when SDK tools are available, APK signature and identity.
+- Generate machine-readable release candidate provenance.
+- Add release-candidate documentation and Phase 6C completion artifacts.
+- Update the roadmap to close Phase 6 at 6C.
+
+Behavior:
+- A release candidate must pass Phase 6C before the release workflow pushes version/changelog changes or publishes a GitHub Release.
+- Public release publication remains an explicit maintainer action.
+
+Validation:
+- Source-only RC gate passes.
+- APK-backed checks remain available in the networked CI release environment.
+- Full Android build/device execution remains dependent on GitHub Actions and the configured release environment.
+
+Files:
+- scripts/phase6-rc-gate.sh
+- .github/workflows/release.yml
+- ROADMAP-PHASES.md
+- Phase 6C documentation and metadata

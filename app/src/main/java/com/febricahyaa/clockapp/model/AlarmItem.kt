@@ -13,6 +13,6 @@ data class AlarmItem(
     val enabled: Boolean,
     val repeatDays: Set<DayOfWeek>,
     val ringtoneUri: String? = null,
-    val ringtoneName: String = "Default alarm",
+    val ringtoneName: String = "",
     val vibrate: Boolean = true,
 )

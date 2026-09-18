@@ -93,11 +93,11 @@ fun ChronaBentoHomeScreen(
     val locale = LocalLocale.current.platformLocale
     var clockDisplayMode by rememberSaveable { mutableStateOf(ClockDisplayMode.DIGITAL) }
     val next = nextAlarm(alarms, now)
-    val alarmTime = next?.time?.let { formatAlarmTime(it, use24HourFormat, locale) } ?: "Not set"
+    val alarmTime = next?.time?.let { formatAlarmTime(it, use24HourFormat, locale) } ?: stringResource(R.string.home_alarm_not_set)
     val alarmMeta = when {
-        next == null -> "Create an alarm"
-        next.repeatDays.isEmpty() -> "One time"
-        else -> "Repeats"
+        next == null -> stringResource(R.string.home_alarm_create)
+        next.repeatDays.isEmpty() -> stringResource(R.string.home_alarm_one_time)
+        else -> stringResource(R.string.home_alarm_repeats)
     }
     val windowAdaptiveInfo = androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2()
     val isWideWindow = windowAdaptiveInfo.windowSizeClass.windowWidthSizeClass == androidx.window.core.layout.WindowWidthSizeClass.EXPANDED
@@ -106,8 +106,8 @@ fun ChronaBentoHomeScreen(
     val scrollState = rememberScrollState()
 
     ChronaScaffold(
-        title = "Chrona",
-        subtitle = "Your time, organized in one expressive dashboard",
+        title = stringResource(R.string.home_title),
+        subtitle = stringResource(R.string.home_subtitle),
         actions = {
             ThemeToggle(
                 themeMode,
@@ -118,7 +118,7 @@ fun ChronaBentoHomeScreen(
                 icon = Icons.Filled.Settings,
                 onClick = onOpenSettings,
                 modifier = Modifier.size(46.dp),
-                contentDescription = "Settings",
+                contentDescription = stringResource(R.string.home_settings),
             )
         },
     ) { innerPadding ->
@@ -250,8 +250,8 @@ private fun FloatingActionGrid(
                     modifier = Modifier.weight(1f).height(136.dp).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_ALARM),
                     themeMode = themeMode,
                     icon = Icons.Filled.AccessAlarm,
-                    eyebrow = if (nextAlarm == "Not set") "ALARM" else "NEXT ALARM",
-                    title = "Alarm",
+                    eyebrow = if (nextAlarm == stringResource(R.string.home_alarm_not_set)) stringResource(R.string.home_alarm_label) else stringResource(R.string.home_next_alarm_label),
+                    title = stringResource(R.string.home_alarm_label),
                     value = nextAlarm,
                     meta = alarmMeta,
                     onClick = { onNavigate(AppDestination.ALARM) },
@@ -260,10 +260,10 @@ private fun FloatingActionGrid(
                     modifier = Modifier.weight(1f).height(136.dp).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_TIMER),
                     themeMode = themeMode,
                     icon = Icons.Filled.Timer,
-                    eyebrow = if (timerRunning) "LIVE" else "TIMER",
-                    title = "Timer",
+                    eyebrow = if (timerRunning) stringResource(R.string.home_timer_live_label) else stringResource(R.string.home_timer_label),
+                    title = stringResource(R.string.home_timer_label),
                     value = formatBentoTimer(timerRemainingSeconds),
-                    meta = if (timerRunning) "Counting down" else "Ready when you are",
+                    meta = if (timerRunning) stringResource(R.string.home_timer_counting) else stringResource(R.string.home_timer_ready),
                     onClick = { onNavigate(AppDestination.TIMER) },
                 )
             }
@@ -272,16 +272,16 @@ private fun FloatingActionGrid(
                     modifier = Modifier.weight(1f).height(110.dp).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_WORLD_CLOCK),
                     themeMode = themeMode,
                     icon = Icons.Filled.Public,
-                    title = "World Clock",
-                    subtitle = "Cities & time zones",
+                    title = stringResource(R.string.home_world_clock_title),
+                    subtitle = stringResource(R.string.home_world_clock_subtitle),
                     onClick = { onNavigate(AppDestination.WORLD) },
                 )
                 UtilityCard(
                     modifier = Modifier.weight(1f).height(110.dp).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_STOPWATCH),
                     themeMode = themeMode,
                     icon = Icons.Filled.AccessTime,
-                    title = "Stopwatch",
-                    subtitle = "Precise elapsed time",
+                    title = stringResource(R.string.home_stopwatch_title),
+                    subtitle = stringResource(R.string.home_stopwatch_subtitle),
                     onClick = { onNavigate(AppDestination.STOPWATCH) },
                 )
             }
@@ -303,8 +303,8 @@ private fun ActionGrid(
             modifier = Modifier.weight(1f).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_ALARM),
             themeMode = themeMode,
             icon = Icons.Filled.AccessAlarm,
-            eyebrow = if (nextAlarm == "Not set") "ALARM" else "NEXT ALARM",
-            title = "Alarm",
+            eyebrow = if (nextAlarm == stringResource(R.string.home_alarm_not_set)) stringResource(R.string.home_alarm_label) else stringResource(R.string.home_next_alarm_label),
+            title = stringResource(R.string.home_alarm_label),
             value = nextAlarm,
             meta = alarmMeta,
             onClick = { onNavigate(AppDestination.ALARM) },
@@ -313,10 +313,10 @@ private fun ActionGrid(
             modifier = Modifier.weight(1f).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_TIMER),
             themeMode = themeMode,
             icon = Icons.Filled.Timer,
-            eyebrow = if (timerRunning) "LIVE" else "TIMER",
-            title = "Timer",
+            eyebrow = if (timerRunning) stringResource(R.string.home_timer_live_label) else stringResource(R.string.home_timer_label),
+            title = stringResource(R.string.home_timer_label),
             value = formatBentoTimer(timerRemainingSeconds),
-            meta = if (timerRunning) "Counting down" else "Ready when you are",
+            meta = if (timerRunning) stringResource(R.string.home_timer_counting) else stringResource(R.string.home_timer_ready),
             onClick = { onNavigate(AppDestination.TIMER) },
         )
     }
@@ -325,16 +325,16 @@ private fun ActionGrid(
             modifier = Modifier.weight(1f).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_WORLD_CLOCK),
             themeMode = themeMode,
             icon = Icons.Filled.Public,
-            title = "World Clock",
-            subtitle = "Cities & time zones",
+            title = stringResource(R.string.home_world_clock_title),
+            subtitle = stringResource(R.string.home_world_clock_subtitle),
             onClick = { onNavigate(AppDestination.WORLD) },
         )
         UtilityCard(
             modifier = Modifier.weight(1f).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_STOPWATCH),
             themeMode = themeMode,
             icon = Icons.Filled.AccessTime,
-            title = "Stopwatch",
-            subtitle = "Precise elapsed time",
+            title = stringResource(R.string.home_stopwatch_title),
+            subtitle = stringResource(R.string.home_stopwatch_subtitle),
             onClick = { onNavigate(AppDestination.STOPWATCH) },
         )
     }
@@ -355,10 +355,10 @@ private fun BentoInfoCard(themeMode: AppThemeMode) {
             }
             Spacer(Modifier.size(12.dp))
             Column(Modifier.weight(1f)) {
-                Text("Built around your time", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.home_info_title), fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.height(3.dp))
                 Text(
-                    "Quiet motion, expressive color, and a clear clock-first hierarchy.",
+                    stringResource(R.string.home_info_body),
                     fontSize = 12.sp,
                     lineHeight = 16.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -385,7 +385,7 @@ private fun ClockHero(
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
                     Box(Modifier.size(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary))
-                    Text(if (day) "DAYTIME" else "NIGHTTIME", fontSize = 10.sp, letterSpacing = 1.5.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(if (day) stringResource(R.string.home_daytime) else stringResource(R.string.home_nighttime), fontSize = 10.sp, letterSpacing = 1.5.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Spacer(Modifier.height(5.dp))
                 Text(now.zone.id.replace('_', ' '), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
@@ -393,7 +393,7 @@ private fun ClockHero(
             BentoIconButton(
                 icon = if (displayMode == ClockDisplayMode.DIGITAL) Icons.Filled.AccessTime else Icons.Filled.GridView,
                 onClick = onToggleDisplay,
-                contentDescription = if (displayMode == ClockDisplayMode.DIGITAL) "Switch to analog clock" else "Switch to digital clock",
+                contentDescription = if (displayMode == ClockDisplayMode.DIGITAL) stringResource(R.string.home_switch_to_analog) else stringResource(R.string.home_switch_to_digital),
                 active = true,
                 modifier = Modifier.size(42.dp),
             )
@@ -417,7 +417,7 @@ private fun ClockHero(
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(dateText, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
             Spacer(Modifier.height(3.dp))
-            Text("Local time", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(stringResource(R.string.home_local_time), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -433,10 +433,10 @@ private fun DigitalClockUI(hour24: Int, minute: Int, second: Int, use24HourForma
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             if (!use24HourFormat) {
-                Text(if (hour24 < 12) "AM" else "PM", fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp, color = MaterialTheme.colorScheme.primary)
+                Text(stringResource(if (hour24 < 12) R.string.time_am else R.string.time_pm), fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp, color = MaterialTheme.colorScheme.primary)
             }
             if (showSeconds) {
-                Text("${second.toString().padStart(2, '0')} sec", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.home_seconds_suffix, second.toString().padStart(2, '0')), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Box(Modifier.size(5.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = secondsProgress.coerceIn(0.35f, 1f))))
             }
         }
@@ -559,11 +559,8 @@ private fun formatAlarmTime(time: java.time.LocalTime, use24Hour: Boolean, local
     return time.format(DateTimeFormatter.ofPattern(pattern, locale))
 }
 
-private fun buildDateText(now: java.time.ZonedDateTime, locale: Locale): String {
-    val day = now.dayOfWeek.getDisplayName(TextStyle.FULL, locale)
-    val month = now.month.getDisplayName(TextStyle.FULL, locale)
-    return "$day, ${now.dayOfMonth} $month ${now.year}"
-}
+private fun buildDateText(now: java.time.ZonedDateTime, locale: Locale): String =
+    DateTimeFormatter.ofLocalizedDate(java.time.format.FormatStyle.LONG).withLocale(locale).format(now)
 
 private fun formatBentoTimer(totalSeconds: Int): String {
     val safe = totalSeconds.coerceAtLeast(0)

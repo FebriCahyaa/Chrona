@@ -56,7 +56,7 @@ class SharedPreferencesAlarmRepository(context: Context) : AlarmRepository {
             enabled = optBoolean("enabled", true),
             repeatDays = days,
             ringtoneUri = optString("ringtoneUri", "").takeIf { it.isNotBlank() },
-            ringtoneName = optString("ringtoneName", "Default alarm"),
+            ringtoneName = optString("ringtoneName", ""),
             vibrate = optBoolean("vibrate", true),
         )
     }

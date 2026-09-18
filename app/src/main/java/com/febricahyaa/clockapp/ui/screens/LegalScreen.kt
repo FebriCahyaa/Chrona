@@ -38,9 +38,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.febricahyaa.clockapp.legal.LegalContent
+import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.ui.components.ChronaScaffold
 
 /** Which page of the Legal & Regulatory hub is currently shown. */
@@ -57,14 +58,14 @@ fun LegalScreen(onBack: () -> Unit) {
     var page by rememberSaveable { mutableStateOf(LegalPage.HUB) }
 
     val title = when (page) {
-        LegalPage.HUB -> "Legal & Info"
-        LegalPage.NOTICES -> "Legal Notices"
-        LegalPage.LICENSE -> "Licenses"
+        LegalPage.HUB -> stringResource(R.string.legal_hub_title)
+        LegalPage.NOTICES -> stringResource(R.string.legal_notices_title)
+        LegalPage.LICENSE -> stringResource(R.string.legal_license_title)
     }
     val subtitle = when (page) {
-        LegalPage.HUB -> "Copyright, notices, and third-party licenses"
-        LegalPage.NOTICES -> "Chrona legal and regulatory notices"
-        LegalPage.LICENSE -> "Open-source and third-party attribution"
+        LegalPage.HUB -> stringResource(R.string.legal_notice_description)
+        LegalPage.NOTICES -> stringResource(R.string.legal_hub_description)
+        LegalPage.LICENSE -> stringResource(R.string.legal_license_description)
     }
 
     ChronaScaffold(
@@ -83,13 +84,13 @@ fun LegalScreen(onBack: () -> Unit) {
                     .padding(paddingValues),
             )
             LegalPage.NOTICES -> LegalDocument(
-                body = LegalContent.legalNotices,
+                body = stringResource(R.string.legal_notices_body),
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues),
             )
             LegalPage.LICENSE -> LegalDocument(
-                body = LegalContent.license,
+                body = stringResource(R.string.legal_license_body),
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues),
@@ -115,16 +116,16 @@ fun LegalDialog(onDismiss: () -> Unit) {
             Column(Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
                 LegalTopBar(
                     title = when (page) {
-                        LegalPage.HUB -> "Legal & Pengatur"
-                        LegalPage.NOTICES -> "Pemberitahuan Legal"
-                        LegalPage.LICENSE -> "Lisensi"
+                        LegalPage.HUB -> stringResource(R.string.legal_hub_title)
+                        LegalPage.NOTICES -> stringResource(R.string.legal_notices_title)
+                        LegalPage.LICENSE -> stringResource(R.string.legal_license_title)
                     },
                     onBack = { if (page == LegalPage.HUB) onDismiss() else page = LegalPage.HUB },
                 )
                 when (page) {
                     LegalPage.HUB -> LegalHub(onOpenNotices = { page = LegalPage.NOTICES }, onOpenLicense = { page = LegalPage.LICENSE })
-                    LegalPage.NOTICES -> LegalDocument(LegalContent.legalNotices)
-                    LegalPage.LICENSE -> LegalDocument(LegalContent.license)
+                    LegalPage.NOTICES -> LegalDocument(stringResource(R.string.legal_notices_body))
+                    LegalPage.LICENSE -> LegalDocument(stringResource(R.string.legal_license_body))
                 }
             }
         }
@@ -136,7 +137,7 @@ private fun LegalTopBar(title: String, onBack: () -> Unit) {
     Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
         Surface(onClick = onBack, modifier = Modifier.size(44.dp), shape = CircleShape, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.07f)) {
             Box(contentAlignment = Alignment.Center) {
-                Icon(Icons.Filled.ArrowBackIosNew, contentDescription = "Kembali", modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurface)
+                Icon(Icons.Filled.ArrowBackIosNew, contentDescription = stringResource(R.string.legal_back), modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurface)
             }
         }
         Spacer(Modifier.size(12.dp))
@@ -147,8 +148,8 @@ private fun LegalTopBar(title: String, onBack: () -> Unit) {
 @Composable
 private fun LegalHub(onOpenNotices: () -> Unit, onOpenLicense: () -> Unit, modifier: Modifier = Modifier) {
     val rows = listOf(
-        "Pemberitahuan Legal" to onOpenNotices,
-        "Lisensi" to onOpenLicense,
+        stringResource(R.string.legal_notices_title) to onOpenNotices,
+        stringResource(R.string.legal_license_title) to onOpenLicense,
     )
     Column(modifier.padding(horizontal = 18.dp)) {
         Spacer(Modifier.height(10.dp))
@@ -171,7 +172,7 @@ private fun LegalHub(onOpenNotices: () -> Unit, onOpenLicense: () -> Unit, modif
             Icon(Icons.Filled.Gavel, contentDescription = null, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.size(6.dp))
             Text(
-                "Dokumen legal Chrona, termasuk pemberitahuan hak cipta dan lisensi penggunaan aplikasi.",
+                stringResource(R.string.legal_hub_description),
                 fontSize = 11.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

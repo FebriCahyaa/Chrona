@@ -48,6 +48,8 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.ui.theme.ClockMotion
 
@@ -276,13 +278,13 @@ fun ThemeToggle(
         Row(Modifier.padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
             ThemeChip(
                 icon = Icons.Filled.Palette,
-                label = "Soft",
+                label = stringResource(R.string.settings_theme_soft),
                 selected = !dynamicSelected,
                 onClick = { onModeChange(AppThemeMode.NEUMORPHIC) },
             )
             ThemeChip(
                 icon = Icons.Filled.AutoAwesome,
-                label = "Dynamic",
+                label = stringResource(R.string.settings_theme_dynamic),
                 selected = dynamicSelected,
                 onClick = { onModeChange(AppThemeMode.MATERIAL_YOU) },
             )

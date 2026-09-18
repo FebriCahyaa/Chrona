@@ -14,6 +14,10 @@ Chrona is an Android clock application built with Jetpack Compose, Kotlin, Java,
 
 The current repository is focused on the **Chrona foundation, architecture, and build/release infrastructure**. CI and runtime status are reported from actual workflow results rather than assumed from source configuration.
 
+## Project records
+
+Completed phase handoffs and generated phase patches are archived under `docs/archive/phases/`. The active tree is kept focused on source, resources, tests, tooling, and release configuration.
+
 ## What is in the app
 
 | Area | Implementation |
@@ -23,7 +27,7 @@ The current repository is focused on the **Chrona foundation, architecture, and 
 | State | Dedicated feature ViewModels |
 | Data | Repository interfaces + Android implementations |
 | DI | Manual `AppContainer` composition root |
-| Platform | Java time engine, Android receivers, widget provider |
+| Platform | Kotlin time engine, Java JNI bridge/Android receivers, widget provider |
 | Native | C++20 timing/math layer through JNI |
 | Resources | Android XML themes, strings, widget and adaptive icon resources |
 

@@ -3,8 +3,10 @@
 package com.febricahyaa.clockapp.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.annotation.StringRes
 import androidx.lifecycle.viewModelScope
 import com.febricahyaa.clockapp.BuildConfig
+import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.data.update.AppUpdateRepository
 import com.febricahyaa.clockapp.data.update.AppUpdateSnapshot
 import com.febricahyaa.clockapp.data.update.GitHubReleaseException
@@ -35,12 +37,12 @@ class AppUpdateViewModel(private val repository: AppUpdateRepository) : ViewMode
     fun checkNow() {
         if (_state.value.isChecking) return
         viewModelScope.launch {
-            _state.value = _state.value.copy(isChecking = true, errorMessage = null)
+            _state.value = _state.value.copy(isChecking = true, errorMessageRes = null)
             runCatching { repository.checkLatest() }
                 .onFailure { throwable ->
                     _state.value = _state.value.copy(
                         isChecking = false,
-                        errorMessage = throwable.toUserMessage(),
+                        errorMessageRes = throwable.toUserMessageRes(),
                     )
                 }
                 .onSuccess { snapshot ->
@@ -50,7 +52,7 @@ class AppUpdateViewModel(private val repository: AppUpdateRepository) : ViewMode
                         isUpdateAvailable = snapshot.latestVersion?.let {
                             AppVersionComparator.isNewer(BuildConfig.VERSION_NAME, it)
                         } == true,
-                        errorMessage = null,
+                        errorMessageRes = null,
                     )
                 }
         }
@@ -61,16 +63,16 @@ data class UpdateUiState(
     val snapshot: AppUpdateSnapshot = AppUpdateSnapshot(),
     val isChecking: Boolean = false,
     val isUpdateAvailable: Boolean = false,
-    val errorMessage: String? = null,
+    @StringRes val errorMessageRes: Int? = null,
 )
 
-private fun Throwable.toUserMessage(): String = when (this) {
+private fun Throwable.toUserMessageRes(): Int = when (this) {
     is GitHubReleaseException -> when (httpCode) {
-        403 -> "GitHub temporarily denied the release request."
-        404 -> "No published Chrona release is available yet."
-        429 -> "GitHub rate limit reached. Try again later."
-        in 500..599 -> "GitHub is temporarily unavailable. Try again later."
-        else -> message ?: "GitHub release check failed."
+        403 -> R.string.update_error_access_denied
+        404 -> R.string.update_error_no_release
+        429 -> R.string.update_error_rate_limit
+        in 500..599 -> R.string.update_error_unavailable
+        else -> R.string.update_error_failed
     }
-    else -> message ?: "Unable to check for updates."
+    else -> R.string.update_error_generic
 }

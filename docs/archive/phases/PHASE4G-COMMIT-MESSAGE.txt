@@ -1,0 +1,38 @@
+feat(phase4): add release timeline markdown updater
+
+Problem:
+- The Updater concept still depended on a compact status card and an external browser for release-note review.
+- GitHub release notes were stored but not presented as an in-app readable timeline.
+
+Changes:
+- Add a dependency-free Markdown subset parser for GitHub release notes.
+- Add a Material 3 Release Timeline bottom sheet.
+- Render headings, bullets, task items, numbered items, paragraphs, and fenced code blocks.
+- Show release name and published timestamp.
+- Add Release timeline and Open GitHub actions to Settings.
+- Preserve the existing updater repository, retry policy, scheduler, and persistence contract.
+- Mark Phase 4G complete in ROADMAP-PHASES.md.
+
+Behavior:
+- Users can review the latest stable release notes without leaving Chrona.
+- Opening GitHub remains an explicit user action.
+- No update is installed automatically.
+- Empty release notes render a clear empty state.
+
+Validation:
+- Pure Kotlin Markdown parser smoke test passed.
+- git diff --check passed.
+- Full Gradle unit tests remain blocked by Gradle 9.7.1 distribution DNS resolution.
+
+Files:
+- SettingsScreen.kt
+- SettingsSections.kt
+- ChronaReleaseMarkdown.kt
+- ChronaReleaseTimeline.kt
+- ChronaReleaseMarkdownParserTest.kt
+- ROADMAP-PHASES.md
+- Phase 4G metadata files
+
+Risks:
+- The current updater API still exposes only the latest stable release, so the timeline visualizes one release's Markdown structure rather than a historical release feed.
+- Final Compose runtime and device verification remains pending.

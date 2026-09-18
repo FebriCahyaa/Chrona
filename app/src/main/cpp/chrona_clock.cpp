@@ -101,6 +101,8 @@ jdouble native_cubic_bezier(
     return chrona::cubic_bezier(t, p0, p1, p2, p3);
 }
 
+// JNI class/method names and descriptors below are ABI metadata required by RegisterNatives;
+// they intentionally remain in native source and are not Android UI/localization resources.
 JNINativeMethod kMethods[] = {
         {const_cast<char*>("nativeAnglesForEpochMillis"), const_cast<char*>("(JI)[F"), reinterpret_cast<void*>(native_angles_for_epoch_millis)},
         {const_cast<char*>("nativeRemainingMillis"), const_cast<char*>("(JJ)J"), reinterpret_cast<void*>(native_remaining_millis)},

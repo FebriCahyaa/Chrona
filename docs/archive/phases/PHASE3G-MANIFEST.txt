@@ -1,0 +1,25 @@
+Chrona Phase 3G — World Clock Detail Spatial Motion
+Baseline: Phase 3F Unified Motion
+
+ADDED
+app/src/main/java/com/febricahyaa/clockapp/ui/screens/WorldClockDetailScreen.kt
+app/src/test/java/com/febricahyaa/clockapp/navigation/ChronaWorldClockRouteTest.kt
+PHASE3G-WORLD-CLOCK-DETAIL-SPATIAL-MOTION.md
+PHASE3G-MANIFEST.txt
+PHASE3G-DELETED_FILES.txt
+PHASE3G-CHANGELOG.md
+PHASE3G-VALIDATION.md
+PHASE3G-COMMIT-MESSAGE.txt
+Chrona-phase3g-world-clock-detail-spatial-motion.patch
+
+MODIFIED
+app/src/main/java/com/febricahyaa/clockapp/ClockApp.kt
+app/src/main/java/com/febricahyaa/clockapp/navigation/AppDestination.kt
+app/src/main/java/com/febricahyaa/clockapp/navigation/ChronaNavigationActions.kt
+app/src/main/java/com/febricahyaa/clockapp/navigation/ChronaNavigationMigrations.kt
+app/src/main/java/com/febricahyaa/clockapp/navigation/ChronaRootNavigation.kt
+app/src/main/java/com/febricahyaa/clockapp/navigation/ChronaRoutes.kt
+app/src/main/java/com/febricahyaa/clockapp/ui/screens/WorldClockScreen.kt
+
+DELETED
+None

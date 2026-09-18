@@ -1,0 +1,11 @@
+PHASE5A files:
+- app/src/main/java/com/febricahyaa/clockapp/time/ChronaWallClock.kt
+- app/src/main/java/com/febricahyaa/clockapp/time/ChronaTimeLocals.kt
+- app/src/main/java/com/febricahyaa/clockapp/time/ChronaTimeEngine.kt
+- app/src/main/java/com/febricahyaa/clockapp/ClockApp.kt
+- app/src/main/java/com/febricahyaa/clockapp/ui/viewmodel/TimerViewModel.kt
+- app/src/main/java/com/febricahyaa/clockapp/ui/viewmodel/StopwatchViewModel.kt
+- app/src/main/java/com/febricahyaa/clockapp/ui/components/ChronaComponents.kt
+- app/src/main/java/com/febricahyaa/clockapp/ui/components/ClockDisplay.kt
+- app/src/main/java/com/febricahyaa/clockapp/ui/components/AnalogClock.kt
+- app/src/test/java/com/febricahyaa/clockapp/time/ChronaTimeEngineTest.kt

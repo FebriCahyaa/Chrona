@@ -1,0 +1,20 @@
+Phase 4G — Updater Release Timeline
+
+Modified:
+- ROADMAP-PHASES.md
+- app/src/main/java/com/febricahyaa/clockapp/ui/screens/SettingsScreen.kt
+- app/src/main/java/com/febricahyaa/clockapp/ui/screens/SettingsSections.kt
+
+Added:
+- app/src/main/java/com/febricahyaa/clockapp/ui/update/ChronaReleaseMarkdown.kt
+- app/src/main/java/com/febricahyaa/clockapp/ui/update/ChronaReleaseTimeline.kt
+- app/src/test/java/com/febricahyaa/clockapp/ui/update/ChronaReleaseMarkdownParserTest.kt
+- PHASE4G-UPDATER-RELEASE-TIMELINE.md
+- PHASE4G-CHANGELOG.md
+- PHASE4G-VALIDATION.md
+- PHASE4G-MANIFEST.txt
+- PHASE4G-DELETED_FILES.txt
+- PHASE4G-COMMIT-MESSAGE.txt
+
+Deleted:
+- None

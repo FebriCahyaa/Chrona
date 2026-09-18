@@ -86,16 +86,13 @@ yang sudah dipakai) ke `app/build.gradle.kts`.
 
 ## 4. Boundary waktu Java + native
 
-`ChronaTimeEngine` menjadi boundary Java bersama untuk format waktu/tanggal dan UTC offset, sementara `NativeClock`/`ChronaNativeBridge` menangani primitive native dengan fallback `ClockTimeMath`. Placeholder `chrona_secure_config` dihapus karena tidak mempunyai pemanggil atau secret produksi; repository tidak lagi mengklaim memiliki lapisan secret yang sebenarnya tidak digunakan.
+`ChronaTimeFormatter` dan `ChronaTimeEngine` menjadi boundary Kotlin bersama untuk format waktu/tanggal, sementara `NativeClock`/`ChronaNativeBridge` menangani primitive native dengan fallback `ClockTimeMath`. Placeholder `chrona_secure_config` dihapus karena tidak mempunyai pemanggil atau secret produksi; repository tidak lagi mengklaim memiliki lapisan secret yang sebenarnya tidak digunakan.
 
 ## 5. Perbaikan kecil lain
 
-- `ChronaTimeEngine.java`: pola format tanggal/waktu (`"HH:mm:ss"`, dst.)
-  dipindah ke konstanta bernama. Sekaligus memperbaiki bug nyata: `Locale`
-  sebelumnya di-cache statis saat class dimuat (`Locale.getDefault()` di
-  static field) — kalau user ganti locale sistem saat aplikasi berjalan,
-  format jam tidak akan ikut berubah. Sekarang dibaca ulang setiap
-  pemanggilan.
+- `ChronaTimeFormatter.kt`: shared formatting was moved to Kotlin and reads the
+  current locale for every call, preventing a stale locale snapshot when the
+  system language changes while the process remains alive.
 - `NativeClock.kt`: default parameter `springProgress` (`0.85`, `2.6`)
   sekarang merujuk `AppDefaults`.
 
@@ -110,9 +107,9 @@ oleh pasangan interface+implementasi di atas.
 - `ui/screens/*.kt`, `ui/components/*.kt`, `ui/theme/*` — sudah rapi,
   tidak ada hardcode/SRP yang melanggar signifikan, dan mengubahnya
   menambah risiko tanpa manfaat clean-code yang jelas.
-- `ChronaNativeBridge.java`, `ClockTimeMath.java`, `chrona_time.cpp/.h` —
-  sudah SRP per bahasa (Java = boundary JNI + fallback, C++ = math murni)
-  dan sudah aman (null-check, tanpa exception, tanpa alokasi berlebih).
+- `ChronaNativeBridge.java`, `chrona_time.cpp/.h` — Java remains the JNI boundary;
+  C++ remains native math/ABI metadata. The deterministic fallback is Kotlin
+  `ClockTimeMath.kt`.
 - String resource `"Snooze 10 min"` di `strings.xml` masih menyimpan angka
   "10" sebagai teks statis (duplikasi kecil dengan `AppDefaults.SNOOZE_MINUTES`).
   Tidak diubah karena menyentuh resource string berarti menyentuh semua

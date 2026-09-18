@@ -2,16 +2,241 @@
 <!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
 <resources>
     <string name="app_name">Chrona</string>
-    <string name="app_title">CHRONА</string>
+    <string name="home_title">Chrona</string>
+    <string name="home_subtitle">Your time, organized in one expressive dashboard</string>
+    <string name="home_settings">Settings</string>
+    <string name="home_info_title">Built around your time</string>
+    <string name="home_info_body">Quiet motion, expressive color, and a clear clock-first hierarchy.</string>
+    <string name="home_daytime">DAYTIME</string>
+    <string name="home_nighttime">NIGHTTIME</string>
+    <string name="home_local_time">Local time</string>
+    <string name="home_alarm_label">ALARM</string>
+    <string name="home_next_alarm_label">NEXT ALARM</string>
+    <string name="home_alarm_not_set">Not set</string>
+    <string name="home_alarm_create">Create an alarm</string>
+    <string name="home_alarm_one_time">One time</string>
+    <string name="home_alarm_repeats">Repeats</string>
+    <string name="home_timer_label">TIMER</string>
+    <string name="home_timer_live_label">LIVE</string>
+    <string name="home_timer_counting">Counting down</string>
+    <string name="home_timer_ready">Ready when you are</string>
+    <string name="home_world_clock_title">World Clock</string>
+    <string name="home_world_clock_subtitle">Cities &amp; time zones</string>
+    <string name="home_stopwatch_title">Stopwatch</string>
+    <string name="home_stopwatch_subtitle">Precise elapsed time</string>
+    <string name="home_switch_to_analog">Switch to analog clock</string>
+    <string name="home_switch_to_digital">Switch to digital clock</string>
+    <string name="home_seconds_suffix">%1$s sec</string>
+    <string name="time_am">AM</string>
+    <string name="time_pm">PM</string>
+    <string name="onboarding_brand">Chrona</string>
+    <string name="onboarding_tagline">A calmer way to read time</string>
+    <string name="onboarding_local_eyebrow">LOCAL TIME</string>
+    <string name="onboarding_local_title">Time, your way.</string>
+    <string name="onboarding_local_body">Your everyday time tools in one calm workspace, designed to feel immediate and effortless.</string>
+    <string name="onboarding_world_eyebrow">WORLD CLOCK</string>
+    <string name="onboarding_world_title">See time anywhere.</string>
+    <string name="onboarding_world_body">Keep cities close, compare their local time, and open any city for a focused detail view.</string>
+    <string name="onboarding_updates_eyebrow">UPDATES</string>
+    <string name="onboarding_updates_title">Stay current, stay in control.</string>
+    <string name="onboarding_updates_body">Chrona can check the public release feed in the background while leaving installation entirely in your hands.</string>
+    <string name="onboarding_alarm_title">Alarm</string>
+    <string name="onboarding_alarm_body">Wake up on time</string>
+    <string name="onboarding_timer_title">Timer</string>
+    <string name="onboarding_timer_body">Focus without clutter</string>
+    <string name="onboarding_progress">Onboarding progress</string>
+    <string name="onboarding_continue">Continue</string>
+    <string name="onboarding_get_started">Get started</string>
+    <string name="onboarding_skip">Skip onboarding</string>
+    <string name="onboarding_interactive">Interactive</string>
+    <string name="onboarding_tap_explore">Tap to explore</string>
+    <string name="onboarding_preview_selected">Preview selected · tap the hero card again to reset</string>
+    <string name="onboarding_release_feed">Release feed</string>
+    <string name="onboarding_latest_release">Latest release · ready to review</string>
+    <string name="nav_back">Back</string>
+    <string name="nav_close">Close</string>
+    <string name="nav_search">Search</string>
+    <string name="world_screen_title">World Clock</string>
+    <string name="world_screen_subtitle">A live, persistent view of your saved cities</string>
+    <string name="world_add_city">Add city</string>
+    <string name="world_find_city">Find a city</string>
+    <string name="world_empty_title">No cities here yet</string>
+    <string name="world_empty_subtitle">Use the + button to search the timezone catalog.</string>
+    <string name="world_invalid_timezone">Invalid timezone</string>
+    <string name="world_remove_city">Remove %1$s</string>
+    <string name="world_add_favorite">Add %1$s to favorites</string>
+    <string name="world_remove_favorite">Remove %1$s from favorites</string>
+    <string name="world_add_to_favorites">Add to favorites</string>
+    <string name="world_remove_from_favorites">Remove from favorites</string>
+    <string name="world_timezone_details">Timezone details</string>
+    <string name="world_detail_update_note">Updates continuously from the unified Chrona time engine.</string>
+    <string name="world_search_hint">Search a city or country</string>
+    <string name="world_search_summary">Search 25 curated timezones</string>
+    <string name="world_search_matches">%1$d matching cities</string>
+    <string name="world_search_close">Close search</string>
+    <string name="world_search_back">Back to World Clock</string>
+    <string name="world_search_add_city">Add %1$s</string>
+    <string name="world_region_all">All</string>
+    <string name="world_region_favorites">Favorites</string>
+    <string name="world_region_asia">Asia</string>
+    <string name="world_region_europe">Europe</string>
+    <string name="world_region_americas">Americas</string>
+    <string name="world_region_oceania">Oceania</string>
+    <string name="world_region_africa">Africa</string>
+    <string name="world_region_other">Other</string>
+    <string name="country_indonesia">Indonesia</string>
+    <string name="country_singapore">Singapore</string>
+    <string name="country_malaysia">Malaysia</string>
+    <string name="country_thailand">Thailand</string>
+    <string name="country_japan">Japan</string>
+    <string name="country_south_korea">South Korea</string>
+    <string name="country_china">China</string>
+    <string name="country_india">India</string>
+    <string name="country_united_arab_emirates">United Arab Emirates</string>
+    <string name="country_united_kingdom">United Kingdom</string>
+    <string name="country_france">France</string>
+    <string name="country_germany">Germany</string>
+    <string name="country_russia">Russia</string>
+    <string name="country_brazil">Brazil</string>
+    <string name="country_canada">Canada</string>
+    <string name="country_united_states">United States</string>
+    <string name="country_australia">Australia</string>
+    <string name="country_new_zealand">New Zealand</string>
+    <string name="country_egypt">Egypt</string>
+    <string name="country_south_africa">South Africa</string>
+    <string name="world_delta_same_time">Same time</string>
+    <string name="world_delta_hours">%1$d h</string>
+    <string name="world_delta_minutes">%1$d m</string>
+    <string name="alarm_screen_title">Alarm</string>
+    <string name="alarm_screen_subtitle">Schedules that stay editable without leaving the list</string>
+    <string name="alarm_empty_title">No alarms yet</string>
+    <string name="alarm_empty_subtitle">Create a schedule and tune repeat, sound and vibration from the same editor.</string>
+    <string name="alarm_add_action">Add alarm</string>
+    <string name="alarm_create_action">Create alarm</string>
+    <string name="alarm_edit_action">Edit</string>
+    <string name="alarm_delete_action">Delete alarm</string>
+    <string name="alarm_expand">Expand alarm options</string>
+    <string name="alarm_collapse">Collapse alarm options</string>
+    <string name="alarm_repeat">Repeat</string>
+    <string name="alarm_sound">Alarm sound</string>
+    <string name="alarm_vibrate">Vibrate</string>
+    <string name="alarm_enabled">Alarm enabled</string>
+    <string name="alarm_change">Change</string>
+    <string name="alarm_editor_new_title">New alarm</string>
+    <string name="alarm_editor_edit_title">Edit alarm</string>
+    <string name="alarm_editor_new_subtitle">Build a complete schedule with time, repeat and alert behavior.</string>
+    <string name="alarm_editor_edit_subtitle">Tune this schedule without leaving the alarm list.</string>
+    <string name="alarm_editor_schedule_section">Schedule</string>
+    <string name="alarm_editor_alert_section">Alert behavior</string>
+    <string name="alarm_time_hint">Tap the dial to set the alarm time</string>
+    <string name="alarm_label">Label</string>
+    <string name="alarm_label_hint">e.g. Wake up</string>
+    <string name="alarm_cancel">Cancel</string>
+    <string name="alarm_save_changes">Save changes</string>
+    <string name="alarm_status_active">Active</string>
+    <string name="alarm_status_disabled">Disabled</string>
+    <string name="alarm_value_on">On</string>
+    <string name="alarm_value_off">Off</string>
+    <string name="alarm_ringtone_silent">Silent</string>
+    <string name="alarm_default_ringtone">Default alarm</string>
+    <string name="alarm_ringtone_picker_title">Alarm sound</string>
+    <string name="alarm_repeat_once">Once</string>
+    <string name="alarm_repeat_every_day">Every day</string>
+    <string name="alarm_notification_title">Alarm</string>
+    <string name="alarm_notification_body">Tap to open</string>
+    <string name="alarm_notification_dismiss">Dismiss</string>
+    <string name="alarm_notification_snooze">Snooze 10 min</string>
+    <string name="timer_screen_title">Timer</string>
+    <string name="timer_screen_subtitle">Build a duration with numbers, then let Chrona count it down</string>
+    <string name="timer_action_start">Start</string>
+    <string name="timer_action_pause">Pause</string>
+    <string name="timer_action_resume">Resume</string>
+    <string name="timer_action_reset">Reset</string>
+    <string name="timer_state_running">Running from elapsed real time</string>
+    <string name="timer_state_complete">Timer complete</string>
+    <string name="timer_state_paused">Paused — resume when you're ready</string>
+    <string name="timer_indicator_running">Running</string>
+    <string name="timer_indicator_complete">Complete</string>
+    <string name="timer_indicator_paused">Paused</string>
+    <string name="timer_set_duration">Set duration</string>
+    <string name="timer_format_hint">HH : MM : SS</string>
+    <string name="timer_clear_input">Clear timer input</string>
+    <string name="timer_delete_digit">Delete last timer digit</string>
+    <string name="timer_completion_note">Timer completion is scheduled through Chrona's Android alarm layer so it can survive the UI leaving the foreground.</string>
+    <string name="timer_preset_5m">5m</string>
+    <string name="timer_preset_15m">15m</string>
+    <string name="timer_preset_30m">30m</string>
+    <string name="timer_preset_1h">1h</string>
+    <string name="timer_notification_title">Timer finished</string>
+    <string name="timer_notification_body">Your countdown has ended.</string>
+    <string name="timer_notification_dismiss">Dismiss</string>
+    <string name="stopwatch_screen_title">Stopwatch</string>
+    <string name="stopwatch_screen_subtitle">Track every second</string>
+    <string name="stopwatch_status_ready">Ready</string>
+    <string name="stopwatch_status_recording">Recording time</string>
+    <string name="stopwatch_status_paused">Paused</string>
+    <string name="stopwatch_status_completed">Completed</string>
+    <string name="stopwatch_laps_recorded">%1$d laps recorded</string>
+    <string name="stopwatch_lap_history">Lap history</string>
+    <string name="stopwatch_lap_label">Lap %1$d</string>
+    <string name="stopwatch_action_lap">Lap</string>
+    <string name="stopwatch_action_reset">Reset</string>
+    <string name="stopwatch_start_content_description">Start stopwatch</string>
+    <string name="stopwatch_pause_content_description">Pause stopwatch</string>
+    <string name="stopwatch_reset_content_description">Reset stopwatch</string>
     <string name="settings_screen_title">Pengaturan</string>
-    <string name="settings_dark_theme_title">Tema gelap</string>
+    <string name="settings_screen_subtitle">Tune appearance, clock behavior, updates, and app information.</string>
+    <string name="settings_style_section">Style</string>
+    <string name="settings_accent_section">Accent</string>
+    <string name="settings_clock_section">Clock</string>
+    <string name="settings_notifications_section">Notifications</string>
+    <string name="settings_updates_section">App updates</string>
+    <string name="settings_about_section">About</string>
+    <string name="settings_live_preview">LIVE PREVIEW</string>
+    <string name="settings_theme_soft">Soft / raised</string>
+    <string name="settings_theme_dynamic">Dynamic / tonal</string>
     <string name="settings_format_title">Format 24 jam</string>
+    <string name="settings_format_subtitle">Use 00:00–23:59 instead of AM/PM</string>
     <string name="settings_seconds_title">Tampilkan detik</string>
-    <string name="clock_world_section_title">Jam dunia</string>
-    <string name="clock_world_empty">Belum ada kota. Ketuk + untuk menambahkan.</string>
-    <string name="clock_add_city_action">Tambah kota</string>
-
-    <!-- Chrona notification taxonomy -->
+    <string name="settings_seconds_subtitle">Show the live seconds readout in the hero clock</string>
+    <string name="settings_notification_access">Notification access</string>
+    <string name="settings_notification_allowed">Allowed for alarms and timer notices</string>
+    <string name="settings_notification_denied">Not allowed · tap to open Android notification settings</string>
+    <string name="settings_update_checking">Checking for updates</string>
+    <string name="settings_update_failed">Update check failed</string>
+    <string name="settings_update_available">Update available</string>
+    <string name="settings_up_to_date">Chrona is up to date</string>
+    <string name="settings_updates_not_checked">Updates not checked yet</string>
+    <string name="settings_current_latest">Current %1$s · Latest %2$s</string>
+    <string name="settings_current_only">Current %1$s</string>
+    <string name="settings_last_checked">Last checked %1$s</string>
+    <string name="settings_check_now">Check now</string>
+    <string name="settings_release_timeline">Release timeline</string>
+    <string name="settings_open_github">Open GitHub</string>
+    <string name="settings_version_private">Version %1$s · private on-device settings</string>
+    <string name="settings_legal_about">Legal, license, and app information</string>
+    <string name="update_error_access_denied">GitHub temporarily denied the release request.</string>
+    <string name="update_error_no_release">No published Chrona release is available yet.</string>
+    <string name="update_error_rate_limit">GitHub rate limit reached. Try again later.</string>
+    <string name="update_error_unavailable">GitHub is temporarily unavailable. Try again later.</string>
+    <string name="update_error_failed">GitHub release check failed.</string>
+    <string name="update_error_generic">Unable to check for updates.</string>
+    <string name="release_timeline_title">Release timeline</string>
+    <string name="release_timeline_default_name">Chrona release</string>
+    <string name="release_timeline_published">Published %1$s</string>
+    <string name="release_timeline_open_github">Open GitHub</string>
+    <string name="release_timeline_empty">No release notes were published for this release.</string>
+    <string name="legal_hub_title">Legal &amp; Info</string>
+    <string name="legal_notices_title">Legal Notices</string>
+    <string name="legal_license_title">Licenses</string>
+    <string name="legal_hub_description">Chrona legal and regulatory notices</string>
+    <string name="legal_notice_description">Copyright, notices, and third-party licenses</string>
+    <string name="legal_license_description">Open-source and third-party attribution</string>
+    <string name="legal_back">Back</string>
+    <string name="nightstand_weather">Weather</string>
+    <string name="nightstand_next_alarm">Next alarm</string>
+    <string name="nightstand_ready">Ready</string>
+    <string name="nightstand_close_hint">TAP ANYWHERE TO CLOSE</string>
     <string name="notification_channel_alarms_name">Alarm</string>
     <string name="notification_channel_alarms_description">Notifikasi alarm dan kontrol dering.</string>
     <string name="notification_channel_timers_name">Timer</string>
@@ -30,5 +255,70 @@
     <string name="notification_channel_stopwatch_description">Pembaruan stopwatch saat sedang berjalan.</string>
     <string name="notification_channel_routines_name">Rutinitas</string>
     <string name="notification_channel_routines_description">Notifikasi yang dihasilkan oleh rutinitas Chrona.</string>
-
+    <string name="widget_description">A battery-conscious Chrona time widget.</string>
+    <string name="widget_format_24h">HH:mm</string>
+    <string name="widget_format_12h">h:mm a</string>
+    <string name="legal_notices_body" translatable="false">Hak Cipta © 2026 Febrian Rahmad Cahya. Seluruh hak dilindungi undang-undang.
+Chrona, nama aplikasi, logo, ikon, serta seluruh kode sumber, aset desain, dan dokumentasi yang dibuat dalam proyek ini adalah milik proprietary Febrian Rahmad Cahya ("Pemilik"), kecuali dinyatakan lain secara eksplisit oleh pemberitahuan lisensi pihak ketiga yang terpisah.
+Tidak ada izin yang diberikan untuk menggandakan, mendistribusikan, memodifikasi, mensublisensikan, atau menjual materi berhak cipta dalam proyek ini, kecuali sejauh diizinkan secara tegas oleh lisensi pihak ketiga yang berlaku atau izin tertulis terpisah dari Pemilik.
+Merek Dagang
+Android, Google Play, dan logo Google Play adalah merek dagang dari Google LLC. Kotlin adalah merek dagang terdaftar dari JetBrains s.r.o. Chrona tidak diafiliasikan dengan, disponsori oleh, atau didukung secara resmi oleh Google LLC maupun JetBrains s.r.o.
+Komponen Pihak Ketiga
+Chrona dibangun menggunakan sejumlah pustaka sumber terbuka, termasuk namun tidak terbatas pada:
+•  Kotlin Standard Library — JetBrains s.r.o., Apache License 2.0
+•  AndroidX &amp; Jetpack Compose — Google LLC dan The Android Open Source Project, Apache License 2.0
+•  Material Components for Android — Google LLC, Apache License 2.0
+Setiap komponen pihak ketiga tetap tunduk pada syarat lisensinya masing-masing dan tidak tercakup oleh lisensi proprietary Chrona. Salinan lengkap Apache License, Version 2.0 tersedia di:
+http://www.apache.org/licenses/LICENSE-2.0
+Untuk syarat penggunaan aplikasi ini secara lengkap, lihat halaman Lisensi.</string>
+    <string name="legal_license_body" translatable="false">BAHASA INDONESIA
+PENTING: Dengan mengunduh, memasang, atau menggunakan aplikasi Chrona ("Aplikasi"), Anda menyetujui untuk terikat oleh ketentuan lisensi penggunaan berikut ("Lisensi").
+1. Pemberian Lisensi
+Febrian Rahmad Cahya ("Pemilik") memberikan Anda lisensi terbatas, non-eksklusif, tidak dapat dipindahtangankan, dan dapat dicabut sewaktu-waktu untuk mengunduh dan menggunakan Aplikasi semata-mata untuk keperluan pribadi dan non-komersial pada perangkat yang Anda miliki atau kendalikan, sesuai dengan ketentuan platform distribusi tempat Aplikasi diperoleh.
+2. Pembatasan
+Kecuali diizinkan secara tegas oleh hukum yang berlaku atau oleh Pemilik secara tertulis, Anda tidak diperkenankan untuk:
+   a. mendekompilasi, merekayasa balik, membongkar, atau berusaha menurunkan kode sumber Aplikasi;
+   b. mendistribusikan ulang, menjual, menyewakan, meminjamkan, atau mensublisensikan Aplikasi atau bagian mana pun darinya;
+   c. menghapus, mengubah, atau menyembunyikan pemberitahuan hak cipta, merek dagang, atau pemberitahuan kepemilikan lain dalam Aplikasi;
+   d. menggunakan Aplikasi untuk tujuan yang melanggar hukum yang berlaku di yurisdiksi Anda.
+3. Kepemilikan
+Aplikasi dilisensikan, bukan dijual, kepada Anda. Pemilik tetap memegang seluruh hak, kepemilikan, dan kepentingan atas Aplikasi, termasuk seluruh kekayaan intelektual di dalamnya, kecuali komponen pihak ketiga yang tunduk pada lisensinya masing-masing sebagaimana dijelaskan pada halaman Pemberitahuan Legal.
+4. Data dan Izin Perangkat
+Aplikasi dapat meminta izin perangkat tertentu (misalnya lokasi, notifikasi, atau alarm presisi) semata-mata untuk menjalankan fitur yang Anda aktifkan. Aplikasi tidak menjual data pribadi Anda kepada pihak ketiga.
+5. Tanpa Jaminan
+SEJAUH DIIZINKAN OLEH HUKUM YANG BERLAKU, APLIKASI DISEDIAKAN "SEBAGAIMANA ADANYA" DAN "SEBAGAIMANA TERSEDIA", TANPA JAMINAN DALAM BENTUK APA PUN, BAIK TERSURAT MAUPUN TERSIRAT, TERMASUK NAMUN TIDAK TERBATAS PADA JAMINAN KELAYAKAN UNTUK DIPERDAGANGKAN, KESESUAIAN UNTUK TUJUAN TERTENTU, DAN NON-PELANGGARAN.
+6. Batasan Tanggung Jawab
+SEJAUH DIIZINKAN OLEH HUKUM YANG BERLAKU, PEMILIK TIDAK BERTANGGUNG JAWAB ATAS KERUGIAN TIDAK LANGSUNG, INSIDENTAL, KHUSUS, KONSEKUENSIAL, ATAU KERUGIAN LAIN APA PUN YANG TIMBUL DARI ATAU BERKAITAN DENGAN PENGGUNAAN ATAU KETIDAKMAMPUAN MENGGUNAKAN APLIKASI, SEKALIPUN TELAH DIBERITAHUKAN TENTANG KEMUNGKINAN KERUGIAN TERSEBUT.
+7. Pengakhiran
+Lisensi ini berlaku efektif sampai diakhiri. Lisensi ini akan berakhir secara otomatis tanpa pemberitahuan dari Pemilik apabila Anda gagal mematuhi ketentuan mana pun dalam Lisensi ini, termasuk dengan menghapus instalan Aplikasi dari seluruh perangkat Anda.
+8. Perubahan Ketentuan
+Ketentuan ini dapat diperbarui dari waktu ke waktu seiring pembaruan Aplikasi. Perubahan berlaku efektif sejak dipublikasikan bersama versi Aplikasi terkait.
+9. Hukum yang Mengatur
+Lisensi ini diatur oleh dan ditafsirkan sesuai dengan hukum Republik Indonesia, tanpa memperhatikan pertentangan aturan hukumnya.
+10. Kontak
+Pertanyaan mengenai Lisensi ini dapat diajukan melalui repositori proyek Chrona.
+© 2026 Febrian Rahmad Cahya. Seluruh hak dilindungi undang-undang.
+ENGLISH
+IMPORTANT: By downloading, installing, or using the Chrona application (the "App"), you agree to be bound by the following license terms (the "License").
+1. License Grant
+Febrian Rahmad Cahya (the "Owner") grants you a limited, non-exclusive, non-transferable, revocable license to download and use the App solely for your personal, non-commercial use on a device that you own or control, subject to the terms of the distribution platform through which the App was obtained.
+2. Restrictions
+Except as expressly permitted by applicable law or by the Owner in writing, you may not: (a) decompile, reverse engineer, disassemble, or attempt to derive the source code of the App; (b) redistribute, sell, rent, lease, or sublicense the App or any part of it; (c) remove, alter, or obscure any copyright, trademark, or other proprietary notice contained in the App; (d) use the App for any purpose that violates applicable law in your jurisdiction.
+3. Ownership
+The App is licensed, not sold, to you. The Owner retains all right, title, and interest in and to the App, including all intellectual property rights therein, except for third-party components that remain subject to their own licenses as described on the Legal Notices page.
+4. Data and Device Permissions
+The App may request certain device permissions (such as location, notifications, or exact alarms) solely to operate the features you enable. The App does not sell your personal data to third parties.
+5. No Warranty
+TO THE EXTENT PERMITTED BY APPLICABLE LAW, THE APP IS PROVIDED "AS IS" AND "AS AVAILABLE", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+6. Limitation of Liability
+TO THE EXTENT PERMITTED BY APPLICABLE LAW, THE OWNER SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR OTHER DAMAGES ARISING OUT OF OR RELATED TO THE USE OR INABILITY TO USE THE APP, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+7. Termination
+This License is effective until terminated. It will terminate automatically without notice from the Owner if you fail to comply with any term of this License, including by uninstalling the App from all of your devices.
+8. Changes to These Terms
+These terms may be updated from time to time alongside App updates. Changes take effect as of the date they are published with the relevant App version.
+9. Governing Law
+This License is governed by and construed in accordance with the laws of the Republic of Indonesia, without regard to its conflict-of-law principles.
+10. Contact
+Questions about this License may be raised through the Chrona project repository.
+© 2026 Febrian Rahmad Cahya. All rights reserved.</string>
 </resources>

@@ -2,6 +2,8 @@
 
 package com.febricahyaa.clockapp.ui.components
 
+import com.febricahyaa.clockapp.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
@@ -192,7 +194,7 @@ fun ScreenHeader(
             IconCircleButton(
                 icon = Icons.AutoMirrored.Filled.ArrowBack,
                 onClick = onBack,
-                contentDescription = "Back",
+                contentDescription = stringResource(R.string.nav_back),
                 modifier = Modifier.size(44.dp),
             )
         }
@@ -241,5 +243,5 @@ fun AnimatedProgress(value: Float, modifier: Modifier = Modifier) {
 
 @Composable
 fun CloseButton(onClick: () -> Unit) {
-    IconCircleButton(Icons.Filled.Close, onClick, contentDescription = "Close")
+    IconCircleButton(Icons.Filled.Close, onClick, contentDescription = stringResource(R.string.nav_close))
 }

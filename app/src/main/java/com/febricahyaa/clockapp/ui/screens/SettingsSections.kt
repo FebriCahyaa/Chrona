@@ -41,8 +41,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import com.febricahyaa.clockapp.BuildConfig
-import com.febricahyaa.clockapp.core.ChronaTimeEngine
+import com.febricahyaa.clockapp.R
+import com.febricahyaa.clockapp.time.ChronaTimeFormatter
 import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.model.ClockSettings
 import com.febricahyaa.clockapp.model.ThemeAccent
@@ -63,13 +65,13 @@ fun SettingsPreviewCard(
 ) {
     val now = rememberZonedNow(ZoneId.systemDefault())
     val epochMillis = now.toInstant().toEpochMilli()
-    val previewTime = ChronaTimeEngine.time(
+    val previewTime = ChronaTimeFormatter.time(
         epochMillis,
         now.zone,
         use24HourFormat,
         settings.showSeconds,
     )
-    val previewDate = ChronaTimeEngine.date(epochMillis, now.zone)
+    val previewDate = ChronaTimeFormatter.date(epochMillis, now.zone)
 
     HybridBentoCard(Modifier.fillMaxWidth(), themeMode = settings.themeMode) {
         Column(
@@ -78,7 +80,7 @@ fun SettingsPreviewCard(
                 .padding(vertical = 22.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            SectionEyebrow("LIVE PREVIEW")
+            SectionEyebrow(stringResource(R.string.settings_live_preview))
             Spacer(Modifier.height(8.dp))
             Text(
                 previewTime,
@@ -108,7 +110,7 @@ fun SettingsAppearanceSection(
     onThemeModeChange: (AppThemeMode) -> Unit,
     onAccentChange: (ThemeAccent) -> Unit,
 ) {
-    SettingsSectionTitle(Icons.Filled.Palette, "Style")
+    SettingsSectionTitle(Icons.Filled.Palette, stringResource(R.string.settings_style_section))
     Spacer(Modifier.height(9.dp))
     Row(
         Modifier.fillMaxWidth(),
@@ -129,7 +131,7 @@ fun SettingsAppearanceSection(
     }
 
     Spacer(Modifier.height(20.dp))
-    SettingsSectionTitle(Icons.Filled.Tune, "Accent")
+    SettingsSectionTitle(Icons.Filled.Tune, stringResource(R.string.settings_accent_section))
     Spacer(Modifier.height(9.dp))
     Row(
         Modifier
@@ -179,17 +181,17 @@ fun SettingsClockSection(
     onFormatChange: (Boolean) -> Unit,
     onShowSecondsChange: (Boolean) -> Unit,
 ) {
-    SettingsSectionTitle(Icons.Filled.Tune, "Clock")
+    SettingsSectionTitle(Icons.Filled.Tune, stringResource(R.string.settings_clock_section))
     Spacer(Modifier.height(5.dp))
     SettingsPreferenceRow(
-        "24-hour format",
-        "Use 00:00–23:59 instead of AM/PM",
+        stringResource(R.string.settings_format_title),
+        stringResource(R.string.settings_format_subtitle),
         use24HourFormat,
         onFormatChange,
     )
     SettingsPreferenceRow(
-        "Show seconds",
-        "Show the live seconds readout in the hero clock",
+        stringResource(R.string.settings_seconds_title),
+        stringResource(R.string.settings_seconds_subtitle),
         settings.showSeconds,
         onShowSecondsChange,
     )
@@ -200,7 +202,7 @@ fun SettingsNotificationsSection(
     permissionGranted: Boolean,
     onOpenNotificationSettings: () -> Unit,
 ) {
-    SettingsSectionTitle(Icons.Filled.Notifications, "Notifications")
+    SettingsSectionTitle(Icons.Filled.Notifications, stringResource(R.string.settings_notifications_section))
     Spacer(Modifier.height(9.dp))
     Surface(
         onClick = onOpenNotificationSettings,
@@ -217,11 +219,11 @@ fun SettingsNotificationsSection(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(Modifier.weight(1f)) {
-                Text("Notification access", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                Text(stringResource(R.string.settings_notification_access), fontSize = 14.sp, fontWeight = FontWeight.Medium)
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    if (permissionGranted) "Allowed for alarms and timer notices"
-                    else "Not allowed · tap to open Android notification settings",
+                    if (permissionGranted) stringResource(R.string.settings_notification_allowed)
+                    else stringResource(R.string.settings_notification_denied),
                     fontSize = 11.sp,
                     color = if (permissionGranted) {
                         MaterialTheme.colorScheme.onSurfaceVariant
@@ -246,7 +248,7 @@ fun SettingsUpdateSection(
     onOpenUpdate: () -> Unit,
     onViewReleaseTimeline: () -> Unit = {},
 ) {
-    SettingsSectionTitle(Icons.Filled.SystemUpdate, "App updates")
+    SettingsSectionTitle(Icons.Filled.SystemUpdate, stringResource(R.string.settings_updates_section))
     Spacer(Modifier.height(9.dp))
     val snapshot = state.snapshot
     val checkedLabel = snapshot.lastCheckedAt.takeIf { it > 0L }?.let { timestamp ->
@@ -268,26 +270,29 @@ fun SettingsUpdateSection(
                 Column(Modifier.weight(1f)) {
                     Text(
                         when {
-                            state.isChecking -> "Checking for updates"
-                            !state.errorMessage.isNullOrBlank() -> "Update check failed"
-                            state.isUpdateAvailable -> "Update available"
-                            snapshot.latestVersion != null -> "Chrona is up to date"
-                            else -> "Updates not checked yet"
+                            state.isChecking -> stringResource(R.string.settings_update_checking)
+                            state.errorMessageRes != null -> stringResource(R.string.settings_update_failed)
+                            state.isUpdateAvailable -> stringResource(R.string.settings_update_available)
+                            snapshot.latestVersion != null -> stringResource(R.string.settings_up_to_date)
+                            else -> stringResource(R.string.settings_updates_not_checked)
                         },
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                     )
                     Spacer(Modifier.height(3.dp))
                     Text(
-                        "Current ${BuildConfig.VERSION_NAME}" +
-                            (snapshot.latestVersion?.let { " · Latest $it" } ?: ""),
+                        if (snapshot.latestVersion != null) {
+                            stringResource(R.string.settings_current_latest, BuildConfig.VERSION_NAME, snapshot.latestVersion)
+                        } else {
+                            stringResource(R.string.settings_current_only, BuildConfig.VERSION_NAME)
+                        },
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     if (checkedLabel != null) {
                         Spacer(Modifier.height(2.dp))
                         Text(
-                            "Last checked $checkedLabel",
+                            stringResource(R.string.settings_last_checked, checkedLabel),
                             fontSize = 10.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -301,10 +306,10 @@ fun SettingsUpdateSection(
                 }
             }
 
-            state.errorMessage?.takeIf { it.isNotBlank() }?.let { message ->
+            state.errorMessageRes?.let { messageRes ->
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    message,
+                    stringResource(messageRes),
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.error,
                 )
@@ -327,7 +332,7 @@ fun SettingsUpdateSection(
                 ) {
                     Icon(Icons.Filled.Refresh, null, Modifier.size(17.dp))
                     Spacer(Modifier.size(7.dp))
-                    Text("Check now", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.settings_check_now), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
 
@@ -353,7 +358,7 @@ fun SettingsUpdateSection(
                                 .padding(horizontal = 12.dp, vertical = 10.dp),
                             contentAlignment = Alignment.Center,
                         ) {
-                            Text("Release timeline", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                            Text(stringResource(R.string.settings_release_timeline), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                         }
                     }
                     Surface(
@@ -372,7 +377,7 @@ fun SettingsUpdateSection(
                                 .padding(horizontal = 12.dp, vertical = 10.dp),
                             contentAlignment = Alignment.Center,
                         ) {
-                            Text("Open GitHub", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                            Text(stringResource(R.string.settings_open_github), fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
@@ -383,7 +388,7 @@ fun SettingsUpdateSection(
 
 @Composable
 fun SettingsAboutSection(onOpenLegal: () -> Unit) {
-    SettingsSectionTitle(Icons.Filled.Gavel, "About")
+    SettingsSectionTitle(Icons.Filled.Gavel, stringResource(R.string.settings_about_section))
     Spacer(Modifier.height(9.dp))
     Surface(
         onClick = onOpenLegal,
@@ -400,16 +405,16 @@ fun SettingsAboutSection(onOpenLegal: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(Modifier.weight(1f)) {
-                Text("Chrona", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                Text(stringResource(R.string.home_title), fontSize = 14.sp, fontWeight = FontWeight.Medium)
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    "Version ${BuildConfig.VERSION_NAME} · private on-device settings",
+                    stringResource(R.string.settings_version_private, BuildConfig.VERSION_NAME),
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    "Legal, license, and app information",
+                    stringResource(R.string.settings_legal_about),
                     fontSize = 10.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -479,8 +484,8 @@ private fun SettingsThemeChoice(
             Spacer(Modifier.height(7.dp))
             Text(
                 when (mode) {
-                    AppThemeMode.NEUMORPHIC -> "Soft / raised"
-                    AppThemeMode.MATERIAL_YOU -> "Dynamic / tonal"
+                    AppThemeMode.NEUMORPHIC -> stringResource(R.string.settings_theme_soft)
+                    AppThemeMode.MATERIAL_YOU -> stringResource(R.string.settings_theme_dynamic)
                     else -> mode.name.lowercase().replaceFirstChar { it.uppercase() }
                 },
                 fontSize = 11.sp,

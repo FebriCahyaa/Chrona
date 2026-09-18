@@ -2,11 +2,9 @@
 <!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
 <resources>
     <string name="app_name">Chrona</string>
-    <string name="app_title">CHRONА</string>
     <string name="settings_screen_title">Ajustes</string>
-    <string name="settings_dark_theme_title">Tema oscuro</string>
     <string name="settings_format_title">Formato de 24 horas</string>
     <string name="settings_seconds_title">Mostrar segundos</string>
-    <string name="clock_world_section_title">Relojes mundiales</string>
-    <string name="clock_add_city_action">Añadir ciudad</string>
+    <string name="world_screen_title">Relojes mundiales</string>
+    <string name="world_add_city">Añadir ciudad</string>
 </resources>

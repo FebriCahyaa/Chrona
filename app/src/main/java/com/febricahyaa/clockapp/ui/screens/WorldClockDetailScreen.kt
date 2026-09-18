@@ -2,6 +2,7 @@
 
 package com.febricahyaa.clockapp.ui.screens
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,7 +29,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.febricahyaa.clockapp.core.ChronaTimeEngine
+import androidx.compose.ui.res.stringResource
+import com.febricahyaa.clockapp.R
+import com.febricahyaa.clockapp.time.ChronaTimeFormatter
 import com.febricahyaa.clockapp.model.WorldClockItem
 import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
 import com.febricahyaa.clockapp.navigation.chronaSharedBounds
@@ -54,7 +57,7 @@ fun WorldClockDetailScreen(
 
     ChronaScaffold(
         title = item.city,
-        subtitle = "${countryOfDetail(item.zoneId)} · ${item.zoneId}",
+        subtitle = "${stringResource(countryOfDetail(item.zoneId))} · ${item.zoneId}",
         onBack = onBack,
     ) { paddingValues ->
         if (zoneId == null) {
@@ -63,7 +66,7 @@ fun WorldClockDetailScreen(
                 glass = glass,
             ) {
                 Column(Modifier.padding(24.dp)) {
-                    Text("Invalid timezone", style = MaterialTheme.typography.titleLarge)
+                    Text(stringResource(R.string.world_invalid_timezone), style = MaterialTheme.typography.titleLarge)
                     Spacer(Modifier.height(8.dp))
                     Text(
                         item.zoneId,
@@ -81,13 +84,11 @@ fun WorldClockDetailScreen(
             Instant.ofEpochMilli(epochMillis).atZone(systemZone).offset.totalSeconds
         }
         val time = remember(zoned, use24HourFormat) {
-            ChronaTimeEngine.shortTime(epochMillis, zoneId, use24HourFormat)
+            ChronaTimeFormatter.shortTime(epochMillis, zoneId, use24HourFormat)
         }
-        val date = remember(zoned) { ChronaTimeEngine.date(epochMillis, zoneId) }
-        val utc = remember(zoned) { ChronaTimeEngine.utcOffset(zoneId, epochMillis) }
-        val delta = remember(zoned, localOffsetSeconds) {
-            formatOffsetDeltaDetail(zoned.offset.totalSeconds - localOffsetSeconds)
-        }
+        val date = remember(zoned) { ChronaTimeFormatter.date(epochMillis, zoneId) }
+        val utc = remember(zoned) { ChronaTimeFormatter.utcOffset(zoneId, epochMillis) }
+        val delta = formatOffsetDeltaDetail(zoned.offset.totalSeconds - localOffsetSeconds)
 
         Column(
             modifier = Modifier
@@ -112,7 +113,7 @@ fun WorldClockDetailScreen(
                         Column(Modifier.weight(1f)) {
                             Text(item.city, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
                             Text(
-                                countryOfDetail(item.zoneId),
+                                stringResource(countryOfDetail(item.zoneId)),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -121,7 +122,7 @@ fun WorldClockDetailScreen(
                             icon = if (favorite) Icons.Filled.Star else Icons.Filled.StarBorder,
                             onClick = onToggleFavorite,
                             active = favorite,
-                            contentDescription = if (favorite) "Remove ${item.city} from favorites" else "Add ${item.city} to favorites",
+                            contentDescription = if (favorite) stringResource(R.string.world_remove_favorite, item.city) else stringResource(R.string.world_add_favorite, item.city),
                         )
                     }
 
@@ -139,18 +140,18 @@ fun WorldClockDetailScreen(
 
             ChronaCard(Modifier.fillMaxWidth(), glass = glass) {
                 Column(Modifier.fillMaxWidth().padding(20.dp)) {
-                    Text("Timezone details", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.world_timezone_details), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                     Spacer(Modifier.height(10.dp))
                     Text(item.zoneId, style = MaterialTheme.typography.bodyLarge)
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        "Updates continuously from the unified Chrona time engine.",
+                        stringResource(R.string.world_detail_update_note),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Spacer(Modifier.height(14.dp))
                     Button(onClick = onToggleFavorite, modifier = Modifier.fillMaxWidth()) {
-                        Text(if (favorite) "Remove from favorites" else "Add to favorites")
+                        Text(if (favorite) stringResource(R.string.world_remove_from_favorites) else stringResource(R.string.world_add_to_favorites))
                     }
                 }
             }
@@ -158,61 +159,44 @@ fun WorldClockDetailScreen(
     }
 }
 
+@Composable
 private fun formatOffsetDeltaDetail(totalSeconds: Int): String {
-    if (totalSeconds == 0) return "Same time"
+    if (totalSeconds == 0) return stringResource(R.string.world_delta_same_time)
     val sign = if (totalSeconds > 0) "+" else "-"
     val absolute = kotlin.math.abs(totalSeconds)
     val hours = absolute / 3_600
     val minutes = (absolute % 3_600) / 60
     return buildString {
         append(sign)
-        if (hours > 0) append(hours).append('h')
+        if (hours > 0) append(stringResource(R.string.world_delta_hours, hours))
         if (minutes > 0) {
             if (hours > 0) append(' ')
-            append(minutes).append('m')
+            append(stringResource(R.string.world_delta_minutes, minutes))
         }
     }
 }
 
-private fun countryOfDetail(zoneId: String): String = when {
-    zoneId == "Asia/Jakarta" || zoneId == "Asia/Makassar" || zoneId == "Asia/Jayapura" -> "Indonesia"
-    zoneId == "Asia/Singapore" -> "Singapore"
-    zoneId == "Asia/Kuala_Lumpur" -> "Malaysia"
-    zoneId == "Asia/Bangkok" -> "Thailand"
-    zoneId == "Asia/Tokyo" -> "Japan"
-    zoneId == "Asia/Seoul" -> "South Korea"
-    zoneId == "Asia/Shanghai" || zoneId == "Asia/Hong_Kong" -> "China"
-    zoneId == "Asia/Kolkata" -> "India"
-    zoneId == "Asia/Dubai" -> "United Arab Emirates"
-    zoneId == "Europe/London" -> "United Kingdom"
-    zoneId == "Europe/Paris" -> "France"
-    zoneId == "Europe/Berlin" -> "Germany"
-    zoneId == "Europe/Moscow" -> "Russia"
-    zoneId.startsWith("America/") -> when (zoneId) {
-        "America/Sao_Paulo" -> "Brazil"
-        "America/Toronto" -> "Canada"
-        else -> "United States"
-    }
-    zoneId == "Australia/Sydney" -> "Australia"
-    zoneId == "Pacific/Auckland" -> "New Zealand"
-    zoneId == "Africa/Cairo" -> "Egypt"
-    zoneId == "Africa/Johannesburg" -> "South Africa"
-    else -> "World"
-}
-
-@Composable
-private fun CityThumbnailDetail(city: String, modifier: Modifier = Modifier) {
-    // Reuse the deterministic visual vocabulary from the World Clock list without exposing its private implementation.
-    androidx.compose.foundation.layout.Box(
-        modifier = modifier
-            .clip(MaterialTheme.shapes.large)
-            .background(
-                androidx.compose.ui.graphics.Brush.verticalGradient(
-                    listOf(
-                        androidx.compose.ui.graphics.Color.hsv(Math.floorMod(city.hashCode(), 360).toFloat(), 0.30f, 0.92f),
-                        androidx.compose.ui.graphics.Color.hsv(Math.floorMod(city.hashCode() + 34, 360).toFloat(), 0.46f, 0.55f),
-                    ),
-                ),
-            ),
-    )
+@StringRes
+private fun countryOfDetail(zoneId: String): Int = when {
+    zoneId == "Asia/Jakarta" || zoneId == "Asia/Makassar" || zoneId == "Asia/Jayapura" -> R.string.country_indonesia
+    zoneId == "Asia/Singapore" -> R.string.country_singapore
+    zoneId == "Asia/Kuala_Lumpur" -> R.string.country_malaysia
+    zoneId == "Asia/Bangkok" -> R.string.country_thailand
+    zoneId == "Asia/Tokyo" -> R.string.country_japan
+    zoneId == "Asia/Seoul" -> R.string.country_south_korea
+    zoneId == "Asia/Shanghai" || zoneId == "Asia/Hong_Kong" -> R.string.country_china
+    zoneId == "Asia/Kolkata" -> R.string.country_india
+    zoneId == "Asia/Dubai" -> R.string.country_united_arab_emirates
+    zoneId == "Europe/London" -> R.string.country_united_kingdom
+    zoneId == "Europe/Paris" -> R.string.country_france
+    zoneId == "Europe/Berlin" -> R.string.country_germany
+    zoneId == "Europe/Moscow" -> R.string.country_russia
+    zoneId == "America/Sao_Paulo" -> R.string.country_brazil
+    zoneId == "America/Toronto" -> R.string.country_canada
+    zoneId.startsWith("America/") -> R.string.country_united_states
+    zoneId == "Australia/Sydney" -> R.string.country_australia
+    zoneId == "Pacific/Auckland" -> R.string.country_new_zealand
+    zoneId == "Africa/Cairo" -> R.string.country_egypt
+    zoneId == "Africa/Johannesburg" -> R.string.country_south_africa
+    else -> R.string.world_region_other
 }

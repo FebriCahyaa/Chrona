@@ -30,7 +30,7 @@ Repositories / Gateways
 
 ### Clock
 
-`ChronaTimeEngine`, `NativeClock`, and `ClockTimeMath` provide the time/math boundary used by the clock UI; the Java engine owns shared formatting while the native bridge supplies deterministic primitives with a Java fallback. Java owns Android time access and the JNI boundary; C++ remains a small deterministic primitive layer.
+`ChronaTimeEngine` and `ChronaTimeFormatter` provide the shared Kotlin time/presentation layer. `NativeClock` and the Java `ChronaNativeBridge` expose deterministic native primitives with a Kotlin `ClockTimeMath` fallback. Java is intentionally limited to the JNI/platform boundary; C++ remains a small deterministic primitive layer.
 
 ### Alarm
 

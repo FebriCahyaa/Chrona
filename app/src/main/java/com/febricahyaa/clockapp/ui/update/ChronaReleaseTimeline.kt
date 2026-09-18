@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import com.febricahyaa.clockapp.data.update.AppUpdateSnapshot
 import java.time.Instant
 import java.time.ZoneId
@@ -72,23 +73,23 @@ fun ChronaReleaseTimeline(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(Modifier.weight(1f)) {
-                    Text("Release timeline", fontSize = 27.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold)
+                    Text(stringResource(R.string.release_timeline_title), fontSize = 27.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold)
                     Spacer(Modifier.height(3.dp))
                     Text(
-                        snapshot.releaseName ?: "Chrona release",
+                        snapshot.releaseName ?: stringResource(R.string.release_timeline_default_name),
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     if (publishedLabel != null) {
                         Text(
-                            "Published $publishedLabel",
+                            stringResource(R.string.release_timeline_published, publishedLabel),
                             fontSize = 10.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
                 IconButton(onClick = onDismiss) {
-                    Icon(Icons.Filled.Close, contentDescription = "Close")
+                    Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.nav_close))
                 }
             }
 
@@ -115,7 +116,7 @@ fun ChronaReleaseTimeline(
                     ) {
                         Icon(Icons.Filled.OpenInNew, null, Modifier.size(17.dp))
                         Spacer(Modifier.size(7.dp))
-                        Text("Open GitHub", fontSize = 12.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
+                        Text(stringResource(R.string.release_timeline_open_github), fontSize = 12.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
                     }
                 }
             }
@@ -138,7 +139,7 @@ private fun ReleaseTimelineContent(blocks: List<ChronaReleaseBlock>) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(Icons.Filled.SystemUpdate, null, Modifier.size(20.dp))
-                Text("No release notes were published for this release.", fontSize = 12.sp)
+                Text(stringResource(R.string.release_timeline_empty), fontSize = 12.sp)
             }
         }
         return

@@ -62,6 +62,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlin.math.min
 import com.febricahyaa.clockapp.core.TimerDurationInput
+import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
 import com.febricahyaa.clockapp.navigation.chronaSharedBounds
 import com.febricahyaa.clockapp.ui.components.ChronaCard
@@ -157,14 +158,14 @@ fun TimerScreen(
     }
 
     ChronaScaffold(
-        title = "Timer",
-        subtitle = "Build a duration with numbers, then let Chrona count it down",
+        title = stringResource(R.string.timer_screen_title),
+        subtitle = stringResource(R.string.timer_screen_subtitle),
         onBack = onBack,
         actions = {
             IconCircleButton(
                 icon = Icons.Filled.Refresh,
                 onClick = onReset,
-                contentDescription = "Reset timer",
+                contentDescription = stringResource(R.string.timer_action_reset),
             )
         },
     ) { paddingValues ->
@@ -275,9 +276,9 @@ fun TimerScreen(
                                     Spacer(Modifier.height(12.dp))
                                     Text(
                                         text = when (state) {
-                                            ChronaTimeToolMotionState.RUNNING -> "Running from elapsed real time"
-                                            ChronaTimeToolMotionState.COMPLETED -> "Timer complete"
-                                            else -> "Paused — resume when you're ready"
+                                            ChronaTimeToolMotionState.RUNNING -> stringResource(R.string.timer_state_running)
+                                            ChronaTimeToolMotionState.COMPLETED -> stringResource(R.string.timer_state_complete)
+                                            else -> stringResource(R.string.timer_state_paused)
                                         },
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -289,10 +290,10 @@ fun TimerScreen(
 
                         Spacer(Modifier.height(18.dp))
                         val primaryActionLabel = when {
-                            motionState == ChronaTimeToolMotionState.COMPLETED -> "Reset"
-                            running -> "Pause"
-                            remainingSeconds != totalSeconds -> "Resume"
-                            else -> "Start"
+                            motionState == ChronaTimeToolMotionState.COMPLETED -> stringResource(R.string.timer_action_reset)
+                            running -> stringResource(R.string.timer_action_pause)
+                            remainingSeconds != totalSeconds -> stringResource(R.string.timer_action_resume)
+                            else -> stringResource(R.string.timer_action_start)
                         }
                         Button(
                             onClick = {
@@ -329,7 +330,7 @@ fun TimerScreen(
 
         Spacer(Modifier.height(12.dp))
         Text(
-            text = "Timer completion is scheduled through Chrona's Android alarm layer so it can survive the UI leaving the foreground.",
+            text = stringResource(R.string.timer_completion_note),
             modifier = Modifier.fillMaxWidth(),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -377,7 +378,7 @@ private fun CountdownIndicator(
                 fontWeight = FontWeight.Light,
             )
             Text(
-                text = if (running) "Running" else if (remainingSeconds == 0) "Complete" else "Paused",
+                text = if (running) stringResource(R.string.timer_indicator_running) else if (remainingSeconds == 0) stringResource(R.string.timer_indicator_complete) else stringResource(R.string.timer_indicator_paused),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -412,7 +413,7 @@ private fun TimerHeroEditor(
             modifier = Modifier.padding(24.dp * heroScale.coerceAtLeast(0.88f)),
         ) {
             Text(
-                text = "Set duration",
+                text = stringResource(R.string.timer_set_duration),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -424,7 +425,7 @@ private fun TimerHeroEditor(
             )
             Spacer(Modifier.height(6.dp))
             Text(
-                text = "HH : MM : SS",
+                text = stringResource(R.string.timer_format_hint),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -529,7 +530,7 @@ private fun TimerKeypad(
                 enabled = enabled,
                 modifier = Modifier.weight(1f),
                 onClick = onClear,
-                contentDescription = "Clear timer input",
+                contentDescription = stringResource(R.string.timer_clear_input),
             )
             KeypadButton(
                 text = "0",
@@ -542,7 +543,7 @@ private fun TimerKeypad(
                 enabled = enabled,
                 modifier = Modifier.weight(1f),
                 onClick = onDelete,
-                contentDescription = "Delete last timer digit",
+                contentDescription = stringResource(R.string.timer_delete_digit),
             )
         }
     }
@@ -581,7 +582,7 @@ private fun QuickDurations(
     onSelect: (Int) -> Unit,
     onCommit: (Int) -> Unit,
 ) {
-    val options = listOf(5 to "5m", 15 to "15m", 30 to "30m", 60 to "1h")
+    val options = listOf(5 to stringResource(R.string.timer_preset_5m), 15 to stringResource(R.string.timer_preset_15m), 30 to stringResource(R.string.timer_preset_30m), 60 to stringResource(R.string.timer_preset_1h))
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly,

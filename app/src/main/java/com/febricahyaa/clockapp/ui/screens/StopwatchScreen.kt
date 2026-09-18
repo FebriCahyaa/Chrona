@@ -39,6 +39,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
 import com.febricahyaa.clockapp.navigation.chronaSharedBounds
 import com.febricahyaa.clockapp.ui.components.ChronaCard
@@ -62,14 +64,14 @@ fun StopwatchScreen(
     onBack: () -> Unit,
 ) {
     ChronaScaffold(
-        title = "Stopwatch",
-        subtitle = "Track every second",
+        title = stringResource(R.string.stopwatch_screen_title),
+        subtitle = stringResource(R.string.stopwatch_screen_subtitle),
         onBack = onBack,
         actions = {
             IconCircleButton(
                 Icons.Filled.Refresh,
                 onReset,
-                contentDescription = "Reset stopwatch",
+                contentDescription = stringResource(R.string.stopwatch_reset_content_description),
             )
         },
     ) { paddingValues ->
@@ -170,10 +172,10 @@ private fun StopwatchTimeSurface(
                 Spacer(Modifier.height(9.dp))
                 Text(
                     text = when (state) {
-                        ChronaTimeToolMotionState.IDLE -> "Ready"
-                        ChronaTimeToolMotionState.RUNNING -> "Recording time"
-                        ChronaTimeToolMotionState.PAUSED -> "Paused"
-                        ChronaTimeToolMotionState.COMPLETED -> "Completed"
+                        ChronaTimeToolMotionState.IDLE -> stringResource(R.string.stopwatch_status_ready)
+                        ChronaTimeToolMotionState.RUNNING -> stringResource(R.string.stopwatch_status_recording)
+                        ChronaTimeToolMotionState.PAUSED -> stringResource(R.string.stopwatch_status_paused)
+                        ChronaTimeToolMotionState.COMPLETED -> stringResource(R.string.stopwatch_status_completed)
                     },
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -181,7 +183,7 @@ private fun StopwatchTimeSurface(
                 if (laps.isNotEmpty()) {
                     Spacer(Modifier.height(7.dp))
                     Text(
-                        text = "${laps.size} laps recorded",
+                        text = stringResource(R.string.stopwatch_laps_recorded, laps.size),
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.78f),
                     )
@@ -202,7 +204,7 @@ private fun StopwatchLapHistory(
         glass = glass,
     ) {
         Text(
-            text = "Lap history",
+            text = stringResource(R.string.stopwatch_lap_history),
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.SemiBold,
         )
@@ -221,7 +223,7 @@ private fun StopwatchLapHistory(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = "Lap $n",
+                        text = stringResource(R.string.stopwatch_lap_label, n),
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -268,7 +270,7 @@ private fun StopwatchControls(
             Box(contentAlignment = Alignment.Center) {
                 Icon(
                     Icons.Filled.Flag,
-                    contentDescription = "Lap",
+                    contentDescription = stringResource(R.string.stopwatch_action_lap),
                     modifier = Modifier.size(21.dp),
                 )
             }
@@ -284,7 +286,7 @@ private fun StopwatchControls(
             Box(contentAlignment = Alignment.Center) {
                 Icon(
                     if (isRunning) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                    contentDescription = if (isRunning) "Pause stopwatch" else "Start stopwatch",
+                    contentDescription = if (isRunning) stringResource(R.string.stopwatch_pause_content_description) else stringResource(R.string.stopwatch_start_content_description),
                     tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(31.dp),
                 )
@@ -292,7 +294,7 @@ private fun StopwatchControls(
         }
         Spacer(Modifier.size(16.dp))
         GlassPill(onClick = onReset) {
-            Text("Reset", fontSize = 11.sp)
+            Text(stringResource(R.string.stopwatch_action_reset), fontSize = 11.sp)
         }
     }
 }

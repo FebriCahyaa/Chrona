@@ -4,6 +4,8 @@
 
 package com.febricahyaa.clockapp.ui.components
 
+import com.febricahyaa.clockapp.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -59,7 +61,7 @@ fun ChronaScaffold(
                         IconButton(onClick = onBack) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back",
+                                contentDescription = stringResource(R.string.nav_back),
                             )
                         }
                     }
