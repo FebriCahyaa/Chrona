@@ -211,6 +211,24 @@ jobs:
           sha256sum "$APK" > "${APK}.sha256"
           cat "${APK}.sha256"
 
+      - name: Run Phase 6C release-candidate gate
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x ./scripts/phase6-rc-gate.sh
+          APK="${{ steps.collect_apk.outputs.apk }}"
+          bash ./scripts/phase6-rc-gate.sh "$RELEASE_VERSION" "$APK" release-candidate
+
+      - name: Upload release-candidate manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: chrona-rc-${{ inputs.version }}
+          path: release-candidate/RELEASE-CANDIDATE.json
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Upload CI artifact
         uses: actions/upload-artifact@v4
         with:
