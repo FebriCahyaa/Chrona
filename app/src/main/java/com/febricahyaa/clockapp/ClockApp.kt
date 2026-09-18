@@ -274,7 +274,7 @@ fun ClockApp() {
                             onAccentChange = settingsViewModel::updateAccent,
                             onFormatChange = settingsViewModel::updateUse24HourFormat,
                             onShowSecondsChange = settingsViewModel::updateShowSeconds,
-                            notificationPermissionGranted = Build.VERSION < 33 ||
+                            notificationPermissionGranted = Build.VERSION.SDK_INT < 33 ||
                                 ContextCompat.checkSelfPermission(
                                     context,
                                     Manifest.permission.POST_NOTIFICATIONS,
