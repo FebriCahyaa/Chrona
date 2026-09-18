@@ -244,6 +244,7 @@ fun SettingsUpdateSection(
     state: UpdateUiState,
     onCheckForUpdates: () -> Unit,
     onOpenUpdate: () -> Unit,
+    onViewReleaseTimeline: () -> Unit = {},
 ) {
     SettingsSectionTitle(Icons.Filled.SystemUpdate, "App updates")
     Spacer(Modifier.height(9.dp))
@@ -310,31 +311,51 @@ fun SettingsUpdateSection(
             }
 
             Spacer(Modifier.height(10.dp))
-            Row(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            Surface(
+                onClick = onCheckForUpdates,
+                enabled = !state.isChecking,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+                color = MaterialTheme.colorScheme.primaryContainer,
             ) {
-                Surface(
-                    onClick = onCheckForUpdates,
-                    enabled = !state.isChecking,
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(14.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer,
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 11.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 14.dp, vertical = 11.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(Icons.Filled.Refresh, null, Modifier.size(17.dp))
-                        Spacer(Modifier.size(7.dp))
-                        Text("Check now", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-                    }
+                    Icon(Icons.Filled.Refresh, null, Modifier.size(17.dp))
+                    Spacer(Modifier.size(7.dp))
+                    Text("Check now", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                 }
+            }
 
-                if (state.isUpdateAvailable && !snapshot.releaseUrl.isNullOrBlank()) {
+            if (!snapshot.releaseUrl.isNullOrBlank() && snapshot.latestVersion != null) {
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Surface(
+                        onClick = onViewReleaseTimeline,
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(14.dp),
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        border = BorderStroke(
+                            1.dp,
+                            MaterialTheme.colorScheme.outline.copy(alpha = 0.10f),
+                        ),
+                    ) {
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 10.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text("Release timeline", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                        }
+                    }
                     Surface(
                         onClick = onOpenUpdate,
                         modifier = Modifier.weight(1f),
@@ -348,10 +369,10 @@ fun SettingsUpdateSection(
                         Box(
                             Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 14.dp, vertical = 11.dp),
+                                .padding(horizontal = 12.dp, vertical = 10.dp),
                             contentAlignment = Alignment.Center,
                         ) {
-                            Text("View release", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                            Text("Open GitHub", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }

@@ -23,6 +23,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -32,6 +36,7 @@ import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.model.ClockSettings
 import com.febricahyaa.clockapp.model.ThemeAccent
 import com.febricahyaa.clockapp.ui.components.ChronaScaffold
+import com.febricahyaa.clockapp.ui.update.ChronaReleaseTimeline
 import com.febricahyaa.clockapp.ui.viewmodel.UpdateUiState
 
 @Composable
@@ -51,6 +56,8 @@ fun SettingsSheetContent(
     modifier: Modifier = Modifier,
     showSectionHeader: Boolean = true,
 ) {
+    var showReleaseTimeline by remember { mutableStateOf(false) }
+
     Column(
         modifier
             .fillMaxWidth()
@@ -91,6 +98,7 @@ fun SettingsSheetContent(
                     updateState = updateState,
                     onCheckForUpdates = onCheckForUpdates,
                     onOpenUpdate = onOpenUpdate,
+                    onViewReleaseTimeline = { showReleaseTimeline = true },
                 )
 
                 ChronaSettingsWindowClass.MEDIUM -> SettingsMediumDashboard(
@@ -106,6 +114,7 @@ fun SettingsSheetContent(
                     updateState = updateState,
                     onCheckForUpdates = onCheckForUpdates,
                     onOpenUpdate = onOpenUpdate,
+                    onViewReleaseTimeline = { showReleaseTimeline = true },
                 )
 
                 ChronaSettingsWindowClass.COMPACT -> SettingsCompactDashboard(
@@ -121,9 +130,21 @@ fun SettingsSheetContent(
                     updateState = updateState,
                     onCheckForUpdates = onCheckForUpdates,
                     onOpenUpdate = onOpenUpdate,
+                    onViewReleaseTimeline = { showReleaseTimeline = true },
                 )
             }
         }
+    }
+
+    if (showReleaseTimeline && updateState.snapshot.latestVersion != null) {
+        ChronaReleaseTimeline(
+            snapshot = updateState.snapshot,
+            onDismiss = { showReleaseTimeline = false },
+            onOpenExternal = {
+                showReleaseTimeline = false
+                onOpenUpdate()
+            },
+        )
     }
 }
 
@@ -141,6 +162,7 @@ private fun SettingsCompactDashboard(
     updateState: UpdateUiState,
     onCheckForUpdates: () -> Unit,
     onOpenUpdate: () -> Unit,
+    onViewReleaseTimeline: () -> Unit = {},
 ) {
     SettingsPreviewCard(settings, use24HourFormat)
     Spacer(Modifier.height(18.dp))
@@ -150,7 +172,7 @@ private fun SettingsCompactDashboard(
     Spacer(Modifier.height(18.dp))
     SettingsNotificationsSection(notificationPermissionGranted, onOpenNotificationSettings)
     Spacer(Modifier.height(18.dp))
-    SettingsUpdateSection(updateState, onCheckForUpdates, onOpenUpdate)
+    SettingsUpdateSection(updateState, onCheckForUpdates, onOpenUpdate, onViewReleaseTimeline)
     Spacer(Modifier.height(18.dp))
     SettingsAboutSection(onOpenLegal)
 }
@@ -169,6 +191,7 @@ private fun SettingsMediumDashboard(
     updateState: UpdateUiState,
     onCheckForUpdates: () -> Unit,
     onOpenUpdate: () -> Unit,
+    onViewReleaseTimeline: () -> Unit = {},
 ) {
     SettingsPreviewCard(settings, use24HourFormat)
     Spacer(Modifier.height(14.dp))
@@ -185,7 +208,7 @@ private fun SettingsMediumDashboard(
         SettingsDashboardPanel(Modifier.weight(1f)) {
             SettingsNotificationsSection(notificationPermissionGranted, onOpenNotificationSettings)
             Spacer(Modifier.height(22.dp))
-            SettingsUpdateSection(updateState, onCheckForUpdates, onOpenUpdate)
+            SettingsUpdateSection(updateState, onCheckForUpdates, onOpenUpdate, onViewReleaseTimeline)
             Spacer(Modifier.height(22.dp))
             SettingsAboutSection(onOpenLegal)
         }
@@ -206,6 +229,7 @@ private fun SettingsExpandedDashboard(
     updateState: UpdateUiState,
     onCheckForUpdates: () -> Unit,
     onOpenUpdate: () -> Unit,
+    onViewReleaseTimeline: () -> Unit = {},
 ) {
     Row(
         Modifier.fillMaxWidth(),
@@ -223,7 +247,7 @@ private fun SettingsExpandedDashboard(
         SettingsDashboardPanel(Modifier.weight(1f)) {
             SettingsNotificationsSection(notificationPermissionGranted, onOpenNotificationSettings)
             Spacer(Modifier.height(20.dp))
-            SettingsUpdateSection(updateState, onCheckForUpdates, onOpenUpdate)
+            SettingsUpdateSection(updateState, onCheckForUpdates, onOpenUpdate, onViewReleaseTimeline)
             Spacer(Modifier.height(20.dp))
             SettingsAboutSection(onOpenLegal)
         }
