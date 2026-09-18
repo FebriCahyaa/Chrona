@@ -2,34 +2,28 @@
 
 package com.febricahyaa.clockapp
 
-import android.Manifest
 import android.app.AlarmManager
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.Manifest
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.core.content.ContextCompat
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
@@ -40,6 +34,8 @@ import com.febricahyaa.clockapp.model.WorldClockItem
 import com.febricahyaa.clockapp.navigation.AppDestination
 import com.febricahyaa.clockapp.navigation.ChronaNavigationActions
 import com.febricahyaa.clockapp.navigation.ChronaRootNavigation
+import com.febricahyaa.clockapp.time.ChronaRuntimeLifecycleEffect
+import com.febricahyaa.clockapp.time.LocalChronaTimeEngine
 import com.febricahyaa.clockapp.ui.components.ChronaAmbientBackdrop
 import com.febricahyaa.clockapp.ui.components.ChronaScreenSurface
 import com.febricahyaa.clockapp.ui.screens.AlarmScreen
@@ -49,8 +45,8 @@ import com.febricahyaa.clockapp.ui.screens.OnboardingScreen
 import com.febricahyaa.clockapp.ui.screens.SettingsScreen
 import com.febricahyaa.clockapp.ui.screens.StopwatchScreen
 import com.febricahyaa.clockapp.ui.screens.TimerScreen
-import com.febricahyaa.clockapp.ui.screens.WorldClockScreen
 import com.febricahyaa.clockapp.ui.screens.WorldClockDetailScreen
+import com.febricahyaa.clockapp.ui.screens.WorldClockScreen
 import com.febricahyaa.clockapp.ui.screens.WorldClockSearchScreen
 import com.febricahyaa.clockapp.ui.theme.ChronaTheme
 import com.febricahyaa.clockapp.ui.viewmodel.AlarmViewModel
@@ -60,14 +56,10 @@ import com.febricahyaa.clockapp.ui.viewmodel.SettingsViewModel
 import com.febricahyaa.clockapp.ui.viewmodel.StopwatchViewModel
 import com.febricahyaa.clockapp.ui.viewmodel.TimerViewModel
 import com.febricahyaa.clockapp.ui.viewmodel.WorldClockViewModel
-import com.febricahyaa.clockapp.time.ChronaRuntimeLifecycleEffect
-import com.febricahyaa.clockapp.time.LocalChronaTimeEngine
 
 @Composable
 fun ClockApp() {
     val context = LocalContext.current
-    val view = LocalView.current
-    val darkSystemBars = isSystemInDarkTheme()
     val container = remember(context) {
         (context.applicationContext as ClockApplication).container
     }
@@ -115,24 +107,6 @@ fun ClockApp() {
         } else {
             notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
-    }
-
-    DisposableEffect(view, darkSystemBars) {
-        val activity = view.context as? android.app.Activity
-        val window = activity?.window
-        if (window != null) {
-            window.statusBarColor = Color.Transparent.toArgb()
-            window.navigationBarColor = Color.Transparent.toArgb()
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                window.isStatusBarContrastEnforced = false
-                window.isNavigationBarContrastEnforced = false
-            }
-            WindowCompat.getInsetsController(window, view).apply {
-                isAppearanceLightStatusBars = !darkSystemBars
-                isAppearanceLightNavigationBars = !darkSystemBars
-            }
-        }
-        onDispose { }
     }
 
     ChronaTheme(settingsState.settings) {

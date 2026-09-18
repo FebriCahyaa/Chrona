@@ -4,51 +4,52 @@
 
 package com.febricahyaa.clockapp.ui.screens
 
-import androidx.compose.foundation.clickable
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.input.rememberTextFieldState
-import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.LocationCity
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.ExpandedFullScreenSearchBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SearchBarValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSearchBarState
-import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.res.stringResource
-import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.model.TimeZoneCatalog
-import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
-import kotlinx.coroutines.launch
+import com.febricahyaa.clockapp.R
 import java.time.Instant
 import java.time.ZoneId
+import kotlinx.coroutines.launch
 
 @Composable
 fun WorldClockSearchScreen(
@@ -89,7 +90,7 @@ fun WorldClockSearchScreen(
                         scope.launch { searchBarState.animateToCollapsed() }
                     },
                 ) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.world_search_close))
+                    Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.world_search_close))
                 }
             },
         )
@@ -118,40 +119,48 @@ fun WorldClockSearchScreen(
             ) {
                 items(results, key = { it.zoneId }, contentType = { "timezone-search" }) { entry ->
                     ListItem(
-                        headlineContent = {
-                            Text(entry.city, style = MaterialTheme.typography.titleMedium)
+                        onClick = {
+                            haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                            onAdd(entry.city, entry.country, entry.zoneId)
+                            textFieldState.setTextAndPlaceCursorAtEnd(entry.city)
+                            scope.launch { searchBarState.animateToCollapsed() }
                         },
+                        modifier = Modifier.fillMaxWidth(),
                         supportingContent = {
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 Text(entry.country, style = MaterialTheme.typography.bodyMedium)
                                 Text("•", color = MaterialTheme.colorScheme.outline)
-                                Text(offsetFor(entry.zoneId), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                                Text(
+                                    offsetFor(entry.zoneId),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
                             }
                         },
                         leadingContent = {
                             Icon(Icons.Filled.LocationCity, contentDescription = null)
                         },
                         trailingContent = {
-                            Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.world_search_add_city, entry.city))
+                            Icon(
+                                Icons.Filled.Add,
+                                contentDescription = stringResource(R.string.world_search_add_city, entry.city),
+                            )
                         },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickableWithHaptic(haptics) {
-                                onAdd(entry.city, entry.country, entry.zoneId)
-                                textFieldState.setTextAndPlaceCursorAtEnd(entry.city)
-                                scope.launch { searchBarState.animateToCollapsed() }
-                            },
-                    )
+                    ) {
+                        Text(entry.city, style = MaterialTheme.typography.titleMedium)
+                    }
                 }
             }
         }
-        WorldClockSearchIdle(
-            textFieldState = textFieldState,
-            results = results,
-            haptics = haptics,
-            onBack = onBack,
-            onAdd = onAdd,
-        )
+        if (searchBarState.currentValue == SearchBarValue.Collapsed) {
+            WorldClockSearchIdle(
+                textFieldState = textFieldState,
+                results = results,
+                haptics = haptics,
+                onBack = onBack,
+                onAdd = onAdd,
+            )
+        }
     }
 }
 
@@ -181,10 +190,20 @@ private fun WorldClockSearchIdle(
                 )
             }
         }
-        LazyColumn(Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .navigationBarsPadding(),
+        ) {
             items(results, key = { it.zoneId }, contentType = { "timezone-search" }) { entry ->
                 ListItem(
-                    headlineContent = { Text(entry.city, style = MaterialTheme.typography.titleMedium) },
+                    onClick = {
+                        haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                        onAdd(entry.city, entry.country, entry.zoneId)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
                     supportingContent = {
                         Text(
                             "${entry.country} • ${offsetFor(entry.zoneId)}",
@@ -193,14 +212,15 @@ private fun WorldClockSearchIdle(
                         )
                     },
                     leadingContent = { Icon(Icons.Filled.LocationCity, contentDescription = null) },
-                    trailingContent = { Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.world_search_add_city, entry.city)) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp)
-                        .clickableWithHaptic(haptics) {
-                            onAdd(entry.city, entry.country, entry.zoneId)
-                        },
-                )
+                    trailingContent = {
+                        Icon(
+                            Icons.Filled.Add,
+                            contentDescription = stringResource(R.string.world_search_add_city, entry.city),
+                        )
+                    },
+                ) {
+                    Text(entry.city, style = MaterialTheme.typography.titleMedium)
+                }
             }
         }
     }
@@ -227,11 +247,3 @@ private fun offsetFor(zoneId: String): String = runCatching {
         "UTC$sign%02d:%02d".format(absolute / 60, absolute % 60)
     }
 }.getOrDefault("UTC")
-
-private fun Modifier.clickableWithHaptic(
-    haptics: androidx.compose.ui.hapticfeedback.HapticFeedback,
-    onClick: () -> Unit,
-): Modifier = clickable {
-    haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
-    onClick()
-}

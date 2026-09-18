@@ -6,6 +6,11 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
+/**
+ * Applies a shared bound only when the root navigation explicitly provides a
+ * shared-transition scope. The production root currently leaves that scope
+ * unset because shared destination rendering caused full-screen ghosting.
+ */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun Modifier.chronaSharedBounds(

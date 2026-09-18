@@ -3,31 +3,30 @@
 package com.febricahyaa.clockapp.ui.screens
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessAlarm
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.AutoAwesome
@@ -36,6 +35,7 @@ import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -46,36 +46,35 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
-import androidx.compose.ui.zIndex
 import androidx.compose.ui.unit.sp
-import com.febricahyaa.clockapp.R
+import androidx.compose.ui.zIndex
 import com.febricahyaa.clockapp.model.AlarmItem
 import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.navigation.AppDestination
 import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
 import com.febricahyaa.clockapp.navigation.chronaSharedBounds
+import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.ui.components.BentoIcon
 import com.febricahyaa.clockapp.ui.components.BentoIconButton
 import com.febricahyaa.clockapp.ui.components.ChronaScaffold
 import com.febricahyaa.clockapp.ui.components.HybridBentoCard
-import com.febricahyaa.clockapp.ui.components.ThemeToggle
 import com.febricahyaa.clockapp.ui.components.rememberZonedNow
+import com.febricahyaa.clockapp.ui.components.ThemeToggle
 import java.time.Duration
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
@@ -109,7 +108,9 @@ fun ChronaBentoHomeScreen(
     val worldClockSummary = formatWorldClockSummary(worldClockItems, worldClockFavorites)
         ?: stringResource(R.string.home_world_clock_subtitle)
     val windowAdaptiveInfo = androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2()
-    val isWideWindow = windowAdaptiveInfo.windowSizeClass.windowWidthSizeClass == androidx.window.core.layout.WindowWidthSizeClass.EXPANDED
+    val isWideWindow = windowAdaptiveInfo.windowSizeClass.isWidthAtLeastBreakpoint(
+        androidx.window.core.layout.WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND,
+    )
     val dateText = buildDateText(now, locale)
     val scrollState = rememberScrollState()
 
@@ -161,6 +162,7 @@ fun ChronaBentoHomeScreen(
                         ActionGrid(
                             themeMode = themeMode,
                             nextAlarm = alarmTime,
+                            hasNextAlarm = next != null,
                             alarmMeta = alarmMeta,
                             worldClockSummary = worldClockSummary,
                             timerRemainingSeconds = timerRemainingSeconds,
@@ -196,6 +198,7 @@ fun ChronaBentoHomeScreen(
                         FloatingActionGrid(
                             themeMode = themeMode,
                             nextAlarm = alarmTime,
+                            hasNextAlarm = next != null,
                             alarmMeta = alarmMeta,
                             worldClockSummary = worldClockSummary,
                             timerRemainingSeconds = timerRemainingSeconds,
@@ -237,6 +240,7 @@ private fun HeroCard(
 private fun FloatingActionGrid(
     themeMode: AppThemeMode,
     nextAlarm: String,
+    hasNextAlarm: Boolean,
     alarmMeta: String,
     worldClockSummary: String,
     timerRemainingSeconds: Int,
@@ -261,7 +265,7 @@ private fun FloatingActionGrid(
                     modifier = Modifier.weight(1f).height(136.dp).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_ALARM),
                     themeMode = themeMode,
                     icon = Icons.Filled.AccessAlarm,
-                    eyebrow = if (nextAlarm == stringResource(R.string.home_alarm_not_set)) stringResource(R.string.home_alarm_label) else stringResource(R.string.home_next_alarm_label),
+                    eyebrow = if (hasNextAlarm) stringResource(R.string.home_next_alarm_label) else stringResource(R.string.home_alarm_label),
                     title = stringResource(R.string.home_alarm_label),
                     value = nextAlarm,
                     meta = alarmMeta,
@@ -304,6 +308,7 @@ private fun FloatingActionGrid(
 private fun ActionGrid(
     themeMode: AppThemeMode,
     nextAlarm: String,
+    hasNextAlarm: Boolean,
     alarmMeta: String,
     worldClockSummary: String,
     timerRemainingSeconds: Int,
@@ -315,7 +320,7 @@ private fun ActionGrid(
             modifier = Modifier.weight(1f).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_ALARM),
             themeMode = themeMode,
             icon = Icons.Filled.AccessAlarm,
-            eyebrow = if (nextAlarm == stringResource(R.string.home_alarm_not_set)) stringResource(R.string.home_alarm_label) else stringResource(R.string.home_next_alarm_label),
+            eyebrow = if (hasNextAlarm) stringResource(R.string.home_next_alarm_label) else stringResource(R.string.home_alarm_label),
             title = stringResource(R.string.home_alarm_label),
             value = nextAlarm,
             meta = alarmMeta,
@@ -338,7 +343,7 @@ private fun ActionGrid(
             themeMode = themeMode,
             icon = Icons.Filled.Public,
             title = stringResource(R.string.home_world_clock_title),
-            subtitle = stringResource(R.string.home_world_clock_subtitle),
+            subtitle = worldClockSummary,
             onClick = { onNavigate(AppDestination.WORLD) },
         )
         UtilityCard(
@@ -611,14 +616,33 @@ private fun formatWorldClockSummary(
 }
 
 private fun nextAlarm(alarms: List<AlarmItem>, now: java.time.ZonedDateTime): AlarmItem? {
-    val enabled = alarms.filter(AlarmItem::enabled)
-    if (enabled.isEmpty()) return null
-    val localNow = now.toLocalDateTime()
-    return enabled.minByOrNull { alarm ->
-        val today = LocalDateTime.of(now.toLocalDate(), alarm.time)
-        val candidate = if (today.isAfter(localNow)) today else today.plusDays(1)
-        Duration.between(localNow, candidate).toMillis()
+    return alarms.asSequence()
+        .filter(AlarmItem::enabled)
+        .mapNotNull { alarm ->
+            nextTrigger(alarm, now)?.let { trigger -> trigger to alarm }
+        }
+        .minByOrNull { (trigger, _) -> Duration.between(now, trigger).toMillis() }
+        ?.second
+}
+
+private fun nextTrigger(
+    alarm: AlarmItem,
+    now: java.time.ZonedDateTime,
+): java.time.ZonedDateTime? {
+    if (alarm.repeatDays.isEmpty()) {
+        val candidate = now.toLocalDate()
+            .atTime(alarm.time)
+            .atZone(now.zone)
+        return candidate.takeIf { it.isAfter(now) }
     }
+
+    for (offset in 0..7) {
+        val date = now.toLocalDate().plusDays(offset.toLong())
+        if (date.dayOfWeek !in alarm.repeatDays) continue
+        val candidate = date.atTime(alarm.time).atZone(now.zone)
+        if (candidate.isAfter(now)) return candidate
+    }
+    return null
 }
 
 private fun formatAlarmTime(time: java.time.LocalTime, use24Hour: Boolean, locale: Locale): String {
