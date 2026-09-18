@@ -69,7 +69,7 @@ fun ChronaAnimatedSeekBar(
     )
     val thumbSize by animateDpAsState(
         targetValue = if (sliderState.isDragging) 25.dp else 19.dp,
-        animationSpec = ClockMotion.expressiveSpring,
+        animationSpec = ClockMotion.expressiveDpSpring,
         label = "chrona-slider-thumb-size",
     )
     val trackScale by animateFloatAsState(

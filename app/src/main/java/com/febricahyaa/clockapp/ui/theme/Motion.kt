@@ -7,6 +7,7 @@ import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.ui.unit.Dp
 
 /** Shared motion language for Chrona's tactile, spatial and expressive UI. */
 object ClockMotion {
@@ -22,6 +23,12 @@ object ClockMotion {
 
     /** Stronger settle used by sliders, radial controls and draggable handles. */
     val expressiveSpring: SpringSpec<Float> = spring(
+        dampingRatio = 0.72f,
+        stiffness = 520f,
+    )
+
+    /** Dp variant for size/spacing animations that share the expressive spring. */
+    val expressiveDpSpring: SpringSpec<Dp> = spring(
         dampingRatio = 0.72f,
         stiffness = 520f,
     )
