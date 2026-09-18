@@ -154,7 +154,7 @@
     <string name="timer_action_reset">Reset</string>
     <string name="timer_state_running">Running from elapsed real time</string>
     <string name="timer_state_complete">Timer complete</string>
-    <string name="timer_state_paused">Paused — resume when you're ready</string>
+    <string name="timer_state_paused">Paused - resume when you are ready</string>
     <string name="timer_indicator_running">Running</string>
     <string name="timer_indicator_complete">Complete</string>
     <string name="timer_indicator_paused">Paused</string>
@@ -162,7 +162,7 @@
     <string name="timer_format_hint">HH : MM : SS</string>
     <string name="timer_clear_input">Clear timer input</string>
     <string name="timer_delete_digit">Delete last timer digit</string>
-    <string name="timer_completion_note">Timer completion is scheduled through Chrona's Android alarm layer so it can survive the UI leaving the foreground.</string>
+    <string name="timer_completion_note">Timer completion is scheduled through Chrona Android alarm layer so it can survive the UI leaving the foreground.</string>
     <string name="timer_preset_5m">5m</string>
     <string name="timer_preset_15m">15m</string>
     <string name="timer_preset_30m">30m</string>
