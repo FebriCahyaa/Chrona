@@ -3,12 +3,12 @@
 package com.febricahyaa.clockapp.ui.screens
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,11 +39,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.febricahyaa.clockapp.ui.components.GlassPill
 import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
 import com.febricahyaa.clockapp.navigation.chronaSharedBounds
-import com.febricahyaa.clockapp.ui.components.IconCircleButton
+import com.febricahyaa.clockapp.ui.components.ChronaCard
 import com.febricahyaa.clockapp.ui.components.ChronaScaffold
+import com.febricahyaa.clockapp.ui.components.GlassPill
+import com.febricahyaa.clockapp.ui.components.IconCircleButton
 import com.febricahyaa.clockapp.ui.motion.ChronaTimeToolMotionState
 import com.febricahyaa.clockapp.ui.motion.stopwatchMotionState
 import com.febricahyaa.clockapp.ui.theme.ChronaMotionTokens
@@ -64,94 +65,182 @@ fun StopwatchScreen(
         title = "Stopwatch",
         subtitle = "Track every second",
         onBack = onBack,
-        actions = { IconCircleButton(Icons.Filled.Refresh, onReset, contentDescription = "Reset stopwatch") },
+        actions = {
+            IconCircleButton(
+                Icons.Filled.Refresh,
+                onReset,
+                contentDescription = "Reset stopwatch",
+            )
+        },
     ) { paddingValues ->
-        Column(Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 20.dp).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_STOPWATCH)) {
-            Spacer(Modifier.height(4.dp))
-
-        val motionState = stopwatchMotionState(elapsedMillis, isRunning)
-        Column(Modifier.fillMaxWidth().weight(1f)) {
-            Box(
-                Modifier
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 20.dp, vertical = 8.dp)
+                .chronaSharedBounds(ChronaMotionKeys.DASHBOARD_STOPWATCH),
+        ) {
+            StopwatchTimeSurface(
+                elapsedMillis = elapsedMillis,
+                isRunning = isRunning,
+                laps = laps,
+                modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
-                    .chronaSharedBounds(ChronaMotionKeys.STOPWATCH_STATE_SURFACE),
-                contentAlignment = Alignment.Center,
-            ) {
-                AnimatedContent(
-                    targetState = motionState,
-                    transitionSpec = {
-                        (fadeIn(
-                            tween(
-                                ChronaMotionTokens.SpatialDurationMillis,
-                                easing = ChronaMotionTokens.SpatialEasing,
-                            ),
-                        ) + scaleIn(
-                            initialScale = 0.96f,
-                            animationSpec = tween(
-                                ChronaMotionTokens.SpatialDurationMillis,
-                                easing = ChronaMotionTokens.SpatialEasing,
-                            ),
-                        )).togetherWith(
-                            fadeOut(
-                                tween(
-                                    ChronaMotionTokens.MicroDurationMillis,
-                                    easing = ChronaMotionTokens.SpatialEasing,
-                                ),
-                            ) + scaleOut(
-                                targetScale = 1.02f,
-                                animationSpec = tween(
-                                    ChronaMotionTokens.MicroDurationMillis,
-                                    easing = ChronaMotionTokens.SpatialEasing,
-                                ),
-                            ),
-                        ).using(SizeTransform(clip = false))
-                    },
-                    label = "stopwatch-state-spatial-motion",
-                ) { state ->
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            formatStopwatch(elapsedMillis),
-                            fontSize = if (laps.isEmpty()) 62.sp else 58.sp,
-                            fontWeight = FontWeight.Light,
-                            letterSpacing = if (laps.isEmpty()) (-2.5).sp else (-2.2).sp,
-                        )
-                        Spacer(Modifier.height(7.dp))
-                        Text(
-                            text = when (state) {
-                                ChronaTimeToolMotionState.IDLE -> "Ready"
-                                ChronaTimeToolMotionState.RUNNING -> "Recording time"
-                                ChronaTimeToolMotionState.PAUSED -> "Paused"
-                                ChronaTimeToolMotionState.COMPLETED -> "Completed"
-                            },
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(Modifier.height(28.dp))
-                        StopwatchControls(isRunning, onLap, onToggleRun, onReset)
-                    }
-                }
-            }
+                    .weight(1f),
+            )
 
             if (laps.isNotEmpty()) {
-                Spacer(Modifier.height(18.dp))
-                LazyColumn(Modifier.fillMaxWidth().weight(1f)) {
-                    itemsIndexed(laps.asReversed()) { index, total ->
-                        val n = laps.size - index
-                        val previous = if (n > 1) laps[n - 2] else 0L
-                        Row(
-                            Modifier.fillMaxWidth().padding(vertical = 13.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                        ) {
-                            Text("Lap $n", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text("+${formatStopwatch(total - previous)}", fontSize = 13.sp, fontWeight = FontWeight.Medium)
-                            Text(formatStopwatch(total), fontSize = 12.sp)
-                        }
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f))
-                    }
+                Spacer(Modifier.height(16.dp))
+                StopwatchLapHistory(
+                    laps = laps,
+                    glass = glass,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                )
+            }
+
+            Spacer(Modifier.height(18.dp))
+            StopwatchControls(
+                isRunning = isRunning,
+                onLap = onLap,
+                onToggleRun = onToggleRun,
+                onReset = onReset,
+            )
+        }
+    }
+}
+
+@Composable
+private fun StopwatchTimeSurface(
+    elapsedMillis: Long,
+    isRunning: Boolean,
+    laps: List<Long>,
+    modifier: Modifier = Modifier,
+) {
+    val motionState = stopwatchMotionState(elapsedMillis, isRunning)
+
+    Box(
+        modifier = modifier
+            .chronaSharedBounds(ChronaMotionKeys.STOPWATCH_STATE_SURFACE),
+        contentAlignment = Alignment.Center,
+    ) {
+        AnimatedContent(
+            targetState = motionState,
+            transitionSpec = {
+                (fadeIn(
+                    tween(
+                        ChronaMotionTokens.SpatialDurationMillis,
+                        easing = ChronaMotionTokens.SpatialEasing,
+                    ),
+                ) + scaleIn(
+                    initialScale = 0.96f,
+                    animationSpec = tween(
+                        ChronaMotionTokens.SpatialDurationMillis,
+                        easing = ChronaMotionTokens.SpatialEasing,
+                    ),
+                )).togetherWith(
+                    fadeOut(
+                        tween(
+                            ChronaMotionTokens.MicroDurationMillis,
+                            easing = ChronaMotionTokens.SpatialEasing,
+                        ),
+                    ) + scaleOut(
+                        targetScale = 1.02f,
+                        animationSpec = tween(
+                            ChronaMotionTokens.MicroDurationMillis,
+                            easing = ChronaMotionTokens.SpatialEasing,
+                        ),
+                    ),
+                ).using(SizeTransform(clip = false))
+            },
+            label = "stopwatch-state-spatial-motion",
+        ) { state ->
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    text = formatStopwatch(elapsedMillis),
+                    fontSize = if (elapsedMillis >= 3_600_000L) 52.sp else 68.sp,
+                    fontWeight = FontWeight.Light,
+                    letterSpacing = if (elapsedMillis >= 3_600_000L) (-2.0).sp else (-2.8).sp,
+                    maxLines = 1,
+                )
+                Spacer(Modifier.height(9.dp))
+                Text(
+                    text = when (state) {
+                        ChronaTimeToolMotionState.IDLE -> "Ready"
+                        ChronaTimeToolMotionState.RUNNING -> "Recording time"
+                        ChronaTimeToolMotionState.PAUSED -> "Paused"
+                        ChronaTimeToolMotionState.COMPLETED -> "Completed"
+                    },
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (laps.isNotEmpty()) {
+                    Spacer(Modifier.height(7.dp))
+                    Text(
+                        text = "${laps.size} laps recorded",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.78f),
+                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun StopwatchLapHistory(
+    laps: List<Long>,
+    glass: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    ChronaCard(
+        modifier = modifier,
+        glass = glass,
+    ) {
+        Text(
+            text = "Lap history",
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Spacer(Modifier.height(8.dp))
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            itemsIndexed(laps.asReversed()) { index, total ->
+                val n = laps.size - index
+                val previous = if (n > 1) laps[n - 2] else 0L
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 11.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "Lap $n",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        text = "+${formatStopwatch(total - previous)}",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                    )
+                    Text(
+                        text = formatStopwatch(total),
+                        fontSize = 12.sp,
+                    )
+                }
+                if (index != laps.lastIndex) {
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f),
+                    )
+                }
+            }
         }
     }
 }
@@ -163,18 +252,28 @@ private fun StopwatchControls(
     onToggleRun: () -> Unit,
     onReset: () -> Unit,
 ) {
-    Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         Surface(
             onClick = onLap,
+            enabled = isRunning,
             modifier = Modifier.size(58.dp),
             color = MaterialTheme.colorScheme.surfaceContainer,
             shape = CircleShape,
             shadowElevation = 2.dp,
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Icon(Icons.Filled.Flag, contentDescription = "Lap", modifier = Modifier.size(21.dp))
+                Icon(
+                    Icons.Filled.Flag,
+                    contentDescription = "Lap",
+                    modifier = Modifier.size(21.dp),
+                )
             }
         }
+        Spacer(Modifier.size(16.dp))
         Surface(
             onClick = onToggleRun,
             modifier = Modifier.size(84.dp),
@@ -191,7 +290,10 @@ private fun StopwatchControls(
                 )
             }
         }
-        GlassPill(onClick = onReset) { Text("Reset", fontSize = 11.sp) }
+        Spacer(Modifier.size(16.dp))
+        GlassPill(onClick = onReset) {
+            Text("Reset", fontSize = 11.sp)
+        }
     }
 }
 
@@ -201,6 +303,9 @@ fun formatStopwatch(millis: Long): String {
     val s = (safe / 1000) % 60
     val m = (safe / 60000) % 60
     val h = safe / 3600000
-    return if (h > 0) String.format(Locale.US, "%02d:%02d:%02d.%02d", h, m, s, cs)
-    else String.format(Locale.US, "%02d:%02d.%02d", m, s, cs)
+    return if (h > 0) {
+        String.format(Locale.US, "%02d:%02d:%02d.%02d", h, m, s, cs)
+    } else {
+        String.format(Locale.US, "%02d:%02d.%02d", m, s, cs)
+    }
 }
