@@ -4,7 +4,7 @@ package com.febricahyaa.clockapp.core
 
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import kotlin.test.Test
+import org.junit.Test
 import kotlin.test.assertEquals
 
 class ClockTimeMathTest {

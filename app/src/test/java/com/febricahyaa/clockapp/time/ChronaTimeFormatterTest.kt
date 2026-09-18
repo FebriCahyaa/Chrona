@@ -2,7 +2,7 @@
 
 package com.febricahyaa.clockapp.time
 
-import kotlin.test.Test
+import org.junit.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import java.time.ZoneId

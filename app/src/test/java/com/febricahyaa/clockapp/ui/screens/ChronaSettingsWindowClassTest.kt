@@ -1,6 +1,6 @@
 package com.febricahyaa.clockapp.ui.screens
 
-import kotlin.test.Test
+import org.junit.Test
 import kotlin.test.assertEquals
 
 class ChronaSettingsWindowClassTest {

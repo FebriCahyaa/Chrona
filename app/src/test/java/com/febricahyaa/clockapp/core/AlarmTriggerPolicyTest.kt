@@ -9,21 +9,57 @@ import org.junit.Test
 import java.time.LocalTime
 
 class AlarmTriggerPolicyTest {
+
     @Test
     fun disabledAlarmIsNotValidForNormalTrigger() {
-        val alarm = AlarmItem(1L, LocalTime.NOON, enabled = false)
-        assertFalse(AlarmTriggerPolicy.shouldRing(alarm, isSnooze = false))
+        val alarm = AlarmItem(
+            id = 1L,
+            time = LocalTime.NOON,
+            label = "Test alarm",
+            enabled = false,
+            repeatDays = emptySet(),
+        )
+
+        assertFalse(
+            AlarmTriggerPolicy.shouldRing(
+                alarm = alarm,
+                isSnooze = false,
+            ),
+        )
     }
 
     @Test
     fun snoozeCanRingAfterOriginalAlarmWasDisabled() {
-        val alarm = AlarmItem(1L, LocalTime.NOON, enabled = false)
-        assertTrue(AlarmTriggerPolicy.shouldRing(alarm, isSnooze = true))
+        val alarm = AlarmItem(
+            id = 1L,
+            time = LocalTime.NOON,
+            label = "Test alarm",
+            enabled = false,
+            repeatDays = emptySet(),
+        )
+
+        assertTrue(
+            AlarmTriggerPolicy.shouldRing(
+                alarm = alarm,
+                isSnooze = true,
+            ),
+        )
     }
 
     @Test
     fun missingAlarmCannotRingNormally() {
-        assertFalse(AlarmTriggerPolicy.shouldRing(null, isSnooze = false))
-        assertTrue(AlarmTriggerPolicy.shouldRing(null, isSnooze = true))
+        assertFalse(
+            AlarmTriggerPolicy.shouldRing(
+                alarm = null,
+                isSnooze = false,
+            ),
+        )
+
+        assertTrue(
+            AlarmTriggerPolicy.shouldRing(
+                alarm = null,
+                isSnooze = true,
+            ),
+        )
     }
 }

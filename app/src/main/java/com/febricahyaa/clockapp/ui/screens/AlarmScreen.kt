@@ -224,6 +224,7 @@ private fun ExpandableAlarmCard(
     val haptics = LocalHapticFeedback.current
     val locale = LocalLocale.current.platformLocale
     val silentRingtoneLabel = stringResource(R.string.alarm_ringtone_silent)
+    val ringtonePickerTitle = stringResource(R.string.alarm_ringtone_picker_title)
     var expanded by rememberSaveable(alarm.id) { mutableStateOf(false) }
 
     val timeFormatter = remember(use24HourFormat, locale) {
@@ -260,7 +261,7 @@ private fun ExpandableAlarmCard(
         ringtonePicker.launch(
             Intent(RingtoneManager.ACTION_RINGTONE_PICKER).apply {
                 putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)
-                putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, context.getString(R.string.alarm_ringtone_picker_title))
+                putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, ringtonePickerTitle)
                 putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, true)
                 putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, existingUri)
             },
@@ -451,6 +452,7 @@ private fun AlarmEditorSheet(
         is24Hour = use24HourFormat,
     )
     val silentRingtoneLabel = stringResource(R.string.alarm_ringtone_silent)
+    val ringtonePickerTitle = stringResource(R.string.alarm_ringtone_picker_title)
     var label by rememberSaveable(initialAlarm.id) { mutableStateOf(initialAlarm.label) }
     var days by remember(initialAlarm.id) { mutableStateOf(initialAlarm.repeatDays) }
     var vibrate by rememberSaveable(initialAlarm.id) { mutableStateOf(initialAlarm.vibrate) }
@@ -480,15 +482,17 @@ private fun AlarmEditorSheet(
     }
 
     fun openRingtonePicker() {
-        val existingUri: Uri? = if (ringtoneUri.isNullOrBlank()) {
-            RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_ALARM)
-        } else {
-            Uri.parse(requireNotNull(ringtoneUri))
-        }
+        val storedRingtoneUri: String? = ringtoneUri?.takeUnless { it.isBlank() }
+        val existingUri: Uri? = storedRingtoneUri?.let { rawUri ->
+            Uri.parse(rawUri)
+        } ?: RingtoneManager.getActualDefaultRingtoneUri(
+            context,
+            RingtoneManager.TYPE_ALARM,
+        )
         ringtonePicker.launch(
             Intent(RingtoneManager.ACTION_RINGTONE_PICKER).apply {
                 putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)
-                putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, context.getString(R.string.alarm_ringtone_picker_title))
+                putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, ringtonePickerTitle)
                 putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, true)
                 putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, existingUri)
             },

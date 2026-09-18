@@ -4,7 +4,7 @@ package com.febricahyaa.clockapp.ui.onboarding
 
 import com.febricahyaa.clockapp.ui.screens.onboardingNextPage
 import com.febricahyaa.clockapp.ui.screens.onboardingPreviousPage
-import kotlin.test.Test
+import org.junit.Test
 import kotlin.test.assertEquals
 
 class ChronaOnboardingNavigationTest {
