@@ -63,9 +63,7 @@ fun rememberZonedNow(zoneId: ZoneId = ZoneId.systemDefault()): ZonedDateTime {
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             while (isActive) {
                 value = ZonedDateTime.now(zoneId)
-                val millis = System.currentTimeMillis() % 1000L
-                val nextBoundary = if (millis == 0L) 1000L else 1000L - millis
-                delay(nextBoundary)
+                delay((1000L - (System.currentTimeMillis() % 1000L)).coerceAtLeast(16L))
             }
         }
     }
@@ -108,7 +106,7 @@ fun GlassPill(
             .then(onClick?.let { Modifier.clickable(onClick = it) } ?: Modifier),
     ) {
         Row(
-            Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            Modifier.padding(horizontal = 15.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(7.dp),
             content = content,

@@ -30,11 +30,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.drawscope.Stroke
+import com.febricahyaa.clockapp.ui.components.ChronaAnimatedSeekBar
 import com.febricahyaa.clockapp.ui.components.ChronaCard
 import com.febricahyaa.clockapp.ui.components.GlassPill
 import com.febricahyaa.clockapp.ui.components.IconCircleButton
 import com.febricahyaa.clockapp.ui.components.ScreenHeader
 import java.util.Locale
+import kotlin.math.roundToInt
 
 @Composable
 fun TimerScreen(
@@ -93,6 +95,22 @@ fun TimerScreen(
                         }
                     }
                 }
+                Spacer(Modifier.height(14.dp))
+                Text(
+                    text = if (running) "Pause the timer to change its duration." else "Duration · ${totalSeconds / 60} min",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                ChronaAnimatedSeekBar(
+                    value = (totalSeconds / 60f).coerceIn(1f, 180f),
+                    enabled = !running,
+                    valueRange = 1f..180f,
+                    steps = 178,
+                    valueLabel = { minutes -> "${minutes.roundToInt()} min" },
+                    onValueChangeFinished = { minutes ->
+                        onSetPreset(minutes.roundToInt() * 60)
+                    },
+                )
                 Spacer(Modifier.height(18.dp))
                 Surface(
                     onClick = onToggle,

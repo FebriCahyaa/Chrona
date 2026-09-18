@@ -1,6 +1,10 @@
 <!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Network access for optional online clock features (for example weather / sync). -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <!-- Alarm / timer core -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />

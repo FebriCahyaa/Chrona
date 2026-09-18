@@ -3,10 +3,8 @@
 package com.febricahyaa.clockapp
 
 import android.app.Application
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.os.Build
 import com.febricahyaa.clockapp.di.AppContainer
+import com.febricahyaa.clockapp.notification.ChronaNotificationChannels
 import com.febricahyaa.clockapp.di.DefaultAppContainer
 
 class ClockApplication : Application() {
@@ -23,45 +21,15 @@ class ClockApplication : Application() {
         private set
 
     companion object {
-        const val ALARM_CHANNEL_ID = "alarm_channel"
-        const val TIMER_CHANNEL_ID = "timer_channel"
+        // Compatibility names for existing notification builders.
+        const val ALARM_CHANNEL_ID = ChronaNotificationChannels.ALARMS
+        const val TIMER_CHANNEL_ID = ChronaNotificationChannels.TIMERS
     }
 
     override fun onCreate() {
         super.onCreate()
         container = DefaultAppContainer(this)
-        createAlarmNotificationChannelIfNeeded()
-        createTimerNotificationChannelIfNeeded()
-    }
-
-    private fun createAlarmNotificationChannelIfNeeded() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
-
-        val channel = NotificationChannel(
-            ALARM_CHANNEL_ID,
-            getString(R.string.alarm_notification_channel_name),
-            NotificationManager.IMPORTANCE_HIGH,
-        ).apply {
-            description = getString(R.string.alarm_notification_channel_description)
-            // AlarmService owns ringtone playback. Keeping the notification
-            // channel silent avoids double playback when the alarm fires.
-            setSound(null, null)
-            enableVibration(true)
-        }
-        getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
-    }
-    private fun createTimerNotificationChannelIfNeeded() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
-        val channel = NotificationChannel(
-            TIMER_CHANNEL_ID,
-            getString(R.string.timer_notification_channel_name),
-            NotificationManager.IMPORTANCE_HIGH,
-        ).apply {
-            description = getString(R.string.timer_notification_channel_description)
-            setSound(null, null)
-            enableVibration(true)
-        }
-        getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
+        ChronaNotificationChannels.createAll(this)
     }
 
 }

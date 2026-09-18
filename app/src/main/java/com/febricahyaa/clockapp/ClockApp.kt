@@ -59,6 +59,7 @@ import com.febricahyaa.clockapp.ui.viewmodel.SettingsViewModel
 import com.febricahyaa.clockapp.ui.viewmodel.StopwatchViewModel
 import com.febricahyaa.clockapp.ui.viewmodel.TimerViewModel
 import com.febricahyaa.clockapp.ui.viewmodel.WorldClockViewModel
+import com.febricahyaa.clockapp.ui.theme.ClockMotion
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -126,8 +127,8 @@ fun ClockApp() {
                 AnimatedContent(
                     targetState = destination,
                     transitionSpec = {
-                        fadeIn(animationSpec = androidx.compose.animation.core.tween(180))
-                            .togetherWith(fadeOut(animationSpec = androidx.compose.animation.core.tween(120)))
+                        fadeIn(animationSpec = ClockMotion.screenEnter)
+                            .togetherWith(fadeOut(animationSpec = ClockMotion.screenExit))
                     },
                     label = "destination-transition",
                     modifier = Modifier.fillMaxSize(),

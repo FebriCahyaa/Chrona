@@ -10,4 +10,25 @@
     <string name="clock_world_section_title">Jam dunia</string>
     <string name="clock_world_empty">Belum ada kota. Ketuk + untuk menambahkan.</string>
     <string name="clock_add_city_action">Tambah kota</string>
+
+    <!-- Chrona notification taxonomy -->
+    <string name="notification_channel_alarms_name">Alarm</string>
+    <string name="notification_channel_alarms_description">Notifikasi alarm dan kontrol dering.</string>
+    <string name="notification_channel_timers_name">Timer</string>
+    <string name="notification_channel_timers_description">Notifikasi timer dan penyelesaian hitung mundur.</string>
+    <string name="notification_channel_sleep_name">Waktu tidur</string>
+    <string name="notification_channel_sleep_description">Notifikasi tidur dan waktu istirahat.</string>
+    <string name="notification_channel_active_alarms_name">Alarm yang aktif</string>
+    <string name="notification_channel_active_alarms_description">Pembaruan untuk alarm yang sedang dijadwalkan atau aktif.</string>
+    <string name="notification_channel_missed_alarms_name">Alarm yang terlewat</string>
+    <string name="notification_channel_missed_alarms_description">Notifikasi untuk alarm yang belum ditangani tepat waktu.</string>
+    <string name="notification_channel_snoozed_alarms_name">Alarm yang ditunda</string>
+    <string name="notification_channel_snoozed_alarms_description">Pembaruan saat alarm ditunda.</string>
+    <string name="notification_channel_upcoming_alarms_name">Alarm mendatang</string>
+    <string name="notification_channel_upcoming_alarms_description">Pengingat alarm yang akan berbunyi.</string>
+    <string name="notification_channel_stopwatch_name">Stopwatch</string>
+    <string name="notification_channel_stopwatch_description">Pembaruan stopwatch saat sedang berjalan.</string>
+    <string name="notification_channel_routines_name">Rutinitas</string>
+    <string name="notification_channel_routines_description">Notifikasi yang dihasilkan oleh rutinitas Chrona.</string>
+
 </resources>

@@ -92,8 +92,8 @@ fun HomeScreen(
         next.repeatDays.isEmpty() -> "One time"
         else -> "Repeats"
     }
-    @Suppress("DEPRECATION")
-    val isWideWindow = androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2().windowSizeClass.windowWidthSizeClass == androidx.window.core.layout.WindowWidthSizeClass.EXPANDED
+    val windowAdaptiveInfo = androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2()
+    val isWideWindow = windowAdaptiveInfo.windowSizeClass.windowWidthSizeClass == androidx.window.core.layout.WindowWidthSizeClass.EXPANDED
     val dateText = buildDateText(now, locale)
     val heroHeight = if (isWideWindow) 430.dp else 365.dp
 
@@ -330,7 +330,7 @@ private fun ClockHero(
 @Composable
 private fun DigitalClockUI(hour24: Int, minute: Int, second: Int, use24HourFormat: Boolean, showSeconds: Boolean) {
     val hour = if (use24HourFormat) hour24 else ((hour24 + 11) % 12) + 1
-    val progressAlpha = (0.35f + (second / 59f) * 0.65f).coerceIn(0.35f, 1f)
+    val secondsProgress by animateFloatAsState(second / 59f, tween(850), label = "seconds-progress")
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.Center) {
             Text(hour.toString().padStart(2, '0'), fontSize = 76.sp, lineHeight = 78.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-4.5).sp)
@@ -342,7 +342,7 @@ private fun DigitalClockUI(hour24: Int, minute: Int, second: Int, use24HourForma
             }
             if (showSeconds) {
                 Text("${second.toString().padStart(2, '0')} sec", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Box(Modifier.size(5.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = progressAlpha)))
+                Box(Modifier.size(5.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary.copy(alpha = secondsProgress.coerceIn(0.35f, 1f))))
             }
         }
     }
@@ -416,9 +416,9 @@ fun AnalogClockUI(hour: Int, minute: Int, second: Float) {
 
         for (index in 0 until 60) {
             val major = index % 5 == 0
-            val outer = radius * 0.78f
-            val inner = radius * if (major) 0.66f else 0.73f
             rotate(index * 6f, pivot = center) {
+                val outer = radius * 0.78f
+                val inner = radius * if (major) 0.66f else 0.73f
                 drawLine(
                     color = onSurface.copy(alpha = if (major) 0.72f else 0.18f),
                     start = androidx.compose.ui.geometry.Offset(center.x, center.y - outer),
@@ -430,13 +430,11 @@ fun AnalogClockUI(hour: Int, minute: Int, second: Float) {
         }
 
         fun hand(angle: Float, length: Float, width: Float, color: Color, tail: Float = 0f) {
-            val startY = center.y + radius * tail
-            val endY = center.y - radius * length
             rotate(angle, pivot = center) {
                 drawLine(
                     color = color,
-                    start = androidx.compose.ui.geometry.Offset(center.x, startY),
-                    end = androidx.compose.ui.geometry.Offset(center.x, endY),
+                    start = androidx.compose.ui.geometry.Offset(center.x, center.y + radius * tail),
+                    end = androidx.compose.ui.geometry.Offset(center.x, center.y - radius * length),
                     strokeWidth = radius * width,
                     cap = StrokeCap.Round,
                 )
