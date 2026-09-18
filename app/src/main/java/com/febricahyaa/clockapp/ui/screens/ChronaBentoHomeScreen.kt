@@ -53,11 +53,13 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.platform.LocalLocale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.unit.sp
+import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.model.AlarmItem
 import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.navigation.AppDestination

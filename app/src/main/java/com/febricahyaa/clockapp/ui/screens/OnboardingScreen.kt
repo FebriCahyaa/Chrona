@@ -112,6 +112,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
     val haptics = LocalHapticFeedback.current
     val localTime = remember { LocalTime.now() }
     val localDate = remember { LocalDate.now() }
+    val progressDescription = stringResource(R.string.onboarding_progress)
 
     fun goTo(nextPage: Int) {
         val normalized = nextPage.coerceIn(0, pages.lastIndex)
@@ -249,7 +250,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .semantics { contentDescription = stringResource(R.string.onboarding_progress) },
+                    .semantics { contentDescription = progressDescription },
                 horizontalArrangement = Arrangement.spacedBy(7.dp),
             ) {
                 pages.indices.forEach { index ->
@@ -446,8 +447,8 @@ private fun PreviewCity(city: String, zoneId: String) {
 private fun OnboardingMiniCard(
     modifier: Modifier,
     icon: ImageVector,
-    title: String,
-    body: String,
+    @StringRes title: Int,
+    @StringRes body: Int,
 ) {
     HybridBentoCard(
         modifier = modifier.height(112.dp),

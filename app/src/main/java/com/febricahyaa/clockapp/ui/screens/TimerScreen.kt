@@ -58,6 +58,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlin.math.min
@@ -184,14 +185,17 @@ fun TimerScreen(
                 val heroScale = (heroSize.value / 320f).coerceIn(0.78f, 1.12f)
                 val heroStroke = (14f * heroScale).coerceIn(11f, 18f).dp
 
-                ChronaCard(
-                    modifier = Modifier
-                        .animateContentSize()
-                        .widthIn(max = 560.dp)
-                        .fillMaxWidth()
-                        .align(Alignment.CenterHorizontally),
-                    glass = glass,
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.TopCenter,
                 ) {
+                    ChronaCard(
+                        modifier = Modifier
+                            .animateContentSize()
+                            .widthIn(max = 560.dp)
+                            .fillMaxWidth(),
+                        glass = glass,
+                    ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -327,6 +331,7 @@ fun TimerScreen(
                     }
                 }
             }
+        }
 
         Spacer(Modifier.height(12.dp))
         Text(

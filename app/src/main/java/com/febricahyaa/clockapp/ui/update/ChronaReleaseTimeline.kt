@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
+import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.data.update.AppUpdateSnapshot
 import java.time.Instant
 import java.time.ZoneId

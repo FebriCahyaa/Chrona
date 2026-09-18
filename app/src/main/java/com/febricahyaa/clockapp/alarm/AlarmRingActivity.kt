@@ -32,6 +32,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
@@ -144,7 +145,7 @@ private fun AlarmRingScreen(
                     )
                 }
                 Text(
-                    text = if (label.isNotBlank()) label else stringResourceCompat(R.string.alarm_notification_title),
+                    text = if (label.isNotBlank()) label else stringResource(R.string.alarm_notification_title),
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     color = androidx.compose.ui.graphics.Color.White
@@ -163,7 +164,7 @@ private fun AlarmRingScreen(
                             contentColor = MaterialTheme.colorScheme.primary
                         )
                     ) {
-                        Text(stringResourceCompat(R.string.alarm_notification_dismiss))
+                        Text(stringResource(R.string.alarm_notification_dismiss))
                     }
                     OutlinedButton(
                         onClick = onSnooze,
@@ -174,13 +175,10 @@ private fun AlarmRingScreen(
                             contentColor = androidx.compose.ui.graphics.Color.White
                         )
                     ) {
-                        Text(stringResourceCompat(R.string.alarm_notification_snooze))
+                        Text(stringResource(R.string.alarm_notification_snooze))
                     }
                 }
             }
         }
     }
 }
-
-@Composable
-private fun stringResourceCompat(id: Int): String = androidx.compose.ui.res.stringResource(id)
