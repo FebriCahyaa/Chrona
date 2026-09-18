@@ -22,26 +22,23 @@ import com.febricahyaa.clockapp.data.SharedPreferencesAlarmRepository
 import com.febricahyaa.clockapp.data.SharedPreferencesSettingsRepository
 import com.febricahyaa.clockapp.data.SharedPreferencesWorldClockRepository
 import com.febricahyaa.clockapp.data.WorldClockRepository
+import com.febricahyaa.clockapp.time.ChronaTimeEngine
+import com.febricahyaa.clockapp.time.DefaultChronaTimeEngine
 import com.febricahyaa.clockapp.timer.AndroidTimerScheduler
 import com.febricahyaa.clockapp.timer.TimerSchedulerGateway
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 
 /**
  * Composition root for Chrona's dependency graph.
  *
- * Chrona intentionally does not pull in a reflection/annotation-processor
- * based DI framework (Hilt/Dagger): the project already mixes Gradle,
- * CMake/NDK and three JVM languages, and adding KSP/KAPT code generation on
- * top raises the odds of a broken build for very little benefit at this
- * app's size. Instead, every side-effecting dependency (SharedPreferences,
- * AlarmManager, Ringtone/Vibrator) is wrapped behind an interface and
- * constructor-injected into the class that uses it. This interface is the
- * single place those interfaces are wired to their real Android
- * implementations; [AppViewModelFactory] and the alarm entry points
- * (BroadcastReceivers, which Android instantiates via reflection and so can
- * never receive constructor-injected dependencies) read from it.
- *
- * A test build can supply a `FakeAppContainer` implementing this same
- * interface with in-memory fakes, without touching production code.
+ * Chrona intentionally uses manual dependency injection so every Android
+ * side-effect is explicit, testable, and constructor-injected. The shared
+ * [ChronaTimeEngine] is application-scoped: Timer and Stopwatch ViewModels
+ * consume the same monotonic timing source and ticker rather than creating
+ * competing timer loops.
  */
 interface AppContainer {
     val settingsRepository: SettingsRepository
@@ -55,12 +52,19 @@ interface AppContainer {
     val stopwatchRepository: StopwatchRepository
     val onboardingRepository: OnboardingRepository
     val updateRepository: AppUpdateRepository
+    val timeEngine: ChronaTimeEngine
 }
 
 /** Default, Android-backed [AppContainer]. Created once in [com.febricahyaa.clockapp.ClockApplication]. */
 class DefaultAppContainer(context: Context) : AppContainer {
 
     private val appContext = context.applicationContext
+
+    private val applicationScope = CoroutineScope(
+        SupervisorJob() +
+            Dispatchers.Default +
+            CoroutineName("ChronaApplicationScope"),
+    )
 
     override val settingsRepository: SettingsRepository by lazy {
         SharedPreferencesSettingsRepository(appContext)
@@ -102,9 +106,10 @@ class DefaultAppContainer(context: Context) : AppContainer {
         GitHubReleaseRepository(appContext)
     }
 
-    // `by lazy`: a single shared instance for the app's lifetime, matching
-    // the previous singleton's behavior (needed so the notification action
-    // receiver and the ringing activity stop the *same* in-flight sound).
+    override val timeEngine: ChronaTimeEngine by lazy {
+        DefaultChronaTimeEngine(applicationScope)
+    }
+
     override val alarmSoundPlayer: AlarmSoundGateway by lazy {
         AndroidAlarmSoundPlayer(appContext)
     }

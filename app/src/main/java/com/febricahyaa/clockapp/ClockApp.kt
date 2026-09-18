@@ -5,6 +5,7 @@ package com.febricahyaa.clockapp
 import android.Manifest
 import android.app.AlarmManager
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
@@ -16,28 +17,27 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.content.ContextCompat
-import android.content.pm.PackageManager
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.febricahyaa.clockapp.di.AppContainer
 import com.febricahyaa.clockapp.di.AppViewModelFactory
-import com.febricahyaa.clockapp.data.update.AppVersionComparator
 import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.model.WorldClockItem
 import com.febricahyaa.clockapp.navigation.AppDestination
-import com.febricahyaa.clockapp.navigation.ChronaNavigationHost
+import com.febricahyaa.clockapp.navigation.ChronaNavigationActions
+import com.febricahyaa.clockapp.navigation.ChronaRootNavigation
 import com.febricahyaa.clockapp.ui.components.ChronaAmbientBackdrop
 import com.febricahyaa.clockapp.ui.components.ChronaScreenSurface
 import com.febricahyaa.clockapp.ui.screens.AlarmScreen
@@ -84,42 +84,19 @@ fun ClockApp() {
     val timerState by timerViewModel.state.collectAsStateWithLifecycle()
     val stopwatchState by stopwatchViewModel.state.collectAsStateWithLifecycle()
 
-    var backStack by rememberSaveable { mutableStateOf(listOf(AppDestination.CLOCK.name)) }
-
-    val currentDestination = remember(backStack) {
-        AppDestination.valueOf(backStack.last())
-    }
-    val previousDestination = remember(backStack) {
-        backStack.getOrNull(backStack.lastIndex - 1)?.let(AppDestination::valueOf)
-    }
-
-    fun navigate(destination: AppDestination) {
-        if (destination == currentDestination) return
-        backStack = backStack + destination.name
-    }
-
-    fun replaceCurrent(destination: AppDestination) {
-        if (backStack.size == 1) {
-            backStack = listOf(destination.name)
-        } else {
-            backStack = backStack.dropLast(1) + destination.name
-        }
-    }
-
-    fun goBack() {
-        if (backStack.size > 1) {
-            backStack = backStack.dropLast(1)
-        }
-    }
-
-    val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+    val notificationPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) {
         onboardingViewModel.markNotificationPermissionPrompted()
     }
+
     LaunchedEffect(
         onboardingState.completed,
         onboardingState.notificationPermissionPrompted,
     ) {
-        if (!onboardingState.completed || onboardingState.notificationPermissionPrompted) return@LaunchedEffect
+        if (!onboardingState.completed || onboardingState.notificationPermissionPrompted) {
+            return@LaunchedEffect
+        }
         if (Build.VERSION.SDK_INT < 33) return@LaunchedEffect
 
         val permissionGranted = ContextCompat.checkSelfPermission(
@@ -134,7 +111,7 @@ fun ClockApp() {
         }
     }
 
-    androidx.compose.runtime.DisposableEffect(view, darkSystemBars) {
+    DisposableEffect(view, darkSystemBars) {
         val activity = view.context as? android.app.Activity
         val window = activity?.window
         if (window != null) {
@@ -159,7 +136,7 @@ fun ClockApp() {
                     Modifier
                         .fillMaxSize()
                         .background(MaterialTheme.colorScheme.background),
-                    contentAlignment = androidx.compose.ui.Alignment.Center,
+                    contentAlignment = Alignment.Center,
                 ) {
                     androidx.compose.material3.CircularProgressIndicator()
                 }
@@ -176,132 +153,170 @@ fun ClockApp() {
             ) {
                 ChronaAmbientBackdrop()
 
-                ChronaNavigationHost(
-                    current = currentDestination,
-                    previous = previousDestination,
-                    canGoBack = backStack.size > 1,
-                    onBack = ::goBack,
-                ) { destination ->
-                    ChronaScreenSurface {
-                    when (destination) {
-                        AppDestination.CLOCK -> ChronaBentoHomeScreen(
-                            use24HourFormat = settingsState.use24HourFormat,
-                            showSeconds = settingsState.settings.showSeconds,
-                            alarms = alarms,
-                            timerRemainingSeconds = timerState.remainingSeconds,
-                            timerRunning = timerState.isRunning,
-                            themeMode = settingsState.settings.themeMode,
-                            onThemeModeChange = settingsViewModel::updateThemeMode,
-                            onNavigate = ::navigate,
-                            onOpenSettings = { navigate(AppDestination.SETTINGS) },
-                        )
-
-                        AppDestination.WORLD -> WorldClockScreen(
-                            items = worldClockState.items,
-                            favorites = worldClockState.favorites,
-                            use24HourFormat = settingsState.use24HourFormat,
-                            glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
-                            onRemove = worldClockViewModel::remove,
-                            onToggleFavorite = worldClockViewModel::toggleFavorite,
-                            onOpenSearch = { navigate(AppDestination.WORLD_SEARCH) },
-                            onBack = ::goBack,
-                        )
-
-                        AppDestination.WORLD_SEARCH -> WorldClockSearchScreen(
-                            existingZoneIds = worldClockState.items.mapTo(mutableSetOf()) { it.zoneId },
-                            onAdd = { city, _, zoneId ->
-                                worldClockViewModel.add(
-                                    WorldClockItem(
-                                        id = System.currentTimeMillis(),
-                                        city = city,
-                                        zoneId = zoneId,
-                                    ),
-                                )
-                                replaceCurrent(AppDestination.WORLD)
-                            },
-                            onBack = ::goBack,
-                        )
-
-                        AppDestination.TIMER -> TimerScreen(
-                            totalSeconds = timerState.totalSeconds,
-                            remainingSeconds = timerState.remainingSeconds,
-                            running = timerState.isRunning,
-                            glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
-                            onToggle = {
-                                if (!timerState.isRunning && !container.alarmScheduler.canScheduleExactAlarms()) {
-                                    requestExactAlarmAccess(context)
-                                } else {
-                                    timerViewModel.toggle()
-                                }
-                            },
-                            onReset = timerViewModel::reset,
-                            onSetPreset = timerViewModel::setPreset,
-                            onBack = ::goBack,
-                        )
-
-                        AppDestination.STOPWATCH -> StopwatchScreen(
-                            elapsedMillis = stopwatchState.elapsedMillis,
-                            isRunning = stopwatchState.isRunning,
-                            laps = stopwatchState.laps,
-                            glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
-                            onToggleRun = stopwatchViewModel::toggleRun,
-                            onLap = stopwatchViewModel::lap,
-                            onReset = stopwatchViewModel::reset,
-                            onBack = ::goBack,
-                        )
-
-                        AppDestination.ALARM -> AlarmScreen(
-                            alarms = alarms,
-                            use24HourFormat = settingsState.use24HourFormat,
-                            glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
-                            onBack = ::goBack,
-                            onAdd = { alarm ->
-                                alarmViewModel.add(alarm)
-                                if (!container.alarmScheduler.canScheduleExactAlarms()) requestExactAlarmAccess(context)
-                            },
-                            onToggle = { alarm, enabled ->
-                                alarmViewModel.setEnabled(alarm, enabled)
-                                if (enabled && !container.alarmScheduler.canScheduleExactAlarms()) requestExactAlarmAccess(context)
-                            },
-                            onDelete = alarmViewModel::delete,
-                            onUpdate = alarmViewModel::update,
-                        )
-
-                        AppDestination.SETTINGS -> SettingsScreen(
-                            settings = settingsState.settings,
-                            use24HourFormat = settingsState.use24HourFormat,
-                            onThemeModeChange = settingsViewModel::updateThemeMode,
-                            onAccentChange = settingsViewModel::updateAccent,
-                            onFormatChange = settingsViewModel::updateUse24HourFormat,
-                            onShowSecondsChange = settingsViewModel::updateShowSeconds,
-                            notificationPermissionGranted = Build.VERSION.SDK_INT < 33 ||
-                                ContextCompat.checkSelfPermission(
-                                    context,
-                                    Manifest.permission.POST_NOTIFICATIONS,
-                                ) == PackageManager.PERMISSION_GRANTED,
-                            onOpenNotificationSettings = {
-                                val intent = Intent("android.settings.APP_NOTIFICATION_SETTINGS").apply {
-                                    putExtra("android.provider.extra.APP_PACKAGE", context.packageName)
-                                }
-                                context.startActivity(intent)
-                            },
-                            onOpenLegal = { navigate(AppDestination.LEGAL) },
-                            updateState = updateState,
-                            onCheckForUpdates = updateViewModel::checkNow,
-                            onOpenUpdate = {
-                                val url = updateState.snapshot.releaseUrl ?: updateState.snapshot.apkUrl
-                                if (!url.isNullOrBlank()) {
-                                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-                                }
-                            },
-                            onBack = ::goBack,
-                        )
-
-                        AppDestination.LEGAL -> LegalScreen(onBack = ::goBack)
-                    }
-                    }
+                ChronaRootNavigation { destination, navigation ->
+                    ChronaDestinationContent(
+                        destination = destination,
+                        navigation = navigation,
+                        context = context,
+                        container = container,
+                        settingsViewModel = settingsViewModel,
+                        settingsState = settingsState,
+                        updateState = updateState,
+                        updateViewModel = updateViewModel,
+                        alarms = alarms,
+                        alarmViewModel = alarmViewModel,
+                        worldClockState = worldClockState,
+                        worldClockViewModel = worldClockViewModel,
+                        timerState = timerState,
+                        timerViewModel = timerViewModel,
+                        stopwatchState = stopwatchState,
+                        stopwatchViewModel = stopwatchViewModel,
+                    )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ChronaDestinationContent(
+    destination: AppDestination,
+    navigation: ChronaNavigationActions,
+    context: android.content.Context,
+    container: AppContainer,
+    settingsViewModel: SettingsViewModel,
+    settingsState: com.febricahyaa.clockapp.ui.viewmodel.SettingsUiState,
+    updateState: com.febricahyaa.clockapp.ui.viewmodel.UpdateUiState,
+    updateViewModel: AppUpdateViewModel,
+    alarms: List<com.febricahyaa.clockapp.model.AlarmItem>,
+    alarmViewModel: AlarmViewModel,
+    worldClockState: com.febricahyaa.clockapp.ui.viewmodel.WorldClockUiState,
+    worldClockViewModel: WorldClockViewModel,
+    timerState: com.febricahyaa.clockapp.ui.viewmodel.TimerUiState,
+    timerViewModel: TimerViewModel,
+    stopwatchState: com.febricahyaa.clockapp.ui.viewmodel.StopwatchUiState,
+    stopwatchViewModel: StopwatchViewModel,
+) {
+    ChronaScreenSurface {
+        when (destination) {
+            AppDestination.CLOCK -> ChronaBentoHomeScreen(
+                use24HourFormat = settingsState.use24HourFormat,
+                showSeconds = settingsState.settings.showSeconds,
+                alarms = alarms,
+                timerRemainingSeconds = timerState.remainingSeconds,
+                timerRunning = timerState.isRunning,
+                themeMode = settingsState.settings.themeMode,
+                onThemeModeChange = settingsViewModel::updateThemeMode,
+                onNavigate = navigation::navigate,
+                onOpenSettings = { navigation.navigate(AppDestination.SETTINGS) },
+            )
+
+            AppDestination.WORLD -> WorldClockScreen(
+                items = worldClockState.items,
+                favorites = worldClockState.favorites,
+                use24HourFormat = settingsState.use24HourFormat,
+                glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
+                onRemove = worldClockViewModel::remove,
+                onToggleFavorite = worldClockViewModel::toggleFavorite,
+                onOpenSearch = { navigation.navigate(AppDestination.WORLD_SEARCH) },
+                onBack = { navigation.back() },
+            )
+
+            AppDestination.WORLD_SEARCH -> WorldClockSearchScreen(
+                existingZoneIds = worldClockState.items.mapTo(mutableSetOf()) { it.zoneId },
+                onAdd = { city, _, zoneId ->
+                    worldClockViewModel.add(
+                        WorldClockItem(
+                            id = System.currentTimeMillis(),
+                            city = city,
+                            zoneId = zoneId,
+                        ),
+                    )
+                    navigation.replaceCurrent(AppDestination.WORLD)
+                },
+                onBack = { navigation.back() },
+            )
+
+            AppDestination.TIMER -> TimerScreen(
+                totalSeconds = timerState.totalSeconds,
+                remainingSeconds = timerState.remainingSeconds,
+                running = timerState.isRunning,
+                glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
+                onToggle = {
+                    if (!timerState.isRunning && !container.alarmScheduler.canScheduleExactAlarms()) {
+                        requestExactAlarmAccess(context)
+                    } else {
+                        timerViewModel.toggle()
+                    }
+                },
+                onReset = timerViewModel::reset,
+                onSetPreset = timerViewModel::setPreset,
+                onBack = { navigation.back() },
+            )
+
+            AppDestination.STOPWATCH -> StopwatchScreen(
+                elapsedMillis = stopwatchState.elapsedMillis,
+                isRunning = stopwatchState.isRunning,
+                laps = stopwatchState.laps,
+                glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
+                onToggleRun = stopwatchViewModel::toggleRun,
+                onLap = stopwatchViewModel::lap,
+                onReset = stopwatchViewModel::reset,
+                onBack = { navigation.back() },
+            )
+
+            AppDestination.ALARM -> AlarmScreen(
+                alarms = alarms,
+                use24HourFormat = settingsState.use24HourFormat,
+                glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
+                onBack = { navigation.back() },
+                onAdd = { alarm ->
+                    alarmViewModel.add(alarm)
+                    if (!container.alarmScheduler.canScheduleExactAlarms()) {
+                        requestExactAlarmAccess(context)
+                    }
+                },
+                onToggle = { alarm, enabled ->
+                    alarmViewModel.setEnabled(alarm, enabled)
+                    if (enabled && !container.alarmScheduler.canScheduleExactAlarms()) {
+                        requestExactAlarmAccess(context)
+                    }
+                },
+                onDelete = alarmViewModel::delete,
+                onUpdate = alarmViewModel::update,
+            )
+
+            AppDestination.SETTINGS -> SettingsScreen(
+                settings = settingsState.settings,
+                use24HourFormat = settingsState.use24HourFormat,
+                onThemeModeChange = settingsViewModel::updateThemeMode,
+                onAccentChange = settingsViewModel::updateAccent,
+                onFormatChange = settingsViewModel::updateUse24HourFormat,
+                onShowSecondsChange = settingsViewModel::updateShowSeconds,
+                notificationPermissionGranted = Build.VERSION.SDK_INT < 33 ||
+                    ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.POST_NOTIFICATIONS,
+                    ) == PackageManager.PERMISSION_GRANTED,
+                onOpenNotificationSettings = {
+                    val intent = Intent("android.settings.APP_NOTIFICATION_SETTINGS").apply {
+                        putExtra("android.provider.extra.APP_PACKAGE", context.packageName)
+                    }
+                    context.startActivity(intent)
+                },
+                onOpenLegal = { navigation.navigate(AppDestination.LEGAL) },
+                updateState = updateState,
+                onCheckForUpdates = updateViewModel::checkNow,
+                onOpenUpdate = {
+                    val url = updateState.snapshot.releaseUrl ?: updateState.snapshot.apkUrl
+                    if (!url.isNullOrBlank()) {
+                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                    }
+                },
+                onBack = { navigation.back() },
+            )
+
+            AppDestination.LEGAL -> LegalScreen(onBack = { navigation.back() })
         }
     }
 }
@@ -311,6 +326,9 @@ private fun requestExactAlarmAccess(context: android.content.Context) {
     val alarmManager = context.getSystemService(AlarmManager::class.java)
     if (alarmManager?.canScheduleExactAlarms() == true) return
     context.startActivity(
-        Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:${context.packageName}")),
+        Intent(
+            Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+            Uri.parse("package:${context.packageName}"),
+        ),
     )
 }

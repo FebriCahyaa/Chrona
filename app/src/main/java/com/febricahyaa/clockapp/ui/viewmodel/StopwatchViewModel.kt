@@ -5,17 +5,16 @@ package com.febricahyaa.clockapp.ui.viewmodel
 import android.os.SystemClock
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.febricahyaa.clockapp.core.config.AppDefaults
 import com.febricahyaa.clockapp.data.StopwatchRepository
 import com.febricahyaa.clockapp.model.StopwatchSnapshot
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import com.febricahyaa.clockapp.time.ChronaTimeEngine
+import com.febricahyaa.clockapp.time.StopwatchLap
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-/** UI snapshot of the persistent stopwatch state. */
+/** UI projection of the shared Chrona stopwatch engine. */
 data class StopwatchUiState(
     val elapsedMillis: Long = 0L,
     val isRunning: Boolean = false,
@@ -23,122 +22,111 @@ data class StopwatchUiState(
 )
 
 /**
- * Persistent stopwatch. The running state is reconstructed from elapsedRealtime
- * after ordinary process death; a reboot causes the saved running state to be
- * safely restored as paused because elapsedRealtime resets at boot.
+ * Persistent stopwatch backed by the application-wide ChronaTimeEngine.
+ *
+ * The repository remains responsible for persistence while the engine owns
+ * the monotonic running interval and shared timing ticker.
  */
-class StopwatchViewModel(private val repository: StopwatchRepository) : ViewModel() {
+class StopwatchViewModel(
+    private val repository: StopwatchRepository,
+    private val timeEngine: ChronaTimeEngine,
+) : ViewModel() {
 
     private val _state = MutableStateFlow(StopwatchUiState())
     val state: StateFlow<StopwatchUiState> = _state.asStateFlow()
 
-    private var tickJob: Job? = null
-    private var baseElapsedMillis = 0L
-    private var startElapsedRealtimeMillis = 0L
-
     init {
-        restore()
+        viewModelScope.launch {
+            restore()
+            timeEngine.state.collect { snapshot ->
+                val stopwatch = snapshot.stopwatch
+                _state.value = StopwatchUiState(
+                    elapsedMillis = stopwatch.elapsedMillis,
+                    isRunning = stopwatch.isRunning,
+                    laps = stopwatch.laps.map(StopwatchLap::elapsedMillis),
+                )
+            }
+        }
     }
 
     fun toggleRun() {
-        if (_state.value.isRunning) pause() else start()
+        viewModelScope.launch {
+            if (timeEngine.state.value.stopwatch.isRunning) {
+                timeEngine.pauseStopwatch()
+            } else {
+                timeEngine.startStopwatch()
+            }
+            persistCurrentState()
+        }
     }
 
     fun lap() {
-        if (!_state.value.isRunning) return
-        val elapsed = currentElapsed()
-        _state.value = _state.value.copy(
-            elapsedMillis = elapsed,
-            laps = _state.value.laps + elapsed,
-        )
-        persist()
+        viewModelScope.launch {
+            if (!timeEngine.state.value.stopwatch.isRunning) return@launch
+            timeEngine.recordLap()
+            persistCurrentState()
+        }
     }
 
     fun reset() {
-        tickJob?.cancel()
-        baseElapsedMillis = 0L
-        startElapsedRealtimeMillis = 0L
-        _state.value = StopwatchUiState()
-        persist()
+        viewModelScope.launch {
+            timeEngine.resetStopwatch()
+            persistCurrentState()
+        }
     }
 
-    private fun start() {
-        baseElapsedMillis = _state.value.elapsedMillis
-        startElapsedRealtimeMillis = SystemClock.elapsedRealtime()
-        _state.value = _state.value.copy(isRunning = true)
-        persist()
-        launchTicker()
-    }
-
-    private fun pause() {
-        val elapsed = currentElapsed()
-        tickJob?.cancel()
-        baseElapsedMillis = elapsed
-        startElapsedRealtimeMillis = 0L
-        _state.value = _state.value.copy(elapsedMillis = elapsed, isRunning = false)
-        persist()
-    }
-
-    private fun restore() {
+    private suspend fun restore() {
         val snapshot = repository.load()
         val now = SystemClock.elapsedRealtime()
         val canResume = snapshot.running &&
             snapshot.startElapsedRealtimeMillis > 0L &&
             snapshot.startElapsedRealtimeMillis <= now
 
-        if (canResume) {
-            baseElapsedMillis = snapshot.elapsedMillis
-            startElapsedRealtimeMillis = snapshot.startElapsedRealtimeMillis
-            _state.value = StopwatchUiState(currentElapsed(), true, snapshot.laps)
-            launchTicker()
-        } else {
-            baseElapsedMillis = snapshot.elapsedMillis
-            startElapsedRealtimeMillis = 0L
-            _state.value = StopwatchUiState(snapshot.elapsedMillis, false, snapshot.laps)
-            if (snapshot.running) {
-                repository.save(snapshot.copy(running = false, startElapsedRealtimeMillis = 0L, savedElapsedRealtimeMillis = now))
-            }
+        val resumeStartElapsedRealtimeMillis =
+            if (canResume) now - snapshot.elapsedMillis.coerceAtLeast(0L) else 0L
+
+        timeEngine.restoreStopwatch(
+            elapsedMillis = snapshot.elapsedMillis,
+            laps = snapshot.laps.mapIndexed { index, elapsedMillis ->
+                StopwatchLap(index + 1, elapsedMillis.coerceAtLeast(0L))
+            },
+            running = canResume,
+            startedAtElapsedRealtimeMillis = resumeStartElapsedRealtimeMillis,
+        )
+
+        if (snapshot.running && !canResume) {
+            repository.save(
+                snapshot.copy(
+                    running = false,
+                    startElapsedRealtimeMillis = 0L,
+                    savedElapsedRealtimeMillis = now,
+                ),
+            )
         }
     }
 
-    private fun launchTicker() {
-        tickJob?.cancel()
-        tickJob = viewModelScope.launch {
-            var lastPersistSecond = -1L
-            while (_state.value.isRunning) {
-                val elapsed = currentElapsed()
-                _state.value = _state.value.copy(elapsedMillis = elapsed, isRunning = true)
-                val elapsedSecond = elapsed / 1_000L
-                if (elapsedSecond != lastPersistSecond && elapsedSecond % 5L == 0L) {
-                    lastPersistSecond = elapsedSecond
-                    persist()
-                }
-                delay(AppDefaults.STOPWATCH_TICK_INTERVAL_MS)
-            }
-        }
-    }
-
-    private fun currentElapsed(): Long =
-        if (startElapsedRealtimeMillis <= 0L) baseElapsedMillis
-        else baseElapsedMillis + (SystemClock.elapsedRealtime() - startElapsedRealtimeMillis).coerceAtLeast(0L)
-
-    private fun persist() {
-        val currentElapsed = currentElapsed()
-        _state.value = _state.value.copy(elapsedMillis = currentElapsed)
+    private suspend fun persistCurrentState() {
+        val stopwatch = timeEngine.state.value.stopwatch
         val now = SystemClock.elapsedRealtime()
+
+        _state.value = StopwatchUiState(
+            elapsedMillis = stopwatch.elapsedMillis,
+            isRunning = stopwatch.isRunning,
+            laps = stopwatch.laps.map(StopwatchLap::elapsedMillis),
+        )
+
         repository.save(
             StopwatchSnapshot(
-                elapsedMillis = currentElapsed,
-                running = _state.value.isRunning,
-                startElapsedRealtimeMillis = if (_state.value.isRunning) startElapsedRealtimeMillis else 0L,
+                elapsedMillis = stopwatch.elapsedMillis,
+                running = stopwatch.isRunning,
+                startElapsedRealtimeMillis = if (stopwatch.isRunning) {
+                    now - stopwatch.elapsedMillis
+                } else {
+                    0L
+                },
                 savedElapsedRealtimeMillis = now,
-                laps = _state.value.laps,
+                laps = stopwatch.laps.map(StopwatchLap::elapsedMillis),
             ),
         )
-    }
-
-    override fun onCleared() {
-        tickJob?.cancel()
-        super.onCleared()
     }
 }

@@ -19,6 +19,13 @@ interface ChronaTimeEngine : AutoCloseable {
 
     val state: StateFlow<ChronaTimeState>
 
+    suspend fun restoreStopwatch(
+        elapsedMillis: Long,
+        laps: List<StopwatchLap>,
+        running: Boolean,
+        startedAtElapsedRealtimeMillis: Long = 0L,
+    )
+
     suspend fun startStopwatch()
 
     suspend fun pauseStopwatch()
@@ -26,6 +33,14 @@ interface ChronaTimeEngine : AutoCloseable {
     suspend fun resetStopwatch()
 
     suspend fun recordLap()
+
+    suspend fun restoreTimer(
+        durationMillis: Long,
+        remainingMillis: Long,
+        running: Boolean,
+    )
+
+    suspend fun configureTimer(durationMillis: Long)
 
     suspend fun startTimer(durationMillis: Long)
 
@@ -57,8 +72,27 @@ class DefaultChronaTimeEngine(
     private var timerDurationMillis = 0L
     private var timerRemainingMillis = 0L
 
-    private val tickerJob: Job = scope.launch(Dispatchers.Default) {
-        runTicker()
+    private val tickerLock = Any()
+    private var tickerJob: Job? = null
+
+    override suspend fun restoreStopwatch(
+        elapsedMillis: Long,
+        laps: List<StopwatchLap>,
+        running: Boolean,
+        startedAtElapsedRealtimeMillis: Long,
+    ) {
+        stateMutex.withLock {
+            val now = monotonicClock.elapsedRealtime()
+            stopwatchAccumulatedMillis = elapsedMillis.coerceAtLeast(0L)
+            stopwatchLaps = laps.toList()
+            stopwatchStartedAt = if (running && startedAtElapsedRealtimeMillis > 0L) {
+                startedAtElapsedRealtimeMillis
+            } else {
+                null
+            }
+            refreshStateLocked(now)
+        }
+        if (running) ensureTicker()
     }
 
     override suspend fun startStopwatch() {
@@ -69,6 +103,7 @@ class DefaultChronaTimeEngine(
             }
             refreshStateLocked(now)
         }
+        ensureTicker()
     }
 
     override suspend fun pauseStopwatch() {
@@ -108,6 +143,38 @@ class DefaultChronaTimeEngine(
         }
     }
 
+    override suspend fun restoreTimer(
+        durationMillis: Long,
+        remainingMillis: Long,
+        running: Boolean,
+    ) {
+        stateMutex.withLock {
+            val now = monotonicClock.elapsedRealtime()
+            timerDurationMillis = durationMillis.coerceAtLeast(0L)
+            timerRemainingMillis = remainingMillis.coerceIn(0L, timerDurationMillis)
+            timerEndAt = if (running && timerRemainingMillis > 0L) {
+                now + timerRemainingMillis
+            } else {
+                null
+            }
+            refreshStateLocked(now)
+        }
+        if (running) ensureTicker()
+    }
+
+    override suspend fun configureTimer(durationMillis: Long) {
+        require(durationMillis > 0L) {
+            "Timer duration must be greater than zero."
+        }
+
+        stateMutex.withLock {
+            timerEndAt = null
+            timerDurationMillis = durationMillis
+            timerRemainingMillis = durationMillis
+            refreshStateLocked(monotonicClock.elapsedRealtime())
+        }
+    }
+
     override suspend fun startTimer(durationMillis: Long) {
         require(durationMillis > 0L) {
             "Timer duration must be greater than zero."
@@ -120,6 +187,7 @@ class DefaultChronaTimeEngine(
             timerEndAt = now + durationMillis
             refreshStateLocked(now)
         }
+        ensureTicker()
     }
 
     override suspend fun pauseTimer() {
@@ -136,21 +204,31 @@ class DefaultChronaTimeEngine(
     override suspend fun resetTimer() {
         stateMutex.withLock {
             timerEndAt = null
-            timerDurationMillis = 0L
-            timerRemainingMillis = 0L
+            timerRemainingMillis = timerDurationMillis
             refreshStateLocked(monotonicClock.elapsedRealtime())
         }
     }
 
-    private suspend fun runTicker() {
-        while (scope.coroutineContext.isActive) {
-            stateMutex.withLock {
-                refreshStateLocked(monotonicClock.elapsedRealtime())
-            }
+    private fun ensureTicker() {
+        synchronized(tickerLock) {
+            if (tickerJob?.isActive == true) return
 
-            val now = monotonicClock.elapsedRealtime()
-            val nextSecondBoundary = 1_000L - Math.floorMod(now, 1_000L)
-            delay(nextSecondBoundary.coerceAtLeast(1L))
+            tickerJob = scope.launch(Dispatchers.Default) {
+                while (isActive) {
+                    val shouldContinue = stateMutex.withLock {
+                        refreshStateLocked(monotonicClock.elapsedRealtime())
+                        val stopwatchActive = stopwatchStartedAt != null
+                        val timerActive = timerEndAt != null
+                        stopwatchActive || timerActive
+                    }
+
+                    if (!shouldContinue) break
+
+                    val now = monotonicClock.elapsedRealtime()
+                    val nextSecondBoundary = 1_000L - Math.floorMod(now, 1_000L)
+                    delay(nextSecondBoundary.coerceAtLeast(16L))
+                }
+            }
         }
     }
 
@@ -190,6 +268,9 @@ class DefaultChronaTimeEngine(
     }
 
     override fun close() {
-        tickerJob.cancel()
+        synchronized(tickerLock) {
+            tickerJob?.cancel()
+            tickerJob = null
+        }
     }
 }
