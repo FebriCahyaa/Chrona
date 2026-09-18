@@ -106,7 +106,7 @@ fun GlassPill(
             .then(onClick?.let { Modifier.clickable(onClick = it) } ?: Modifier),
     ) {
         Row(
-            Modifier.padding(horizontal = 15.dp, vertical = 10.dp),
+            Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(7.dp),
             content = content,

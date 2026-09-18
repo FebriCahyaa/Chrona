@@ -21,10 +21,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -106,11 +110,26 @@ fun WorldClockScreen(
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     ChronaCard(Modifier.fillMaxWidth(), glass = glass) {
                         Column(Modifier.fillMaxWidth().padding(30.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("No cities here yet", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                            val emptyTitle = when {
+                                items.isEmpty() -> "No cities added yet"
+                                region == "Favorites" -> "No favorite cities"
+                                else -> "No cities in $region"
+                            }
+                            val emptyMessage = when {
+                                items.isEmpty() -> "Add another timezone to build your world."
+                                region == "Favorites" -> "Star cities in your list to quickly filter them here."
+                                else -> "No saved cities match this region. Add a new city or view all."
+                            }
+                            Text(emptyTitle, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                             Spacer(Modifier.height(5.dp))
-                            Text("Add another timezone to build your world.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Spacer(Modifier.height(12.dp))
-                            TextButton(onClick = { showAdd = true }) { Text("Add city") }
+                            Text(emptyMessage, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                            Spacer(Modifier.height(14.dp))
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                if (region != "All") {
+                                    TextButton(onClick = { region = "All" }) { Text("Show all cities") }
+                                }
+                                TextButton(onClick = { showAdd = true }) { Text("Add city") }
+                            }
                         }
                     }
                 }
@@ -195,14 +214,14 @@ private fun WorldClockCard(
                     IconCircleButton(
                         if (favorite) Icons.Filled.Star else Icons.Filled.StarBorder,
                         onToggleFavorite,
-                        modifier = Modifier.size(38.dp),
+                        modifier = Modifier.size(44.dp),
                         active = favorite,
                         contentDescription = if (favorite) "Remove favorite" else "Add favorite",
                     )
                     IconCircleButton(
                         Icons.Filled.DeleteOutline,
                         onRemove,
-                        modifier = Modifier.size(38.dp),
+                        modifier = Modifier.size(44.dp),
                         contentDescription = "Remove city",
                     )
                 }
@@ -299,6 +318,16 @@ private fun AddCityDialog(alreadyAdded: Set<String>, onDismiss: () -> Unit, onPi
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     placeholder = { Text("Search city or country") },
+                    leadingIcon = {
+                        Icon(Icons.Filled.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    },
+                    trailingIcon = if (query.isNotEmpty()) {
+                        {
+                            IconButton(onClick = { query = "" }) {
+                                Icon(Icons.Filled.Close, contentDescription = "Clear search query")
+                            }
+                        }
+                    } else null,
                 )
                 LazyColumn(Modifier.height(280.dp)) {
                     items(filtered) { entry ->
