@@ -33,6 +33,7 @@ import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.febricahyaa.clockapp.di.AppViewModelFactory
+import com.febricahyaa.clockapp.data.update.AppVersionComparator
 import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.model.WorldClockItem
 import com.febricahyaa.clockapp.navigation.AppDestination
