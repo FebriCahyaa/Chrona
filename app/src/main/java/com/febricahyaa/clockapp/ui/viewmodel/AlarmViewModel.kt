@@ -43,6 +43,10 @@ class AlarmViewModel(
         list.map { if (it.id == alarm.id) it.copy(enabled = enabled) else it }
     }
 
+    fun update(alarm: AlarmItem) = mutate { list ->
+        list.map { if (it.id == alarm.id) alarm else it }
+    }
+
     private fun mutate(transform: (List<AlarmItem>) -> List<AlarmItem>) {
         val updated = transform(_alarms.value)
         _alarms.value = updated

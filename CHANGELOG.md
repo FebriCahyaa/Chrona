@@ -12,6 +12,28 @@ Chrona release notes are evidence-based. Completed entries describe changes that
 - Replaced repository CI SDK package management with the official Android CLI (`android sdk`).
 - Added scheduled package-maintenance source synchronization for Gradle and Android 17 toolchain pins.
 
+## Unreleased — Production UI/UX Refactor
+
+### 🎨 UI / UX
+
+- Rebuilt Timer editing around a numeric 0–9 keypad with right-to-left `HHMMSS` entry; no `Slider`, Android `SeekBar`, or Chrona slider component remains in app source.
+- Rebuilt running Timer visualization with Material 3 `CircularProgressIndicator`, 16dp stroke, rounded stroke caps, animated progress, and a lightweight `graphicsLayer` pulse.
+- Rebuilt Alarm rows as expandable cards with `animateContentSize`, Material 3 switches/filter chips, ringtone selection through the Android system picker, vibration persistence, and delete actions.
+- Added a dedicated World Clock city search screen using the current stateful Material 3 `SearchBar` API, plus a curated 25-city timezone catalog and live UTC offset presentation.
+- Added tactile feedback to required actions through `LocalHapticFeedback`, including keypad input, buttons, filters, and toggles.
+
+### ⚡ Compose / Performance
+
+- Moved timer parsing/formatting into pure `TimerDurationInput` code and added unit coverage for HHMMSS input validation and serialization.
+- Used stable `LazyColumn` keys and `contentType` for Alarm and World Clock lists.
+- Kept World Clock ticking on a single screen-level epoch ticker instead of spawning a coroutine per row.
+- Kept calculations and object construction for clock cards outside custom `DrawScope` rendering; Timer no longer uses a custom countdown Canvas.
+
+### 🌐 System integration
+
+- Preserved `INTERNET` and `ACCESS_NETWORK_STATE` so Chrona remains network-capable for online features.
+- Retained the expanded Android notification-channel taxonomy and alarm/timer service architecture.
+
 ## Unreleased — Foundation / Build System
 
 ### 🏗️ Foundation
@@ -32,7 +54,7 @@ Chrona release notes are evidence-based. Completed entries describe changes that
 - Kept Android Gradle Plugin `9.4.0` with Gradle `9.6.1`, the supported Android 17 build combination used by this project.
 - Upgraded the Compose dependency line to `compose-bom-alpha:2026.09.00`, bringing the Android 17-era Compose stack and Material 3 Expressive `1.5.0-alpha28`.
 - Enabled `MaterialExpressiveTheme` with expressive motion and increased shape scale for the Chrona UI.
-- Added a Material 3 Expressive wavy timer indicator and adaptive large-screen Bento layout.
+- Replaced the timer wavy/seek interaction with a numeric HHMMSS keypad and a thick rounded circular countdown indicator.
 - Added Material 3 Adaptive window APIs, explicit resizeable-activity support, and predictive-back readiness for modern Android windows.
 - Added `scripts/verify-android17.sh`; Debug, package-maintenance, and Release CI now run the Android 17 toolchain verification gate.
 - Kept Debug, test, lint, native, and Release responsibilities separated in GitHub Actions.

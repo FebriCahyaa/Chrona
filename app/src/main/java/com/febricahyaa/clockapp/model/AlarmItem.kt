@@ -5,13 +5,14 @@ package com.febricahyaa.clockapp.model
 import java.time.DayOfWeek
 import java.time.LocalTime
 
-/** A single user-created alarm. */
+/** Persistent alarm definition shared by UI, scheduler and ringing state. */
 data class AlarmItem(
     val id: Long,
     val time: LocalTime,
-    val label: String = "",
-    val enabled: Boolean = true,
-    val repeatDays: Set<DayOfWeek> = emptySet()
-) {
-    val isRepeating: Boolean get() = repeatDays.isNotEmpty()
-}
+    val label: String,
+    val enabled: Boolean,
+    val repeatDays: Set<DayOfWeek>,
+    val ringtoneUri: String? = null,
+    val ringtoneName: String = "Default alarm",
+    val vibrate: Boolean = true,
+)

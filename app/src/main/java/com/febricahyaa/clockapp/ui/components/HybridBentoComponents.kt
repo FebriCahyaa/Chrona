@@ -43,6 +43,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -93,6 +95,7 @@ fun HybridBentoCard(
     onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val haptics = LocalHapticFeedback.current
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
     val shape = RoundedCornerShape(28.dp)
@@ -129,12 +132,15 @@ fun HybridBentoCard(
             )
             .clip(shape)
             .then(
-                onClick?.let {
+                onClick?.let { clickAction ->
                     Modifier.clickable(
                         interactionSource = interactionSource,
                         indication = null,
                         role = Role.Button,
-                        onClick = it,
+                        onClick = {
+                            haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                            clickAction()
+                        },
                     )
                 } ?: Modifier,
             ),
@@ -212,6 +218,7 @@ fun BentoIconButton(
     active: Boolean = false,
     contentDescription: String? = null,
 ) {
+    val haptics = LocalHapticFeedback.current
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
@@ -230,7 +237,10 @@ fun BentoIconButton(
         },
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.14f)),
         shadowElevation = if (pressed) 1.dp else 3.dp,
-        onClick = onClick,
+        onClick = {
+            haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
+            onClick()
+        },
         interactionSource = interactionSource,
     ) {
         Box(contentAlignment = Alignment.Center) {
@@ -282,9 +292,13 @@ fun ThemeToggle(
 
 @Composable
 private fun RowScope.ThemeChip(icon: ImageVector, label: String, selected: Boolean, onClick: () -> Unit) {
+    val haptics = LocalHapticFeedback.current
     Surface(
         modifier = Modifier.weight(1f),
-        onClick = onClick,
+        onClick = {
+            haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
+            onClick()
+        },
         shape = RoundedCornerShape(18.dp),
         color = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent,
         contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,

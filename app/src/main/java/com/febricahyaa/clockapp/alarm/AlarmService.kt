@@ -42,7 +42,11 @@ class AlarmService : Service() {
             startForeground(AlarmReceiver.notificationId(alarmId), notification)
         }
 
-        appContainer.alarmSoundPlayer.start()
+        val alarm = appContainer.alarmRepository.load().firstOrNull { it.id == alarmId }
+        appContainer.alarmSoundPlayer.start(
+            ringtoneUri = alarm?.ringtoneUri,
+            vibrate = alarm?.vibrate ?: true,
+        )
         appContainer.alarmStateManager.onAlarmTriggered(alarmId)
         return START_NOT_STICKY
     }

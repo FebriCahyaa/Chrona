@@ -44,6 +44,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.febricahyaa.clockapp.di.AppViewModelFactory
 import com.febricahyaa.clockapp.model.AppThemeMode
+import com.febricahyaa.clockapp.model.WorldClockItem
 import com.febricahyaa.clockapp.navigation.AppDestination
 import com.febricahyaa.clockapp.ui.components.ChronaAmbientBackdrop
 import com.febricahyaa.clockapp.ui.components.ChronaScreenSurface
@@ -53,6 +54,7 @@ import com.febricahyaa.clockapp.ui.screens.SettingsSheetContent
 import com.febricahyaa.clockapp.ui.screens.StopwatchScreen
 import com.febricahyaa.clockapp.ui.screens.TimerScreen
 import com.febricahyaa.clockapp.ui.screens.WorldClockScreen
+import com.febricahyaa.clockapp.ui.screens.WorldClockSearchScreen
 import com.febricahyaa.clockapp.ui.theme.ChronaTheme
 import com.febricahyaa.clockapp.ui.viewmodel.AlarmViewModel
 import com.febricahyaa.clockapp.ui.viewmodel.SettingsViewModel
@@ -112,7 +114,11 @@ fun ClockApp() {
     }
 
     BackHandler(enabled = showSettings || destination != AppDestination.CLOCK) {
-        if (showSettings) showSettings = false else destination = AppDestination.CLOCK
+        when {
+            showSettings -> showSettings = false
+            destination == AppDestination.WORLD_SEARCH -> destination = AppDestination.WORLD
+            else -> destination = AppDestination.CLOCK
+        }
     }
 
     ChronaTheme(settingsState.settings) {
@@ -152,10 +158,25 @@ fun ClockApp() {
                                 favorites = worldClockState.favorites,
                                 use24HourFormat = settingsState.use24HourFormat,
                                 glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
-                                onAdd = worldClockViewModel::add,
                                 onRemove = worldClockViewModel::remove,
                                 onToggleFavorite = worldClockViewModel::toggleFavorite,
+                                onOpenSearch = { destination = AppDestination.WORLD_SEARCH },
                                 onBack = { destination = AppDestination.CLOCK },
+                            )
+
+                            AppDestination.WORLD_SEARCH -> WorldClockSearchScreen(
+                                existingZoneIds = worldClockState.items.mapTo(mutableSetOf()) { it.zoneId },
+                                onAdd = { city, _, zoneId ->
+                                    worldClockViewModel.add(
+                                        WorldClockItem(
+                                            id = System.currentTimeMillis(),
+                                            city = city,
+                                            zoneId = zoneId,
+                                        ),
+                                    )
+                                    destination = AppDestination.WORLD
+                                },
+                                onBack = { destination = AppDestination.WORLD },
                             )
 
                             AppDestination.TIMER -> TimerScreen(
@@ -197,6 +218,7 @@ fun ClockApp() {
                                     if (enabled && !container.alarmScheduler.canScheduleExactAlarms()) requestExactAlarmAccess(context)
                                 },
                                 onDelete = alarmViewModel::delete,
+                                onUpdate = alarmViewModel::update,
                             )
                         }
                     }

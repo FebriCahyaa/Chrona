@@ -41,6 +41,9 @@ class SharedPreferencesAlarmRepository(context: Context) : AlarmRepository {
         put("label", label)
         put("enabled", enabled)
         put("repeatDays", JSONArray(repeatDays.map { it.value }))
+        put("ringtoneUri", ringtoneUri)
+        put("ringtoneName", ringtoneName)
+        put("vibrate", vibrate)
     }
 
     private fun JSONObject.toAlarmItem(): AlarmItem {
@@ -52,6 +55,9 @@ class SharedPreferencesAlarmRepository(context: Context) : AlarmRepository {
             label = optString("label", ""),
             enabled = optBoolean("enabled", true),
             repeatDays = days,
+            ringtoneUri = optString("ringtoneUri", "").takeIf { it.isNotBlank() },
+            ringtoneName = optString("ringtoneName", "Default alarm"),
+            vibrate = optBoolean("vibrate", true),
         )
     }
 

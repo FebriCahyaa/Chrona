@@ -31,6 +31,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.lifecycle.Lifecycle
@@ -92,6 +94,7 @@ fun GlassPill(
     selected: Boolean = false,
     content: @Composable RowScope.() -> Unit,
 ) {
+    val haptics = LocalHapticFeedback.current
     val shape = RoundedCornerShape(50)
     val fill = if (selected) {
         MaterialTheme.colorScheme.primary.copy(alpha = 0.22f)
@@ -103,7 +106,12 @@ fun GlassPill(
         shape = shape,
         modifier = modifier
             .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = if (selected) 0.2f else 0.1f), shape)
-            .then(onClick?.let { Modifier.clickable(onClick = it) } ?: Modifier),
+            .then(onClick?.let {
+                Modifier.clickable {
+                    haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                    it()
+                }
+            } ?: Modifier),
     ) {
         Row(
             Modifier.padding(horizontal = 15.dp, vertical = 10.dp),
@@ -143,8 +151,12 @@ fun IconCircleButton(
     active: Boolean = false,
     contentDescription: String? = null,
 ) {
+    val haptics = LocalHapticFeedback.current
     Surface(
-        onClick = onClick,
+        onClick = {
+            haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
+            onClick()
+        },
         modifier = modifier.size(44.dp),
         shape = CircleShape,
         color = if (active) MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)

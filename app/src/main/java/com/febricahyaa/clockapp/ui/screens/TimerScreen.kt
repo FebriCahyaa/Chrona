@@ -2,7 +2,13 @@
 
 package com.febricahyaa.clockapp.ui.screens
 
-import androidx.compose.foundation.Canvas
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,31 +19,47 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Backspace
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.graphics.drawscope.Stroke
-import com.febricahyaa.clockapp.ui.components.ChronaAnimatedSeekBar
+import androidx.compose.ui.unit.dp
+import com.febricahyaa.clockapp.core.TimerDurationInput
 import com.febricahyaa.clockapp.ui.components.ChronaCard
-import com.febricahyaa.clockapp.ui.components.GlassPill
 import com.febricahyaa.clockapp.ui.components.IconCircleButton
 import com.febricahyaa.clockapp.ui.components.ScreenHeader
-import java.util.Locale
-import kotlin.math.roundToInt
 
+/**
+ * Chrona timer editor deliberately avoids a seek/slider interaction.
+ * Digits are entered from right to left as HHMMSS, matching the mental model
+ * of a calculator-style duration editor while remaining keyboard/accessibility friendly.
+ */
 @Composable
 fun TimerScreen(
     totalSeconds: Int,
@@ -49,96 +71,388 @@ fun TimerScreen(
     onSetPreset: (Int) -> Unit,
     onBack: () -> Unit,
 ) {
-    val progress = if (totalSeconds <= 0) 0f else (remainingSeconds.toFloat() / totalSeconds).coerceIn(0f, 1f)
-    val trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.09f)
-    val primaryColor = MaterialTheme.colorScheme.primary
+    val haptics = LocalHapticFeedback.current
+    val canEdit = !running && remainingSeconds == totalSeconds
 
-    Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
+    var inputDigits by rememberSaveable { mutableStateOf(TimerDurationInput.toDigits(totalSeconds)) }
+    var inputDirty by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(totalSeconds) {
+        inputDigits = TimerDurationInput.toDigits(totalSeconds)
+        inputDirty = false
+    }
+
+    val draftSeconds = remember(inputDigits) { TimerDurationInput.toSeconds(inputDigits) }
+    val progressTarget = if (totalSeconds > 0) {
+        (remainingSeconds.toFloat() / totalSeconds).coerceIn(0f, 1f)
+    } else {
+        0f
+    }
+    val animatedProgress by animateFloatAsState(
+        targetValue = progressTarget,
+        animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
+        label = "timer-progress",
+    )
+    val pulseTransition = rememberInfiniteTransition(label = "timer-running-pulse")
+    val pulse by pulseTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.008f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(900),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "timer-pulse",
+    )
+
+    fun addDigit(digit: Int) {
+        if (!canEdit) return
+        val candidate = ((if (inputDirty) inputDigits else "") + digit).takeLast(6)
+        val parsed = TimerDurationInput.parse(candidate)
+        if (parsed != null) {
+            inputDigits = candidate
+            inputDirty = true
+        } else {
+            haptics.performHapticFeedback(HapticFeedbackType.Reject)
+        }
+    }
+
+    fun deleteDigit() {
+        if (!canEdit) return
+        inputDigits = inputDigits.dropLast(1)
+        inputDirty = true
+    }
+
+    fun clearDigits() {
+        if (!canEdit) return
+        inputDigits = ""
+        inputDirty = true
+    }
+
+    fun commitDraft() {
+        val safe = draftSeconds.coerceIn(1, TimerDurationInput.MAX_TIMER_SECONDS)
+        onSetPreset(safe)
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 20.dp),
+    ) {
         Spacer(Modifier.height(8.dp))
         ScreenHeader(
             title = "Timer",
-            subtitle = "Focus on what matters",
+            subtitle = "Build a duration with numbers, then let Chrona count it down",
             onBack = onBack,
-            actions = { IconCircleButton(Icons.Filled.Refresh, onReset, contentDescription = "Reset timer") },
+            actions = {
+                IconCircleButton(
+                    icon = Icons.Filled.Refresh,
+                    onClick = onReset,
+                    contentDescription = "Reset timer",
+                )
+            },
         )
         Spacer(Modifier.height(16.dp))
 
-        ChronaCard(Modifier.fillMaxWidth(), glass = glass) {
+        ChronaCard(
+            modifier = Modifier
+                .animateContentSize()
+                .widthIn(max = 560.dp)
+                .fillMaxWidth()
+                .align(Alignment.CenterHorizontally),
+            glass = glass,
+        ) {
             Column(
-                Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 22.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 18.dp, vertical = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Box(Modifier.size(276.dp), contentAlignment = Alignment.Center) {
-                    Canvas(Modifier.fillMaxSize().padding(17.dp)) {
-                        val stroke = 13.dp.toPx()
-                        drawArc(trackColor, -90f, 360f, false, style = Stroke(stroke, cap = StrokeCap.Round))
-                        drawArc(primaryColor, -90f, 360f * progress, false, style = Stroke(stroke, cap = StrokeCap.Round))
-                    }
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(formatTimer(remainingSeconds), fontSize = 50.sp, fontWeight = FontWeight.Light, letterSpacing = (-1.5).sp)
-                        Text(if (running) "Running" else "Ready", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
+                if (running || remainingSeconds != totalSeconds) {
+                    CountdownIndicator(
+                        progress = animatedProgress,
+                        remainingSeconds = remainingSeconds,
+                        running = running,
+                        pulse = pulse,
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        text = if (running) {
+                            "Running from elapsed real time"
+                        } else if (remainingSeconds == 0) {
+                            "Timer complete"
+                        } else {
+                            "Paused — resume when you're ready"
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.height(18.dp))
+                } else {
+                    TimerDurationDisplay(
+                        inputDigits = inputDigits,
+                        enabled = canEdit,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = "Enter digits as HHMMSS",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.height(18.dp))
+                    TimerKeypad(
+                        enabled = canEdit,
+                        onDigit = ::addDigit,
+                        onDelete = ::deleteDigit,
+                        onClear = ::clearDigits,
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    QuickDurations(
+                        enabled = canEdit,
+                        onSelect = { seconds ->
+                            haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                            inputDigits = TimerDurationInput.toDigits(seconds)
+                            inputDirty = true
+                        },
+                        onCommit = { seconds -> onSetPreset(seconds) },
+                    )
+                    Spacer(Modifier.height(10.dp))
                 }
-                Spacer(Modifier.height(12.dp))
-                Text(
-                    if (running) "Stay focused. Chrona keeps the countdown alive in the background." else "Choose a duration or start the current countdown.",
-                    fontSize = 12.sp,
-                    lineHeight = 16.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Spacer(Modifier.height(16.dp))
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                    listOf(5, 15, 25, 60).forEach { minutes ->
-                        if (minutes != 5) Spacer(Modifier.size(6.dp))
-                        GlassPill(selected = totalSeconds == minutes * 60, onClick = { onSetPreset(minutes * 60) }) {
-                            Text("${minutes}m", fontSize = 11.sp)
-                        }
-                    }
+
+                val primaryActionLabel = when {
+                    running -> "Pause"
+                    remainingSeconds != totalSeconds -> "Resume"
+                    else -> "Start"
                 }
-                Spacer(Modifier.height(14.dp))
-                Text(
-                    text = if (running) "Pause the timer to change its duration." else "Duration · ${totalSeconds / 60} min",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                ChronaAnimatedSeekBar(
-                    value = (totalSeconds / 60f).coerceIn(1f, 180f),
-                    enabled = !running,
-                    valueRange = 1f..180f,
-                    steps = 178,
-                    valueLabel = { minutes -> "${minutes.roundToInt()} min" },
-                    onValueChangeFinished = { minutes ->
-                        onSetPreset(minutes.roundToInt() * 60)
+                Button(
+                    onClick = {
+                        haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                        if (!running && remainingSeconds == totalSeconds) commitDraft()
+                        onToggle()
                     },
-                )
-                Spacer(Modifier.height(18.dp))
-                Surface(
-                    onClick = onToggle,
-                    modifier = Modifier.size(76.dp),
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primary,
-                    shadowElevation = 10.dp,
+                    enabled = if (running) true else draftSeconds > 0 || remainingSeconds > 0,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            if (running) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                            contentDescription = if (running) "Pause timer" else "Start timer",
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(30.dp),
-                        )
-                    }
+                    Icon(
+                        imageVector = if (running) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                        contentDescription = null,
+                    )
+                    Spacer(Modifier.size(8.dp))
+                    Text(primaryActionLabel, style = MaterialTheme.typography.labelLarge)
                 }
             }
         }
+
         Spacer(Modifier.height(12.dp))
-        Text("Timer stays accurate across screen off and background work.", Modifier.fillMaxWidth(), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            text = "Timer completion is scheduled through Chrona's Android alarm layer so it can survive the UI leaving the foreground.",
+            modifier = Modifier.fillMaxWidth(),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
+@Composable
+private fun CountdownIndicator(
+    progress: Float,
+    remainingSeconds: Int,
+    running: Boolean,
+    pulse: Float,
+) {
+    Box(
+        modifier = Modifier
+            .size(286.dp)
+            .graphicsLayer {
+                scaleX = if (running) pulse else 1f
+                scaleY = if (running) pulse else 1f
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        CircularProgressIndicator(
+            progress = { progress },
+            modifier = Modifier.fillMaxSize(),
+            strokeWidth = 16.dp,
+            strokeCap = StrokeCap.Round,
+            color = MaterialTheme.colorScheme.primary,
+            trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.10f),
+        )
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = TimerDurationInput.format(remainingSeconds),
+                style = MaterialTheme.typography.displayLarge,
+                fontWeight = FontWeight.Light,
+            )
+            Text(
+                text = if (running) "Running" else if (remainingSeconds == 0) "Complete" else "Paused",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
 
-private fun formatTimer(total: Int): String {
-    val h = total / 3600
-    val m = (total / 60) % 60
-    val s = total % 60
-    return if (h > 0) String.format(Locale.US, "%02d:%02d:%02d", h, m, s) else String.format(Locale.US, "%02d:%02d", m, s)
+@Composable
+private fun TimerDurationDisplay(
+    inputDigits: String,
+    enabled: Boolean,
+) {
+    val parsed = TimerDurationInput.parse(inputDigits) ?: com.febricahyaa.clockapp.core.TimerDuration(0, 0, 0)
+    val activePart = when {
+        inputDigits.length >= 5 -> TimerSegment.HOURS
+        inputDigits.length >= 3 -> TimerSegment.MINUTES
+        else -> TimerSegment.SECONDS
+    }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        DurationPart("%02d".format(parsed.hours), "h", activePart == TimerSegment.HOURS, enabled)
+        DurationPart("%02d".format(parsed.minutes), "m", activePart == TimerSegment.MINUTES, enabled)
+        DurationPart("%02d".format(parsed.seconds), "s", activePart == TimerSegment.SECONDS, enabled)
+    }
+}
+
+@Composable
+private fun DurationPart(
+    value: String,
+    unit: String,
+    active: Boolean,
+    enabled: Boolean,
+) {
+    val container = when {
+        active && enabled -> MaterialTheme.colorScheme.primaryContainer
+        else -> MaterialTheme.colorScheme.surfaceContainerHigh
+    }
+    Row(verticalAlignment = Alignment.Bottom) {
+        Surface(
+            shape = MaterialTheme.shapes.medium,
+            color = container,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+        ) {
+            Text(
+                text = value,
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                style = MaterialTheme.typography.displaySmall,
+                fontWeight = FontWeight.Light,
+            )
+        }
+        Text(
+            text = unit,
+            modifier = Modifier.padding(horizontal = 5.dp, vertical = 8.dp),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun TimerKeypad(
+    enabled: Boolean,
+    onDigit: (Int) -> Unit,
+    onDelete: () -> Unit,
+    onClear: () -> Unit,
+) {
+    val haptics = LocalHapticFeedback.current
+    val rows = listOf(
+        listOf(1, 2, 3),
+        listOf(4, 5, 6),
+        listOf(7, 8, 9),
+    )
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        rows.forEach { row ->
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                row.forEach { digit ->
+                    KeypadButton(
+                        text = digit.toString(),
+                        enabled = enabled,
+                        modifier = Modifier.weight(1f),
+                        onClick = { onDigit(digit) },
+                    )
+                }
+            }
+        }
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            KeypadButton(
+                icon = Icons.Filled.Clear,
+                enabled = enabled,
+                modifier = Modifier.weight(1f),
+                onClick = onClear,
+                contentDescription = "Clear timer input",
+            )
+            KeypadButton(
+                text = "0",
+                enabled = enabled,
+                modifier = Modifier.weight(1f),
+                onClick = { onDigit(0) },
+            )
+            KeypadButton(
+                icon = Icons.Filled.Backspace,
+                enabled = enabled,
+                modifier = Modifier.weight(1f),
+                onClick = onDelete,
+                contentDescription = "Delete last timer digit",
+            )
+        }
+    }
+}
+
+@Composable
+private fun KeypadButton(
+    modifier: Modifier,
+    enabled: Boolean,
+    onClick: () -> Unit,
+    text: String? = null,
+    icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
+    contentDescription: String? = null,
+) {
+    val haptics = LocalHapticFeedback.current
+    FilledTonalButton(
+        onClick = {
+            haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
+            onClick()
+        },
+        enabled = enabled,
+        modifier = modifier.height(62.dp),
+        shape = MaterialTheme.shapes.large,
+    ) {
+        if (text != null) {
+            Text(text, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Medium)
+        } else if (icon != null) {
+            Icon(icon, contentDescription = contentDescription, modifier = Modifier.size(24.dp))
+        }
+    }
+}
+
+@Composable
+private fun QuickDurations(
+    enabled: Boolean,
+    onSelect: (Int) -> Unit,
+    onCommit: (Int) -> Unit,
+) {
+    val options = listOf(5 to "5m", 15 to "15m", 30 to "30m", 60 to "1h")
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+    ) {
+        options.forEach { (minutes, label) ->
+            TextButton(
+                onClick = {
+                    onSelect(minutes * 60)
+                    onCommit(minutes * 60)
+                },
+                enabled = enabled,
+            ) {
+                Text(label, style = MaterialTheme.typography.labelLarge)
+            }
+        }
+    }
 }

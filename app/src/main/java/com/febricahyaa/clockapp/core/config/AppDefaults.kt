@@ -42,10 +42,25 @@ object AppDefaults {
 
     /** Only used to seed a brand-new install; the user's own list is persisted after that. */
     fun defaultWorldClocks(): List<WorldClockItem> = listOf(
-        WorldClockItem(id = 1, city = "New York", zoneId = "America/New_York"),
-        WorldClockItem(id = 2, city = "London", zoneId = "Europe/London"),
-        WorldClockItem(id = 3, city = "Dubai", zoneId = "Asia/Dubai"),
-        WorldClockItem(id = 4, city = "Tokyo", zoneId = "Asia/Tokyo"),
-        WorldClockItem(id = 5, city = "Sydney", zoneId = "Australia/Sydney"),
+        WorldClockItem(1, "New York", "America/New_York"),
+        WorldClockItem(2, "London", "Europe/London"),
+        WorldClockItem(3, "Dubai", "Asia/Dubai"),
+        WorldClockItem(4, "Tokyo", "Asia/Tokyo"),
+        WorldClockItem(5, "Sydney", "Australia/Sydney"),
+        WorldClockItem(6, "Jakarta", "Asia/Jakarta"),
+        WorldClockItem(7, "Singapore", "Asia/Singapore"),
+        WorldClockItem(8, "Bangkok", "Asia/Bangkok"),
+        WorldClockItem(9, "Seoul", "Asia/Seoul"),
+        WorldClockItem(10, "Beijing", "Asia/Shanghai"),
+        WorldClockItem(11, "New Delhi", "Asia/Kolkata"),
+        WorldClockItem(12, "Paris", "Europe/Paris"),
+        WorldClockItem(13, "Berlin", "Europe/Berlin"),
+        WorldClockItem(14, "Moscow", "Europe/Moscow"),
+        WorldClockItem(15, "Toronto", "America/Toronto"),
+        WorldClockItem(16, "Chicago", "America/Chicago"),
+        WorldClockItem(17, "Los Angeles", "America/Los_Angeles"),
+        WorldClockItem(18, "Sao Paulo", "America/Sao_Paulo"),
+        WorldClockItem(19, "Cairo", "Africa/Cairo"),
+        WorldClockItem(20, "Auckland", "Pacific/Auckland"),
     )
 }

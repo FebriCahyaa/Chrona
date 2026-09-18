@@ -2,12 +2,8 @@
 
 package com.febricahyaa.clockapp.alarm
 
-/**
- * Plays/stops the ringing alarm sound + vibration. Abstracted so the
- * notification action receiver and the ringing activity depend on an
- * interface rather than a concrete `Ringtone`/`Vibrator` singleton.
- */
+/** Plays/stops alarm audio and optional vibration. */
 interface AlarmSoundGateway {
-    fun start()
+    fun start(ringtoneUri: String? = null, vibrate: Boolean = true)
     fun stop()
 }
