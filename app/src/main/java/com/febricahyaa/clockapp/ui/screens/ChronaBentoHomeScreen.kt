@@ -215,7 +215,7 @@ private fun ActionGrid(
 ) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         TimeActionCard(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_ALARM),
             themeMode = themeMode,
             icon = Icons.Filled.AccessAlarm,
             eyebrow = if (nextAlarm == "Not set") "ALARM" else "NEXT ALARM",
@@ -225,7 +225,7 @@ private fun ActionGrid(
             onClick = { onNavigate(AppDestination.ALARM) },
         )
         TimeActionCard(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_TIMER),
             themeMode = themeMode,
             icon = Icons.Filled.Timer,
             eyebrow = if (timerRunning) "LIVE" else "TIMER",
@@ -237,7 +237,7 @@ private fun ActionGrid(
     }
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         UtilityCard(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_WORLD_CLOCK),
             themeMode = themeMode,
             icon = Icons.Filled.Public,
             title = "World Clock",
@@ -245,7 +245,7 @@ private fun ActionGrid(
             onClick = { onNavigate(AppDestination.WORLD) },
         )
         UtilityCard(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_STOPWATCH),
             themeMode = themeMode,
             icon = Icons.Filled.AccessTime,
             title = "Stopwatch",

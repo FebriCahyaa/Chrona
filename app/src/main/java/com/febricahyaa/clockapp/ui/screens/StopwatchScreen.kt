@@ -32,6 +32,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.febricahyaa.clockapp.ui.components.GlassPill
+import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
+import com.febricahyaa.clockapp.navigation.chronaSharedBounds
 import com.febricahyaa.clockapp.ui.components.IconCircleButton
 import com.febricahyaa.clockapp.ui.components.ChronaScaffold
 import java.util.Locale
@@ -53,7 +55,7 @@ fun StopwatchScreen(
         onBack = onBack,
         actions = { IconCircleButton(Icons.Filled.Refresh, onReset, contentDescription = "Reset stopwatch") },
     ) { paddingValues ->
-        Column(Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 20.dp)) {
+        Column(Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 20.dp).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_STOPWATCH)) {
             Spacer(Modifier.height(4.dp))
 
         if (laps.isEmpty()) {

@@ -58,6 +58,8 @@ import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.febricahyaa.clockapp.model.AlarmItem
+import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
+import com.febricahyaa.clockapp.navigation.chronaSharedBounds
 import com.febricahyaa.clockapp.ui.components.ChronaCard
 import com.febricahyaa.clockapp.ui.components.GradientIconBox
 import com.febricahyaa.clockapp.ui.components.IconCircleButton
@@ -109,7 +111,8 @@ fun AlarmScreen(
 
         if (alarms.isEmpty()) {
             ChronaCard(
-                Modifier.widthIn(max = 560.dp).fillMaxWidth().align(Alignment.CenterHorizontally),
+                Modifier.chronaSharedBounds(ChronaMotionKeys.DASHBOARD_ALARM)
+                    .widthIn(max = 560.dp).fillMaxWidth().align(Alignment.CenterHorizontally),
                 glass = glass,
             ) {
                 Column(

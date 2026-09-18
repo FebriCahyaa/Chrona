@@ -53,6 +53,8 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.febricahyaa.clockapp.core.TimerDurationInput
+import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
+import com.febricahyaa.clockapp.navigation.chronaSharedBounds
 import com.febricahyaa.clockapp.ui.components.ChronaCard
 import com.febricahyaa.clockapp.ui.components.IconCircleButton
 import com.febricahyaa.clockapp.ui.components.ChronaScaffold
@@ -158,6 +160,7 @@ fun TimerScreen(
         ) {
             ChronaCard(
             modifier = Modifier
+                .chronaSharedBounds(ChronaMotionKeys.DASHBOARD_TIMER)
                 .animateContentSize()
                 .widthIn(max = 560.dp)
                 .fillMaxWidth()
