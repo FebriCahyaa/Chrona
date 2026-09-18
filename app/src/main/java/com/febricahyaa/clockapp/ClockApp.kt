@@ -49,7 +49,7 @@ import com.febricahyaa.clockapp.navigation.AppDestination
 import com.febricahyaa.clockapp.ui.components.ChronaAmbientBackdrop
 import com.febricahyaa.clockapp.ui.components.ChronaScreenSurface
 import com.febricahyaa.clockapp.ui.screens.AlarmScreen
-import com.febricahyaa.clockapp.ui.screens.HomeScreen
+import com.febricahyaa.clockapp.ui.screens.ChronaBentoHomeScreen
 import com.febricahyaa.clockapp.ui.screens.SettingsSheetContent
 import com.febricahyaa.clockapp.ui.screens.StopwatchScreen
 import com.febricahyaa.clockapp.ui.screens.TimerScreen
@@ -98,7 +98,6 @@ fun ClockApp() {
         val activity = view.context as? Activity
         val window = activity?.window
         if (window != null) {
-            WindowCompat.setDecorFitsSystemWindows(window, false)
             window.statusBarColor = Color.Transparent.toArgb()
             window.navigationBarColor = Color.Transparent.toArgb()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -125,11 +124,7 @@ fun ClockApp() {
         Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
             ChronaAmbientBackdrop()
 
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .windowInsetsPadding(WindowInsets.safeDrawing),
-            ) {
+            Box(Modifier.fillMaxSize()) {
                 AnimatedContent(
                     targetState = destination,
                     transitionSpec = {
@@ -139,87 +134,99 @@ fun ClockApp() {
                     label = "destination-transition",
                     modifier = Modifier.fillMaxSize(),
                 ) { currentDestination ->
-                    ChronaScreenSurface {
-                        when (currentDestination) {
-                            AppDestination.CLOCK -> HomeScreen(
-                                use24HourFormat = settingsState.use24HourFormat,
-                                showSeconds = settingsState.settings.showSeconds,
-                                alarms = alarms,
-                                timerRemainingSeconds = timerState.remainingSeconds,
-                                timerRunning = timerState.isRunning,
-                                themeMode = settingsState.settings.themeMode,
-                                onThemeModeChange = settingsViewModel::updateThemeMode,
-                                onNavigate = { destination = it },
-                                onOpenSettings = { showSettings = true },
-                            )
+                    val screenInsets = if (currentDestination == AppDestination.CLOCK) {
+                        Modifier
+                    } else {
+                        Modifier.windowInsetsPadding(WindowInsets.safeDrawing)
+                    }
 
-                            AppDestination.WORLD -> WorldClockScreen(
-                                items = worldClockState.items,
-                                favorites = worldClockState.favorites,
-                                use24HourFormat = settingsState.use24HourFormat,
-                                glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
-                                onRemove = worldClockViewModel::remove,
-                                onToggleFavorite = worldClockViewModel::toggleFavorite,
-                                onOpenSearch = { destination = AppDestination.WORLD_SEARCH },
-                                onBack = { destination = AppDestination.CLOCK },
-                            )
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .then(screenInsets),
+                    ) {
+                        ChronaScreenSurface {
+                            when (currentDestination) {
+                                AppDestination.CLOCK -> ChronaBentoHomeScreen(
+                                    use24HourFormat = settingsState.use24HourFormat,
+                                    showSeconds = settingsState.settings.showSeconds,
+                                    alarms = alarms,
+                                    timerRemainingSeconds = timerState.remainingSeconds,
+                                    timerRunning = timerState.isRunning,
+                                    themeMode = settingsState.settings.themeMode,
+                                    onThemeModeChange = settingsViewModel::updateThemeMode,
+                                    onNavigate = { destination = it },
+                                    onOpenSettings = { showSettings = true },
+                                )
 
-                            AppDestination.WORLD_SEARCH -> WorldClockSearchScreen(
-                                existingZoneIds = worldClockState.items.mapTo(mutableSetOf()) { it.zoneId },
-                                onAdd = { city, _, zoneId ->
-                                    worldClockViewModel.add(
-                                        WorldClockItem(
-                                            id = System.currentTimeMillis(),
-                                            city = city,
-                                            zoneId = zoneId,
-                                        ),
-                                    )
-                                    destination = AppDestination.WORLD
-                                },
-                                onBack = { destination = AppDestination.WORLD },
-                            )
+                                AppDestination.WORLD -> WorldClockScreen(
+                                    items = worldClockState.items,
+                                    favorites = worldClockState.favorites,
+                                    use24HourFormat = settingsState.use24HourFormat,
+                                    glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
+                                    onRemove = worldClockViewModel::remove,
+                                    onToggleFavorite = worldClockViewModel::toggleFavorite,
+                                    onOpenSearch = { destination = AppDestination.WORLD_SEARCH },
+                                    onBack = { destination = AppDestination.CLOCK },
+                                )
 
-                            AppDestination.TIMER -> TimerScreen(
-                                totalSeconds = timerState.totalSeconds,
-                                remainingSeconds = timerState.remainingSeconds,
-                                running = timerState.isRunning,
-                                glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
-                                onToggle = {
-                                    if (!timerState.isRunning && !container.alarmScheduler.canScheduleExactAlarms()) requestExactAlarmAccess(context)
-                                    else timerViewModel.toggle()
-                                },
-                                onReset = timerViewModel::reset,
-                                onSetPreset = timerViewModel::setPreset,
-                                onBack = { destination = AppDestination.CLOCK },
-                            )
+                                AppDestination.WORLD_SEARCH -> WorldClockSearchScreen(
+                                    existingZoneIds = worldClockState.items.mapTo(mutableSetOf()) { it.zoneId },
+                                    onAdd = { city, _, zoneId ->
+                                        worldClockViewModel.add(
+                                            WorldClockItem(
+                                                id = System.currentTimeMillis(),
+                                                city = city,
+                                                zoneId = zoneId,
+                                            ),
+                                        )
+                                        destination = AppDestination.WORLD
+                                    },
+                                    onBack = { destination = AppDestination.WORLD },
+                                )
 
-                            AppDestination.STOPWATCH -> StopwatchScreen(
-                                elapsedMillis = stopwatchState.elapsedMillis,
-                                isRunning = stopwatchState.isRunning,
-                                laps = stopwatchState.laps,
-                                glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
-                                onToggleRun = stopwatchViewModel::toggleRun,
-                                onLap = stopwatchViewModel::lap,
-                                onReset = stopwatchViewModel::reset,
-                                onBack = { destination = AppDestination.CLOCK },
-                            )
+                                AppDestination.TIMER -> TimerScreen(
+                                    totalSeconds = timerState.totalSeconds,
+                                    remainingSeconds = timerState.remainingSeconds,
+                                    running = timerState.isRunning,
+                                    glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
+                                    onToggle = {
+                                        if (!timerState.isRunning && !container.alarmScheduler.canScheduleExactAlarms()) requestExactAlarmAccess(context)
+                                        else timerViewModel.toggle()
+                                    },
+                                    onReset = timerViewModel::reset,
+                                    onSetPreset = timerViewModel::setPreset,
+                                    onBack = { destination = AppDestination.CLOCK },
+                                )
 
-                            AppDestination.ALARM -> AlarmScreen(
-                                alarms = alarms,
-                                use24HourFormat = settingsState.use24HourFormat,
-                                glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
-                                onBack = { destination = AppDestination.CLOCK },
-                                onAdd = { alarm ->
-                                    alarmViewModel.add(alarm)
-                                    if (!container.alarmScheduler.canScheduleExactAlarms()) requestExactAlarmAccess(context)
-                                },
-                                onToggle = { alarm, enabled ->
-                                    alarmViewModel.setEnabled(alarm, enabled)
-                                    if (enabled && !container.alarmScheduler.canScheduleExactAlarms()) requestExactAlarmAccess(context)
-                                },
-                                onDelete = alarmViewModel::delete,
-                                onUpdate = alarmViewModel::update,
-                            )
+                                AppDestination.STOPWATCH -> StopwatchScreen(
+                                    elapsedMillis = stopwatchState.elapsedMillis,
+                                    isRunning = stopwatchState.isRunning,
+                                    laps = stopwatchState.laps,
+                                    glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
+                                    onToggleRun = stopwatchViewModel::toggleRun,
+                                    onLap = stopwatchViewModel::lap,
+                                    onReset = stopwatchViewModel::reset,
+                                    onBack = { destination = AppDestination.CLOCK },
+                                )
+
+                                AppDestination.ALARM -> AlarmScreen(
+                                    alarms = alarms,
+                                    use24HourFormat = settingsState.use24HourFormat,
+                                    glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
+                                    onBack = { destination = AppDestination.CLOCK },
+                                    onAdd = { alarm ->
+                                        alarmViewModel.add(alarm)
+                                        if (!container.alarmScheduler.canScheduleExactAlarms()) requestExactAlarmAccess(context)
+                                    },
+                                    onToggle = { alarm, enabled ->
+                                        alarmViewModel.setEnabled(alarm, enabled)
+                                        if (enabled && !container.alarmScheduler.canScheduleExactAlarms()) requestExactAlarmAccess(context)
+                                    },
+                                    onDelete = alarmViewModel::delete,
+                                    onUpdate = alarmViewModel::update,
+                                )
+                            }
                         }
                     }
                 }

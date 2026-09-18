@@ -4,15 +4,21 @@ package com.febricahyaa.clockapp
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.setContent
-import androidx.core.view.WindowCompat
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Chrona owns the edge-to-edge insets and system-bar icon appearance in
-        // Compose so light/dark changes update immediately with the theme.
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-        setContent { ClockApp() }
+
+        // The root Compose surface owns the visual treatment behind both
+        // system bars. This keeps the app background continuous from the
+        // physical top edge through the status bar and down to the navigation
+        // bar while individual surfaces apply content insets where needed.
+        enableEdgeToEdge()
+
+        setContent {
+            ClockApp()
+        }
     }
 }
