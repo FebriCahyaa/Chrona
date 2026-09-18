@@ -106,15 +106,8 @@ fun ChronaBentoHomeScreen(
         next.repeatDays.isEmpty() -> stringResource(R.string.home_alarm_one_time)
         else -> stringResource(R.string.home_alarm_repeats)
     }
-    val favoriteWorldClocks = worldClockItems.filter { it.city in worldClockFavorites }
-    val favoriteWorldClockSummary = when {
-        favoriteWorldClocks.isEmpty() -> stringResource(R.string.home_world_clock_subtitle)
-        favoriteWorldClocks.size <= 2 -> favoriteWorldClocks.joinToString(" · ") { it.city }
-        else -> {
-            val visibleCities = favoriteWorldClocks.take(2).joinToString(" · ") { it.city }
-            "$visibleCities · +${favoriteWorldClocks.size - 2}"
-        }
-    }
+    val worldClockSummary = formatWorldClockSummary(worldClockItems, worldClockFavorites)
+        ?: stringResource(R.string.home_world_clock_subtitle)
     val windowAdaptiveInfo = androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2()
     val isWideWindow = windowAdaptiveInfo.windowSizeClass.windowWidthSizeClass == androidx.window.core.layout.WindowWidthSizeClass.EXPANDED
     val dateText = buildDateText(now, locale)
@@ -168,8 +161,8 @@ fun ChronaBentoHomeScreen(
                         ActionGrid(
                             themeMode = themeMode,
                             nextAlarm = alarmTime,
-                            worldClockSummary = favoriteWorldClockSummary,
                             alarmMeta = alarmMeta,
+                            worldClockSummary = worldClockSummary,
                             timerRemainingSeconds = timerRemainingSeconds,
                             timerRunning = timerRunning,
                             onNavigate = onNavigate,
@@ -203,8 +196,8 @@ fun ChronaBentoHomeScreen(
                         FloatingActionGrid(
                             themeMode = themeMode,
                             nextAlarm = alarmTime,
-                            worldClockSummary = favoriteWorldClockSummary,
                             alarmMeta = alarmMeta,
+                            worldClockSummary = worldClockSummary,
                             timerRemainingSeconds = timerRemainingSeconds,
                             timerRunning = timerRunning,
                             onNavigate = onNavigate,
@@ -244,8 +237,8 @@ private fun HeroCard(
 private fun FloatingActionGrid(
     themeMode: AppThemeMode,
     nextAlarm: String,
-    worldClockSummary: String,
     alarmMeta: String,
+    worldClockSummary: String,
     timerRemainingSeconds: Int,
     timerRunning: Boolean,
     onNavigate: (AppDestination) -> Unit,
@@ -311,8 +304,8 @@ private fun FloatingActionGrid(
 private fun ActionGrid(
     themeMode: AppThemeMode,
     nextAlarm: String,
-    worldClockSummary: String,
     alarmMeta: String,
+    worldClockSummary: String,
     timerRemainingSeconds: Int,
     timerRunning: Boolean,
     onNavigate: (AppDestination) -> Unit,
@@ -345,7 +338,7 @@ private fun ActionGrid(
             themeMode = themeMode,
             icon = Icons.Filled.Public,
             title = stringResource(R.string.home_world_clock_title),
-            subtitle = worldClockSummary,
+            subtitle = stringResource(R.string.home_world_clock_subtitle),
             onClick = { onNavigate(AppDestination.WORLD) },
         )
         UtilityCard(
@@ -597,6 +590,23 @@ fun AnalogClockUI(hour: Int, minute: Int, second: Float) {
         hand(second * 6f, 0.73f, 0.014f, tertiary, 0.11f)
         drawCircle(onSurface, radius * 0.052f, center)
         drawCircle(primary, radius * 0.022f, center)
+    }
+}
+
+private fun formatWorldClockSummary(
+    items: List<com.febricahyaa.clockapp.model.WorldClockItem>,
+    favorites: Set<String>,
+): String? {
+    val favoriteCities = items.asSequence()
+        .filter { it.city in favorites }
+        .map { it.city }
+        .distinct()
+        .toList()
+
+    return when {
+        favoriteCities.isEmpty() -> null
+        favoriteCities.size <= 2 -> favoriteCities.joinToString(" · ")
+        else -> "${favoriteCities.take(2).joinToString(" · ")} · +${favoriteCities.size - 2}"
     }
 }
 
