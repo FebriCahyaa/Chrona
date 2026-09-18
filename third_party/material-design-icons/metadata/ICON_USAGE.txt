@@ -1,7 +1,5 @@
-<!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
-
 # Chrona icon usage manifest
-# Upstream commit: 40a7a292a79d9394157e1ea24f83d52d5e17c556
+# Upstream commit: 27e9ef1dbeedc13d682fece4a58e1eda4cb0961a
 AutoMirrored.Filled.ArrowBack
 Filled.AccessAlarm
 Filled.AccessTime

@@ -1,6 +1,4 @@
-<!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
-
 Source: https://github.com/google/material-design-icons
-Revision: 40a7a292a79d9394157e1ea24f83d52d5e17c556
+Revision: 27e9ef1dbeedc13d682fece4a58e1eda4cb0961a
 License: Apache-2.0
 Selection: Icons referenced by Chrona Compose source
