@@ -15,6 +15,15 @@ class ChronaWorldClockRouteTest {
     }
 
     @Test
+    fun worldDetailRouteEncodesSpacesAndReservedCharacters() {
+        val route = ChronaRoutes.worldDetail("America/Argentina/Buenos Aires?x=1")
+        assertEquals(
+            "world/detail?zoneId=America%2FArgentina%2FBuenos%20Aires%3Fx%3D1",
+            route,
+        )
+    }
+
+    @Test
     fun worldClockMotionKeyIsStableForItemId() {
         assertEquals("world-clock-card:42", ChronaMotionKeys.worldClockCard(42L))
     }

@@ -31,7 +31,13 @@ class SharedPreferencesAlarmRepository(context: Context) : AlarmRepository {
     override fun save(alarms: List<AlarmItem>) {
         val array = JSONArray()
         alarms.forEach { array.put(it.toJson()) }
-        prefs.edit().putString(KEY_ALARMS, array.toString()).apply()
+        check(
+            prefs.edit()
+                .putString(KEY_ALARMS, array.toString())
+                .commit(),
+        ) {
+            "Unable to persist alarms to SharedPreferences"
+        }
     }
 
     private fun AlarmItem.toJson(): JSONObject = JSONObject().apply {

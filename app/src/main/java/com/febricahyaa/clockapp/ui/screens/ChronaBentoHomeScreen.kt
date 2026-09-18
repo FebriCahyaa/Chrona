@@ -87,6 +87,8 @@ fun ChronaBentoHomeScreen(
     use24HourFormat: Boolean,
     showSeconds: Boolean,
     alarms: List<AlarmItem>,
+    worldClockItems: List<com.febricahyaa.clockapp.model.WorldClockItem>,
+    worldClockFavorites: Set<String>,
     timerRemainingSeconds: Int,
     timerRunning: Boolean,
     themeMode: AppThemeMode,
@@ -103,6 +105,15 @@ fun ChronaBentoHomeScreen(
         next == null -> stringResource(R.string.home_alarm_create)
         next.repeatDays.isEmpty() -> stringResource(R.string.home_alarm_one_time)
         else -> stringResource(R.string.home_alarm_repeats)
+    }
+    val favoriteWorldClocks = worldClockItems.filter { it.city in worldClockFavorites }
+    val favoriteWorldClockSummary = when {
+        favoriteWorldClocks.isEmpty() -> stringResource(R.string.home_world_clock_subtitle)
+        favoriteWorldClocks.size <= 2 -> favoriteWorldClocks.joinToString(" · ") { it.city }
+        else -> {
+            val visibleCities = favoriteWorldClocks.take(2).joinToString(" · ") { it.city }
+            "$visibleCities · +${favoriteWorldClocks.size - 2}"
+        }
     }
     val windowAdaptiveInfo = androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2()
     val isWideWindow = windowAdaptiveInfo.windowSizeClass.windowWidthSizeClass == androidx.window.core.layout.WindowWidthSizeClass.EXPANDED
@@ -157,6 +168,7 @@ fun ChronaBentoHomeScreen(
                         ActionGrid(
                             themeMode = themeMode,
                             nextAlarm = alarmTime,
+                            worldClockSummary = favoriteWorldClockSummary,
                             alarmMeta = alarmMeta,
                             timerRemainingSeconds = timerRemainingSeconds,
                             timerRunning = timerRunning,
@@ -191,6 +203,7 @@ fun ChronaBentoHomeScreen(
                         FloatingActionGrid(
                             themeMode = themeMode,
                             nextAlarm = alarmTime,
+                            worldClockSummary = favoriteWorldClockSummary,
                             alarmMeta = alarmMeta,
                             timerRemainingSeconds = timerRemainingSeconds,
                             timerRunning = timerRunning,
@@ -231,6 +244,7 @@ private fun HeroCard(
 private fun FloatingActionGrid(
     themeMode: AppThemeMode,
     nextAlarm: String,
+    worldClockSummary: String,
     alarmMeta: String,
     timerRemainingSeconds: Int,
     timerRunning: Boolean,
@@ -277,7 +291,7 @@ private fun FloatingActionGrid(
                     themeMode = themeMode,
                     icon = Icons.Filled.Public,
                     title = stringResource(R.string.home_world_clock_title),
-                    subtitle = stringResource(R.string.home_world_clock_subtitle),
+                    subtitle = worldClockSummary,
                     onClick = { onNavigate(AppDestination.WORLD) },
                 )
                 UtilityCard(
@@ -297,6 +311,7 @@ private fun FloatingActionGrid(
 private fun ActionGrid(
     themeMode: AppThemeMode,
     nextAlarm: String,
+    worldClockSummary: String,
     alarmMeta: String,
     timerRemainingSeconds: Int,
     timerRunning: Boolean,
@@ -330,7 +345,7 @@ private fun ActionGrid(
             themeMode = themeMode,
             icon = Icons.Filled.Public,
             title = stringResource(R.string.home_world_clock_title),
-            subtitle = stringResource(R.string.home_world_clock_subtitle),
+            subtitle = worldClockSummary,
             onClick = { onNavigate(AppDestination.WORLD) },
         )
         UtilityCard(

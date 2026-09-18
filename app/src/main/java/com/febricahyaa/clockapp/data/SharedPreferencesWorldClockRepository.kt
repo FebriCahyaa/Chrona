@@ -36,7 +36,13 @@ class SharedPreferencesWorldClockRepository(context: Context) : WorldClockReposi
                 },
             )
         }
-        prefs.edit().putString(KEY_ITEMS, array.toString()).apply()
+        check(
+            prefs.edit()
+                .putString(KEY_ITEMS, array.toString())
+                .commit(),
+        ) {
+            "Unable to persist world clock items to SharedPreferences"
+        }
     }
 
     override fun loadFavorites(): Set<String> {
@@ -49,7 +55,13 @@ class SharedPreferencesWorldClockRepository(context: Context) : WorldClockReposi
 
     override fun saveFavorites(cities: Set<String>) {
         val array = JSONArray().apply { cities.sorted().forEach(::put) }
-        prefs.edit().putString(KEY_FAVORITES, array.toString()).apply()
+        check(
+            prefs.edit()
+                .putString(KEY_FAVORITES, array.toString())
+                .commit(),
+        ) {
+            "Unable to persist world clock favorites to SharedPreferences"
+        }
     }
 
     private companion object {

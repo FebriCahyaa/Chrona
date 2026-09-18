@@ -199,12 +199,15 @@ private fun ChronaDestinationContent(
         when (destination) {
             AppDestination.CLOCK -> {
                 val alarms by alarmViewModel.alarms.collectAsStateWithLifecycle()
+                val worldClockState by worldClockViewModel.state.collectAsStateWithLifecycle()
                 val timerState by timerViewModel.state.collectAsStateWithLifecycle()
 
                 ChronaBentoHomeScreen(
                     use24HourFormat = settingsState.use24HourFormat,
                     showSeconds = settingsState.settings.showSeconds,
                     alarms = alarms,
+                    worldClockItems = worldClockState.items,
+                    worldClockFavorites = worldClockState.favorites,
                     timerRemainingSeconds = timerState.remainingSeconds,
                     timerRunning = timerState.isRunning,
                     themeMode = settingsState.settings.themeMode,
