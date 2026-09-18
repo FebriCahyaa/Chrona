@@ -1,0 +1,87 @@
+# Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+
+name: Runtime Device QA
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main, master, develop]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: runtime-qa-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: '17'
+  ANDROID_PLATFORM_PACKAGE: 'platforms/android-37.1'
+  ANDROID_BUILD_TOOLS: '37.0.0'
+  ANDROID_NDK_VERSION: '28.2.13676358'
+  ANDROID_CMAKE_VERSION: '3.31.5'
+
+jobs:
+  runtime:
+    name: Android 17 emulator smoke test
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v7
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Setup Android SDK tooling
+        uses: android-actions/setup-android@v4
+        with:
+          packages: ''
+
+      - name: Setup Android CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://dl.google.com/android/cli/latest/linux_x86_64/install.sh | bash
+          export PATH="$HOME/.local/bin:$HOME/.android/bin:$PATH"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.android/bin" >> "$GITHUB_PATH"
+          command -v android
+          android --version
+          android update
+
+      - name: Install Android 17 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          android --sdk="${ANDROID_SDK_ROOT}" sdk install \
+            "${ANDROID_PLATFORM_PACKAGE}" \
+            "build-tools/${ANDROID_BUILD_TOOLS}" \
+            "cmake/${ANDROID_CMAKE_VERSION}" \
+            "ndk/${ANDROID_NDK_VERSION}"
+
+      - name: Run static runtime preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash ./scripts/phase6-runtime-qa.sh
+
+      - name: Run Android 17 emulator instrumentation
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 37
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          emulator-boot-timeout: 900
+          script: |
+            chmod +x ./gradlew
+            ./gradlew --no-daemon --stacktrace connectedDebugAndroidTest
