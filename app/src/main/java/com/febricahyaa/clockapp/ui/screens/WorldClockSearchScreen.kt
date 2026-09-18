@@ -229,7 +229,7 @@ private fun offsetFor(zoneId: String): String = runCatching {
 private fun Modifier.clickableWithHaptic(
     haptics: androidx.compose.ui.hapticfeedback.HapticFeedback,
     onClick: () -> Unit,
-): Modifier = androidx.compose.foundation.clickable {
+): Modifier = clickable {
     haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
     onClick()
 }
