@@ -42,10 +42,13 @@ fun ChronaRootNavigation(
                 navController = navController,
                 startDestination = startDestination,
                 modifier = Modifier.fillMaxSize(),
-                enterTransition = { ChronaNavigationMotion.enter() },
-                exitTransition = { ChronaNavigationMotion.exit() },
-                popEnterTransition = { ChronaNavigationMotion.popEnter() },
-                popExitTransition = { ChronaNavigationMotion.popExit() },
+                // Keep destination changes atomic. The previous fade/scale pair
+                // kept both full-screen surfaces visible and produced the ghosting
+                // seen when moving between Dashboard, Timer, and Stopwatch.
+                enterTransition = { androidx.compose.animation.EnterTransition.None },
+                exitTransition = { androidx.compose.animation.ExitTransition.None },
+                popEnterTransition = { androidx.compose.animation.EnterTransition.None },
+                popExitTransition = { androidx.compose.animation.ExitTransition.None },
             ) {
                 composable(ChronaRoutes.CLOCK) { backStackEntry ->
                     ChronaDestinationScope(

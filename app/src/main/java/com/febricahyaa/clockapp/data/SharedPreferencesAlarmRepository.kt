@@ -13,6 +13,7 @@ import java.time.LocalTime
 class SharedPreferencesAlarmRepository(context: Context) : AlarmRepository {
 
     private val appContext = context.applicationContext
+
     private val prefs
         get() = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
@@ -31,13 +32,12 @@ class SharedPreferencesAlarmRepository(context: Context) : AlarmRepository {
     override fun save(alarms: List<AlarmItem>) {
         val array = JSONArray()
         alarms.forEach { array.put(it.toJson()) }
-        check(
-            prefs.edit()
-                .putString(KEY_ALARMS, array.toString())
-                .commit(),
-        ) {
-            "Unable to persist alarms to SharedPreferences"
-        }
+
+        val success = prefs.edit()
+            .putString(KEY_ALARMS, array.toString())
+            .commit()
+
+        check(success) { "Unable to persist Chrona alarms to SharedPreferences" }
     }
 
     private fun AlarmItem.toJson(): JSONObject = JSONObject().apply {
@@ -54,7 +54,10 @@ class SharedPreferencesAlarmRepository(context: Context) : AlarmRepository {
 
     private fun JSONObject.toAlarmItem(): AlarmItem {
         val daysArray = optJSONArray("repeatDays") ?: JSONArray()
-        val days = (0 until daysArray.length()).map { DayOfWeek.of(daysArray.getInt(it)) }.toSet()
+        val days = (0 until daysArray.length())
+            .map { DayOfWeek.of(daysArray.getInt(it)) }
+            .toSet()
+
         return AlarmItem(
             id = getLong("id"),
             time = LocalTime.of(getInt("hour"), getInt("minute")),

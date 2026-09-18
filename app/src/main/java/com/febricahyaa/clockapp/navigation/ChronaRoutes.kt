@@ -17,17 +17,10 @@ object ChronaRoutes {
     const val LEGAL = "legal"
     const val WORLD_DETAIL = "world/detail?zoneId={zoneId}"
 
-    /**
-     * Encodes one query parameter without depending on android.net.Uri.
-     * That keeps this route helper usable from local JVM unit tests.
-     * URLEncoder uses HTML form semantics for spaces, so '+' is normalized to
-     * the RFC 3986 query representation '%20'.
-     */
-    fun worldDetail(zoneId: String): String =
-        "world/detail?zoneId=${encodeQueryParameter(zoneId)}"
-
-    internal fun encodeQueryParameter(value: String): String =
-        URLEncoder
-            .encode(value, StandardCharsets.UTF_8.name())
+    fun worldDetail(zoneId: String): String {
+        val encodedZoneId = URLEncoder
+            .encode(zoneId, StandardCharsets.UTF_8.name())
             .replace("+", "%20")
+        return "world/detail?zoneId=$encodedZoneId"
+    }
 }

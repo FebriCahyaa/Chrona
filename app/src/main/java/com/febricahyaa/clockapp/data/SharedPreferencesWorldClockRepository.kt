@@ -10,7 +10,8 @@ import org.json.JSONObject
 /** SharedPreferences-backed World Clock persistence. */
 class SharedPreferencesWorldClockRepository(context: Context) : WorldClockRepository {
     private val appContext = context.applicationContext
-    private val prefs get() = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    private val prefs
+        get() = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     override fun load(): List<WorldClockItem> {
         val raw = prefs.getString(KEY_ITEMS, null) ?: return emptyList()
@@ -19,7 +20,11 @@ class SharedPreferencesWorldClockRepository(context: Context) : WorldClockReposi
             (0 until array.length()).mapNotNull { index ->
                 runCatching {
                     val item = array.getJSONObject(index)
-                    WorldClockItem(item.getLong("id"), item.getString("city"), item.getString("zoneId"))
+                    WorldClockItem(
+                        id = item.getLong("id"),
+                        city = item.getString("city"),
+                        zoneId = item.getString("zoneId"),
+                    )
                 }.getOrNull()
             }
         }.getOrDefault(emptyList())
@@ -36,13 +41,12 @@ class SharedPreferencesWorldClockRepository(context: Context) : WorldClockReposi
                 },
             )
         }
-        check(
-            prefs.edit()
-                .putString(KEY_ITEMS, array.toString())
-                .commit(),
-        ) {
-            "Unable to persist world clock items to SharedPreferences"
-        }
+
+        val success = prefs.edit()
+            .putString(KEY_ITEMS, array.toString())
+            .commit()
+
+        check(success) { "Unable to persist Chrona World Clock items" }
     }
 
     override fun loadFavorites(): Set<String> {
@@ -54,14 +58,15 @@ class SharedPreferencesWorldClockRepository(context: Context) : WorldClockReposi
     }
 
     override fun saveFavorites(cities: Set<String>) {
-        val array = JSONArray().apply { cities.sorted().forEach(::put) }
-        check(
-            prefs.edit()
-                .putString(KEY_FAVORITES, array.toString())
-                .commit(),
-        ) {
-            "Unable to persist world clock favorites to SharedPreferences"
+        val array = JSONArray().apply {
+            cities.sorted().forEach(::put)
         }
+
+        val success = prefs.edit()
+            .putString(KEY_FAVORITES, array.toString())
+            .commit()
+
+        check(success) { "Unable to persist Chrona World Clock favorites" }
     }
 
     private companion object {

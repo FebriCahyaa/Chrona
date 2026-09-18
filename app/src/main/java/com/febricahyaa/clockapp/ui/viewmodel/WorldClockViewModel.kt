@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.febricahyaa.clockapp.core.config.AppDefaults
 import com.febricahyaa.clockapp.data.WorldClockRepository
 import com.febricahyaa.clockapp.model.WorldClockItem
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 data class WorldClockUiState(
     val items: List<WorldClockItem> = emptyList(),
@@ -23,53 +23,50 @@ data class WorldClockUiState(
 
 /** Owns the World Clock list and persistent favorites. */
 class WorldClockViewModel(private val repository: WorldClockRepository) : ViewModel() {
+
+    private val mutationMutex = Mutex()
+
     private val _state = MutableStateFlow(WorldClockUiState())
     val state: StateFlow<WorldClockUiState> = _state.asStateFlow()
 
-    private val mutationMutex = Mutex()
-    private val initialized = CompletableDeferred<Unit>()
-
     init {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val storedItems = repository.load()
+        viewModelScope.launch {
+            mutationMutex.withLock {
+                val storedItems = withContext(Dispatchers.IO) { repository.load() }
                 val items = storedItems.ifEmpty { AppDefaults.defaultWorldClocks() }
                 if (storedItems.isEmpty()) {
-                    repository.save(items)
+                    withContext(Dispatchers.IO) { repository.save(items) }
                 }
 
-                val storedFavorites = repository.loadFavorites()
+                val storedFavorites = withContext(Dispatchers.IO) { repository.loadFavorites() }
                 val favorites = if (storedFavorites.isEmpty() && storedItems.isEmpty()) {
                     AppDefaults.DEFAULT_FAVORITE_CITIES
                 } else {
                     storedFavorites
                 }
+
                 if (storedFavorites.isEmpty() && storedItems.isEmpty()) {
-                    repository.saveFavorites(favorites)
+                    withContext(Dispatchers.IO) { repository.saveFavorites(favorites) }
                 }
 
-                _state.value = WorldClockUiState(items, favorites)
-                initialized.complete(Unit)
-            } catch (error: Throwable) {
-                initialized.completeExceptionally(error)
-                throw error
+                _state.value = WorldClockUiState(items = items, favorites = favorites)
             }
         }
     }
 
-    fun add(item: WorldClockItem) = mutate { current ->
-        if (current.any { it.zoneId == item.zoneId }) current else current + item
+    fun add(item: WorldClockItem) {
+        mutateItems { current ->
+            if (current.any { it.zoneId == item.zoneId }) current else current + item
+        }
     }
 
-    fun remove(item: WorldClockItem) = mutate { current ->
-        current.filterNot { it.id == item.id }
+    fun remove(item: WorldClockItem) {
+        mutateItems { current -> current - item }
     }
 
     fun toggleFavorite(city: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             mutationMutex.withLock {
-                initialized.await()
-
                 val current = _state.value
                 val updatedFavorites = if (city in current.favorites) {
                     current.favorites - city
@@ -77,25 +74,21 @@ class WorldClockViewModel(private val repository: WorldClockRepository) : ViewMo
                     current.favorites + city
                 }
 
-                if (updatedFavorites == current.favorites) return@withLock
+                withContext(Dispatchers.IO) {
+                    repository.saveFavorites(updatedFavorites)
+                }
 
-                repository.saveFavorites(updatedFavorites)
                 _state.value = current.copy(favorites = updatedFavorites)
             }
         }
     }
 
-    private fun mutate(transform: (List<WorldClockItem>) -> List<WorldClockItem>) {
-        viewModelScope.launch(Dispatchers.IO) {
+    private fun mutateItems(transform: (List<WorldClockItem>) -> List<WorldClockItem>) {
+        viewModelScope.launch {
             mutationMutex.withLock {
-                initialized.await()
-
-                val current = _state.value
-                val updated = transform(current.items)
-                if (updated == current.items) return@withLock
-
-                repository.save(updated)
-                _state.value = current.copy(items = updated)
+                val updated = transform(_state.value.items)
+                withContext(Dispatchers.IO) { repository.save(updated) }
+                _state.value = _state.value.copy(items = updated)
             }
         }
     }
