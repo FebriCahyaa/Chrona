@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -36,11 +35,8 @@ import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,7 +45,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
@@ -63,6 +58,7 @@ import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.navigation.AppDestination
 import com.febricahyaa.clockapp.ui.components.BentoIcon
 import com.febricahyaa.clockapp.ui.components.BentoIconButton
+import com.febricahyaa.clockapp.ui.components.ChronaScaffold
 import com.febricahyaa.clockapp.ui.components.HybridBentoCard
 import com.febricahyaa.clockapp.ui.components.ThemeToggle
 import com.febricahyaa.clockapp.ui.components.rememberZonedNow
@@ -101,44 +97,21 @@ fun ChronaBentoHomeScreen(
     val dateText = buildDateText(now, locale)
     val heroHeight = if (isWideWindow) 430.dp else 365.dp
     val scrollState = rememberScrollState()
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
-    Scaffold(
-        modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
-        containerColor = MaterialTheme.colorScheme.background,
-        contentColor = MaterialTheme.colorScheme.onBackground,
-        topBar = {
-            LargeTopAppBar(
-                title = {
-                    Text(
-                        text = "Chrona",
-                        fontWeight = FontWeight.ExtraBold,
-                        letterSpacing = (-0.7).sp,
-                        maxLines = 1,
-                    )
-                },
-                actions = {
-                    ThemeToggle(
-                        themeMode,
-                        onThemeModeChange,
-                        Modifier.size(width = 118.dp, height = 46.dp),
-                    )
-                    BentoIconButton(
-                        icon = Icons.Filled.Settings,
-                        onClick = onOpenSettings,
-                        modifier = Modifier.size(46.dp),
-                        contentDescription = "Settings",
-                    )
-                },
-                scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.largeTopAppBarColors(
-                    containerColor = Color.Transparent,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
-                    titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    actionIconContentColor = MaterialTheme.colorScheme.onSurface,
-                ),
+    ChronaScaffold(
+        title = "Chrona",
+        subtitle = "Your time, organized in one expressive dashboard",
+        actions = {
+            ThemeToggle(
+                themeMode,
+                onThemeModeChange,
+                Modifier.size(width = 118.dp, height = 46.dp),
+            )
+            BentoIconButton(
+                icon = Icons.Filled.Settings,
+                onClick = onOpenSettings,
+                modifier = Modifier.size(46.dp),
+                contentDescription = "Settings",
             )
         },
     ) { innerPadding ->

@@ -47,6 +47,7 @@ import com.febricahyaa.clockapp.core.ChronaTimeEngine
 import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.model.ClockSettings
 import com.febricahyaa.clockapp.model.ThemeAccent
+import com.febricahyaa.clockapp.ui.components.ChronaScaffold
 import com.febricahyaa.clockapp.ui.components.HybridBentoCard
 import com.febricahyaa.clockapp.ui.components.SectionEyebrow
 import com.febricahyaa.clockapp.ui.components.rememberZonedNow
@@ -61,6 +62,9 @@ fun SettingsSheetContent(
     onAccentChange: (ThemeAccent) -> Unit,
     onFormatChange: (Boolean) -> Unit,
     onShowSecondsChange: (Boolean) -> Unit,
+    onOpenLegal: () -> Unit = {},
+    modifier: Modifier = Modifier,
+    showSectionHeader: Boolean = true,
 ) {
     val now = rememberZonedNow(ZoneId.systemDefault())
     val epochMillis = now.toInstant().toEpochMilli()
@@ -68,20 +72,24 @@ fun SettingsSheetContent(
     val previewDate = ChronaTimeEngine.date(epochMillis, now.zone)
 
     Column(
-        Modifier
+        modifier
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 22.dp)
             .padding(bottom = 34.dp),
     ) {
-        Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            Surface(Modifier.size(42.dp, 5.dp), shape = RoundedCornerShape(50), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.16f)) {}
+        if (showSectionHeader) {
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Surface(Modifier.size(42.dp, 5.dp), shape = RoundedCornerShape(50), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.16f)) {}
+            }
+            Spacer(Modifier.height(18.dp))
+            Text("Appearance", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
+            Spacer(Modifier.height(3.dp))
+            Text("Tune the surface, accent, and clock behavior.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.height(18.dp))
+        } else {
+            Spacer(Modifier.height(4.dp))
         }
-        Spacer(Modifier.height(18.dp))
-        Text("Appearance", fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
-        Spacer(Modifier.height(3.dp))
-        Text("Tune the surface, accent, and clock behavior.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Spacer(Modifier.height(18.dp))
 
         HybridBentoCard(Modifier.fillMaxWidth(), themeMode = settings.themeMode) {
             Column(Modifier.fillMaxWidth().padding(vertical = 22.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -135,9 +143,8 @@ fun SettingsSheetContent(
         Spacer(Modifier.height(18.dp))
         SectionTitle(Icons.Filled.Gavel, "About")
         Spacer(Modifier.height(9.dp))
-        var showLegal by rememberSaveable { mutableStateOf(false) }
         Surface(
-            onClick = { showLegal = true },
+            onClick = onOpenLegal,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(20.dp),
             color = MaterialTheme.colorScheme.surfaceContainer,
@@ -152,7 +159,38 @@ fun SettingsSheetContent(
                 Icon(Icons.Filled.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.62f))
             }
         }
-        if (showLegal) LegalDialog(onDismiss = { showLegal = false })
+    }
+}
+
+@Composable
+fun SettingsScreen(
+    settings: ClockSettings,
+    use24HourFormat: Boolean,
+    onThemeModeChange: (AppThemeMode) -> Unit,
+    onAccentChange: (ThemeAccent) -> Unit,
+    onFormatChange: (Boolean) -> Unit,
+    onShowSecondsChange: (Boolean) -> Unit,
+    onOpenLegal: () -> Unit,
+    onBack: () -> Unit,
+) {
+    ChronaScaffold(
+        title = "Settings",
+        subtitle = "Tune appearance, clock behavior, and app information",
+        onBack = onBack,
+    ) { paddingValues ->
+        SettingsSheetContent(
+            settings = settings,
+            use24HourFormat = use24HourFormat,
+            onThemeModeChange = onThemeModeChange,
+            onAccentChange = onAccentChange,
+            onFormatChange = onFormatChange,
+            onShowSecondsChange = onShowSecondsChange,
+            onOpenLegal = onOpenLegal,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(paddingValues),
+            showSectionHeader = false,
+        )
     }
 }
 

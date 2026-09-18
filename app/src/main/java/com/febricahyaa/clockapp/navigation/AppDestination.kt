@@ -2,7 +2,7 @@
 
 package com.febricahyaa.clockapp.navigation
 
-/** Card-driven destinations. Chrona intentionally has no bottom navigation bar. */
+/** Compose destinations managed by Chrona's stack-based navigation shell. */
 enum class AppDestination {
     CLOCK,
     ALARM,
@@ -10,4 +10,6 @@ enum class AppDestination {
     WORLD_SEARCH,
     TIMER,
     STOPWATCH,
+    SETTINGS,
+    LEGAL,
 }

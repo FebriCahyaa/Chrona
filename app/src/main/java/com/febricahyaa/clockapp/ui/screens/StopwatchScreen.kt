@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.febricahyaa.clockapp.ui.components.GlassPill
 import com.febricahyaa.clockapp.ui.components.IconCircleButton
-import com.febricahyaa.clockapp.ui.components.ScreenHeader
+import com.febricahyaa.clockapp.ui.components.ChronaScaffold
 import java.util.Locale
 
 @Composable
@@ -47,15 +47,14 @@ fun StopwatchScreen(
     onReset: () -> Unit,
     onBack: () -> Unit,
 ) {
-    Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
-        Spacer(Modifier.height(8.dp))
-        ScreenHeader(
-            title = "Stopwatch",
-            subtitle = "Track every second",
-            onBack = onBack,
-            actions = { IconCircleButton(Icons.Filled.Refresh, onReset, contentDescription = "Reset stopwatch") },
-        )
-        Spacer(Modifier.height(8.dp))
+    ChronaScaffold(
+        title = "Stopwatch",
+        subtitle = "Track every second",
+        onBack = onBack,
+        actions = { IconCircleButton(Icons.Filled.Refresh, onReset, contentDescription = "Reset stopwatch") },
+    ) { paddingValues ->
+        Column(Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 20.dp)) {
+            Spacer(Modifier.height(4.dp))
 
         if (laps.isEmpty()) {
             Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
@@ -87,6 +86,7 @@ fun StopwatchScreen(
                     }
                 }
             }
+        }
         }
     }
 }

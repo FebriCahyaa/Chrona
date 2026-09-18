@@ -20,7 +20,6 @@ object AppDefaults {
     // ---- Timer -------------------------------------------------------
     const val DEFAULT_TIMER_MINUTES: Int = 25
     const val DEFAULT_TIMER_SECONDS: Int = DEFAULT_TIMER_MINUTES * 60
-    const val TIMER_TICK_INTERVAL_MS: Long = 100L
 
     // ---- Stopwatch -----------------------------------------------------
     const val STOPWATCH_TICK_INTERVAL_MS: Long = 31L

@@ -27,12 +27,11 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -50,10 +49,9 @@ import com.febricahyaa.clockapp.core.ChronaTimeEngine
 import com.febricahyaa.clockapp.model.TimeZoneCatalog
 import com.febricahyaa.clockapp.model.WorldClockItem
 import com.febricahyaa.clockapp.ui.components.ChronaCard
+import com.febricahyaa.clockapp.ui.components.ChronaScaffold
+import com.febricahyaa.clockapp.ui.components.rememberEpochMillisNowState
 import com.febricahyaa.clockapp.ui.components.IconCircleButton
-import com.febricahyaa.clockapp.ui.components.ScreenHeader
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import java.time.Instant
 import java.time.ZoneId
 
@@ -81,12 +79,7 @@ fun WorldClockScreen(
 ) {
     val haptics = LocalHapticFeedback.current
     var region by rememberSaveable { mutableStateOf("All") }
-    val nowMillis by produceState(initialValue = System.currentTimeMillis()) {
-        while (isActive) {
-            value = System.currentTimeMillis()
-            delay(1_000L)
-        }
-    }
+    val epochMillisState = rememberEpochMillisNowState()
     val visible = remember(items, favorites, region) {
         items.filter { item ->
             region == "All" ||
@@ -94,14 +87,11 @@ fun WorldClockScreen(
                 regionOf(item.zoneId) == region
         }
     }
-    val systemZone = remember { ZoneId.systemDefault() }
-    val localOffset = remember(nowMillis, systemZone) {
-        Instant.ofEpochMilli(nowMillis).atZone(systemZone).offset.totalSeconds
-    }
-
-    Scaffold(
-        containerColor = Color.Transparent,
-        floatingActionButton = {
+    ChronaScaffold(
+        title = "World Clock",
+        subtitle = "A live, persistent view of your saved cities",
+        onBack = onBack,
+        actions = {
             FloatingActionButton(
                 onClick = {
                     haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
@@ -115,18 +105,15 @@ fun WorldClockScreen(
         },
     ) { paddingValues ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 20.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 20.dp),
         ) {
-            Spacer(Modifier.height(8.dp))
-            ScreenHeader(
-                title = "World Clock",
-                subtitle = "A live, persistent view of your saved cities",
-                onBack = onBack,
-            )
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(4.dp))
 
             LazyColumn(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 item(contentType = "region-filters") {
@@ -181,8 +168,7 @@ fun WorldClockScreen(
                             item = item,
                             favorite = item.city in favorites,
                             use24HourFormat = use24HourFormat,
-                            epochMillis = nowMillis,
-                            localOffsetSeconds = localOffset,
+                            epochMillisState = epochMillisState,
                             glass = glass,
                             onRemove = { onRemove(item) },
                             onToggleFavorite = { onToggleFavorite(item.city) },
@@ -200,12 +186,17 @@ private fun WorldClockCard(
     item: WorldClockItem,
     favorite: Boolean,
     use24HourFormat: Boolean,
-    epochMillis: Long,
-    localOffsetSeconds: Int,
+    epochMillisState: State<Long>,
     glass: Boolean,
     onRemove: () -> Unit,
     onToggleFavorite: () -> Unit,
 ) {
+    val epochMillis by epochMillisState
+    val systemZone = remember { ZoneId.systemDefault() }
+    val localOffsetSeconds = remember(epochMillis, systemZone) {
+        Instant.ofEpochMilli(epochMillis).atZone(systemZone).offset.totalSeconds
+    }
+
     val zoneId = remember(item.zoneId) { runCatching { ZoneId.of(item.zoneId) }.getOrNull() }
     if (zoneId == null) {
         ChronaCard(Modifier.fillMaxWidth(), glass = glass) {

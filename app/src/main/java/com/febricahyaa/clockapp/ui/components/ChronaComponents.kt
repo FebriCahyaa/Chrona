@@ -30,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -59,17 +60,23 @@ val LocalAccentGradient = compositionLocalOf {
 }
 
 @Composable
-fun rememberZonedNow(zoneId: ZoneId = ZoneId.systemDefault()): ZonedDateTime {
+fun rememberEpochMillisNowState(): State<Long> {
     val lifecycleOwner = LocalLifecycleOwner.current
-    val now by produceState(initialValue = ZonedDateTime.now(zoneId), zoneId, lifecycleOwner) {
+    return produceState(initialValue = System.currentTimeMillis(), lifecycleOwner) {
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             while (isActive) {
-                value = ZonedDateTime.now(zoneId)
-                delay((1000L - (System.currentTimeMillis() % 1000L)).coerceAtLeast(16L))
+                value = System.currentTimeMillis()
+                val remainder = Math.floorMod(value, 1_000L)
+                delay((1_000L - remainder).coerceAtLeast(16L))
             }
         }
     }
-    return now
+}
+
+@Composable
+fun rememberZonedNow(zoneId: ZoneId = ZoneId.systemDefault()): ZonedDateTime {
+    val epochMillis by rememberEpochMillisNowState()
+    return java.time.Instant.ofEpochMilli(epochMillis).atZone(zoneId)
 }
 
 @Composable

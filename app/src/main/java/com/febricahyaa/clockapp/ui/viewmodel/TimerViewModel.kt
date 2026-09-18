@@ -137,7 +137,13 @@ class TimerViewModel(
                     break
                 }
                 _state.value = _state.value.copy(remainingSeconds = remaining, isRunning = true)
-                delay(AppDefaults.TIMER_TICK_INTERVAL_MS)
+
+                // Re-align to the next wall-clock second instead of sleeping a
+                // fixed interval. The deadline remains the source of truth, so
+                // scheduler/process jitter cannot accumulate into timer drift.
+                val now = System.currentTimeMillis()
+                val remainder = Math.floorMod(now, 1_000L)
+                delay((1_000L - remainder).coerceAtLeast(16L))
             }
         }
     }

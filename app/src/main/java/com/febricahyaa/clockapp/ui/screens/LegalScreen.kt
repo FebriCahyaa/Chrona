@@ -41,9 +41,62 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.febricahyaa.clockapp.legal.LegalContent
+import com.febricahyaa.clockapp.ui.components.ChronaScaffold
 
 /** Which page of the Legal & Regulatory hub is currently shown. */
 private enum class LegalPage { HUB, NOTICES, LICENSE }
+
+/**
+ * Universal legal destination used by the main Chrona navigation stack.
+ *
+ * The document body remains a regular Compose scroll container so the same
+ * LargeTopAppBar / nested-scroll contract is used as every other destination.
+ */
+@Composable
+fun LegalScreen(onBack: () -> Unit) {
+    var page by rememberSaveable { mutableStateOf(LegalPage.HUB) }
+
+    val title = when (page) {
+        LegalPage.HUB -> "Legal & Info"
+        LegalPage.NOTICES -> "Legal Notices"
+        LegalPage.LICENSE -> "Licenses"
+    }
+    val subtitle = when (page) {
+        LegalPage.HUB -> "Copyright, notices, and third-party licenses"
+        LegalPage.NOTICES -> "Chrona legal and regulatory notices"
+        LegalPage.LICENSE -> "Open-source and third-party attribution"
+    }
+
+    ChronaScaffold(
+        title = title,
+        subtitle = subtitle,
+        onBack = {
+            if (page == LegalPage.HUB) onBack() else page = LegalPage.HUB
+        },
+    ) { paddingValues ->
+        when (page) {
+            LegalPage.HUB -> LegalHub(
+                onOpenNotices = { page = LegalPage.NOTICES },
+                onOpenLicense = { page = LegalPage.LICENSE },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+            )
+            LegalPage.NOTICES -> LegalDocument(
+                body = LegalContent.legalNotices,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+            )
+            LegalPage.LICENSE -> LegalDocument(
+                body = LegalContent.license,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+            )
+        }
+    }
+}
 
 /**
  * Full-screen legal document viewer, opened from Settings.
@@ -92,12 +145,12 @@ private fun LegalTopBar(title: String, onBack: () -> Unit) {
 }
 
 @Composable
-private fun LegalHub(onOpenNotices: () -> Unit, onOpenLicense: () -> Unit) {
+private fun LegalHub(onOpenNotices: () -> Unit, onOpenLicense: () -> Unit, modifier: Modifier = Modifier) {
     val rows = listOf(
         "Pemberitahuan Legal" to onOpenNotices,
         "Lisensi" to onOpenLicense,
     )
-    Column(Modifier.fillMaxSize().padding(horizontal = 18.dp)) {
+    Column(modifier.padding(horizontal = 18.dp)) {
         Spacer(Modifier.height(10.dp))
         Surface(
             Modifier.fillMaxWidth(),
@@ -141,8 +194,8 @@ private fun LegalRow(label: String, onClick: () -> Unit) {
 }
 
 @Composable
-private fun LegalDocument(body: String) {
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 8.dp)) {
+private fun LegalDocument(body: String, modifier: Modifier = Modifier) {
+    Column(modifier.verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 8.dp)) {
         Text(
             body,
             fontSize = 13.sp,

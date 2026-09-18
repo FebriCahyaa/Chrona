@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Backspace
 import androidx.compose.material.icons.filled.Clear
@@ -53,7 +55,7 @@ import androidx.compose.ui.unit.dp
 import com.febricahyaa.clockapp.core.TimerDurationInput
 import com.febricahyaa.clockapp.ui.components.ChronaCard
 import com.febricahyaa.clockapp.ui.components.IconCircleButton
-import com.febricahyaa.clockapp.ui.components.ScreenHeader
+import com.febricahyaa.clockapp.ui.components.ChronaScaffold
 
 private enum class TimerSegment { HOURS, MINUTES, SECONDS }
 
@@ -135,27 +137,26 @@ fun TimerScreen(
         onSetPreset(safe)
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 20.dp),
-    ) {
-        Spacer(Modifier.height(8.dp))
-        ScreenHeader(
-            title = "Timer",
-            subtitle = "Build a duration with numbers, then let Chrona count it down",
-            onBack = onBack,
-            actions = {
-                IconCircleButton(
-                    icon = Icons.Filled.Refresh,
-                    onClick = onReset,
-                    contentDescription = "Reset timer",
-                )
-            },
-        )
-        Spacer(Modifier.height(16.dp))
-
-        ChronaCard(
+    ChronaScaffold(
+        title = "Timer",
+        subtitle = "Build a duration with numbers, then let Chrona count it down",
+        onBack = onBack,
+        actions = {
+            IconCircleButton(
+                icon = Icons.Filled.Refresh,
+                onClick = onReset,
+                contentDescription = "Reset timer",
+            )
+        },
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(paddingValues)
+                .padding(horizontal = 20.dp, vertical = 4.dp),
+        ) {
+            ChronaCard(
             modifier = Modifier
                 .animateContentSize()
                 .widthIn(max = 560.dp)
@@ -253,6 +254,7 @@ fun TimerScreen(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        }
     }
 }
 

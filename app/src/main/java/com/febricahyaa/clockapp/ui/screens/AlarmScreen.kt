@@ -61,7 +61,7 @@ import com.febricahyaa.clockapp.model.AlarmItem
 import com.febricahyaa.clockapp.ui.components.ChronaCard
 import com.febricahyaa.clockapp.ui.components.GradientIconBox
 import com.febricahyaa.clockapp.ui.components.IconCircleButton
-import com.febricahyaa.clockapp.ui.components.ScreenHeader
+import com.febricahyaa.clockapp.ui.components.ChronaScaffold
 import com.febricahyaa.clockapp.ui.theme.ClockMotion
 import java.time.DayOfWeek
 import java.time.LocalTime
@@ -91,22 +91,21 @@ fun AlarmScreen(
     val haptics = LocalHapticFeedback.current
     var showAdd by rememberSaveable { mutableStateOf(false) }
 
-    Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
-        Spacer(Modifier.height(8.dp))
-        ScreenHeader(
-            title = "Alarm",
-            subtitle = "Schedules that stay editable without leaving the list",
-            onBack = onBack,
-            actions = {
-                IconCircleButton(
-                    icon = Icons.Filled.Add,
-                    onClick = { showAdd = true },
-                    active = true,
-                    contentDescription = "Add alarm",
-                )
-            },
-        )
-        Spacer(Modifier.height(16.dp))
+    ChronaScaffold(
+        title = "Alarm",
+        subtitle = "Schedules that stay editable without leaving the list",
+        onBack = onBack,
+        actions = {
+            IconCircleButton(
+                icon = Icons.Filled.Add,
+                onClick = { showAdd = true },
+                active = true,
+                contentDescription = "Add alarm",
+            )
+        },
+    ) { paddingValues ->
+        Column(Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 20.dp)) {
+            Spacer(Modifier.height(4.dp))
 
         if (alarms.isEmpty()) {
             ChronaCard(
@@ -158,6 +157,7 @@ fun AlarmScreen(
                 }
                 item { Spacer(Modifier.height(18.dp)) }
             }
+        }
         }
     }
 
