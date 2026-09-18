@@ -36,6 +36,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,7 +48,6 @@ import com.febricahyaa.clockapp.ui.components.ScreenHeader
 import java.time.DayOfWeek
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 @Composable
 fun AlarmScreen(
@@ -59,6 +59,7 @@ fun AlarmScreen(
     onToggle: (AlarmItem, Boolean) -> Unit,
     onDelete: (AlarmItem) -> Unit,
 ) {
+    val locale = LocalLocale.current.platformLocale
     var showAdd by rememberSaveable { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
@@ -95,7 +96,7 @@ fun AlarmScreen(
                         Row(Modifier.fillMaxWidth().padding(15.dp), verticalAlignment = Alignment.CenterVertically) {
                             Column(Modifier.weight(1f)) {
                                 Text(
-                                    alarm.time.format(DateTimeFormatter.ofPattern(if (use24HourFormat) "HH:mm" else "h:mm a", Locale.getDefault())),
+                                    alarm.time.format(DateTimeFormatter.ofPattern(if (use24HourFormat) "HH:mm" else "h:mm a", locale)),
                                     fontSize = 34.sp,
                                     fontWeight = FontWeight.Light,
                                 )
