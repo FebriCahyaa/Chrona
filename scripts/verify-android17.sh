@@ -75,7 +75,7 @@ android --sdk="${ANDROID_SDK_ROOT}" sdk list "ndk/${EXPECTED_NDK}" --all >/dev/n
 android --sdk="${ANDROID_SDK_ROOT}" sdk list "cmake/${EXPECTED_CMAKE}" --all >/dev/null 2>&1 \
   || fail "CMake ${EXPECTED_CMAKE} metadata is not available"
 
-[[ -d "$ANDROID_SDK_ROOT/platforms/android-${EXPECTED_PLATFORM}" ]] || fail "Android ${EXPECTED_PLATFORM} platform directory missing"
+[[ -d "$ANDROID_SDK_ROOT/platforms/android-${EXPECTED_PLATFORM}" ]] || fail "Android ${EXPECTED_PLATFORM} platform directory missing (ensure setup-android installs platforms;android-${EXPECTED_PLATFORM})"
 [[ -d "$ANDROID_SDK_ROOT/build-tools/${EXPECTED_BUILD_TOOLS}" ]] || fail "build-tools directory missing"
 [[ -d "$ANDROID_SDK_ROOT/ndk/${EXPECTED_NDK}" ]] || fail "NDK directory missing"
 [[ -d "$ANDROID_SDK_ROOT/cmake/${EXPECTED_CMAKE}" ]] || fail "CMake directory missing"
