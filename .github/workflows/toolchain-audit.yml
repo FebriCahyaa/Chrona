@@ -45,7 +45,7 @@ jobs:
               "gradle": out(["./gradlew", "--version"]),
               "androidCli": out(["android", "--version"]),
               "sdkmanager": out(["sdkmanager", "--version"]),
-              "platform": "android-37",
+              "platform": "android-37.1",
               "buildTools": "37.0.0",
               "ndk": "28.2.13676358",
               "cmake": "3.31.5",

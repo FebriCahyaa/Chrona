@@ -3,7 +3,7 @@
 set -euo pipefail
 
 EXPECTED_GRADLE='9.7.1'
-EXPECTED_PLATFORM='android-37'
+EXPECTED_PLATFORM='android-37.1'
 EXPECTED_BUILD_TOOLS='37.0.0'
 EXPECTED_NDK='28.2.13676358'
 EXPECTED_CMAKE='3.31.5'
@@ -14,7 +14,7 @@ java -version
 grep -Fq "gradle-${EXPECTED_GRADLE}-bin.zip" gradle/wrapper/gradle-wrapper.properties
 command -v sdkmanager >/dev/null
 a=$(sdkmanager --version)
-printf 'sdkmanager: %s\n' "$a"
+printf 'sdkmanager: %s\\n' "$a"
 command -v adb >/dev/null
 
 if [[ "${CHRONA_REQUIRE_NATIVE_TOOLCHAIN:-1}" == "1" ]]; then
