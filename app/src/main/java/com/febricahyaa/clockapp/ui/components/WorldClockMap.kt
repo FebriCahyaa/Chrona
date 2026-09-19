@@ -4,6 +4,7 @@ package com.febricahyaa.clockapp.ui.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -29,8 +30,13 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.PathParser
 import android.graphics.RectF
@@ -48,6 +54,8 @@ private data class RuntimeWorldMapFeature(
 @Composable
 fun WorldClockMap(
     modifier: Modifier = Modifier,
+    utcHour: Int,
+    onUtcHourChange: (Int) -> Unit,
 ) {
     val mapShape = RoundedCornerShape(22.dp)
     val background = MaterialTheme.colorScheme.surfaceVariant
@@ -83,23 +91,26 @@ fun WorldClockMap(
         }
     }
 
-    val systemUtcOffset = remember {
-        val totalSeconds = java.time.ZoneId.systemDefault()
-            .rules
-            .getOffset(java.time.Instant.now())
-            .totalSeconds
-        (totalSeconds / 3_600f).roundToInt().coerceIn(-12, 12)
-    }
-    var utcHour by remember { mutableIntStateOf(systemUtcOffset) }
     var probeY by remember { mutableFloatStateOf(0.31f) }
-    var highlightedName by remember { mutableIntStateOf(-1) }
-
+    val selectedFeatureIndex = remember(utcHour, probeY, features) {
+        val x = utcHourToMapX(utcHour)
+        val y = probeY * WORLD_MAP_HEIGHT
+        features.indexOfFirst {
+            it.region.contains(x.roundToInt(), y.roundToInt())
+        }
+    }
     val utcLabel = formatWorldMapUtc(utcHour)
-    val caption = if (highlightedName >= 0) {
-        features.getOrNull(highlightedName)?.data?.name ?: stringResource(R.string.world_map_open_water)
+    val caption = if (selectedFeatureIndex >= 0) {
+        features.getOrNull(selectedFeatureIndex)?.data?.name
+            ?: stringResource(R.string.world_map_open_water)
     } else {
         stringResource(R.string.world_map_open_water)
     }
+    val mapAccessibility = stringResource(
+        R.string.world_map_accessibility,
+        utcLabel,
+        caption,
+    )
 
     BoxWithConstraints(
         modifier = modifier
@@ -112,20 +123,44 @@ fun WorldClockMap(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(WORLD_MAP_WIDTH / WORLD_MAP_HEIGHT)
+                .onKeyEvent { event ->
+                    if (event.type != KeyEventType.KeyDown) return@onKeyEvent false
+                    when (event.key) {
+                        Key.DirectionLeft -> {
+                            onUtcHourChange((utcHour - 1).coerceIn(-12, 12))
+                            true
+                        }
+                        Key.DirectionRight -> {
+                            onUtcHourChange((utcHour + 1).coerceIn(-12, 12))
+                            true
+                        }
+                        Key.Home -> {
+                            onUtcHourChange(-12)
+                            true
+                        }
+                        Key.End -> {
+                            onUtcHourChange(12)
+                            true
+                        }
+                        else -> false
+                    }
+                }
+                .focusable()
+                .semantics {
+                    contentDescription = mapAccessibility
+                }
                 .pointerInput(features) {
                     detectDragGestures(
                         onDragStart = { offset ->
                             val mapPoint = offset.toMapPoint(size.width, size.height)
-                            utcHour = mapPoint.toUtcHour()
-                            probeY = mapPoint.y / WORLD_MAP_HEIGHT
-                            highlightedName = features.indexOfFirst { it.region.contains(mapPoint.x.roundToInt(), mapPoint.y.roundToInt()) }
+                            onUtcHourChange(mapPoint.toUtcHour())
+                            probeY = (mapPoint.y / WORLD_MAP_HEIGHT).coerceIn(0f, 1f)
                         },
                         onDrag = { change, _ ->
                             change.consume()
                             val next = change.position.toMapPoint(size.width, size.height)
-                            utcHour = next.toUtcHour()
+                            onUtcHourChange(next.toUtcHour())
                             probeY = (next.y / WORLD_MAP_HEIGHT).coerceIn(0f, 1f)
-                            highlightedName = features.indexOfFirst { it.region.contains(next.x.roundToInt(), next.y.roundToInt()) }
                         },
                     )
                 },
@@ -138,7 +173,7 @@ fun WorldClockMap(
             }) {
                 val strokeWidth = 0.9f / scaleX.coerceAtLeast(0.0001f)
                 features.forEachIndexed { index, feature ->
-                    val isSelected = index == highlightedName
+                    val isSelected = index == selectedFeatureIndex
                     val crossesMeridian = feature.bounds.left <= utcHourToMapX(utcHour) &&
                         feature.bounds.right >= utcHourToMapX(utcHour)
 

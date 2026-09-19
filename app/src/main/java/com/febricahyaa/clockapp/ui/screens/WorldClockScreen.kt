@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Star
@@ -36,12 +37,14 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -67,6 +70,7 @@ import com.febricahyaa.clockapp.ui.components.rememberEpochMillisNowState
 import java.time.Instant
 import java.time.ZoneId
 import java.util.Locale
+import kotlin.math.roundToInt
 
 private enum class WorldRegion(@StringRes val labelRes: Int) {
     ALL(R.string.world_region_all),
@@ -113,6 +117,9 @@ fun WorldClockScreen(
     val region = WorldRegion.valueOf(regionKey)
     val epochMillisState = rememberEpochMillisNowState()
     val epochMillis by epochMillisState
+    var selectedUtcHour by rememberSaveable {
+        mutableIntStateOf(currentWholeUtcHour(epochMillis))
+    }
     val visible = remember(items, favorites, region) {
         items.filter { item ->
             region == WorldRegion.ALL ||
@@ -233,6 +240,7 @@ fun WorldClockScreen(
                                         epochMillisState = epochMillisState,
                                         glass = glass,
                                         locale = locale,
+                                        selectedUtcHour = selectedUtcHour,
                                         modifier = Modifier.weight(1f),
                                         onRemove = { onRemove(item) },
                                         onToggleFavorite = { onToggleFavorite(item.zoneId) },
@@ -284,8 +292,18 @@ fun WorldClockScreen(
                             ),
                         ) {
                             Box(Modifier.fillMaxWidth().padding(6.dp)) {
-                                WorldClockMap()
+                                WorldClockMap(
+                                    utcHour = selectedUtcHour,
+                                    onUtcHourChange = { next ->
+                                        selectedUtcHour = next.coerceIn(-12, 12)
+                                    },
+                                )
                             }
+                            Spacer(Modifier.height(12.dp))
+                            WorldClockUtcTimeline(
+                                utcHour = selectedUtcHour,
+                                onUtcHourChange = { selectedUtcHour = it },
+                            )
                         }
                     }
                 }
@@ -349,6 +367,98 @@ fun WorldClockScreen(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+private fun currentWholeUtcHour(epochMillis: Long): Int =
+    Instant.ofEpochMilli(epochMillis)
+        .atZone(ZoneId.systemDefault())
+        .offset
+        .totalSeconds
+        .let(::exactUtcHourOrNull)
+        ?: (Instant.ofEpochMilli(epochMillis).atZone(ZoneId.systemDefault()).offset.totalSeconds / 3_600f)
+            .roundToInt()
+            .coerceIn(-12, 12)
+
+private fun exactUtcHourOrNull(totalSeconds: Int): Int? =
+    totalSeconds.takeIf { it % 3_600 == 0 }
+        ?.div(3_600)
+        ?.coerceIn(-12, 12)
+
+private fun formatUtcOffsetHour(hour: Int): String =
+    "UTC ${if (hour < 0) "−" else "+"}${kotlin.math.abs(hour)}"
+
+@Composable
+private fun WorldClockUtcTimeline(
+    utcHour: Int,
+    onUtcHourChange: (Int) -> Unit,
+) {
+    val haptics = LocalHapticFeedback.current
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.88f),
+        tonalElevation = 1.dp,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.08f)),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    Icons.Filled.Schedule,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(18.dp),
+                )
+                Spacer(Modifier.width(8.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        stringResource(R.string.world_utc_timeline_title),
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        stringResource(R.string.world_utc_timeline_subtitle),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Text(
+                    formatUtcOffsetHour(utcHour),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+            Slider(
+                value = utcHour.toFloat(),
+                onValueChange = { value ->
+                    val next = value.roundToInt().coerceIn(-12, 12)
+                    if (next != utcHour) {
+                        haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                        onUtcHourChange(next)
+                    }
+                },
+                valueRange = -12f..12f,
+                steps = 23,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text("UTC −12", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("UTC", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("UTC +12", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
@@ -462,6 +572,7 @@ private fun WorldClockSpotlightCard(
     epochMillisState: State<Long>,
     glass: Boolean,
     locale: Locale,
+    selectedUtcHour: Int,
     modifier: Modifier,
     onRemove: () -> Unit,
     onToggleFavorite: () -> Unit,
@@ -484,6 +595,8 @@ private fun WorldClockSpotlightCard(
         ChronaTimeFormatter.utcOffset(zoneId, epochMillis)
     }
     val day = zoned.hour in 6..17
+    val zoneUtcHour = exactUtcHourOrNull(zoned.offset.totalSeconds)
+    val selected = zoneUtcHour == selectedUtcHour
     val baseContent = MaterialTheme.colorScheme.onSurface
     val nightContent = MaterialTheme.colorScheme.inverseOnSurface
     val background = if (day) {
@@ -510,13 +623,15 @@ private fun WorldClockSpotlightCard(
         colors = CardDefaults.cardColors(containerColor = container),
         border = BorderStroke(
             1.dp,
-            if (day) {
-                MaterialTheme.colorScheme.outline.copy(alpha = if (glass) 0.13f else 0.08f)
-            } else {
-                Color.White.copy(alpha = 0.08f)
+            when {
+                selected -> MaterialTheme.colorScheme.primary.copy(alpha = if (day) 0.38f else 0.52f)
+                day -> MaterialTheme.colorScheme.outline.copy(alpha = if (glass) 0.13f else 0.08f)
+                else -> Color.White.copy(alpha = 0.08f)
             },
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (day) 4.dp else 5.dp),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (selected) 8.dp else if (day) 4.dp else 5.dp,
+        ),
     ) {
         Column(
             modifier = Modifier
@@ -552,9 +667,11 @@ private fun WorldClockSpotlightCard(
                         color = muted,
                     )
                     Text(
-                        if (day) "DAY" else "NIGHT",
+                        if (selected) stringResource(R.string.world_utc_selected, formatUtcOffsetHour(selectedUtcHour))
+                        else stringResource(if (day) R.string.world_day else R.string.world_night),
                         style = MaterialTheme.typography.labelSmall,
-                        color = muted,
+                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                        color = if (selected) MaterialTheme.colorScheme.primary else muted,
                     )
                 }
             }
@@ -571,7 +688,7 @@ private fun WorldClockSpotlightCard(
                 )
                 Spacer(Modifier.width(6.dp))
                 Text(
-                    if (day) "Daylight" else "Night",
+                    stringResource(if (day) R.string.world_day else R.string.world_night),
                     style = MaterialTheme.typography.labelMedium,
                     color = muted,
                 )

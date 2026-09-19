@@ -68,6 +68,11 @@
     <string name="world_section_spotlight">Spotlight cities</string>
     <string name="world_section_your_time">YOUR TIME</string>
     <string name="world_local_timezone">Local timezone</string>
+    <string name="world_utc_timeline_title">UTC timeline</string>
+    <string name="world_utc_timeline_subtitle">Move the meridian to explore the global time offset.</string>
+    <string name="world_utc_selected">%1$s selected</string>
+    <string name="world_day">DAY</string>
+    <string name="world_map_accessibility">World map, %1$s, selected region: %2$s. Use Arrow Left or Right, Home, or End to change the UTC offset.</string>
     <string name="world_add_city">Add city</string>
     <string name="world_find_city">Find a city</string>
     <string name="world_empty_title">No cities here yet</string>
