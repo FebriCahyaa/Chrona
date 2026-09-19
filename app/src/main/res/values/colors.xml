@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
+<!--
+  ~ Copyright 2026 Febrian Rahmad Cahya
+  ~ SPDX-License-Identifier: MIT
+  -->
+
 <resources>
     <!-- Neutral native window color prevents a dark flash/strip before Compose owns edge-to-edge. -->
     <color name="window_background">#F8F9FB</color>

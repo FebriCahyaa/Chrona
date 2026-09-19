@@ -1,4 +1,7 @@
-/* Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. */
+/*
+ * Copyright 2026 Febrian Rahmad Cahya
+ * SPDX-License-Identifier: MIT
+ */
 
 #include "chrona_time.h"
 #include <algorithm>

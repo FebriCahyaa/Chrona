@@ -3,6 +3,7 @@
   ~ Copyright 2026 Febrian Rahmad Cahya
   ~ SPDX-License-Identifier: MIT
   -->
+
 <resources>
     <!-- Aplikasi -->
     <string name="app_name">Chrona</string>

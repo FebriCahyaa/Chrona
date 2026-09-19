@@ -1,4 +1,9 @@
-<!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright 2026 Febrian Rahmad Cahya
+  ~ SPDX-License-Identifier: MIT
+  -->
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Network access for optional online clock features (for example weather / sync). -->

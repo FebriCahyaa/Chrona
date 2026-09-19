@@ -1,4 +1,8 @@
-/* Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. */
+/*
+ * Copyright 2026 Febrian Rahmad Cahya
+ * SPDX-License-Identifier: MIT
+ */
+
 package com.febricahyaa.clockapp.ui.theme
 
 import androidx.compose.animation.core.CubicBezierEasing

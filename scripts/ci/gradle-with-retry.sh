@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+# Copyright 2026 Febrian Rahmad Cahya
+# SPDX-License-Identifier: MIT
+
 #
 # Retry Gradle only for transient repository/network failures. Deterministic
 # build/test/lint failures are returned immediately so CI does not hide real

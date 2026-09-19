@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+# Copyright 2026 Febrian Rahmad Cahya
+# SPDX-License-Identifier: MIT
+
 set -euo pipefail
 
 if ! command -v apt-get >/dev/null; then

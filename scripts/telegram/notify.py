@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-# Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+# Copyright 2026 Febrian Rahmad Cahya
+# SPDX-License-Identifier: MIT
+
 """Render and send Chrona GitHub events to a dedicated Telegram bot/chat."""
 from __future__ import annotations
 

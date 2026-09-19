@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
+<!--
+  ~ Copyright 2026 Febrian Rahmad Cahya
+  ~ SPDX-License-Identifier: MIT
+  -->
+
 <!--
   Menyatukan 3 layer adaptive icon Chrona. minSdk proyek = 26, sehingga satu
   file di mipmap-anydpi-v26 sudah cukup: elemen <monochrome> (Themed Icons,
