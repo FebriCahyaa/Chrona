@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -172,27 +173,31 @@ private fun SearchResultsList(
                     haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
                     onAdd(entry)
                 },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 56.dp),
                 supportingContent = {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(entry.countryName(locale), style = MaterialTheme.typography.bodyMedium)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text(entry.countryName(locale), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text("•", color = MaterialTheme.colorScheme.outline)
                         Text(
                             offsetFor(entry.zoneId),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Medium,
                         )
                     }
                 },
-                leadingContent = { Icon(Icons.Filled.LocationCity, contentDescription = null) },
+                leadingContent = { Icon(Icons.Filled.LocationCity, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
                 trailingContent = {
                     Icon(
                         Icons.Filled.Add,
                         contentDescription = stringResource(R.string.world_search_add_city, entry.city),
+                        tint = MaterialTheme.colorScheme.primary,
                     )
                 },
             ) {
-                Text(entry.city, style = MaterialTheme.typography.titleMedium)
+                Text(entry.city, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium)
             }
         }
     }
@@ -248,23 +253,30 @@ private fun WorldClockSearchIdle(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp),
+                        .padding(horizontal = 8.dp)
+                        .heightIn(min = 56.dp),
                     supportingContent = {
-                        Text(
-                            "${entry.countryName(locale)} • ${offsetFor(entry.zoneId)}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Text(entry.countryName(locale), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("•", color = MaterialTheme.colorScheme.outline)
+                            Text(
+                                offsetFor(entry.zoneId),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Medium,
+                            )
+                        }
                     },
-                    leadingContent = { Icon(Icons.Filled.LocationCity, contentDescription = null) },
+                    leadingContent = { Icon(Icons.Filled.LocationCity, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
                     trailingContent = {
                         Icon(
                             Icons.Filled.Add,
                             contentDescription = stringResource(R.string.world_search_add_city, entry.city),
+                            tint = MaterialTheme.colorScheme.primary,
                         )
                     },
                 ) {
-                    Text(entry.city, style = MaterialTheme.typography.titleMedium)
+                    Text(entry.city, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium)
                 }
             }
         }

@@ -108,6 +108,7 @@ fun GlassPill(
         color = fill,
         shape = shape,
         modifier = modifier
+            .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
             .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = if (selected) 0.2f else 0.1f), shape)
             .then(onClick?.let {
                 Modifier.clickable {
