@@ -295,9 +295,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                 if (page > 0) {
                     androidx.compose.material3.OutlinedButton(
                         onClick = { goTo(onboardingPreviousPage(page)) },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(52.dp),
+                        modifier = Modifier.widthIn(min = 96.dp),
                         shape = RoundedCornerShape(18.dp),
                     ) {
                         Text(stringResource(R.string.nav_back))
@@ -309,15 +307,7 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                         if (page == pages.lastIndex) finish()
                         else goTo(onboardingNextPage(page))
                     },
-                    modifier = if (page > 0) {
-                        Modifier
-                            .weight(1f)
-                            .height(52.dp)
-                    } else {
-                        Modifier
-                            .fillMaxWidth()
-                            .height(52.dp)
-                    },
+                    modifier = Modifier.widthIn(min = 128.dp),
                     shape = RoundedCornerShape(18.dp),
                 ) {
                     Text(if (page == pages.lastIndex) stringResource(R.string.onboarding_get_started) else stringResource(R.string.onboarding_continue))

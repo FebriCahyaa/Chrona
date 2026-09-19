@@ -855,14 +855,20 @@ private fun AlarmKeypadButton(
     contentDescription: String? = null,
 ) {
     val haptics = LocalHapticFeedback.current
-    androidx.compose.material3.FilledTonalButton(
+    androidx.compose.material3.Button(
         onClick = {
             haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
             onClick()
         },
         enabled = enabled,
-        modifier = modifier.height(62.dp),
+        modifier = modifier.height(56.dp),
         shape = MaterialTheme.shapes.large,
+        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.55f),
+            disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+        ),
     ) {
         when {
             text != null -> Text(

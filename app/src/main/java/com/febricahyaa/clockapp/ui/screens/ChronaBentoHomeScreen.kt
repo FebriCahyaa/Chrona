@@ -170,9 +170,7 @@ fun ChronaBentoHomeScreen(
                 }
             } else {
                 HeroCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 340.dp),
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 340.dp),
                     themeMode = themeMode,
                     now = now,
                     dateText = dateText,

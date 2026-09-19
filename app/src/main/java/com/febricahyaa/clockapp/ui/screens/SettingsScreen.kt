@@ -2,21 +2,20 @@
 
 package com.febricahyaa.clockapp.ui.screens
 
-import com.febricahyaa.clockapp.R
-import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.item
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Gavel
@@ -31,9 +30,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.model.ClockSettings
 import com.febricahyaa.clockapp.model.ThemeAccent
@@ -60,80 +61,84 @@ fun SettingsSheetContent(
 ) {
     var showReleaseTimeline by remember { mutableStateOf(false) }
 
-    Column(
-        modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 18.dp)
-            .padding(bottom = 34.dp),
+    LazyColumn(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = 18.dp, top = 8.dp, bottom = 34.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         if (showSectionHeader) {
-            Spacer(Modifier.height(4.dp))
-            Text(stringResource(R.string.settings_screen_title), fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
-            Spacer(Modifier.height(3.dp))
-            Text(
-                stringResource(R.string.settings_screen_subtitle),
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.height(18.dp))
-        } else {
-            Spacer(Modifier.height(4.dp))
+            item(key = "settings-header") {
+                Column {
+                    Text(
+                        stringResource(R.string.settings_screen_title),
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                    )
+                    Spacer(Modifier.height(3.dp))
+                    Text(
+                        stringResource(R.string.settings_screen_subtitle),
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
         }
 
-        BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxWidth()
-                .widthIn(max = 1180.dp),
-        ) {
-            when (chronaSettingsWindowClass(maxWidth.value.toInt())) {
-                ChronaSettingsWindowClass.EXPANDED -> SettingsExpandedDashboard(
-                    settings = settings,
-                    use24HourFormat = use24HourFormat,
-                    onThemeModeChange = onThemeModeChange,
-                    onAccentChange = onAccentChange,
-                    onFormatChange = onFormatChange,
-                    onShowSecondsChange = onShowSecondsChange,
-                    onOpenNotificationSettings = onOpenNotificationSettings,
-                    notificationPermissionGranted = notificationPermissionGranted,
-                    onOpenLegal = onOpenLegal,
-                    updateState = updateState,
-                    onCheckForUpdates = onCheckForUpdates,
-                    onOpenUpdate = onOpenUpdate,
-                    onViewReleaseTimeline = { showReleaseTimeline = true },
-                )
+        item(key = "settings-content") {
+            BoxWithConstraints(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .widthIn(max = 1180.dp),
+            ) {
+                when (chronaSettingsWindowClass(maxWidth.value.toInt())) {
+                    ChronaSettingsWindowClass.EXPANDED -> SettingsExpandedDashboard(
+                        settings = settings,
+                        use24HourFormat = use24HourFormat,
+                        onThemeModeChange = onThemeModeChange,
+                        onAccentChange = onAccentChange,
+                        onFormatChange = onFormatChange,
+                        onShowSecondsChange = onShowSecondsChange,
+                        onOpenNotificationSettings = onOpenNotificationSettings,
+                        notificationPermissionGranted = notificationPermissionGranted,
+                        onOpenLegal = onOpenLegal,
+                        updateState = updateState,
+                        onCheckForUpdates = onCheckForUpdates,
+                        onOpenUpdate = onOpenUpdate,
+                        onViewReleaseTimeline = { showReleaseTimeline = true },
+                    )
 
-                ChronaSettingsWindowClass.MEDIUM -> SettingsMediumDashboard(
-                    settings = settings,
-                    use24HourFormat = use24HourFormat,
-                    onThemeModeChange = onThemeModeChange,
-                    onAccentChange = onAccentChange,
-                    onFormatChange = onFormatChange,
-                    onShowSecondsChange = onShowSecondsChange,
-                    onOpenNotificationSettings = onOpenNotificationSettings,
-                    notificationPermissionGranted = notificationPermissionGranted,
-                    onOpenLegal = onOpenLegal,
-                    updateState = updateState,
-                    onCheckForUpdates = onCheckForUpdates,
-                    onOpenUpdate = onOpenUpdate,
-                    onViewReleaseTimeline = { showReleaseTimeline = true },
-                )
+                    ChronaSettingsWindowClass.MEDIUM -> SettingsMediumDashboard(
+                        settings = settings,
+                        use24HourFormat = use24HourFormat,
+                        onThemeModeChange = onThemeModeChange,
+                        onAccentChange = onAccentChange,
+                        onFormatChange = onFormatChange,
+                        onShowSecondsChange = onShowSecondsChange,
+                        onOpenNotificationSettings = onOpenNotificationSettings,
+                        notificationPermissionGranted = notificationPermissionGranted,
+                        onOpenLegal = onOpenLegal,
+                        updateState = updateState,
+                        onCheckForUpdates = onCheckForUpdates,
+                        onOpenUpdate = onOpenUpdate,
+                        onViewReleaseTimeline = { showReleaseTimeline = true },
+                    )
 
-                ChronaSettingsWindowClass.COMPACT -> SettingsCompactDashboard(
-                    settings = settings,
-                    use24HourFormat = use24HourFormat,
-                    onThemeModeChange = onThemeModeChange,
-                    onAccentChange = onAccentChange,
-                    onFormatChange = onFormatChange,
-                    onShowSecondsChange = onShowSecondsChange,
-                    onOpenNotificationSettings = onOpenNotificationSettings,
-                    notificationPermissionGranted = notificationPermissionGranted,
-                    onOpenLegal = onOpenLegal,
-                    updateState = updateState,
-                    onCheckForUpdates = onCheckForUpdates,
-                    onOpenUpdate = onOpenUpdate,
-                    onViewReleaseTimeline = { showReleaseTimeline = true },
-                )
+                    ChronaSettingsWindowClass.COMPACT -> SettingsCompactDashboard(
+                        settings = settings,
+                        use24HourFormat = use24HourFormat,
+                        onThemeModeChange = onThemeModeChange,
+                        onAccentChange = onAccentChange,
+                        onFormatChange = onFormatChange,
+                        onShowSecondsChange = onShowSecondsChange,
+                        onOpenNotificationSettings = onOpenNotificationSettings,
+                        notificationPermissionGranted = notificationPermissionGranted,
+                        onOpenLegal = onOpenLegal,
+                        updateState = updateState,
+                        onCheckForUpdates = onCheckForUpdates,
+                        onOpenUpdate = onOpenUpdate,
+                        onViewReleaseTimeline = { showReleaseTimeline = true },
+                    )
+                }
             }
         }
     }

@@ -131,7 +131,7 @@ fun WorldClockScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .navigationBarsPadding(),
-            contentPadding = PaddingValues(start = 20.dp, top = 4.dp, end = 20.dp, bottom = 28.dp),
+            contentPadding = PaddingValues(start = 20.dp, top = 10.dp, end = 20.dp, bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item(contentType = "region-filters") {

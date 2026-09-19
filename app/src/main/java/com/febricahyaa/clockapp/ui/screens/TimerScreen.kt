@@ -2,14 +2,7 @@
 
 package com.febricahyaa.clockapp.ui.screens
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.togetherWith
-import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
@@ -39,7 +32,6 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProgressIndicatorDefaults
@@ -70,7 +62,6 @@ import com.febricahyaa.clockapp.ui.components.IconCircleButton
 import com.febricahyaa.clockapp.ui.components.ChronaScaffold
 import com.febricahyaa.clockapp.ui.motion.ChronaTimeToolMotionState
 import com.febricahyaa.clockapp.ui.motion.timerMotionState
-import com.febricahyaa.clockapp.ui.theme.ChronaMotionTokens
 
 private enum class TimerSegment { HOURS, MINUTES, SECONDS }
 
@@ -180,9 +171,9 @@ fun TimerScreen(
             BoxWithConstraints(
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                val heroSize = min(maxWidth.value - 24f, 320f).coerceAtLeast(240f).dp
-                val heroScale = (heroSize.value / 320f).coerceIn(0.78f, 1f)
-                val heroStroke = (14f * heroScale).coerceIn(11f, 18f).dp
+                val heroSize = min(maxWidth.value - 40f, 260f).coerceAtLeast(220f).dp
+                val heroScale = (heroSize.value / 260f).coerceIn(0.85f, 1f)
+                val heroStroke = (12f * heroScale).coerceIn(10f, 14f).dp
 
                 Box(
                     modifier = Modifier.fillMaxWidth(),
@@ -195,48 +186,16 @@ fun TimerScreen(
                             .fillMaxWidth(),
                         glass = glass,
                     ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 18.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        AnimatedContent(
-                            targetState = motionState,
-                            transitionSpec = {
-                                (fadeIn(
-                                    animationSpec = tween(
-                                        ChronaMotionTokens.SpatialDurationMillis,
-                                        easing = ChronaMotionTokens.SpatialEasing,
-                                    ),
-                                ) + scaleIn(
-                                    initialScale = 0.94f,
-                                    animationSpec = tween(
-                                        ChronaMotionTokens.SpatialDurationMillis,
-                                        easing = ChronaMotionTokens.SpatialEasing,
-                                    ),
-                                )).togetherWith(
-                                    fadeOut(
-                                        animationSpec = tween(
-                                            ChronaMotionTokens.MicroDurationMillis,
-                                            easing = ChronaMotionTokens.SpatialEasing,
-                                        ),
-                                    ) + scaleOut(
-                                        targetScale = 1.02f,
-                                        animationSpec = tween(
-                                            ChronaMotionTokens.MicroDurationMillis,
-                                            easing = ChronaMotionTokens.SpatialEasing,
-                                        ),
-                                    ),
-                                ).using(SizeTransform(clip = false))
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            label = "timer-state-spatial-motion",
-                        ) { state ->
-                            when (state) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            when (motionState) {
                                 ChronaTimeToolMotionState.IDLE -> {
-                                    // Keep the hierarchy strictly vertical: hero -> quick add -> keypad.
-                                    // Quick durations never share a layout container with keypad cells.
+                                    // Keep the editor in one deterministic vertical tree so
+                                    // keypad cells never share a transient layer with the hero.
                                     TimerHeroEditor(
                                         inputDigits = inputDigits,
                                         enabled = canEdit,
@@ -245,7 +204,7 @@ fun TimerScreen(
                                         heroScale = heroScale,
                                         modifier = Modifier,
                                     )
-                                    Spacer(Modifier.height(16.dp))
+                                    Spacer(Modifier.height(14.dp))
                                     QuickDurations(
                                         enabled = canEdit,
                                         onSelect = { seconds ->
@@ -255,7 +214,7 @@ fun TimerScreen(
                                         },
                                         onCommit = { seconds -> onSetPreset(seconds) },
                                     )
-                                    Spacer(Modifier.height(18.dp))
+                                    Spacer(Modifier.height(14.dp))
                                     TimerKeypad(
                                         enabled = canEdit,
                                         onDigit = ::addDigit,
@@ -280,7 +239,7 @@ fun TimerScreen(
                                     )
                                     Spacer(Modifier.height(12.dp))
                                     Text(
-                                        text = when (state) {
+                                        text = when (motionState) {
                                             ChronaTimeToolMotionState.RUNNING -> stringResource(R.string.timer_state_running)
                                             ChronaTimeToolMotionState.COMPLETED -> stringResource(R.string.timer_state_complete)
                                             else -> stringResource(R.string.timer_state_paused)
@@ -291,56 +250,55 @@ fun TimerScreen(
                                     )
                                 }
                             }
-                        }
 
-                        Spacer(Modifier.height(18.dp))
-                        val primaryActionLabel = when {
-                            motionState == ChronaTimeToolMotionState.COMPLETED -> stringResource(R.string.timer_action_reset)
-                            running -> stringResource(R.string.timer_action_pause)
-                            remainingSeconds != totalSeconds -> stringResource(R.string.timer_action_resume)
-                            else -> stringResource(R.string.timer_action_start)
-                        }
-                        Button(
-                            onClick = {
-                                haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                when {
-                                    motionState == ChronaTimeToolMotionState.COMPLETED -> onReset()
-                                    !running && remainingSeconds == totalSeconds -> {
-                                        commitDraft()
-                                        onToggle()
+                            Spacer(Modifier.height(18.dp))
+                            val primaryActionLabel = when {
+                                motionState == ChronaTimeToolMotionState.COMPLETED -> stringResource(R.string.timer_action_reset)
+                                running -> stringResource(R.string.timer_action_pause)
+                                remainingSeconds != totalSeconds -> stringResource(R.string.timer_action_resume)
+                                else -> stringResource(R.string.timer_action_start)
+                            }
+                            Button(
+                                onClick = {
+                                    haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                    when {
+                                        motionState == ChronaTimeToolMotionState.COMPLETED -> onReset()
+                                        !running && remainingSeconds == totalSeconds -> {
+                                            commitDraft()
+                                            onToggle()
+                                        }
+                                        else -> onToggle()
                                     }
-                                    else -> onToggle()
-                                }
-                            },
-                            enabled = motionState == ChronaTimeToolMotionState.COMPLETED ||
-                                if (running) true else draftSeconds > 0 || remainingSeconds > 0,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(56.dp),
-                        ) {
-                            Icon(
-                                imageVector = when {
-                                    motionState == ChronaTimeToolMotionState.COMPLETED -> Icons.Filled.Refresh
-                                    running -> Icons.Filled.Pause
-                                    else -> Icons.Filled.PlayArrow
                                 },
-                                contentDescription = null,
-                            )
-                            Spacer(Modifier.size(8.dp))
-                            Text(primaryActionLabel, style = MaterialTheme.typography.labelLarge)
+                                enabled = motionState == ChronaTimeToolMotionState.COMPLETED ||
+                                    if (running) true else draftSeconds > 0 || remainingSeconds > 0,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(56.dp),
+                            ) {
+                                Icon(
+                                    imageVector = when {
+                                        motionState == ChronaTimeToolMotionState.COMPLETED -> Icons.Filled.Refresh
+                                        running -> Icons.Filled.Pause
+                                        else -> Icons.Filled.PlayArrow
+                                    },
+                                    contentDescription = null,
+                                )
+                                Spacer(Modifier.size(8.dp))
+                                Text(primaryActionLabel, style = MaterialTheme.typography.labelLarge)
+                            }
                         }
                     }
                 }
             }
-        }
 
-        Spacer(Modifier.height(12.dp))
-        Text(
-            text = stringResource(R.string.timer_completion_note),
-            modifier = Modifier.fillMaxWidth(),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+            Spacer(Modifier.height(12.dp))
+            Text(
+                text = stringResource(R.string.timer_completion_note),
+                modifier = Modifier.fillMaxWidth(),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
@@ -565,14 +523,20 @@ private fun KeypadButton(
     contentDescription: String? = null,
 ) {
     val haptics = LocalHapticFeedback.current
-    FilledTonalButton(
+    Button(
         onClick = {
             haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
             onClick()
         },
         enabled = enabled,
-        modifier = modifier.height(62.dp),
+        modifier = modifier.height(56.dp),
         shape = MaterialTheme.shapes.large,
+        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.55f),
+            disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+        ),
     ) {
         if (text != null) {
             Text(text, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Medium)
