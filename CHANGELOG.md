@@ -8,6 +8,9 @@
 - Updated glass cards to use the GLASS rendering mode with restrained translucent surfaces, borders and highlight sheen.
 - Added shared `ChronaGlassTokens` for Phase 1 surface geometry and opacity values.
 - Deferred AGSL refraction and dynamic blur to a later rendering phase.
+- Restored Material 3 ripple indication on interactive Bento cards while preserving tactile press scaling.
+- Made `TopAppBarState` explicit and remembered in `ChronaScaffold` to keep the collapsing toolbar state stable across recomposition.
+- Exposed the persisted `GLASS` mode in Settings and shared its active state through theme composition locals.
 
 ## Unreleased — CI pipeline restructure and app icon refresh
 

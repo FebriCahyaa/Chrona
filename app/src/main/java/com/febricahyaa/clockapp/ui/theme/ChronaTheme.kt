@@ -68,6 +68,7 @@ fun ChronaTheme(settings: ClockSettings, content: @Composable () -> Unit) {
     val (accentStart, accentEnd) = accentGradientColors(settings.themeAccent, colorScheme.primary)
 
     CompositionLocalProvider(
+        LocalChronaThemeMode provides mode,
         LocalAccentGradient provides Brush.linearGradient(listOf(accentStart, accentEnd)),
     ) {
         MaterialExpressiveTheme(

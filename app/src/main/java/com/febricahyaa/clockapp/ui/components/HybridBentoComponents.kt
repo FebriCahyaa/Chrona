@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ripple
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -150,7 +151,7 @@ fun HybridBentoCard(
                 onClick?.let { clickAction ->
                     Modifier.clickable(
                         interactionSource = interactionSource,
-                        indication = null,
+                        indication = ripple(bounded = true),
                         role = Role.Button,
                         onClick = {
                             haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)

@@ -128,6 +128,12 @@ fun SettingsAppearanceSection(
             Modifier.weight(1f),
             onThemeModeChange,
         )
+        SettingsThemeChoice(
+            AppThemeMode.GLASS,
+            settings.themeMode == AppThemeMode.GLASS,
+            Modifier.weight(1f),
+            onThemeModeChange,
+        )
     }
 
     Spacer(Modifier.height(20.dp))
@@ -486,6 +492,7 @@ private fun SettingsThemeChoice(
                 when (mode) {
                     AppThemeMode.NEUMORPHIC -> stringResource(R.string.settings_theme_soft)
                     AppThemeMode.MATERIAL_YOU -> stringResource(R.string.settings_theme_dynamic)
+                    AppThemeMode.GLASS -> stringResource(R.string.settings_theme_glass)
                     else -> mode.name.lowercase().replaceFirstChar { it.uppercase() }
                 },
                 fontSize = 11.sp,
