@@ -52,6 +52,55 @@ object ThemeEngine {
         }
     }
 
+    /**
+     * Material 3 color foundation for translucent glass surfaces.
+     *
+     * The palette remains fully Material 3 compatible; translucency is confined
+     * to surface roles so the ambient backdrop can remain visible through cards
+     * and top-app-bar chrome. Full backdrop refraction/AGSL belongs to a later
+     * rendering phase and is deliberately not forced into every component here.
+     */
+    fun glassScheme(seed: Color, dark: Boolean): ColorScheme {
+        val base = schemeFor(seed, dark)
+        return if (dark) {
+            base.copy(
+                background = Color(0xFF090C12),
+                onBackground = Color(0xFFF4F7FB),
+                surface = Color(0xCC171C24),
+                onSurface = Color(0xFFF4F7FB),
+                surfaceVariant = Color(0xAA252C37),
+                onSurfaceVariant = Color(0xFFBCC4D0),
+                surfaceContainerLowest = Color(0x5211161D),
+                surfaceContainerLow = Color(0x66171D25),
+                surfaceContainer = Color(0x7A1E2630),
+                surfaceContainerHigh = Color(0x8C27313D),
+                surfaceContainerHighest = Color(0xA3343E4B),
+                surfaceBright = Color(0xB63C4654),
+                surfaceDim = Color(0x8010161D),
+                outline = Color(0x707F8997),
+                outlineVariant = Color(0x525A6471),
+            )
+        } else {
+            base.copy(
+                background = Color(0xFFF1F4F9),
+                onBackground = Color(0xFF161A20),
+                surface = Color(0xD9F7F9FC),
+                onSurface = Color(0xFF161A20),
+                surfaceVariant = Color(0xBFE0E5EC),
+                onSurfaceVariant = Color(0xFF5E6773),
+                surfaceContainerLowest = Color(0xB8FFFFFF),
+                surfaceContainerLow = Color(0xCFEFF3F7),
+                surfaceContainer = Color(0xDBE7ECF2),
+                surfaceContainerHigh = Color(0xE6E0E6ED),
+                surfaceContainerHighest = Color(0xF2F9FAFC),
+                surfaceBright = Color(0xF7FFFFFF),
+                surfaceDim = Color(0xBFD4DAE2),
+                outline = Color(0x66848E9A),
+                outlineVariant = Color(0x4DADB6C0),
+            )
+        }
+    }
+
     fun schemeFor(seed: Color, isDark: Boolean): ColorScheme {
         val secondary = seed.rotateHue(30f)
         val tertiary = seed.rotateHue(-44f)

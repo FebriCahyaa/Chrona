@@ -1,6 +1,14 @@
 <!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
 # Changelog
 
+## Unreleased — Phase 1 — Material 3 + Glass UI foundation
+
+- Replaced the custom dual collapse implementation in `ChronaScaffold` with Material 3 `LargeFlexibleTopAppBar`, giving title, subtitle, back navigation and actions one scroll/collapse state.
+- Activated the persisted `GLASS` theme mode in the design system with a Material 3-compatible translucent color scheme.
+- Updated glass cards to use the GLASS rendering mode with restrained translucent surfaces, borders and highlight sheen.
+- Added shared `ChronaGlassTokens` for Phase 1 surface geometry and opacity values.
+- Deferred AGSL refraction and dynamic blur to a later rendering phase.
+
 ## Unreleased — CI pipeline restructure and app icon refresh
 
 - Restructured `ci.yml` into a staged pipeline: `analyze` → `verify` (matrix: unit tests, lint) → `debug-build` → `ci-status` aggregate gate. Existing job names (`AES / Analyze`, `AES / Unit tests`, `AES / Lint`, `AES / Debug APK`) are preserved.

@@ -178,6 +178,9 @@ private fun ChronaDestinationContent(
     stopwatchState: com.febricahyaa.clockapp.ui.viewmodel.StopwatchUiState,
     backStackEntry: NavBackStackEntry,
 ) {
+    val glassSurfaces = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU ||
+        settingsState.settings.themeMode == AppThemeMode.GLASS
+
     ChronaScreenSurface {
         when (destination) {
             AppDestination.CLOCK -> {
@@ -201,7 +204,7 @@ private fun ChronaDestinationContent(
                     items = worldClockState.items,
                     favorites = worldClockState.favorites,
                 use24HourFormat = settingsState.use24HourFormat,
-                glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
+                glass = glassSurfaces,
                 onRemove = worldClockViewModel::remove,
                 onToggleFavorite = worldClockViewModel::toggleFavorite,
                 onOpenSearch = { navigation.navigate(AppDestination.WORLD_SEARCH) },
@@ -222,7 +225,7 @@ private fun ChronaDestinationContent(
                         ),
                         favorite = false,
                         use24HourFormat = settingsState.use24HourFormat,
-                        glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
+                        glass = glassSurfaces,
                         onToggleFavorite = {},
                         onBack = { navigation.back() },
                     )
@@ -231,7 +234,7 @@ private fun ChronaDestinationContent(
                         item = item,
                         favorite = item.zoneId in worldClockState.favorites,
                         use24HourFormat = settingsState.use24HourFormat,
-                        glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
+                        glass = glassSurfaces,
                         onToggleFavorite = { worldClockViewModel.toggleFavorite(item.zoneId) },
                         onBack = { navigation.back() },
                     )
@@ -260,7 +263,7 @@ private fun ChronaDestinationContent(
                 totalSeconds = timerState.totalSeconds,
                 remainingSeconds = timerState.remainingSeconds,
                 running = timerState.isRunning,
-                glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
+                glass = glassSurfaces,
                 onToggle = {
                     if (!timerState.isRunning && !container.alarmScheduler.canScheduleExactAlarms()) {
                         requestExactAlarmAccess(context)
@@ -279,7 +282,7 @@ private fun ChronaDestinationContent(
                 elapsedMillis = stopwatchState.elapsedMillis,
                 isRunning = stopwatchState.isRunning,
                 laps = stopwatchState.laps,
-                glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
+                glass = glassSurfaces,
                 onToggleRun = stopwatchViewModel::toggleRun,
                 onLap = stopwatchViewModel::lap,
                 onReset = stopwatchViewModel::reset,
@@ -291,7 +294,7 @@ private fun ChronaDestinationContent(
                 AlarmScreen(
                 alarms = alarms,
                 use24HourFormat = settingsState.use24HourFormat,
-                glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
+                glass = glassSurfaces,
                 onBack = { navigation.back() },
                 onAdd = { alarm ->
                     alarmViewModel.add(alarm)

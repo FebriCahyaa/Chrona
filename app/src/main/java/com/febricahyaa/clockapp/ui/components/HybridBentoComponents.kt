@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.model.AppThemeMode
+import com.febricahyaa.clockapp.ui.theme.ChronaGlassTokens
 import com.febricahyaa.clockapp.ui.theme.ClockMotion
 
 /**
@@ -105,8 +106,9 @@ fun HybridBentoCard(
     val haptics = LocalHapticFeedback.current
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
-    val shape = RoundedCornerShape(28.dp)
+    val shape = RoundedCornerShape(ChronaGlassTokens.CardRadius)
     val isSoft = themeMode == AppThemeMode.NEUMORPHIC
+    val isGlass = themeMode == AppThemeMode.GLASS
 
     val scale by animateFloatAsState(
         targetValue = if (pressed) 0.992f else 1f,
@@ -114,15 +116,16 @@ fun HybridBentoCard(
         label = "bento-scale",
     )
 
-    val fill = if (isSoft) {
-        MaterialTheme.colorScheme.surface
-    } else {
-        MaterialTheme.colorScheme.surfaceContainerLow
+    val fill = when {
+        isSoft -> MaterialTheme.colorScheme.surface
+        isGlass -> MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = ChronaGlassTokens.CardAlpha)
+        else -> MaterialTheme.colorScheme.surfaceContainerLow
     }
 
     val elevation = when {
         pressed -> 2.dp
         isSoft -> 8.dp
+        isGlass -> 1.dp
         else -> 4.dp
     }
 
@@ -132,8 +135,13 @@ fun HybridBentoCard(
             .background(fill, shape)
             .border(
                 BorderStroke(
-                    1.dp,
-                    MaterialTheme.colorScheme.outline.copy(alpha = if (pressed) 0.24f else 0.12f),
+                    ChronaGlassTokens.CardBorderWidth,
+                    when {
+                        isGlass -> MaterialTheme.colorScheme.onSurface.copy(
+                            alpha = if (pressed) 0.28f else ChronaGlassTokens.CardBorderAlpha,
+                        )
+                        else -> MaterialTheme.colorScheme.outline.copy(alpha = if (pressed) 0.24f else 0.12f)
+                    },
                 ),
                 shape,
             )
@@ -152,7 +160,11 @@ fun HybridBentoCard(
                 } ?: Modifier,
             ),
     ) {
-        if (isSoft) NeumorphicHighlight(pressed, shape) else MaterialSurfaceSheen(shape)
+        when {
+            isSoft -> NeumorphicHighlight(pressed, shape)
+            isGlass -> GlassSurfaceSheen(pressed, shape)
+            else -> MaterialSurfaceSheen(shape)
+        }
         Column(
             Modifier
                 .fillMaxWidth()
@@ -176,6 +188,27 @@ private fun BoxScope.NeumorphicHighlight(pressed: Boolean, shape: RoundedCornerS
                         Color.White.copy(alpha = if (pressed) 0.08f else 0.58f),
                         Color.Transparent,
                         MaterialTheme.colorScheme.primary.copy(alpha = if (pressed) 0.025f else 0.045f),
+                    ),
+                ),
+                shape,
+            ),
+    )
+}
+
+@Composable
+private fun BoxScope.GlassSurfaceSheen(pressed: Boolean, shape: RoundedCornerShape) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(
+                Brush.linearGradient(
+                    listOf(
+                        Color.White.copy(
+                            alpha = if (pressed) ChronaGlassTokens.CardHighlightAlpha * 0.65f
+                            else ChronaGlassTokens.CardHighlightAlpha,
+                        ),
+                        Color.Transparent,
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.025f),
                     ),
                 ),
                 shape,

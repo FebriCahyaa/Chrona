@@ -21,9 +21,9 @@ class SharedPreferencesSettingsRepository(context: Context) : SettingsRepository
         val storedMode = prefs.getString(KEY_THEME_MODE, null)
             ?.let { name -> runCatching { AppThemeMode.valueOf(name) }.getOrNull() }
         val mode = when (storedMode) {
-            AppThemeMode.NEUMORPHIC, AppThemeMode.MATERIAL_YOU -> storedMode
-            // Migrate the legacy visual modes into the two supported dashboard themes.
-            AppThemeMode.DARK, AppThemeMode.GLASS, null -> AppThemeMode.NEUMORPHIC
+            AppThemeMode.NEUMORPHIC, AppThemeMode.MATERIAL_YOU, AppThemeMode.GLASS -> storedMode
+            // Migrate the legacy light/dark modes into the supported dashboard themes.
+            AppThemeMode.DARK, null -> AppThemeMode.NEUMORPHIC
             AppThemeMode.LIGHT -> AppThemeMode.MATERIAL_YOU
         }
         val settings = ClockSettings(

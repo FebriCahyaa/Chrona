@@ -84,7 +84,7 @@ fun ChronaCard(
 ) {
     HybridBentoCard(
         modifier = modifier,
-        themeMode = if (glass) AppThemeMode.MATERIAL_YOU else AppThemeMode.NEUMORPHIC,
+        themeMode = if (glass) AppThemeMode.GLASS else AppThemeMode.NEUMORPHIC,
         onClick = onClick,
         content = content,
     )

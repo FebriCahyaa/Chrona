@@ -1,43 +1,38 @@
 /* Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. */
 
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@file:OptIn(
+    androidx.compose.material3.ExperimentalMaterial3Api::class,
+    androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class,
+)
 
 package com.febricahyaa.clockapp.ui.components
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.TransformOrigin
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.style.TextOverflow
 import com.febricahyaa.clockapp.R
+import com.febricahyaa.clockapp.ui.theme.ChronaGlassTokens
 
 /**
  * Chrona's universal screen shell.
  *
- * Every scrollable destination gets the same LargeTopAppBar + nested-scroll
- * contract. The title and subtitle read the collapse fraction only inside
- * graphicsLayer, so toolbar motion updates the draw layer without making the
- * screen root recompose for every frame.
+ * The title, subtitle, navigation affordance, actions and collapse animation are
+ * owned by one Material 3 flexible top-app-bar state. This prevents the old
+ * dual-collapse system where the platform app bar and a custom graphics layer
+ * could disagree about scroll progress and produce subtitle/back jitter.
  */
 @Composable
 fun ChronaScaffold(
@@ -48,14 +43,29 @@ fun ChronaScaffold(
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val background = MaterialTheme.colorScheme.background
+    val surface = MaterialTheme.colorScheme.surface
 
     Scaffold(
-        modifier = Modifier
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
-        containerColor = MaterialTheme.colorScheme.background,
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        containerColor = background,
         contentColor = MaterialTheme.colorScheme.onBackground,
         topBar = {
-            LargeTopAppBar(
+            LargeFlexibleTopAppBar(
+                title = {
+                    androidx.compose.material3.Text(
+                        text = title,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
+                subtitle = {
+                    androidx.compose.material3.Text(
+                        text = subtitle,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
                 navigationIcon = {
                     if (onBack != null) {
                         IconButton(onClick = onBack) {
@@ -66,73 +76,20 @@ fun ChronaScaffold(
                         }
                     }
                 },
-                title = {
-                    ChronaCollapsingTitle(
-                        title = title,
-                        subtitle = subtitle,
-                        scrollBehavior = scrollBehavior,
-                    )
-                },
                 actions = actions,
-                scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.96f),
-                    scrolledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
-                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    containerColor = background.copy(alpha = ChronaGlassTokens.ToolbarAlpha),
+                    scrolledContainerColor = surface.copy(alpha = ChronaGlassTokens.ToolbarScrolledAlpha),
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
                     navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
                     actionIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    subtitleContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 ),
+                scrollBehavior = scrollBehavior,
+                modifier = Modifier.fillMaxWidth(),
             )
         },
     ) { innerPadding ->
         content(innerPadding)
-    }
-}
-
-@Composable
-private fun ChronaCollapsingTitle(
-    title: String,
-    subtitle: String,
-    scrollBehavior: TopAppBarScrollBehavior,
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Row(
-            modifier = Modifier.graphicsLayer {
-                val collapsed = scrollBehavior.state.collapsedFraction.coerceIn(0f, 1f)
-                val scale = 1f - (0.08f * collapsed)
-                scaleX = scale
-                scaleY = scale
-                transformOrigin = TransformOrigin(0f, 0.5f)
-            },
-        ) {
-            androidx.compose.material3.Text(
-                text = title,
-                fontSize = 30.sp,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = (-0.7).sp,
-                maxLines = 1,
-            )
-        }
-
-        Spacer(
-            modifier = Modifier
-                .height(2.dp)
-                .graphicsLayer {
-                    alpha = 1f - scrollBehavior.state.collapsedFraction.coerceIn(0f, 1f)
-                },
-        )
-
-        androidx.compose.material3.Text(
-            text = subtitle,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
-            modifier = Modifier.graphicsLayer {
-                alpha = 1f - scrollBehavior.state.collapsedFraction.coerceIn(0f, 1f)
-                translationY = -2.dp.toPx() * scrollBehavior.state.collapsedFraction.coerceIn(0f, 1f)
-            },
-        )
     }
 }

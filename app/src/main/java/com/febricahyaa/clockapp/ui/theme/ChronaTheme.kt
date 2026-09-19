@@ -29,7 +29,8 @@ fun ChronaTheme(settings: ClockSettings, content: @Composable () -> Unit) {
     val mode = when (settings.themeMode) {
         AppThemeMode.NEUMORPHIC -> AppThemeMode.NEUMORPHIC
         AppThemeMode.MATERIAL_YOU -> AppThemeMode.MATERIAL_YOU
-        else -> AppThemeMode.MATERIAL_YOU
+        AppThemeMode.GLASS -> AppThemeMode.GLASS
+        AppThemeMode.LIGHT, AppThemeMode.DARK -> AppThemeMode.MATERIAL_YOU
     }
 
     // Theme changes are applied synchronously. A theme-level Crossfade used to
@@ -43,6 +44,13 @@ fun ChronaTheme(settings: ClockSettings, content: @Composable () -> Unit) {
         }
         mode == AppThemeMode.NEUMORPHIC -> {
             ThemeEngine.neumorphicScheme(
+                seed = ThemeEngine.seedColorFor(settings.themeAccent)
+                    ?: ThemeEngine.seedColorFor(ThemeAccent.PEACH)!!,
+                dark = dark,
+            )
+        }
+        mode == AppThemeMode.GLASS -> {
+            ThemeEngine.glassScheme(
                 seed = ThemeEngine.seedColorFor(settings.themeAccent)
                     ?: ThemeEngine.seedColorFor(ThemeAccent.PEACH)!!,
                 dark = dark,

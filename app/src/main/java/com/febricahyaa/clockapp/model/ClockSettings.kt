@@ -2,10 +2,10 @@
 
 package com.febricahyaa.clockapp.model
 
-/** Visual themes exposed by the new Chrona Bento dashboard.
+/** Visual themes used by Chrona's design system.
  *
- * LIGHT/DARK/GLASS are retained for persisted-settings compatibility with
- * older Chrona builds. The new UI only presents NEUMORPHIC and MATERIAL_YOU.
+ * LIGHT/DARK remain persisted compatibility modes. GLASS is an active visual
+ * mode while retaining the existing settings storage contract.
  */
 enum class AppThemeMode {
     NEUMORPHIC,
