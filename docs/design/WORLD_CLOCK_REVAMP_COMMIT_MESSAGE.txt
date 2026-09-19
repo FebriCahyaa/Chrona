@@ -1,0 +1,50 @@
+feat(worldclock): revamp dashboard with native offline world map
+
+Rebuild the World Clock destination around a local-time hero, responsive spotlight city cards, and a native Compose world map while preserving the existing persistent timezone model and navigation flows.
+
+Changed:
+- Replaced the World Clock list-first layout with a clock-first dashboard hierarchy.
+- Added a local device-time hero using the unified Chrona epoch ticker.
+- Added responsive spotlight cards for London, Paris, New York, and Los Angeles when those saved zones exist.
+- Added a wide-layout asymmetric composition with a larger lead card and a compact city grid.
+- Added a compact two-column spotlight layout for narrower windows.
+- Added a World Map card with a draggable UTC meridian, probe point, map-region highlight, and live UTC tag.
+- Preserved the existing region filters and moved remaining saved cities below the new dashboard sections.
+- Corrected the Android path rendering pipeline to scale the embedded 2000×788.8889 source geometry into the Compose canvas without distorting the source aspect ratio.
+- Added English and Indonesian strings for the new World Clock sections and map guidance.
+
+Added:
+- app/src/main/java/com/febricahyaa/clockapp/ui/components/WorldClockMap.kt
+- app/src/main/java/com/febricahyaa/clockapp/ui/components/WorldClockMapData.kt
+- scripts/apply-world-clock-revamp.sh
+- scripts/update-world-clock-strings.py
+- docs/design/WORLD_CLOCK_REVAMP.md
+- docs/design/WORLD_CLOCK_REVAMP_COMMIT_MESSAGE.txt
+
+Removed:
+- The old World Clock screen's list-first presentation as the primary visual hierarchy.
+- No persisted data model, repository, ViewModel, search route, or detail route was removed.
+
+Not Removed:
+- WorldClockViewModel and persistent World Clock repository behavior.
+- Favorites and region filters.
+- World Clock search/add flow.
+- World Clock detail navigation.
+- ChronaTimeFormatter and the shared Chrona time engine.
+- Existing CityThumbnail used by the detail and saved-city presentation.
+- The supplied map's interaction concept: red UTC meridian, probe, and geographic highlighting.
+- CDN/WebView dependencies were intentionally not introduced; the Android map remains offline.
+
+Verification:
+- Verified main baseline before implementation: dea3a3443714626c7f84ed85a5f0ea79e42a426c.
+- Extracted 7 map features and 981 coordinate points from the supplied HTML fallback geometry.
+- Python resource update script passes syntax validation.
+- Temporary English and Indonesian XML resources pass parsing after scripted insertion.
+- Kotlin delimiter balance passes for all three modified source files.
+- Required imports and native path conversion pipeline were statically checked.
+- kotlinc parsing produced no Kotlin syntax diagnostics; compilation was not possible without the repository's AndroidX/Compose classpath.
+- Full Gradle build/test was not claimed because the working environment cannot reach the Gradle distribution host.
+
+Scope:
+- UI/UX and local offline map rendering only.
+- No changes to World Clock persistence semantics, timezone catalog behavior, navigation contracts, or timer/stopwatch/alarm logic.
