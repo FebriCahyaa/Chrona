@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.item
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
@@ -63,7 +62,7 @@ fun SettingsSheetContent(
 
     LazyColumn(
         modifier = modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = 18.dp, top = 8.dp, bottom = 34.dp),
+        contentPadding = PaddingValues(start = 18.dp, top = 8.dp, end = 18.dp, bottom = 34.dp),
         verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         if (showSectionHeader) {
