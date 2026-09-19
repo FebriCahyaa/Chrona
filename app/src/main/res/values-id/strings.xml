@@ -1,350 +1,333 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
+<!--
+  ~ Copyright 2026 Febrian Rahmad Cahya
+  ~ SPDX-License-Identifier: MIT
+  -->
 <resources>
+    <!-- Aplikasi -->
     <string name="app_name">Chrona</string>
+
+    <!-- Beranda -->
     <string name="home_title">Chrona</string>
-    <string name="home_subtitle">Your time, organized in one expressive dashboard</string>
-    <string name="home_settings">Settings</string>
-    <string name="home_info_title">Built around your time</string>
-    <string name="home_info_body">Quiet motion, expressive color, and a clear clock-first hierarchy.</string>
-    <string name="home_daytime">DAYTIME</string>
-    <string name="home_nighttime">NIGHTTIME</string>
-    <string name="home_local_time">Local time</string>
+    <string name="home_subtitle">Waktu Anda, tertata dalam satu dasbor yang ekspresif</string>
+    <string name="home_settings">Pengaturan</string>
+    <string name="home_info_title">Dirancang di sekitar waktu Anda</string>
+    <string name="home_info_body">Gerakan yang tenang, warna yang ekspresif, dan hierarki yang mengutamakan jam.</string>
+    <string name="home_daytime">SIANG</string>
+    <string name="home_nighttime">MALAM</string>
+    <string name="home_local_time">Waktu lokal</string>
     <string name="home_alarm_label">ALARM</string>
-    <string name="home_next_alarm_label">NEXT ALARM</string>
-    <string name="home_alarm_not_set">Not set</string>
-    <string name="home_alarm_create">Create an alarm</string>
-    <string name="home_alarm_one_time">One time</string>
-    <string name="home_alarm_repeats">Repeats</string>
+    <string name="home_next_alarm_label">ALARM BERIKUTNYA</string>
+    <string name="home_alarm_not_set">Belum diatur</string>
+    <string name="home_alarm_create">Buat alarm</string>
+    <string name="home_alarm_one_time">Sekali</string>
+    <string name="home_alarm_repeats">Berulang</string>
     <string name="home_timer_label">TIMER</string>
     <string name="home_timer_live_label">LIVE</string>
-    <string name="home_timer_counting">Counting down</string>
-    <string name="home_timer_ready">Ready when you are</string>
-    <string name="home_world_clock_title">World Clock</string>
-    <string name="home_world_clock_subtitle">Cities &amp; time zones</string>
+    <string name="home_timer_counting">Menghitung mundur</string>
+    <string name="home_timer_ready">Siap saat Anda siap</string>
+    <string name="home_world_clock_title">Jam Dunia</string>
+    <string name="home_world_clock_subtitle">Kota &amp; zona waktu</string>
     <string name="home_stopwatch_title">Stopwatch</string>
-    <string name="home_stopwatch_subtitle">Precise elapsed time</string>
-    <string name="home_switch_to_analog">Switch to analog clock</string>
-    <string name="home_switch_to_digital">Switch to digital clock</string>
-    <string name="home_seconds_suffix">%1$s sec</string>
+    <string name="home_stopwatch_subtitle">Waktu berlalu yang presisi</string>
+    <string name="home_switch_to_analog">Beralih ke jam analog</string>
+    <string name="home_switch_to_digital">Beralih ke jam digital</string>
+    <string name="home_seconds_suffix">%1$s dtk</string>
+
+    <!-- Waktu -->
     <string name="time_am">AM</string>
     <string name="time_pm">PM</string>
+
+    <!-- Onboarding -->
     <string name="onboarding_brand">Chrona</string>
-    <string name="onboarding_tagline">A calmer way to read time</string>
-    <string name="onboarding_local_eyebrow">LOCAL TIME</string>
-    <string name="onboarding_local_title">Time, your way.</string>
-    <string name="onboarding_local_body">Your everyday time tools in one calm workspace, designed to feel immediate and effortless.</string>
-    <string name="onboarding_world_eyebrow">WORLD CLOCK</string>
-    <string name="onboarding_world_title">See time anywhere.</string>
-    <string name="onboarding_world_body">Keep cities close, compare their local time, and open any city for a focused detail view.</string>
-    <string name="onboarding_updates_eyebrow">UPDATES</string>
-    <string name="onboarding_updates_title">Stay current, stay in control.</string>
-    <string name="onboarding_updates_body">Chrona can check the public release feed in the background while leaving installation entirely in your hands.</string>
+    <string name="onboarding_tagline">Cara yang lebih tenang untuk membaca waktu</string>
+    <string name="onboarding_local_eyebrow">WAKTU LOKAL</string>
+    <string name="onboarding_local_title">Waktu, sesuai cara Anda.</string>
+    <string name="onboarding_local_body">Semua alat waktu harian Anda dalam satu ruang kerja yang tenang, dirancang agar terasa instan dan tanpa hambatan.</string>
+    <string name="onboarding_world_eyebrow">JAM DUNIA</string>
+    <string name="onboarding_world_title">Lihat waktu di mana saja.</string>
+    <string name="onboarding_world_body">Dekatkan kota-kota yang penting bagi Anda, bandingkan waktu lokalnya, dan buka kota mana pun untuk tampilan detail yang fokus.</string>
+    <string name="onboarding_updates_eyebrow">PEMBARUAN</string>
+    <string name="onboarding_updates_title">Tetap terbaru, tetap memegang kendali.</string>
+    <string name="onboarding_updates_body">Chrona dapat memeriksa feed rilis publik di latar belakang, sementara pemasangan sepenuhnya tetap di tangan Anda.</string>
     <string name="onboarding_alarm_title">Alarm</string>
-    <string name="onboarding_alarm_body">Wake up on time</string>
+    <string name="onboarding_alarm_body">Bangun tepat waktu</string>
     <string name="onboarding_timer_title">Timer</string>
-    <string name="onboarding_timer_body">Focus without clutter</string>
-    <string name="onboarding_progress">Onboarding progress</string>
-    <string name="onboarding_continue">Continue</string>
-    <string name="onboarding_get_started">Get started</string>
-    <string name="onboarding_skip">Skip onboarding</string>
-    <string name="onboarding_interactive">Interactive</string>
-    <string name="onboarding_tap_explore">Tap to explore</string>
-    <string name="onboarding_preview_selected">Preview selected · tap the hero card again to reset</string>
-    <string name="onboarding_release_feed">Release feed</string>
-    <string name="onboarding_latest_release">Latest release · ready to review</string>
-    <string name="nav_back">Back</string>
-    <string name="nav_close">Close</string>
-    <string name="nav_search">Search</string>
-    <string name="world_screen_title">World Clock</string>
-    <string name="world_screen_subtitle">A live, persistent view of your saved cities</string>
-    <string name="world_night">Malam</string>
-    <string name="world_daylight">Siang</string>
-    <string name="world_section_saved_subtitle">%1$d kota lain di daftar jam Anda</string>
+    <string name="onboarding_timer_body">Fokus tanpa gangguan</string>
+    <string name="onboarding_progress">Progres onboarding</string>
+    <string name="onboarding_continue">Lanjutkan</string>
+    <string name="onboarding_get_started">Mulai</string>
+    <string name="onboarding_skip">Lewati onboarding</string>
+    <string name="onboarding_interactive">Interaktif</string>
+    <string name="onboarding_tap_explore">Ketuk untuk menjelajah</string>
+    <string name="onboarding_preview_selected">Pratinjau dipilih · ketuk kartu utama lagi untuk mengatur ulang</string>
+    <string name="onboarding_release_feed">Feed rilis</string>
+    <string name="onboarding_latest_release">Rilis terbaru · siap ditinjau</string>
+
+    <!-- Navigasi -->
+    <string name="nav_back">Kembali</string>
+    <string name="nav_close">Tutup</string>
+    <string name="nav_search">Cari</string>
+
+    <!-- Jam Dunia -->
+    <string name="world_screen_title">Jam Dunia</string>
+    <string name="world_screen_subtitle">Tampilan langsung yang selalu tersimpan dari kota-kota Anda</string>
     <string name="world_section_saved">Kota tersimpan</string>
-    <string name="world_map_open_water">Perairan terbuka</string>
-    <string name="world_map_hint">Geser garis meridian merah untuk menjelajahi offset UTC.</string>
+    <string name="world_section_saved_subtitle">%1$d kota lain di daftar jam Anda</string>
     <string name="world_section_map">Peta dunia</string>
-    <string name="world_section_spotlight_subtitle">Tampilan cepat untuk kota yang paling penting bagi Anda.</string>
     <string name="world_section_spotlight">Kota pilihan</string>
+    <string name="world_section_spotlight_subtitle">Tampilan cepat untuk kota yang paling penting bagi Anda.</string>
     <string name="world_section_your_time">WAKTU ANDA</string>
     <string name="world_local_timezone">Zona waktu lokal</string>
+    <string name="world_night">Malam</string>
+    <string name="world_daylight">Siang</string>
+    <string name="world_day">SIANG</string>
+    <string name="world_map_open_water">Perairan terbuka</string>
+    <string name="world_map_hint">Geser garis meridian merah untuk menjelajahi offset UTC.</string>
+    <string name="world_map_accessibility">Peta dunia, %1$s, wilayah terpilih: %2$s. Gunakan Panah Kiri atau Kanan, Home, atau End untuk mengubah offset UTC.</string>
     <string name="world_utc_timeline_title">Linimasa UTC</string>
     <string name="world_utc_timeline_subtitle">Geser meridian untuk menjelajahi offset waktu global.</string>
     <string name="world_utc_selected">%1$s dipilih</string>
-    <string name="world_day">SIANG</string>
-    <string name="world_map_accessibility">Peta dunia, %1$s, wilayah terpilih: %2$s. Gunakan Arrow Kiri atau Kanan, Home, atau End untuk mengubah offset UTC.</string>
-    <string name="world_add_city">Add city</string>
-    <string name="world_find_city">Find a city</string>
-    <string name="world_empty_title">No cities here yet</string>
-    <string name="world_empty_subtitle">Use the + button to search the timezone catalog.</string>
-    <string name="world_invalid_timezone">Invalid timezone</string>
-    <string name="world_remove_city">Remove %1$s</string>
-    <string name="world_add_favorite">Add %1$s to favorites</string>
-    <string name="world_remove_favorite">Remove %1$s from favorites</string>
-    <string name="world_add_to_favorites">Add to favorites</string>
-    <string name="world_remove_from_favorites">Remove from favorites</string>
-    <string name="world_timezone_details">Timezone details</string>
-    <string name="world_detail_update_note">Updates continuously from the unified Chrona time engine.</string>
-    <string name="world_search_hint">Search a city or country</string>
-    <string name="world_search_summary">Search 25 curated timezones</string>
-    <string name="world_search_matches">%1$d matching cities</string>
-    <string name="world_search_close">Close search</string>
-    <string name="world_search_back">Back to World Clock</string>
-    <string name="world_search_add_city">Add %1$s</string>
-    <string name="world_region_all">All</string>
-    <string name="world_region_favorites">Favorites</string>
+    <string name="world_add_city">Tambah kota</string>
+    <string name="world_find_city">Cari kota</string>
+    <string name="world_empty_title">Belum ada kota di sini</string>
+    <string name="world_empty_subtitle">Gunakan tombol + untuk mencari di katalog zona waktu.</string>
+    <string name="world_invalid_timezone">Zona waktu tidak valid</string>
+    <string name="world_remove_city">Hapus %1$s</string>
+    <string name="world_add_favorite">Tambahkan %1$s ke favorit</string>
+    <string name="world_remove_favorite">Hapus %1$s dari favorit</string>
+    <string name="world_add_to_favorites">Tambahkan ke favorit</string>
+    <string name="world_remove_from_favorites">Hapus dari favorit</string>
+    <string name="world_timezone_details">Detail zona waktu</string>
+    <string name="world_detail_update_note">Diperbarui terus-menerus dari mesin waktu Chrona terpadu dan mengikuti basis data zona waktu perangkat.</string>
+    <string name="world_search_hint">Cari kota atau negara</string>
+    <string name="world_search_summary">Cari di katalog zona waktu seluruh dunia</string>
+    <string name="world_search_matches">%1$d kota cocok</string>
+    <string name="world_search_close">Tutup pencarian</string>
+    <string name="world_search_back">Kembali ke Jam Dunia</string>
+    <string name="world_search_add_city">Tambahkan %1$s</string>
+    <string name="world_search_no_results">Tidak ada kota yang cocok</string>
+    <string name="world_search_no_results_hint">Coba kota, negara, atau zona waktu lain.</string>
+    <string name="world_favorite_saved_status">Tersimpan di favorit</string>
+    <string name="world_favorite_tap_hint">Ketuk bintang di atas untuk menambahkan kota ini ke favorit.</string>
+    <string name="world_region_all">Semua</string>
+    <string name="world_region_favorites">Favorit</string>
     <string name="world_region_asia">Asia</string>
-    <string name="world_region_europe">Europe</string>
-    <string name="world_region_americas">Americas</string>
-    <string name="world_region_oceania">Oceania</string>
-    <string name="world_region_africa">Africa</string>
-    <string name="world_region_other">Other</string>
+    <string name="world_region_europe">Eropa</string>
+    <string name="world_region_americas">Amerika</string>
+    <string name="world_region_oceania">Oseania</string>
+    <string name="world_region_africa">Afrika</string>
+    <string name="world_region_other">Lainnya</string>
+    <string name="world_delta_same_time">Waktu sama</string>
+    <string name="world_delta_hours">%1$d j</string>
+    <string name="world_delta_minutes">%1$d m</string>
+
+    <!-- Negara -->
     <string name="country_indonesia">Indonesia</string>
-    <string name="country_singapore">Singapore</string>
+    <string name="country_singapore">Singapura</string>
     <string name="country_malaysia">Malaysia</string>
     <string name="country_thailand">Thailand</string>
-    <string name="country_japan">Japan</string>
-    <string name="country_south_korea">South Korea</string>
-    <string name="country_china">China</string>
+    <string name="country_japan">Jepang</string>
+    <string name="country_south_korea">Korea Selatan</string>
+    <string name="country_china">Tiongkok</string>
     <string name="country_india">India</string>
-    <string name="country_united_arab_emirates">United Arab Emirates</string>
-    <string name="country_united_kingdom">United Kingdom</string>
-    <string name="country_france">France</string>
-    <string name="country_germany">Germany</string>
-    <string name="country_russia">Russia</string>
-    <string name="country_brazil">Brazil</string>
-    <string name="country_canada">Canada</string>
-    <string name="country_united_states">United States</string>
+    <string name="country_united_arab_emirates">Uni Emirat Arab</string>
+    <string name="country_united_kingdom">Inggris Raya</string>
+    <string name="country_france">Prancis</string>
+    <string name="country_germany">Jerman</string>
+    <string name="country_russia">Rusia</string>
+    <string name="country_brazil">Brasil</string>
+    <string name="country_canada">Kanada</string>
+    <string name="country_united_states">Amerika Serikat</string>
     <string name="country_australia">Australia</string>
-    <string name="country_new_zealand">New Zealand</string>
-    <string name="country_egypt">Egypt</string>
-    <string name="country_south_africa">South Africa</string>
-    <string name="world_delta_same_time">Same time</string>
-    <string name="world_delta_hours">%1$d h</string>
-    <string name="world_delta_minutes">%1$d m</string>
+    <string name="country_new_zealand">Selandia Baru</string>
+    <string name="country_egypt">Mesir</string>
+    <string name="country_south_africa">Afrika Selatan</string>
+
+    <!-- Alarm -->
     <string name="alarm_screen_title">Alarm</string>
-    <string name="alarm_screen_subtitle">Schedules that stay editable without leaving the list</string>
-    <string name="alarm_empty_title">No alarms yet</string>
-    <string name="alarm_empty_subtitle">Create a schedule and tune repeat, sound and vibration from the same editor.</string>
-    <string name="alarm_add_action">Add alarm</string>
-    <string name="alarm_create_action">Create alarm</string>
+    <string name="alarm_screen_subtitle">Jadwal yang tetap bisa diedit tanpa meninggalkan daftar</string>
+    <string name="alarm_empty_title">Belum ada alarm</string>
+    <string name="alarm_empty_subtitle">Buat jadwal, lalu atur pengulangan, suara, dan getaran dari editor yang sama.</string>
+    <string name="alarm_add_action">Tambah alarm</string>
+    <string name="alarm_create_action">Buat alarm</string>
     <string name="alarm_edit_action">Edit</string>
-    <string name="alarm_delete_action">Delete alarm</string>
-    <string name="alarm_expand">Expand alarm options</string>
-    <string name="alarm_collapse">Collapse alarm options</string>
-    <string name="alarm_repeat">Repeat</string>
-    <string name="alarm_sound">Alarm sound</string>
-    <string name="alarm_vibrate">Vibrate</string>
-    <string name="alarm_enabled">Alarm enabled</string>
-    <string name="alarm_change">Change</string>
-    <string name="alarm_editor_new_title">New alarm</string>
+    <string name="alarm_delete_action">Hapus alarm</string>
+    <string name="alarm_expand">Perluas opsi alarm</string>
+    <string name="alarm_collapse">Ciutkan opsi alarm</string>
+    <string name="alarm_repeat">Ulangi</string>
+    <string name="alarm_sound">Suara alarm</string>
+    <string name="alarm_vibrate">Getar</string>
+    <string name="alarm_enabled">Alarm aktif</string>
+    <string name="alarm_change">Ubah</string>
+    <string name="alarm_editor_new_title">Alarm baru</string>
     <string name="alarm_editor_edit_title">Edit alarm</string>
-    <string name="alarm_editor_new_subtitle">Build a complete schedule with time, repeat and alert behavior.</string>
-    <string name="alarm_editor_edit_subtitle">Tune this schedule without leaving the alarm list.</string>
-    <string name="alarm_editor_schedule_section">Schedule</string>
-    <string name="alarm_editor_alert_section">Alert behavior</string>
-    <string name="alarm_time_hint">Tap the dial to set the alarm time</string>
+    <string name="alarm_editor_new_subtitle">Susun jadwal lengkap dengan waktu, pengulangan, dan perilaku peringatan.</string>
+    <string name="alarm_editor_edit_subtitle">Atur jadwal ini tanpa meninggalkan daftar alarm.</string>
+    <string name="alarm_editor_schedule_section">Jadwal</string>
+    <string name="alarm_editor_alert_section">Perilaku peringatan</string>
+    <string name="alarm_time_hint">Masukkan waktu sebagai JJMM</string>
     <string name="alarm_label">Label</string>
-    <string name="alarm_label_hint">e.g. Wake up</string>
-    <string name="alarm_cancel">Cancel</string>
-    <string name="alarm_save_changes">Save changes</string>
-    <string name="alarm_status_active">Active</string>
-    <string name="alarm_status_disabled">Disabled</string>
-    <string name="alarm_value_on">On</string>
-    <string name="alarm_value_off">Off</string>
-    <string name="alarm_ringtone_silent">Silent</string>
-    <string name="alarm_default_ringtone">Default alarm</string>
-    <string name="alarm_ringtone_picker_title">Alarm sound</string>
-    <string name="alarm_repeat_once">Once</string>
-    <string name="alarm_repeat_every_day">Every day</string>
+    <string name="alarm_label_hint">mis. Bangun tidur</string>
+    <string name="alarm_cancel">Batal</string>
+    <string name="alarm_save_changes">Simpan perubahan</string>
+    <string name="alarm_status_active">Aktif</string>
+    <string name="alarm_status_disabled">Nonaktif</string>
+    <string name="alarm_value_on">Hidup</string>
+    <string name="alarm_value_off">Mati</string>
+    <string name="alarm_ringtone_silent">Senyap</string>
+    <string name="alarm_default_ringtone">Alarm default</string>
+    <string name="alarm_ringtone_picker_title">Suara alarm</string>
+    <string name="alarm_repeat_once">Sekali</string>
+    <string name="alarm_repeat_every_day">Setiap hari</string>
     <string name="alarm_notification_title">Alarm</string>
-    <string name="alarm_notification_body">Tap to open</string>
-    <string name="alarm_notification_dismiss">Dismiss</string>
-    <string name="alarm_notification_snooze">Snooze 10 min</string>
+    <string name="alarm_notification_body">Ketuk untuk membuka</string>
+    <string name="alarm_notification_dismiss">Matikan</string>
+    <string name="alarm_notification_snooze">Tunda 10 menit</string>
+
+    <!-- Timer -->
     <string name="timer_screen_title">Timer</string>
-    <string name="timer_screen_subtitle">Build a duration with numbers, then let Chrona count it down</string>
-    <string name="timer_action_start">Start</string>
-    <string name="timer_action_pause">Pause</string>
-    <string name="timer_action_resume">Resume</string>
+    <string name="timer_screen_subtitle">Susun durasi dengan angka, lalu biarkan Chrona menghitung mundurnya</string>
+    <string name="timer_action_start">Mulai</string>
+    <string name="timer_action_pause">Jeda</string>
+    <string name="timer_action_resume">Lanjutkan</string>
     <string name="timer_action_reset">Reset</string>
-    <string name="timer_state_running">Running from elapsed real time</string>
-    <string name="timer_state_complete">Timer complete</string>
-    <string name="timer_state_paused">Paused - resume when you are ready</string>
-    <string name="timer_indicator_running">Running</string>
-    <string name="timer_indicator_complete">Complete</string>
-    <string name="timer_indicator_paused">Paused</string>
-    <string name="timer_set_duration">Set duration</string>
-    <string name="timer_format_hint">HH : MM : SS</string>
-    <string name="timer_clear_input">Clear timer input</string>
-    <string name="timer_delete_digit">Delete last timer digit</string>
-    <string name="timer_completion_note">Timer completion is scheduled through Chrona Android alarm layer so it can survive the UI leaving the foreground.</string>
+    <string name="timer_state_running">Berjalan berdasarkan waktu nyata yang berlalu</string>
+    <string name="timer_state_complete">Timer selesai</string>
+    <string name="timer_state_paused">Dijeda - lanjutkan saat Anda siap</string>
+    <string name="timer_indicator_running">Berjalan</string>
+    <string name="timer_indicator_complete">Selesai</string>
+    <string name="timer_indicator_paused">Dijeda</string>
+    <string name="timer_set_duration">Atur durasi</string>
+    <string name="timer_format_hint">JJ : MM : DD</string>
+    <string name="timer_clear_input">Hapus input timer</string>
+    <string name="timer_delete_digit">Hapus digit terakhir timer</string>
+    <string name="timer_completion_note">Penyelesaian timer dijadwalkan melalui lapisan alarm Android milik Chrona sehingga tetap berjalan meskipun UI tidak lagi berada di latar depan.</string>
     <string name="timer_preset_5m">5m</string>
     <string name="timer_preset_15m">15m</string>
     <string name="timer_preset_30m">30m</string>
-    <string name="timer_preset_1h">1h</string>
-    <string name="timer_notification_title">Timer finished</string>
-    <string name="timer_notification_body">Your countdown has ended.</string>
-    <string name="timer_notification_dismiss">Dismiss</string>
+    <string name="timer_preset_1h">1j</string>
+    <string name="timer_notification_title">Timer selesai</string>
+    <string name="timer_notification_body">Hitung mundur Anda telah berakhir.</string>
+    <string name="timer_notification_dismiss">Tutup</string>
+    <string name="timer_running_notification_title">Timer</string>
+    <string name="timer_running_notification_body">Hitung mundur sedang berjalan.</string>
+    <string name="timer_notification_pause">Jeda</string>
+    <string name="timer_notification_reset">Reset</string>
+
+    <!-- Stopwatch -->
     <string name="stopwatch_screen_title">Stopwatch</string>
-    <string name="stopwatch_screen_subtitle">Track every second</string>
-    <string name="stopwatch_status_ready">Ready</string>
-    <string name="stopwatch_status_recording">Recording time</string>
-    <string name="stopwatch_status_paused">Paused</string>
-    <string name="stopwatch_status_completed">Completed</string>
-    <string name="stopwatch_laps_recorded">%1$d laps recorded</string>
-    <string name="stopwatch_lap_history">Lap history</string>
-    <string name="stopwatch_lap_label">Lap %1$d</string>
-    <string name="stopwatch_action_lap">Lap</string>
+    <string name="stopwatch_screen_subtitle">Lacak setiap detik</string>
+    <string name="stopwatch_status_ready">Siap</string>
+    <string name="stopwatch_status_recording">Merekam waktu</string>
+    <string name="stopwatch_status_paused">Dijeda</string>
+    <string name="stopwatch_status_completed">Selesai</string>
+    <string name="stopwatch_laps_recorded">%1$d putaran tercatat</string>
+    <string name="stopwatch_lap_history">Riwayat putaran</string>
+    <string name="stopwatch_lap_label">Putaran %1$d</string>
+    <string name="stopwatch_action_lap">Putaran</string>
     <string name="stopwatch_action_reset">Reset</string>
-    <string name="stopwatch_start_content_description">Start stopwatch</string>
-    <string name="stopwatch_pause_content_description">Pause stopwatch</string>
+    <string name="stopwatch_start_content_description">Mulai stopwatch</string>
+    <string name="stopwatch_pause_content_description">Jeda stopwatch</string>
     <string name="stopwatch_reset_content_description">Reset stopwatch</string>
-    <string name="settings_screen_title">Pengaturan</string>
-    <string name="settings_screen_subtitle">Tune appearance, clock behavior, updates, and app information.</string>
-    <string name="settings_style_section">Style</string>
-    <string name="settings_accent_section">Accent</string>
-    <string name="settings_clock_section">Clock</string>
-    <string name="settings_notifications_section">Notifications</string>
-    <string name="settings_updates_section">App updates</string>
-    <string name="settings_about_section">About</string>
-    <string name="settings_live_preview">LIVE PREVIEW</string>
-    <string name="settings_theme_soft">Soft / raised</string>
-    <string name="settings_theme_dynamic">Dynamic / tonal</string>
-    <string name="settings_format_title">Format 24 jam</string>
-    <string name="settings_format_subtitle">Use 00:00–23:59 instead of AM/PM</string>
-    <string name="settings_seconds_title">Tampilkan detik</string>
-    <string name="settings_seconds_subtitle">Show the live seconds readout in the hero clock</string>
-    <string name="settings_notification_access">Notification access</string>
-    <string name="settings_notification_allowed">Diizinkan untuk notifikasi alarm, timer, dan stopwatch</string>
-    <string name="settings_notification_denied">Not allowed · tap to open Android notification settings</string>
-    <string name="settings_update_checking">Checking for updates</string>
-    <string name="settings_update_failed">Update check failed</string>
-    <string name="settings_update_available">Update available</string>
-    <string name="settings_up_to_date">Chrona is up to date</string>
-    <string name="settings_updates_not_checked">Updates not checked yet</string>
-    <string name="settings_current_latest">Current %1$s · Latest %2$s</string>
-    <string name="settings_current_only">Current %1$s</string>
-    <string name="settings_last_checked">Last checked %1$s</string>
-    <string name="settings_check_now">Check now</string>
-    <string name="settings_release_timeline">Release timeline</string>
-    <string name="settings_open_github">Open GitHub</string>
-    <string name="settings_version_private">Version %1$s · private on-device settings</string>
-    <string name="settings_legal_about">Legal, license, and app information</string>
-    <string name="update_error_access_denied">GitHub temporarily denied the release request.</string>
-    <string name="update_error_no_release">No published Chrona release is available yet.</string>
-    <string name="update_error_rate_limit">GitHub rate limit reached. Try again later.</string>
-    <string name="update_error_unavailable">GitHub is temporarily unavailable. Try again later.</string>
-    <string name="update_error_failed">GitHub release check failed.</string>
-    <string name="update_error_generic">Unable to check for updates.</string>
-    <string name="release_timeline_title">Release timeline</string>
-    <string name="release_timeline_default_name">Chrona release</string>
-    <string name="release_timeline_published">Published %1$s</string>
-    <string name="release_timeline_open_github">Open GitHub</string>
-    <string name="release_timeline_empty">No release notes were published for this release.</string>
-    <string name="legal_hub_title">Legal &amp; Info</string>
-    <string name="legal_notices_title">Legal Notices</string>
-    <string name="legal_license_title">Licenses</string>
-    <string name="legal_hub_description">Chrona legal and regulatory notices</string>
-    <string name="legal_notice_description">Copyright, notices, and third-party licenses</string>
-    <string name="legal_license_description">Open-source and third-party attribution</string>
-    <string name="legal_back">Back</string>
-    <string name="nightstand_weather">Weather</string>
-    <string name="nightstand_next_alarm">Next alarm</string>
-    <string name="nightstand_ready">Ready</string>
-    <string name="nightstand_close_hint">TAP ANYWHERE TO CLOSE</string>
-    <string name="notification_channel_alarms_name">Alarm</string>
-    <string name="notification_channel_alarms_description">Notifikasi alarm dan kontrol dering.</string>
-    <string name="notification_channel_timers_name">Timer</string>
-    <string name="notification_channel_timers_description">Notifikasi timer dan penyelesaian hitung mundur.</string>
-    <string name="notification_channel_sleep_name">Waktu tidur</string>
-    <string name="notification_channel_sleep_description">Notifikasi tidur dan waktu istirahat.</string>
-    <string name="notification_channel_active_alarms_name">Alarm yang aktif</string>
-    <string name="notification_channel_active_alarms_description">Pembaruan untuk alarm yang sedang dijadwalkan atau aktif.</string>
-    <string name="notification_channel_missed_alarms_name">Alarm yang terlewat</string>
-    <string name="notification_channel_missed_alarms_description">Notifikasi untuk alarm yang belum ditangani tepat waktu.</string>
-    <string name="notification_channel_snoozed_alarms_name">Alarm yang ditunda</string>
-    <string name="notification_channel_snoozed_alarms_description">Pembaruan saat alarm ditunda.</string>
-    <string name="notification_channel_upcoming_alarms_name">Alarm mendatang</string>
-    <string name="notification_channel_upcoming_alarms_description">Pengingat alarm yang akan berbunyi.</string>
-    <string name="notification_channel_stopwatch_name">Stopwatch</string>
-    <string name="notification_channel_stopwatch_description">Pembaruan stopwatch saat sedang berjalan.</string>
-    <string name="notification_channel_active_timers_name">Timer aktif</string>
-    <string name="notification_channel_active_timers_description">Notifikasi senyap saat timer sedang menghitung mundur.</string>
     <string name="stopwatch_notification_title">Stopwatch</string>
     <string name="stopwatch_notification_body">Penghitungan waktu sedang berjalan.</string>
     <string name="stopwatch_notification_pause">Jeda</string>
     <string name="stopwatch_notification_lap">Putaran</string>
-    <string name="timer_notification_pause">Jeda</string>
-    <string name="timer_notification_reset">Reset</string>
-    <string name="timer_running_notification_title">Timer</string>
-    <string name="timer_running_notification_body">Hitung mundur sedang berjalan.</string>
+
+    <!-- Pengaturan -->
+    <string name="settings_screen_title">Pengaturan</string>
+    <string name="settings_screen_subtitle">Sesuaikan tampilan, perilaku jam, pembaruan, dan informasi aplikasi.</string>
+    <string name="settings_style_section">Gaya</string>
+    <string name="settings_accent_section">Aksen</string>
+    <string name="settings_clock_section">Jam</string>
+    <string name="settings_notifications_section">Notifikasi</string>
+    <string name="settings_updates_section">Pembaruan aplikasi</string>
+    <string name="settings_about_section">Tentang</string>
+    <string name="settings_live_preview">PRATINJAU LANGSUNG</string>
+    <string name="settings_theme_soft">Lembut / timbul</string>
+    <string name="settings_theme_dynamic">Dinamis / tonal</string>
+    <string name="settings_format_title">Format 24 jam</string>
+    <string name="settings_format_subtitle">Gunakan 00:00–23:59 alih-alih AM/PM</string>
+    <string name="settings_seconds_title">Tampilkan detik</string>
+    <string name="settings_seconds_subtitle">Tampilkan detik secara langsung pada jam utama</string>
+    <string name="settings_clock_style_title">Gaya jam</string>
+    <string name="settings_clock_style_subtitle">Pilih jam yang ditampilkan di dasbor utama</string>
+    <string name="settings_clock_style_digital">Digital</string>
+    <string name="settings_clock_style_analog">Analog</string>
+    <string name="settings_notification_access">Akses notifikasi</string>
+    <string name="settings_notification_allowed">Diizinkan untuk notifikasi alarm, timer, dan stopwatch</string>
+    <string name="settings_notification_denied">Tidak diizinkan · ketuk untuk membuka pengaturan notifikasi Android</string>
+    <string name="settings_update_checking">Memeriksa pembaruan</string>
+    <string name="settings_update_failed">Pemeriksaan pembaruan gagal</string>
+    <string name="settings_update_available">Pembaruan tersedia</string>
+    <string name="settings_up_to_date">Chrona sudah versi terbaru</string>
+    <string name="settings_updates_not_checked">Pembaruan belum diperiksa</string>
+    <string name="settings_current_latest">Saat ini %1$s · Terbaru %2$s</string>
+    <string name="settings_current_only">Saat ini %1$s</string>
+    <string name="settings_last_checked">Terakhir diperiksa %1$s</string>
+    <string name="settings_check_now">Periksa sekarang</string>
+    <string name="settings_release_timeline">Linimasa rilis</string>
+    <string name="settings_open_github">Buka GitHub</string>
+    <string name="settings_version_private">Versi %1$s · pengaturan pribadi di perangkat</string>
+    <string name="settings_legal_about">Informasi legal, lisensi, dan aplikasi</string>
+
+    <!-- Pemeriksaan pembaruan (galat) -->
+    <string name="update_error_access_denied">GitHub menolak permintaan rilis untuk sementara.</string>
+    <string name="update_error_no_release">Belum ada rilis Chrona yang dipublikasikan.</string>
+    <string name="update_error_rate_limit">Batas permintaan GitHub tercapai. Coba lagi nanti.</string>
+    <string name="update_error_unavailable">GitHub sedang tidak tersedia untuk sementara. Coba lagi nanti.</string>
+    <string name="update_error_failed">Pemeriksaan rilis GitHub gagal.</string>
+    <string name="update_error_generic">Tidak dapat memeriksa pembaruan.</string>
+
+    <!-- Linimasa rilis -->
+    <string name="release_timeline_title">Linimasa rilis</string>
+    <string name="release_timeline_default_name">Rilis Chrona</string>
+    <string name="release_timeline_published">Dipublikasikan %1$s</string>
+    <string name="release_timeline_open_github">Buka GitHub</string>
+    <string name="release_timeline_empty">Tidak ada catatan rilis yang dipublikasikan untuk rilis ini.</string>
+
+    <!-- Nightstand -->
+    <string name="nightstand_weather">Cuaca</string>
+    <string name="nightstand_next_alarm">Alarm berikutnya</string>
+    <string name="nightstand_ready">Siap</string>
+    <string name="nightstand_close_hint">KETUK DI MANA SAJA UNTUK MENUTUP</string>
+
+    <!-- Kanal notifikasi -->
+    <string name="notification_channel_alarms_name">Alarm</string>
+    <string name="notification_channel_alarms_description">Notifikasi alarm dan kontrol dering.</string>
+    <string name="notification_channel_active_alarms_name">Alarm yang aktif</string>
+    <string name="notification_channel_active_alarms_description">Pembaruan untuk alarm yang sedang dijadwalkan atau aktif.</string>
+    <string name="notification_channel_upcoming_alarms_name">Alarm mendatang</string>
+    <string name="notification_channel_upcoming_alarms_description">Pengingat alarm yang akan berbunyi.</string>
+    <string name="notification_channel_snoozed_alarms_name">Alarm yang ditunda</string>
+    <string name="notification_channel_snoozed_alarms_description">Pembaruan saat alarm ditunda.</string>
+    <string name="notification_channel_missed_alarms_name">Alarm yang terlewat</string>
+    <string name="notification_channel_missed_alarms_description">Notifikasi untuk alarm yang belum ditangani tepat waktu.</string>
+    <string name="notification_channel_timers_name">Timer</string>
+    <string name="notification_channel_timers_description">Notifikasi timer dan penyelesaian hitung mundur.</string>
+    <string name="notification_channel_active_timers_name">Timer aktif</string>
+    <string name="notification_channel_active_timers_description">Notifikasi senyap saat timer sedang menghitung mundur.</string>
+    <string name="notification_channel_stopwatch_name">Stopwatch</string>
+    <string name="notification_channel_stopwatch_description">Pembaruan stopwatch saat sedang berjalan.</string>
+    <string name="notification_channel_sleep_name">Waktu tidur</string>
+    <string name="notification_channel_sleep_description">Notifikasi tidur dan waktu istirahat.</string>
     <string name="notification_channel_routines_name">Rutinitas</string>
     <string name="notification_channel_routines_description">Notifikasi yang dihasilkan oleh rutinitas Chrona.</string>
-    <string name="widget_description">A battery-conscious Chrona time widget.</string>
+
+    <!-- Widget -->
+    <string name="widget_description">Widget waktu Chrona yang hemat baterai.</string>
     <string name="widget_format_24h">HH:mm</string>
     <string name="widget_format_12h">h:mm a</string>
-    <string name="legal_notices_body" translatable="false">Hak Cipta © 2026 Febrian Rahmad Cahya. Seluruh hak dilindungi undang-undang.
-Chrona, nama aplikasi, logo, ikon, serta seluruh kode sumber, aset desain, dan dokumentasi yang dibuat dalam proyek ini adalah milik proprietary Febrian Rahmad Cahya ("Pemilik"), kecuali dinyatakan lain secara eksplisit oleh pemberitahuan lisensi pihak ketiga yang terpisah.
-Tidak ada izin yang diberikan untuk menggandakan, mendistribusikan, memodifikasi, mensublisensikan, atau menjual materi berhak cipta dalam proyek ini, kecuali sejauh diizinkan secara tegas oleh lisensi pihak ketiga yang berlaku atau izin tertulis terpisah dari Pemilik.
-Merek Dagang
-Android, Google Play, dan logo Google Play adalah merek dagang dari Google LLC. Kotlin adalah merek dagang terdaftar dari JetBrains s.r.o. Chrona tidak diafiliasikan dengan, disponsori oleh, atau didukung secara resmi oleh Google LLC maupun JetBrains s.r.o.
-Komponen Pihak Ketiga
-Chrona dibangun menggunakan sejumlah pustaka sumber terbuka, termasuk namun tidak terbatas pada:
-•  Kotlin Standard Library — JetBrains s.r.o., Apache License 2.0
-•  AndroidX &amp; Jetpack Compose — Google LLC dan The Android Open Source Project, Apache License 2.0
-•  Material Components for Android — Google LLC, Apache License 2.0
-Setiap komponen pihak ketiga tetap tunduk pada syarat lisensinya masing-masing dan tidak tercakup oleh lisensi proprietary Chrona. Salinan lengkap Apache License, Version 2.0 tersedia di:
-http://www.apache.org/licenses/LICENSE-2.0
-Untuk syarat penggunaan aplikasi ini secara lengkap, lihat halaman Lisensi.</string>
-    <string name="legal_license_body" translatable="false">BAHASA INDONESIA
-PENTING: Dengan mengunduh, memasang, atau menggunakan aplikasi Chrona ("Aplikasi"), Anda menyetujui untuk terikat oleh ketentuan lisensi penggunaan berikut ("Lisensi").
-1. Pemberian Lisensi
-Febrian Rahmad Cahya ("Pemilik") memberikan Anda lisensi terbatas, non-eksklusif, tidak dapat dipindahtangankan, dan dapat dicabut sewaktu-waktu untuk mengunduh dan menggunakan Aplikasi semata-mata untuk keperluan pribadi dan non-komersial pada perangkat yang Anda miliki atau kendalikan, sesuai dengan ketentuan platform distribusi tempat Aplikasi diperoleh.
-2. Pembatasan
-Kecuali diizinkan secara tegas oleh hukum yang berlaku atau oleh Pemilik secara tertulis, Anda tidak diperkenankan untuk:
-   a. mendekompilasi, merekayasa balik, membongkar, atau berusaha menurunkan kode sumber Aplikasi;
-   b. mendistribusikan ulang, menjual, menyewakan, meminjamkan, atau mensublisensikan Aplikasi atau bagian mana pun darinya;
-   c. menghapus, mengubah, atau menyembunyikan pemberitahuan hak cipta, merek dagang, atau pemberitahuan kepemilikan lain dalam Aplikasi;
-   d. menggunakan Aplikasi untuk tujuan yang melanggar hukum yang berlaku di yurisdiksi Anda.
-3. Kepemilikan
-Aplikasi dilisensikan, bukan dijual, kepada Anda. Pemilik tetap memegang seluruh hak, kepemilikan, dan kepentingan atas Aplikasi, termasuk seluruh kekayaan intelektual di dalamnya, kecuali komponen pihak ketiga yang tunduk pada lisensinya masing-masing sebagaimana dijelaskan pada halaman Pemberitahuan Legal.
-4. Data dan Izin Perangkat
-Aplikasi dapat meminta izin perangkat tertentu (misalnya lokasi, notifikasi, atau alarm presisi) semata-mata untuk menjalankan fitur yang Anda aktifkan. Aplikasi tidak menjual data pribadi Anda kepada pihak ketiga.
-5. Tanpa Jaminan
-SEJAUH DIIZINKAN OLEH HUKUM YANG BERLAKU, APLIKASI DISEDIAKAN "SEBAGAIMANA ADANYA" DAN "SEBAGAIMANA TERSEDIA", TANPA JAMINAN DALAM BENTUK APA PUN, BAIK TERSURAT MAUPUN TERSIRAT, TERMASUK NAMUN TIDAK TERBATAS PADA JAMINAN KELAYAKAN UNTUK DIPERDAGANGKAN, KESESUAIAN UNTUK TUJUAN TERTENTU, DAN NON-PELANGGARAN.
-6. Batasan Tanggung Jawab
-SEJAUH DIIZINKAN OLEH HUKUM YANG BERLAKU, PEMILIK TIDAK BERTANGGUNG JAWAB ATAS KERUGIAN TIDAK LANGSUNG, INSIDENTAL, KHUSUS, KONSEKUENSIAL, ATAU KERUGIAN LAIN APA PUN YANG TIMBUL DARI ATAU BERKAITAN DENGAN PENGGUNAAN ATAU KETIDAKMAMPUAN MENGGUNAKAN APLIKASI, SEKALIPUN TELAH DIBERITAHUKAN TENTANG KEMUNGKINAN KERUGIAN TERSEBUT.
-7. Pengakhiran
-Lisensi ini berlaku efektif sampai diakhiri. Lisensi ini akan berakhir secara otomatis tanpa pemberitahuan dari Pemilik apabila Anda gagal mematuhi ketentuan mana pun dalam Lisensi ini, termasuk dengan menghapus instalan Aplikasi dari seluruh perangkat Anda.
-8. Perubahan Ketentuan
-Ketentuan ini dapat diperbarui dari waktu ke waktu seiring pembaruan Aplikasi. Perubahan berlaku efektif sejak dipublikasikan bersama versi Aplikasi terkait.
-9. Hukum yang Mengatur
-Lisensi ini diatur oleh dan ditafsirkan sesuai dengan hukum Republik Indonesia, tanpa memperhatikan pertentangan aturan hukumnya.
-10. Kontak
-Pertanyaan mengenai Lisensi ini dapat diajukan melalui repositori proyek Chrona.
-© 2026 Febrian Rahmad Cahya. Seluruh hak dilindungi undang-undang.
-ENGLISH
-IMPORTANT: By downloading, installing, or using the Chrona application (the "App"), you agree to be bound by the following license terms (the "License").
-1. License Grant
-Febrian Rahmad Cahya (the "Owner") grants you a limited, non-exclusive, non-transferable, revocable license to download and use the App solely for your personal, non-commercial use on a device that you own or control, subject to the terms of the distribution platform through which the App was obtained.
-2. Restrictions
-Except as expressly permitted by applicable law or by the Owner in writing, you may not: (a) decompile, reverse engineer, disassemble, or attempt to derive the source code of the App; (b) redistribute, sell, rent, lease, or sublicense the App or any part of it; (c) remove, alter, or obscure any copyright, trademark, or other proprietary notice contained in the App; (d) use the App for any purpose that violates applicable law in your jurisdiction.
-3. Ownership
-The App is licensed, not sold, to you. The Owner retains all right, title, and interest in and to the App, including all intellectual property rights therein, except for third-party components that remain subject to their own licenses as described on the Legal Notices page.
-4. Data and Device Permissions
-The App may request certain device permissions (such as location, notifications, or exact alarms) solely to operate the features you enable. The App does not sell your personal data to third parties.
-5. No Warranty
-TO THE EXTENT PERMITTED BY APPLICABLE LAW, THE APP IS PROVIDED "AS IS" AND "AS AVAILABLE", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
-6. Limitation of Liability
-TO THE EXTENT PERMITTED BY APPLICABLE LAW, THE OWNER SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR OTHER DAMAGES ARISING OUT OF OR RELATED TO THE USE OR INABILITY TO USE THE APP, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-7. Termination
-This License is effective until terminated. It will terminate automatically without notice from the Owner if you fail to comply with any term of this License, including by uninstalling the App from all of your devices.
-8. Changes to These Terms
-These terms may be updated from time to time alongside App updates. Changes take effect as of the date they are published with the relevant App version.
-9. Governing Law
-This License is governed by and construed in accordance with the laws of the Republic of Indonesia, without regard to its conflict-of-law principles.
-10. Contact
-Questions about this License may be raised through the Chrona project repository.
-© 2026 Febrian Rahmad Cahya. All rights reserved.</string>
+
+    <!-- Legal & Info -->
+    <string name="legal_hub_title">Legal &amp; Info</string>
+    <string name="legal_hub_description">Pemberitahuan legal dan regulasi Chrona</string>
+    <string name="legal_notices_title">Pemberitahuan Legal</string>
+    <string name="legal_notice_description">Hak cipta, pemberitahuan, dan lisensi pihak ketiga</string>
+    <string name="legal_license_title">Lisensi</string>
+    <string name="legal_license_description">Atribusi sumber terbuka dan pihak ketiga</string>
+    <string name="legal_back">Kembali</string>
+    <string name="legal_notices_body" translatable="false">Hak Cipta © 2026 Febrian Rahmad Cahya. Seluruh hak dilindungi undang-undang.\nChrona, nama aplikasi, logo, ikon, serta seluruh kode sumber, aset desain, dan dokumentasi yang dibuat dalam proyek ini adalah milik proprietary Febrian Rahmad Cahya (\"Pemilik\"), kecuali dinyatakan lain secara eksplisit oleh pemberitahuan lisensi pihak ketiga yang terpisah.\nTidak ada izin yang diberikan untuk menggandakan, mendistribusikan, memodifikasi, mensublisensikan, atau menjual materi berhak cipta dalam proyek ini, kecuali sejauh diizinkan secara tegas oleh lisensi pihak ketiga yang berlaku atau izin tertulis terpisah dari Pemilik.\nMerek Dagang\nAndroid, Google Play, dan logo Google Play adalah merek dagang dari Google LLC. Kotlin adalah merek dagang terdaftar dari JetBrains s.r.o. Chrona tidak diafiliasikan dengan, disponsori oleh, atau didukung secara resmi oleh Google LLC maupun JetBrains s.r.o.\nKomponen Pihak Ketiga\nChrona dibangun menggunakan sejumlah pustaka sumber terbuka, termasuk namun tidak terbatas pada:\n• Kotlin Standard Library — JetBrains s.r.o., Apache License 2.0\n• AndroidX &amp; Jetpack Compose — Google LLC dan The Android Open Source Project, Apache License 2.0\n• Material Components for Android — Google LLC, Apache License 2.0\nSetiap komponen pihak ketiga tetap tunduk pada syarat lisensinya masing-masing dan tidak tercakup oleh lisensi proprietary Chrona. Salinan lengkap Apache License, Version 2.0 tersedia di:\nhttp://www.apache.org/licenses/LICENSE-2.0\nUntuk syarat penggunaan aplikasi ini secara lengkap, lihat halaman Lisensi.</string>
+    <string name="legal_license_body" translatable="false">BAHASA INDONESIA\nPENTING: Dengan mengunduh, memasang, atau menggunakan aplikasi Chrona (\"Aplikasi\"), Anda menyetujui untuk terikat oleh ketentuan lisensi penggunaan berikut (\"Lisensi\").\n1. Pemberian Lisensi\nFebrian Rahmad Cahya (\"Pemilik\") memberikan Anda lisensi terbatas, non-eksklusif, tidak dapat dipindahtangankan, dan dapat dicabut sewaktu-waktu untuk mengunduh dan menggunakan Aplikasi semata-mata untuk keperluan pribadi dan non-komersial pada perangkat yang Anda miliki atau kendalikan, sesuai dengan ketentuan platform distribusi tempat Aplikasi diperoleh.\n2. Pembatasan\nKecuali diizinkan secara tegas oleh hukum yang berlaku atau oleh Pemilik secara tertulis, Anda tidak diperkenankan untuk:\n\u00A0\u00A0\u00A0a. mendekompilasi, merekayasa balik, membongkar, atau berusaha menurunkan kode sumber Aplikasi;\n\u00A0\u00A0\u00A0b. mendistribusikan ulang, menjual, menyewakan, meminjamkan, atau mensublisensikan Aplikasi atau bagian mana pun darinya;\n\u00A0\u00A0\u00A0c. menghapus, mengubah, atau menyembunyikan pemberitahuan hak cipta, merek dagang, atau pemberitahuan kepemilikan lain dalam Aplikasi;\n\u00A0\u00A0\u00A0d. menggunakan Aplikasi untuk tujuan yang melanggar hukum yang berlaku di yurisdiksi Anda.\n3. Kepemilikan\nAplikasi dilisensikan, bukan dijual, kepada Anda. Pemilik tetap memegang seluruh hak, kepemilikan, dan kepentingan atas Aplikasi, termasuk seluruh kekayaan intelektual di dalamnya, kecuali komponen pihak ketiga yang tunduk pada lisensinya masing-masing sebagaimana dijelaskan pada halaman Pemberitahuan Legal.\n4. Data dan Izin Perangkat\nAplikasi dapat meminta izin perangkat tertentu (misalnya lokasi, notifikasi, atau alarm presisi) semata-mata untuk menjalankan fitur yang Anda aktifkan. Aplikasi tidak menjual data pribadi Anda kepada pihak ketiga.\n5. Tanpa Jaminan\nSEJAUH DIIZINKAN OLEH HUKUM YANG BERLAKU, APLIKASI DISEDIAKAN \"SEBAGAIMANA ADANYA\" DAN \"SEBAGAIMANA TERSEDIA\", TANPA JAMINAN DALAM BENTUK APA PUN, BAIK TERSURAT MAUPUN TERSIRAT, TERMASUK NAMUN TIDAK TERBATAS PADA JAMINAN KELAYAKAN UNTUK DIPERDAGANGKAN, KESESUAIAN UNTUK TUJUAN TERTENTU, DAN NON-PELANGGARAN.\n6. Batasan Tanggung Jawab\nSEJAUH DIIZINKAN OLEH HUKUM YANG BERLAKU, PEMILIK TIDAK BERTANGGUNG JAWAB ATAS KERUGIAN TIDAK LANGSUNG, INSIDENTAL, KHUSUS, KONSEKUENSIAL, ATAU KERUGIAN LAIN APA PUN YANG TIMBUL DARI ATAU BERKAITAN DENGAN PENGGUNAAN ATAU KETIDAKMAMPUAN MENGGUNAKAN APLIKASI, SEKALIPUN TELAH DIBERITAHUKAN TENTANG KEMUNGKINAN KERUGIAN TERSEBUT.\n7. Pengakhiran\nLisensi ini berlaku efektif sampai diakhiri. Lisensi ini akan berakhir secara otomatis tanpa pemberitahuan dari Pemilik apabila Anda gagal mematuhi ketentuan mana pun dalam Lisensi ini, termasuk dengan menghapus instalan Aplikasi dari seluruh perangkat Anda.\n8. Perubahan Ketentuan\nKetentuan ini dapat diperbarui dari waktu ke waktu seiring pembaruan Aplikasi. Perubahan berlaku efektif sejak dipublikasikan bersama versi Aplikasi terkait.\n9. Hukum yang Mengatur\nLisensi ini diatur oleh dan ditafsirkan sesuai dengan hukum Republik Indonesia, tanpa memperhatikan pertentangan aturan hukumnya.\n10. Kontak\nPertanyaan mengenai Lisensi ini dapat diajukan melalui repositori proyek Chrona.\n© 2026 Febrian Rahmad Cahya. Seluruh hak dilindungi undang-undang.\nENGLISH\nIMPORTANT: By downloading, installing, or using the Chrona application (the \"App\"), you agree to be bound by the following license terms (the \"License\").\n1. License Grant\nFebrian Rahmad Cahya (the \"Owner\") grants you a limited, non-exclusive, non-transferable, revocable license to download and use the App solely for your personal, non-commercial use on a device that you own or control, subject to the terms of the distribution platform through which the App was obtained.\n2. Restrictions\nExcept as expressly permitted by applicable law or by the Owner in writing, you may not: (a) decompile, reverse engineer, disassemble, or attempt to derive the source code of the App; (b) redistribute, sell, rent, lease, or sublicense the App or any part of it; (c) remove, alter, or obscure any copyright, trademark, or other proprietary notice contained in the App; (d) use the App for any purpose that violates applicable law in your jurisdiction.\n3. Ownership\nThe App is licensed, not sold, to you. The Owner retains all right, title, and interest in and to the App, including all intellectual property rights therein, except for third-party components that remain subject to their own licenses as described on the Legal Notices page.\n4. Data and Device Permissions\nThe App may request certain device permissions (such as location, notifications, or exact alarms) solely to operate the features you enable. The App does not sell your personal data to third parties.\n5. No Warranty\nTO THE EXTENT PERMITTED BY APPLICABLE LAW, THE APP IS PROVIDED \"AS IS\" AND \"AS AVAILABLE\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.\n6. Limitation of Liability\nTO THE EXTENT PERMITTED BY APPLICABLE LAW, THE OWNER SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR OTHER DAMAGES ARISING OUT OF OR RELATED TO THE USE OR INABILITY TO USE THE APP, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.\n7. Termination\nThis License is effective until terminated. It will terminate automatically without notice from the Owner if you fail to comply with any term of this License, including by uninstalling the App from all of your devices.\n8. Changes to These Terms\nThese terms may be updated from time to time alongside App updates. Changes take effect as of the date they are published with the relevant App version.\n9. Governing Law\nThis License is governed by and construed in accordance with the laws of the Republic of Indonesia, without regard to its conflict-of-law principles.\n10. Contact\nQuestions about this License may be raised through the Chrona project repository.\n© 2026 Febrian Rahmad Cahya. All rights reserved.</string>
 </resources>
