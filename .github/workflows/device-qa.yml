@@ -105,6 +105,8 @@ jobs:
           emulator-options: >-
             -no-window
             -gpu swiftshader_indirect
+            -skip-adb-auth
+            -no-metrics
             -no-snapshot
             -noaudio
             -no-boot-anim
