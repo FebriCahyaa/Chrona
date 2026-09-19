@@ -8,8 +8,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 CODE_EXTENSIONS = {".kt", ".java", ".cpp", ".h"}
-HASH_EXTENSIONS = {".sh", ".py", ".gradle", ".kts"}
-SUPPORTED_EXTENSIONS = CODE_EXTENSIONS | HASH_EXTENSIONS | {".xml"}
+HASH_EXTENSIONS = {".sh", ".py"}
+GRADLE_EXTENSIONS = {".gradle", ".kts"}
+SUPPORTED_EXTENSIONS = CODE_EXTENSIONS | HASH_EXTENSIONS | GRADLE_EXTENSIONS | {".xml"}
 
 EXCLUDED_DIRS = {".git", ".gradle", "build", ".idea", "third_party", "archive"}
 
@@ -43,6 +44,15 @@ def has_expected_header(path: Path, text: str) -> bool:
             "# SPDX-License-Identifier: MIT",
         ]
         return lines[index:index + 2] == header
+
+    if path.suffix.lower() in GRADLE_EXTENSIONS:
+        header = [
+            "/*",
+            " * Copyright 2026 Febrian Rahmad Cahya",
+            " * SPDX-License-Identifier: MIT",
+            " */",
+        ]
+        return lines[:4] == header
 
     if path.suffix.lower() == ".xml":
         header = [

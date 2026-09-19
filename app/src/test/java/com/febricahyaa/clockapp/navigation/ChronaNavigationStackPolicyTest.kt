@@ -3,7 +3,10 @@
  * SPDX-License-Identifier: MIT
  */
 
-// Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+/*
+ * Copyright 2026 Febrian Rahmad Cahya
+ * SPDX-License-Identifier: MIT
+ */
 package com.febricahyaa.clockapp.navigation
 
 import org.junit.Assert.assertFalse
