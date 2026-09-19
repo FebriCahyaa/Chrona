@@ -216,9 +216,10 @@ private fun WorldClockCard(
     onOpenDetail: () -> Unit,
 ) {
     val epochMillis by epochMillisState
+    val minuteBucket = epochMillis / 60_000L
     val systemZone = remember { ZoneId.systemDefault() }
-    val localOffsetSeconds = remember(epochMillis, systemZone) {
-        Instant.ofEpochMilli(epochMillis).atZone(systemZone).offset.totalSeconds
+    val localOffsetSeconds = remember(minuteBucket, systemZone) {
+        Instant.ofEpochMilli(minuteBucket * 60_000L).atZone(systemZone).offset.totalSeconds
     }
     val zoneId = remember(item.zoneId) { runCatching { ZoneId.of(item.zoneId) }.getOrNull() }
     val country = remember(item.zoneId, locale) {
@@ -245,7 +246,9 @@ private fun WorldClockCard(
     }
     val date = remember(zoned) { ChronaTimeFormatter.date(epochMillis, zoneId) }
     val delta = formatOffsetDelta(zoned.offset.totalSeconds - localOffsetSeconds)
-    val utc = remember(zoned) { ChronaTimeFormatter.utcOffset(zoneId, epochMillis) }
+    val utc = remember(zoned.offset.totalSeconds, zoneId) {
+        ChronaTimeFormatter.utcOffset(zoneId, epochMillis)
+    }
 
     ChronaCard(
         modifier = Modifier
