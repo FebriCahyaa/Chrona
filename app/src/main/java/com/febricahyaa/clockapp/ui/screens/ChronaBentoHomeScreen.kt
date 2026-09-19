@@ -47,6 +47,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLocale
@@ -793,6 +794,7 @@ fun AnalogClockUI(hour: Int, minute: Int, second: Float) {
     val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
     val primary = MaterialTheme.colorScheme.primary
     val surface = MaterialTheme.colorScheme.surfaceContainerHighest
+    val surfaceHigh = MaterialTheme.colorScheme.surfaceContainerHigh
     val outline = MaterialTheme.colorScheme.outlineVariant
 
     Canvas(
@@ -809,7 +811,7 @@ fun AnalogClockUI(hour: Int, minute: Int, second: Float) {
             brush = Brush.radialGradient(
                 colors = listOf(
                     surface.copy(alpha = 0.98f),
-                    MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.96f),
+                    surfaceHigh.copy(alpha = 0.96f),
                 ),
                 center = center,
                 radius = radius * 0.94f,
@@ -832,7 +834,7 @@ fun AnalogClockUI(hour: Int, minute: Int, second: Float) {
         // Fine minute ticks plus stronger five-minute markers.
         for (index in 0 until 60) {
             val major = index % 5 == 0
-            androidx.compose.ui.graphics.drawscope.rotate(index * 6f, pivot = center) {
+            rotate(index * 6f, pivot = center) {
                 val outer = radius * 0.825f
                 val inner = radius * if (major) 0.725f else 0.785f
                 drawLine(
@@ -847,7 +849,7 @@ fun AnalogClockUI(hour: Int, minute: Int, second: Float) {
 
         // Subtle cardinal accents preserve readability without drawing numerals.
         for (index in 0 until 12) {
-            androidx.compose.ui.graphics.drawscope.rotate(index * 30f, pivot = center) {
+            rotate(index * 30f, pivot = center) {
                 drawCircle(
                     color = if (index % 3 == 0) primary.copy(alpha = 0.82f) else onSurfaceVariant.copy(alpha = 0.32f),
                     radius = radius * if (index % 3 == 0) 0.012f else 0.008f,
@@ -863,7 +865,7 @@ fun AnalogClockUI(hour: Int, minute: Int, second: Float) {
             color: Color,
             tail: Float = 0f,
         ) {
-            androidx.compose.ui.graphics.drawscope.rotate(angle, pivot = center) {
+            rotate(angle, pivot = center) {
                 drawLine(
                     color = color,
                     start = androidx.compose.ui.geometry.Offset(center.x, center.y + radius * tail),

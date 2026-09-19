@@ -227,7 +227,7 @@ fun SettingsClockSection(
                 onClick = { onClockDisplayModeChange(mode) },
                 shape = SegmentedButtonDefaults.itemShape(index = index, count = modes.size),
                 icon = {
-                    SegmentedButtonDefaults.Icon(selected = selected)
+                    SegmentedButtonDefaults.Icon(active = selected)
                 },
             ) {
                 Text(stringResource(labelRes))

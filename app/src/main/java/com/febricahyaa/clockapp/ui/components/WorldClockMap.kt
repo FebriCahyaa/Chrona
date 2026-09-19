@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
@@ -42,6 +43,7 @@ import androidx.core.graphics.PathParser
 import android.graphics.RectF
 import android.graphics.Region
 import com.febricahyaa.clockapp.R
+import androidx.compose.ui.input.key.type
 import kotlin.math.roundToInt
 
 private data class RuntimeWorldMapFeature(
@@ -134,11 +136,11 @@ fun WorldClockMap(
                             onUtcHourChange((utcHour + 1).coerceIn(-12, 12))
                             true
                         }
-                        Key.Home -> {
+                        Key.MoveHome -> {
                             onUtcHourChange(-12)
                             true
                         }
-                        Key.End -> {
+                        Key.MoveEnd -> {
                             onUtcHourChange(12)
                             true
                         }
@@ -152,13 +154,13 @@ fun WorldClockMap(
                 .pointerInput(features) {
                     detectDragGestures(
                         onDragStart = { offset ->
-                            val mapPoint = offset.toMapPoint(size.width, size.height)
+                            val mapPoint = offset.toMapPoint(size.width.toFloat(), size.height.toFloat())
                             onUtcHourChange(mapPoint.toUtcHour())
                             probeY = (mapPoint.y / WORLD_MAP_HEIGHT).coerceIn(0f, 1f)
                         },
                         onDrag = { change, _ ->
                             change.consume()
-                            val next = change.position.toMapPoint(size.width, size.height)
+                            val next = change.position.toMapPoint(size.width.toFloat(), size.height.toFloat())
                             onUtcHourChange(next.toUtcHour())
                             probeY = (next.y / WORLD_MAP_HEIGHT).coerceIn(0f, 1f)
                         },
