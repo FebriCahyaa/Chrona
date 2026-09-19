@@ -50,7 +50,7 @@ object AlarmNotificationFactory {
 
         val title = label.ifBlank { context.getString(R.string.alarm_notification_title) }
         return NotificationCompat.Builder(context, ClockApplication.ALARM_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_stat_chrona)
             .setContentTitle(title)
             .setContentText(context.getString(R.string.alarm_notification_body))
             .setCategory(NotificationCompat.CATEGORY_ALARM)

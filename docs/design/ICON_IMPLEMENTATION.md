@@ -4,9 +4,17 @@ Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
 
 # Chrona icon implementation
 
-## Design concept: Chrona Orbital Dial
+## Design concept: Chrona Indigo Dial
 
-The Chrona icon is a compact clock face with a deep warm-black background and a warm peach hand pair. The dial is intentionally simple so OEM launcher masks can crop it cleanly. The foreground is vector-based and contains the visual mark only; the background carries depth/contrast.
+The Chrona icon is a minimal analog clock: a thin outlined dial, four cardinal tick marks, and hour/minute hands resting at 10:10 (the balanced icon-clock convention) on a diagonal indigo → violet gradient. The second hand and centre dot use a single coral accent (`#FF6B4A`). The foreground is vector-based and contains the visual mark only; the background carries depth/contrast.
+
+| Element | Colour |
+| --- | --- |
+| Background gradient | `#1C1B2E` → `#332B5C` → `#5B4BDB` (diagonal) |
+| Dial, ticks | `#F2F0FF` |
+| Hour / minute hands | `#FFFFFF` |
+| Second hand, centre dot | `#FF6B4A` |
+| Monochrome layer | solid black mask, tinted by the system |
 
 Android adaptive icon layers are 108dp and should keep the critical logo inside the central safe zone. The outer area remains available for launcher masking and visual effects.
 
@@ -14,24 +22,30 @@ Android adaptive icon layers are 108dp and should keep the critical logo inside 
 
 ```text
 app/src/main/res/
-├── drawable/ic_launcher_background.xml
-├── drawable/ic_launcher_foreground.xml
-├── drawable/ic_launcher_monochrome.xml
+├── drawable/ic_chrona_background.xml
+├── drawable/ic_chrona_foreground.xml
+├── drawable/ic_chrona_monochrome.xml
+├── drawable/ic_stat_chrona.xml            # 24dp notification small icon
 ├── mipmap-anydpi-v26/ic_launcher.xml
 ├── mipmap-anydpi-v26/ic_launcher_round.xml
-├── mipmap-anydpi-v33/ic_launcher.xml
-└── mipmap-anydpi-v33/ic_launcher_round.xml
+└── mipmap-{m,h,xh,xxh,xxxh}dpi/ic_launcher{,_round}.png   # legacy fallbacks
 ```
 
 The adaptive icon XML is deliberately explicit:
 
 ```xml
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@drawable/ic_launcher_background" />
-    <foreground android:drawable="@drawable/ic_launcher_foreground" />
-    <monochrome android:drawable="@drawable/ic_launcher_monochrome" />
+    <background android:drawable="@drawable/ic_chrona_background" />
+    <foreground android:drawable="@drawable/ic_chrona_foreground" />
+    <monochrome android:drawable="@drawable/ic_chrona_monochrome" />
 </adaptive-icon>
 ```
+
+Because `minSdk` is 26, a single `mipmap-anydpi-v26` definition is enough. The `<monochrome>` element (Themed Icons, Android 13+) is ignored by Android 8–12, so no separate `-v33` resource set is required.
+
+The three hands in the foreground/monochrome layers are named groups (`hourHand`, `minuteHand`, `secondHand`) pivoting on the dial centre `(54,54)`. They are reserved as `AnimatedVectorDrawable` targets for a future splash animation; the launcher icon itself stays static.
+
+`ic_stat_chrona.xml` is the notification small icon used by alarm and timer notifications. Android renders small icons from the alpha channel only, so it is a simplified white silhouette (ring, two hands, centre dot) instead of the full-colour launcher artwork.
 
 ## What "live icon" can and cannot mean on Android
 

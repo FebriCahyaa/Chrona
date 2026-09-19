@@ -1,4 +1,9 @@
 # Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+#
+# Pipeline (AES — Analyze → Execute → Ship):
+#
+#   analyze ──► verify (matrix: Unit tests | Lint) ──► debug-build ──► ci-status
+#
 name: Chrona CI
 
 on:
@@ -16,6 +21,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ── Stage 1 · Analyze ──────────────────────────────────────────────────
   analyze:
     name: AES / Analyze
     runs-on: ubuntu-24.04
@@ -32,53 +38,47 @@ jobs:
       - name: Telegram renderer tests
         run: python3 -m unittest scripts/telegram/test_notify.py
 
-  unit:
-    name: AES / Unit tests
+  # ── Stage 2 · Execute (matrix) ─────────────────────────────────────────
+  # Both legs run in parallel and are rendered as one "Matrix: verify" group.
+  # The job names ("AES / Unit tests", "AES / Lint") are unchanged so existing
+  # branch-protection status checks keep matching.
+  verify:
+    name: AES / ${{ matrix.name }}
     needs: analyze
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Unit tests
+            task: testDebugUnitTest
+            artifact: chrona-unit-test-report
+            report: app/build/test-results/testDebugUnitTest/**
+          - name: Lint
+            task: lintDebug
+            artifact: chrona-lint
+            report: app/build/reports/lint-results-debug.*
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: ./.github/actions/setup-android
         with:
           install-native: 'false'
-      - name: Unit tests
-        run: ./gradlew --no-daemon --stacktrace testDebugUnitTest
-      - name: Upload test reports
+      - name: ${{ matrix.name }}
+        run: ./gradlew --no-daemon --stacktrace ${{ matrix.task }}
+      - name: Upload ${{ matrix.name }} report
         if: always()
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: chrona-unit-test-report-${{ github.sha }}
-          path: app/build/test-results/testDebugUnitTest/**
+          name: ${{ matrix.artifact }}-${{ github.sha }}
+          path: ${{ matrix.report }}
           if-no-files-found: warn
           retention-days: 14
 
-  lint:
-    name: AES / Lint
-    needs: analyze
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v7.0.1
-      - uses: ./.github/actions/setup-android
-        with:
-          install-native: 'false'
-      - name: Lint
-        run: ./gradlew --no-daemon --stacktrace lintDebug
-      - name: Upload lint report
-        if: always()
-        uses: actions/upload-artifact@v7.0.1
-        with:
-          name: chrona-lint-${{ github.sha }}
-          path: app/build/reports/lint-results-debug.*
-          if-no-files-found: warn
-          retention-days: 14
-
+  # ── Stage 3 · Execute (build) ──────────────────────────────────────────
   debug-build:
     name: AES / Debug APK
-    needs:
-      - unit
-      - lint
+    needs: verify
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
@@ -93,3 +93,40 @@ jobs:
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 14
+
+  # ── Stage 4 · Gate ─────────────────────────────────────────────────────
+  # Single aggregate result for the whole pipeline. Use "AES / CI status" as
+  # the one required check in branch protection if desired.
+  ci-status:
+    name: AES / CI status
+    if: ${{ always() }}
+    needs:
+      - analyze
+      - verify
+      - debug-build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Summarize pipeline
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import sys
+
+          needs = json.loads(os.environ["NEEDS"])
+          icons = {"success": "✅", "skipped": "⏭️"}
+          lines = ["## Chrona CI pipeline", "", "| Stage | Result |", "| --- | --- |"]
+          for job, data in needs.items():
+              result = data["result"]
+              lines.append(f"| `{job}` | {icons.get(result, '❌')} {result} |")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+              summary.write("\n".join(lines) + "\n")
+
+          failed = [job for job, data in needs.items() if data["result"] != "success"]
+          if failed:
+              print(f"::error::Pipeline stages did not succeed: {', '.join(failed)}")
+              sys.exit(1)
+          PY

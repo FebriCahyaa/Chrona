@@ -1,6 +1,16 @@
 <!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
 # Changelog
 
+## Unreleased — CI pipeline restructure and app icon refresh
+
+- Restructured `ci.yml` into a staged pipeline: `analyze` → `verify` (matrix: unit tests, lint) → `debug-build` → `ci-status` aggregate gate. Existing job names (`AES / Analyze`, `AES / Unit tests`, `AES / Lint`, `AES / Debug APK`) are preserved.
+- Ordered `security.yml` so the cheap license audit gates the CodeQL build, and added a `security-status` aggregate gate that tolerates event-dependent skipped jobs.
+- Split `release.yml` into `tag` → `build` → `attest` → `publish` jobs with per-job least-privilege permissions; signing secrets are confined to the build job and artifacts are handed over via `upload-artifact`/`download-artifact`.
+- Removed the Device QA emulator workflow (`device-qa.yml`), `scripts/ci/device-smoke.sh`, the `install-emulator` option and the emulator-only `platforms;android-37.0` package from the shared toolchain action, and Device QA references from Telegram notifications, README and docs. Local instrumentation via `scripts/dev/verify.sh full` is unchanged.
+- Anchored the `release/` ignore rule to the repository root so `scripts/release/` is no longer ignored by Git.
+- Refreshed the app icon (indigo → violet gradient dial with 10:10 hands, coral second hand, Themed Icons monochrome layer) as `ic_chrona_*` resources, with a single `mipmap-anydpi-v26` definition and regenerated legacy PNG fallbacks.
+- Added `ic_stat_chrona` as a dedicated 24dp alpha-only notification small icon for alarm and timer notifications.
+
 ## Unreleased — Repository Engineering Hardening
 
 - Reorganized active scripts into audit, CI, development, localization, release, Telegram, and World Clock diagnostic domains.

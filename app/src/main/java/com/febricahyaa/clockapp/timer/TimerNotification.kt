@@ -22,7 +22,7 @@ object TimerNotification {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
         return NotificationCompat.Builder(context, ClockApplication.TIMER_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_stat_chrona)
             .setContentTitle(context.getString(R.string.timer_notification_title))
             .setContentText(context.getString(R.string.timer_notification_body))
             .setCategory(NotificationCompat.CATEGORY_ALARM)
@@ -33,7 +33,7 @@ object TimerNotification {
     }
 
     fun buildSimple(context: Context): Notification = NotificationCompat.Builder(context, ClockApplication.TIMER_CHANNEL_ID)
-        .setSmallIcon(R.drawable.ic_launcher_foreground)
+        .setSmallIcon(R.drawable.ic_stat_chrona)
         .setContentTitle(context.getString(R.string.timer_notification_title))
         .setContentText(context.getString(R.string.timer_notification_body))
         .setCategory(NotificationCompat.CATEGORY_ALARM)

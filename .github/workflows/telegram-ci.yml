@@ -5,7 +5,6 @@ on:
   workflow_run:
     workflows:
       - Chrona CI
-      - Chrona Device QA
       - Chrona Security
       - Chrona Maintenance
       - Chrona Toolchain Audit

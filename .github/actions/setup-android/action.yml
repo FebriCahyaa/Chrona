@@ -8,10 +8,6 @@ inputs:
     description: Install Chrona's pinned CMake and NDK toolchain.
     required: false
     default: 'true'
-  install-emulator:
-    description: Install the Android Emulator package.
-    required: false
-    default: 'false'
 
 runs:
   using: composite
@@ -46,12 +42,10 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
-        # Keep 37.1 for compileSdk/compileSdkMinor and 37.0 for the emulator
-        # runner's Major.Minor package.
+        # 37.1 is required for compileSdk 37 / compileSdkMinor 1.
         sdkmanager --sdk_root="${ANDROID_SDK_ROOT}" \
           'platform-tools' \
           'platforms;android-37.1' \
-          'platforms;android-37.0' \
           'build-tools;37.0.0'
 
     - name: Install native toolchain
@@ -62,10 +56,3 @@ runs:
         sdkmanager --sdk_root="${ANDROID_SDK_ROOT}" \
           'cmake;3.31.5' \
           'ndk;28.2.13676358'
-
-    - name: Install Android Emulator
-      if: inputs.install-emulator == 'true'
-      shell: bash
-      run: |
-        set -euo pipefail
-        sdkmanager --sdk_root="${ANDROID_SDK_ROOT}" 'emulator'

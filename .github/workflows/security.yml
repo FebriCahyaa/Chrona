@@ -1,4 +1,13 @@
 # Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+#
+# Pipeline:
+#
+#   license-audit ──► codeql ──┐
+#   dependency-review (PR) ────┼──► security-status
+#   scorecard (push/cron) ─────┘
+#
+# Cheap policy checks run first so the expensive CodeQL build is skipped when
+# the license inventory already fails.
 name: Chrona Security
 
 on:
@@ -35,6 +44,7 @@ jobs:
 
   codeql:
     name: CodeQL / Kotlin + C++
+    needs: license-audit
     runs-on: ubuntu-24.04
     permissions:
       actions: read
@@ -77,3 +87,40 @@ jobs:
         uses: github/codeql-action/upload-sarif@v4.38.0
         with:
           sarif_file: scorecard-results.sarif
+
+  # Aggregate result. Jobs that are intentionally skipped for the current event
+  # (dependency-review outside PRs, scorecard on PRs) do not fail the gate.
+  security-status:
+    name: Security status
+    if: ${{ always() }}
+    needs:
+      - license-audit
+      - dependency-review
+      - codeql
+      - scorecard
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Summarize security checks
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import sys
+
+          needs = json.loads(os.environ["NEEDS"])
+          icons = {"success": "✅", "skipped": "⏭️"}
+          lines = ["## Chrona security checks", "", "| Check | Result |", "| --- | --- |"]
+          for job, data in needs.items():
+              result = data["result"]
+              lines.append(f"| `{job}` | {icons.get(result, '❌')} {result} |")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+              summary.write("\n".join(lines) + "\n")
+
+          failed = [job for job, data in needs.items() if data["result"] in ("failure", "cancelled")]
+          if failed:
+              print(f"::error::Security checks did not succeed: {', '.join(failed)}")
+              sys.exit(1)
+          PY

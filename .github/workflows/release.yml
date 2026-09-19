@@ -1,4 +1,12 @@
 # Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+#
+# Pipeline (AES — Ship):
+#
+#   tag ──► build (signed APK/AAB) ──► attest (provenance) ──► publish (GitHub Release)
+#
+# Permissions are granted per job: only the build job can read the signing
+# secrets, only the attest job can mint attestations, and only the publish job
+# can write to the repository's releases.
 name: Chrona Release
 
 on:
@@ -18,23 +26,42 @@ on:
         type: boolean
 
 permissions:
-  contents: write
-  id-token: write
-  attestations: write
-  artifact-metadata: write
+  contents: read
 
 concurrency:
   group: chrona-release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  release:
-    name: Build and publish release
+  # ── Stage 1 · Resolve and validate the tag ─────────────────────────────
+  tag:
+    name: Ship / Resolve tag
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      tag: ${{ steps.resolve.outputs.tag }}
+    steps:
+      - name: Validate release tag
+        id: resolve
+        env:
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::'$RELEASE_TAG' is not a valid release tag (expected vMAJOR.MINOR.PATCH[-suffix])."
+            exit 1
+          fi
+          echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+
+  # ── Stage 2 · Build and sign ───────────────────────────────────────────
+  build:
+    name: Ship / Build signed APK + AAB
+    needs: tag
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     environment: release
     env:
-      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+      RELEASE_TAG: ${{ needs.tag.outputs.tag }}
       CHRONA_KEYSTORE_BASE64: ${{ secrets.CHRONA_KEYSTORE_BASE64 }}
       CHRONA_KEYSTORE_PASSWORD: ${{ secrets.CHRONA_KEYSTORE_PASSWORD }}
       CHRONA_KEY_ALIAS: ${{ secrets.CHRONA_KEY_ALIAS }}
@@ -52,7 +79,6 @@ jobs:
       - name: Validate release identity
         run: |
           set -euo pipefail
-          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]
           ./gradlew --version
           ./scripts/release/verify-release.sh "$RELEASE_TAG"
 
@@ -90,13 +116,6 @@ jobs:
             "$APKSIGNER" verify --print-certs "$apk" | tee -a release/apksigner-certs.txt
           done
 
-      - name: Generate build provenance attestations
-        uses: actions/attest@v4.2.2
-        with:
-          subject-path: |
-            ${{ github.workspace }}/release/*.apk
-            ${{ github.workspace }}/release/*.aab
-
       - name: Upload release artifacts
         uses: actions/upload-artifact@v7.0.1
         with:
@@ -104,20 +123,6 @@ jobs:
           path: release/
           if-no-files-found: error
           retention-days: 30
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v3.0.2
-        with:
-          tag_name: ${{ env.RELEASE_TAG }}
-          name: Chrona ${{ env.RELEASE_TAG }}
-          prerelease: ${{ github.event_name == 'workflow_dispatch' && inputs.prerelease || false }}
-          generate_release_notes: true
-          files: |
-            release/*.apk
-            release/*.aab
-            release/SHA256SUMS
-            release/apksigner-verify.txt
-            release/apksigner-certs.txt
 
       - name: Remove signing material
         if: always()
@@ -128,3 +133,74 @@ jobs:
             shred -u "$CHRONA_KEYSTORE_PATH" 2>/dev/null || rm -f "$CHRONA_KEYSTORE_PATH"
           fi
           rm -rf "$RUNNER_TEMP/chrona-signing"
+
+  # ── Stage 3 · Provenance ───────────────────────────────────────────────
+  attest:
+    name: Ship / Provenance attestation
+    needs:
+      - tag
+      - build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+    steps:
+      - name: Download release artifacts
+        uses: actions/download-artifact@v8.0.1
+        with:
+          name: chrona-${{ needs.tag.outputs.tag }}
+          path: release
+
+      - name: Generate build provenance attestations
+        uses: actions/attest@v4.2.2
+        with:
+          subject-path: |
+            ${{ github.workspace }}/release/*.apk
+            ${{ github.workspace }}/release/*.aab
+
+  # ── Stage 4 · Publish ──────────────────────────────────────────────────
+  publish:
+    name: Ship / GitHub Release
+    needs:
+      - tag
+      - build
+      - attest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Download release artifacts
+        uses: actions/download-artifact@v8.0.1
+        with:
+          name: chrona-${{ needs.tag.outputs.tag }}
+          path: release
+
+      - name: Create GitHub Release
+        id: gh-release
+        uses: softprops/action-gh-release@v3.0.2
+        with:
+          tag_name: ${{ needs.tag.outputs.tag }}
+          name: Chrona ${{ needs.tag.outputs.tag }}
+          prerelease: ${{ github.event_name == 'workflow_dispatch' && inputs.prerelease || false }}
+          generate_release_notes: true
+          files: |
+            release/*.apk
+            release/*.aab
+            release/SHA256SUMS
+            release/apksigner-verify.txt
+            release/apksigner-certs.txt
+
+      - name: Release summary
+        env:
+          RELEASE_TAG: ${{ needs.tag.outputs.tag }}
+          RELEASE_URL: ${{ steps.gh-release.outputs.url }}
+        run: |
+          {
+            echo "## Chrona ${RELEASE_TAG}"
+            echo
+            echo "Published: ${RELEASE_URL}"
+          } >> "$GITHUB_STEP_SUMMARY"

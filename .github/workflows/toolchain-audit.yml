@@ -19,7 +19,6 @@ jobs:
       - uses: ./.github/actions/setup-android
         with:
           install-native: 'true'
-          install-emulator: 'true'
       - name: Install current Android CLI
         run: bash scripts/ci/install-android-cli.sh
       - name: Verify toolchain

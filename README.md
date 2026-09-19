@@ -4,7 +4,6 @@
 
 [![Chrona CI](https://github.com/FebriCahyaa/Chrona/actions/workflows/ci.yml/badge.svg)](https://github.com/FebriCahyaa/Chrona/actions/workflows/ci.yml)
 [![Security](https://github.com/FebriCahyaa/Chrona/actions/workflows/security.yml/badge.svg)](https://github.com/FebriCahyaa/Chrona/actions/workflows/security.yml)
-[![Device QA](https://github.com/FebriCahyaa/Chrona/actions/workflows/device-qa.yml/badge.svg)](https://github.com/FebriCahyaa/Chrona/actions/workflows/device-qa.yml)
 [![License](https://img.shields.io/badge/license-proprietary-orange.svg)](LICENSE)
 
 **A calm, precise Android time workspace.**
@@ -58,8 +57,7 @@ flowchart LR
     PR[Pull Request] --> A[AES Analyze]
     MAIN[main] --> A
     A --> E[AES Execute]
-    E --> D[Device QA]
-    D --> S[AES Ship]
+    E --> S[AES Ship]
     S --> GH[GitHub Release]
     SEC[Security] --> A
     LOC[Localization] --> PR
