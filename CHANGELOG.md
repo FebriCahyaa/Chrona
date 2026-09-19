@@ -1,3 +1,11 @@
+## 2026-09-19 — Phase 2 background activity notifications
+
+- Added an ongoing Stopwatch notification with Pause and Lap actions while timing.
+- Added an ongoing Timer countdown notification with Pause and Reset actions while the timer is running.
+- Reused Android system chronometer rendering instead of an app-side high-frequency notification update loop.
+- Added a low-importance active-timer notification channel while preserving the existing timer completion channel.
+- Kept Timer/Stopwatch persistence and ChronaTimeEngine ownership unchanged.
+
 
 ## 2026-09-19 — Phase 2 clock display foundation
 

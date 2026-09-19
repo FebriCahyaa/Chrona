@@ -200,7 +200,7 @@
     <string name="settings_seconds_title">Tampilkan detik</string>
     <string name="settings_seconds_subtitle">Show the live seconds readout in the hero clock</string>
     <string name="settings_notification_access">Notification access</string>
-    <string name="settings_notification_allowed">Allowed for alarms and timer notices</string>
+    <string name="settings_notification_allowed">Diizinkan untuk notifikasi alarm, timer, dan stopwatch</string>
     <string name="settings_notification_denied">Not allowed · tap to open Android notification settings</string>
     <string name="settings_update_checking">Checking for updates</string>
     <string name="settings_update_failed">Update check failed</string>
@@ -253,6 +253,16 @@
     <string name="notification_channel_upcoming_alarms_description">Pengingat alarm yang akan berbunyi.</string>
     <string name="notification_channel_stopwatch_name">Stopwatch</string>
     <string name="notification_channel_stopwatch_description">Pembaruan stopwatch saat sedang berjalan.</string>
+    <string name="notification_channel_active_timers_name">Timer aktif</string>
+    <string name="notification_channel_active_timers_description">Notifikasi senyap saat timer sedang menghitung mundur.</string>
+    <string name="stopwatch_notification_title">Stopwatch</string>
+    <string name="stopwatch_notification_body">Penghitungan waktu sedang berjalan.</string>
+    <string name="stopwatch_notification_pause">Jeda</string>
+    <string name="stopwatch_notification_lap">Putaran</string>
+    <string name="timer_notification_pause">Jeda</string>
+    <string name="timer_notification_reset">Reset</string>
+    <string name="timer_running_notification_title">Timer</string>
+    <string name="timer_running_notification_body">Hitung mundur sedang berjalan.</string>
     <string name="notification_channel_routines_name">Rutinitas</string>
     <string name="notification_channel_routines_description">Notifikasi yang dihasilkan oleh rutinitas Chrona.</string>
     <string name="widget_description">A battery-conscious Chrona time widget.</string>

@@ -47,6 +47,8 @@ import com.febricahyaa.clockapp.ui.screens.TimerScreen
 import com.febricahyaa.clockapp.ui.screens.WorldClockDetailScreen
 import com.febricahyaa.clockapp.ui.screens.WorldClockScreen
 import com.febricahyaa.clockapp.ui.screens.WorldClockSearchScreen
+import com.febricahyaa.clockapp.timer.TimerRunningNotification
+import com.febricahyaa.clockapp.stopwatch.StopwatchNotification
 import com.febricahyaa.clockapp.ui.theme.ChronaTheme
 import com.febricahyaa.clockapp.ui.viewmodel.AlarmViewModel
 import com.febricahyaa.clockapp.ui.viewmodel.AppUpdateViewModel
@@ -80,6 +82,29 @@ fun ClockApp() {
     val stopwatchState by stopwatchViewModel.state.collectAsStateWithLifecycle()
 
     ChronaRuntimeLifecycleEffect(container.timeEngine)
+
+    // Ongoing notifications are event-driven. Android's Chronometer updates
+    // the visible time itself, so these effects only react to start/stop
+    // transitions instead of running a Compose-driven notification ticker.
+    LaunchedEffect(stopwatchState.isRunning) {
+        if (stopwatchState.isRunning) {
+            StopwatchNotification.show(context, stopwatchState.elapsedMillis)
+        } else {
+            StopwatchNotification.cancel(context)
+        }
+    }
+
+    LaunchedEffect(timerState.isRunning) {
+        if (timerState.isRunning) {
+            val remainingMillis = container.timeEngine.state.value.timer.remainingMillis
+            TimerRunningNotification.show(
+                context,
+                container.timeEngine.currentEpochMillis() + remainingMillis.coerceAtLeast(0L),
+            )
+        } else {
+            TimerRunningNotification.cancel(context)
+        }
+    }
 
     val notificationPermission = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),

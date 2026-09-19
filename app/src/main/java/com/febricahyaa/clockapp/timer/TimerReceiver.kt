@@ -21,6 +21,7 @@ class TimerReceiver : BroadcastReceiver() {
         // recoverable on the next boot/app launch.
         val pending = TimerDurabilityPolicy.markCompletionPending(snapshot)
         app.container.timerRepository.save(pending)
+        TimerRunningNotification.cancel(context)
 
         runCatching {
             ContextCompat.startForegroundService(context, Intent(context, TimerService::class.java))

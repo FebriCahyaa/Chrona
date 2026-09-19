@@ -15,6 +15,7 @@ import com.febricahyaa.clockapp.R
 object ChronaNotificationChannels {
     const val ALARMS = "alarms"
     const val TIMERS = "timers"
+    const val ACTIVE_TIMERS = "active_timers"
     const val SLEEP = "sleep"
     const val ACTIVE_ALARMS = "active_alarms"
     const val MISSED_ALARMS = "missed_alarms"
@@ -34,6 +35,7 @@ object ChronaNotificationChannels {
     private fun specs() = listOf(
         Spec(ALARMS, R.string.notification_channel_alarms_name, R.string.notification_channel_alarms_description, NotificationManager.IMPORTANCE_HIGH, true),
         Spec(TIMERS, R.string.notification_channel_timers_name, R.string.notification_channel_timers_description, NotificationManager.IMPORTANCE_HIGH, true),
+        Spec(ACTIVE_TIMERS, R.string.notification_channel_active_timers_name, R.string.notification_channel_active_timers_description, NotificationManager.IMPORTANCE_LOW, false),
         Spec(SLEEP, R.string.notification_channel_sleep_name, R.string.notification_channel_sleep_description, NotificationManager.IMPORTANCE_DEFAULT, false),
         Spec(ACTIVE_ALARMS, R.string.notification_channel_active_alarms_name, R.string.notification_channel_active_alarms_description, NotificationManager.IMPORTANCE_DEFAULT, false),
         Spec(MISSED_ALARMS, R.string.notification_channel_missed_alarms_name, R.string.notification_channel_missed_alarms_description, NotificationManager.IMPORTANCE_DEFAULT, false),

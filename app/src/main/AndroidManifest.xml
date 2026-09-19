@@ -77,6 +77,12 @@
         <receiver
             android:name=".timer.TimerActionReceiver"
             android:exported="false" />
+        <receiver
+            android:name=".timer.TimerRunningActionReceiver"
+            android:exported="false" />
+        <receiver
+            android:name=".stopwatch.StopwatchActionReceiver"
+            android:exported="false" />
         <service
             android:name=".timer.TimerService"
             android:exported="false"
