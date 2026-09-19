@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
+<!--
+  ic_chrona_monochrome.xml
+  Adaptive Icon — Monochrome Layer (108x108dp canvas)
+
+  Dipakai sistem untuk Themed Icons (Android 13+ / Material You):
+  saat pengguna mengaktifkan "Themed icons", launcher menganggap seluruh
+  bentuk di sini sebagai MASK alpha lalu men-tint-nya dengan warna Dynamic
+  Color (wallpaper-based) milik pengguna. Warna fillColor/strokeColor di
+  bawah TIDAK relevan secara visual (akan ditimpa), tapi wajib solid/opaque
+  agar mask-nya terbentuk dengan benar. Konvensi: gunakan hitam solid.
+
+  Bentuk & proporsi disamakan persis dengan ic_chrona_foreground.xml agar
+  siluet jam tetap konsisten saat mode themed icon aktif.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Wajah jam -->
+    <path
+        android:pathData="M54,24 A30,30 0 1,1 53.99,24"
+        android:strokeColor="#FF000000"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <!-- Tanda jam 12/3/6/9 -->
+    <path android:pathData="M52.5,25 L55.5,25 L55.5,30 L52.5,30 Z" android:fillColor="#FF000000" />
+    <path android:pathData="M78,52.5 L83,52.5 L83,55.5 L78,55.5 Z" android:fillColor="#FF000000" />
+    <path android:pathData="M52.5,78 L55.5,78 L55.5,83 L52.5,83 Z" android:fillColor="#FF000000" />
+    <path android:pathData="M25,52.5 L30,52.5 L30,55.5 L25,55.5 Z" android:fillColor="#FF000000" />
+
+    <group android:name="hourHand" android:pivotX="54" android:pivotY="54" android:rotation="305">
+        <path android:pathData="M54,57 L54,40" android:strokeColor="#FF000000" android:strokeWidth="4.2" android:strokeLineCap="round" />
+    </group>
+
+    <group android:name="minuteHand" android:pivotX="54" android:pivotY="54" android:rotation="60">
+        <path android:pathData="M54,58 L54,26" android:strokeColor="#FF000000" android:strokeWidth="3.2" android:strokeLineCap="round" />
+    </group>
+
+    <group android:name="secondHand" android:pivotX="54" android:pivotY="54" android:rotation="0">
+        <path android:pathData="M54,62 L54,24" android:strokeColor="#FF000000" android:strokeWidth="1.6" android:strokeLineCap="round" />
+    </group>
+
+    <path
+        android:pathData="M54,54m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0"
+        android:fillColor="#FF000000" />
+
+</vector>

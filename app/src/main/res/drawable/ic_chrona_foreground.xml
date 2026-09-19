@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
+<!--
+  ic_chrona_foreground.xml
+  Adaptive Icon — Foreground Layer (108x108dp canvas)
+
+  Setiap jarum dibungkus <group android:name="..."> dengan pivot di titik
+  pusat (54,54). Nama group (hourHand, minuteHand, secondHand) dicadangkan
+  sebagai target AnimatedVectorDrawable bila kelak dipakai untuk splash
+  screen / transisi in-app; saat ini icon bersifat statis.
+
+  Posisi default jarum: 10:10 (konvensi ikon jam — komposisi paling seimbang
+  secara visual). hourHand = 305°, minuteHand = 60°, secondHand = 0°.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Wajah jam: lingkaran outline tipis -->
+    <path
+        android:pathData="M54,24 A30,30 0 1,1 53.99,24"
+        android:strokeColor="#F2F0FF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000" />
+
+    <!-- Tanda jam di posisi 12, 3, 6, 9 -->
+    <path
+        android:pathData="M52.5,25 L55.5,25 L55.5,30 L52.5,30 Z"
+        android:fillColor="#F2F0FF" />
+    <path
+        android:pathData="M78,52.5 L83,52.5 L83,55.5 L78,55.5 Z"
+        android:fillColor="#F2F0FF" />
+    <path
+        android:pathData="M52.5,78 L55.5,78 L55.5,83 L52.5,83 Z"
+        android:fillColor="#F2F0FF" />
+    <path
+        android:pathData="M25,52.5 L30,52.5 L30,55.5 L25,55.5 Z"
+        android:fillColor="#F2F0FF" />
+
+    <!-- Jarum JAM (hour hand) — pivot di pusat (54,54), rotasi default 305° -->
+    <group
+        android:name="hourHand"
+        android:pivotX="54"
+        android:pivotY="54"
+        android:rotation="305">
+        <path
+            android:pathData="M54,57 L54,40"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="4.2"
+            android:strokeLineCap="round" />
+    </group>
+
+    <!-- Jarum MENIT (minute hand) — pivot di pusat (54,54), rotasi default 60° -->
+    <group
+        android:name="minuteHand"
+        android:pivotX="54"
+        android:pivotY="54"
+        android:rotation="60">
+        <path
+            android:pathData="M54,58 L54,26"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="3.2"
+            android:strokeLineCap="round" />
+    </group>
+
+    <!-- Jarum DETIK (second hand, aksen warna) — pivot di pusat (54,54) -->
+    <group
+        android:name="secondHand"
+        android:pivotX="54"
+        android:pivotY="54"
+        android:rotation="0">
+        <path
+            android:pathData="M54,62 L54,24"
+            android:strokeColor="#FF6B4A"
+            android:strokeWidth="1.6"
+            android:strokeLineCap="round" />
+    </group>
+
+    <!-- Titik pusat -->
+    <path
+        android:pathData="M54,54m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0"
+        android:fillColor="#FF6B4A" />
+
+</vector>
