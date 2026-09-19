@@ -1,0 +1,9 @@
+# Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+blank_issues_enabled: false
+contact_links:
+  - name: Security report
+    url: https://github.com/FebriCahyaa/Chrona/security/advisories/new
+    about: Report vulnerabilities privately. Do not disclose security issues publicly.
+  - name: Documentation and support
+    url: https://github.com/FebriCahyaa/Chrona/blob/main/SUPPORT.md
+    about: Read the support and diagnostics guidance before opening an issue.

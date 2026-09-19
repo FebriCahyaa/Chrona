@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -79,8 +80,7 @@ fun StopwatchScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .navigationBarsPadding()
-                .padding(horizontal = 20.dp, vertical = 8.dp)
-                ,
+                .padding(horizontal = 20.dp, vertical = 8.dp),
         ) {
             StopwatchTimeSurface(
                 elapsedMillis = elapsedMillis,
@@ -88,7 +88,7 @@ fun StopwatchScreen(
                 laps = laps,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
+                    .heightIn(min = 300.dp, max = 440.dp),
             )
 
             if (laps.isNotEmpty()) {
@@ -98,7 +98,7 @@ fun StopwatchScreen(
                     glass = glass,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f),
+                        .heightIn(min = 140.dp, max = 240.dp),
                 )
             }
 

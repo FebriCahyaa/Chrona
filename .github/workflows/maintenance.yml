@@ -1,0 +1,56 @@
+# Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+name: Chrona Maintenance
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Scheduled repository audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-python@v6.1.0
+        with:
+          python-version: '3.13'
+      - uses: ./.github/actions/setup-android
+        with:
+          install-native: 'false'
+      - run: bash scripts/audit/source-audit.sh
+      - name: Localization coverage report
+        run: python3 scripts/localization/audit-resources.py
+      - name: Timezone data strategy audit
+        run: python3 scripts/audit/check-timezone-catalog.py
+      - name: Generate dependency graph snapshot
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon --stacktrace :app:dependencies --configuration debugRuntimeClasspath > dependency-tree.txt
+      - uses: actions/upload-artifact@v7.0.1
+        with:
+          name: chrona-maintenance-${{ github.sha }}
+          path: dependency-tree.txt
+          if-no-files-found: error
+          retention-days: 14
+
+  android-cli:
+    name: Android CLI compatibility audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: ./.github/actions/setup-android
+        with:
+          install-native: 'false'
+      - name: Install current Android CLI
+        run: bash scripts/ci/install-android-cli.sh
+      - name: Verify CLI
+        env:
+          CHRONA_REQUIRE_ANDROID_CLI: '1'
+          CHRONA_REQUIRE_NATIVE_TOOLCHAIN: '0'
+        run: bash scripts/ci/verify-toolchain.sh

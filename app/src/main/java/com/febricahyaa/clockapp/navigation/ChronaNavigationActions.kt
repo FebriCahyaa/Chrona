@@ -4,6 +4,18 @@ package com.febricahyaa.clockapp.navigation
 
 import androidx.navigation.NavHostController
 
+private fun AppDestination.chronaRoute(): String = when (this) {
+    AppDestination.CLOCK -> ChronaRoutes.CLOCK
+    AppDestination.ALARM -> ChronaRoutes.ALARM
+    AppDestination.WORLD -> ChronaRoutes.WORLD
+    AppDestination.WORLD_SEARCH -> ChronaRoutes.WORLD_SEARCH
+    AppDestination.WORLD_DETAIL -> ChronaRoutes.WORLD_DETAIL
+    AppDestination.TIMER -> ChronaRoutes.TIMER
+    AppDestination.STOPWATCH -> ChronaRoutes.STOPWATCH
+    AppDestination.SETTINGS -> ChronaRoutes.SETTINGS
+    AppDestination.LEGAL -> ChronaRoutes.LEGAL
+}
+
 class ChronaNavigationActions(
     private val navController: NavHostController,
 ) {
@@ -14,7 +26,7 @@ class ChronaNavigationActions(
             return
         }
 
-        navController.navigate(destination.route()) {
+        navController.navigate(destination.chronaRoute()) {
             if (ChronaNavigationPolicy.isPrimaryTimeTool(destination)) {
                 popUpTo(ChronaRoutes.CLOCK) {
                     saveState = true
@@ -27,9 +39,9 @@ class ChronaNavigationActions(
 
     fun replaceCurrent(destination: AppDestination) {
         val currentRoute = navController.currentDestination?.route ?: return
-        if (currentRoute == destination.route()) return
+        if (currentRoute == destination.chronaRoute()) return
 
-        navController.navigate(destination.route()) {
+        navController.navigate(destination.chronaRoute()) {
             popUpTo(currentRoute) {
                 inclusive = true
             }

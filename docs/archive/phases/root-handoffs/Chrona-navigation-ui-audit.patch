@@ -1,0 +1,686 @@
+diff --git a/app/src/main/java/com/febricahyaa/clockapp/ClockApp.kt b/app/src/main/java/com/febricahyaa/clockapp/ClockApp.kt
+index 667a953..d8ce3dc 100644
+--- a/app/src/main/java/com/febricahyaa/clockapp/ClockApp.kt
++++ b/app/src/main/java/com/febricahyaa/clockapp/ClockApp.kt
+@@ -36,7 +36,6 @@ import com.febricahyaa.clockapp.navigation.ChronaNavigationActions
+ import com.febricahyaa.clockapp.navigation.ChronaRootNavigation
+ import com.febricahyaa.clockapp.time.ChronaRuntimeLifecycleEffect
+ import com.febricahyaa.clockapp.time.LocalChronaTimeEngine
+-import com.febricahyaa.clockapp.ui.components.ChronaAmbientBackdrop
+ import com.febricahyaa.clockapp.ui.components.ChronaScreenSurface
+ import com.febricahyaa.clockapp.ui.screens.AlarmScreen
+ import com.febricahyaa.clockapp.ui.screens.ChronaBentoHomeScreen
+@@ -134,8 +133,6 @@ fun ClockApp() {
+                     .fillMaxSize()
+                     .background(MaterialTheme.colorScheme.background),
+             ) {
+-                ChronaAmbientBackdrop()
+-
+                 ChronaRootNavigation { destination, navigation, backStackEntry ->
+                     ChronaDestinationContent(
+                         destination = destination,
+diff --git a/app/src/main/java/com/febricahyaa/clockapp/navigation/ChronaMotionKeys.kt b/app/src/main/java/com/febricahyaa/clockapp/navigation/ChronaMotionKeys.kt
+deleted file mode 100644
+index 2bb62be..0000000
+--- a/app/src/main/java/com/febricahyaa/clockapp/navigation/ChronaMotionKeys.kt
++++ /dev/null
+@@ -1,16 +0,0 @@
+-/* Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. */
+-package com.febricahyaa.clockapp.navigation
+-
+-/** Stable shared-element keys. Keep these values backward compatible across destinations. */
+-object ChronaMotionKeys {
+-    fun worldClockCard(id: Long): String = "world-clock-card:$id"
+-    const val DASHBOARD_HERO_CLOCK = "dashboard.hero.clock"
+-    const val DASHBOARD_WORLD_CLOCK = "dashboard.card.world-clock"
+-    const val DASHBOARD_ALARM = "dashboard.card.alarm"
+-    const val DASHBOARD_TIMER = "dashboard.card.timer"
+-    const val DASHBOARD_STOPWATCH = "dashboard.card.stopwatch"
+-    const val ALARM_EDITOR = "editor.alarm"
+-    const val TIMER_EDITOR = "editor.timer"
+-    const val TIMER_STATE_SURFACE = "state.timer"
+-    const val STOPWATCH_STATE_SURFACE = "state.stopwatch"
+-}
+diff --git a/app/src/main/java/com/febricahyaa/clockapp/navigation/ChronaMotionLocals.kt b/app/src/main/java/com/febricahyaa/clockapp/navigation/ChronaMotionLocals.kt
+deleted file mode 100644
+index 6a73a35..0000000
+--- a/app/src/main/java/com/febricahyaa/clockapp/navigation/ChronaMotionLocals.kt
++++ /dev/null
+@@ -1,13 +0,0 @@
+-/* Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. */
+-
+-package com.febricahyaa.clockapp.navigation
+-
+-import androidx.compose.animation.AnimatedContentScope
+-import androidx.compose.animation.SharedTransitionScope
+-import androidx.compose.runtime.compositionLocalOf
+-
+-val LocalChronaSharedTransitionScope =
+-    compositionLocalOf<SharedTransitionScope?> { null }
+-
+-val LocalChronaAnimatedVisibilityScope =
+-    compositionLocalOf<AnimatedContentScope?> { null }
+diff --git a/app/src/main/java/com/febricahyaa/clockapp/navigation/ChronaNavigationMotion.kt b/app/src/main/java/com/febricahyaa/clockapp/navigation/ChronaNavigationMotion.kt
+deleted file mode 100644
+index 9351be5..0000000
+--- a/app/src/main/java/com/febricahyaa/clockapp/navigation/ChronaNavigationMotion.kt
++++ /dev/null
+@@ -1,77 +0,0 @@
+-/* Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. */
+-package com.febricahyaa.clockapp.navigation
+-
+-import androidx.compose.animation.EnterTransition
+-import androidx.compose.animation.ExitTransition
+-import androidx.compose.animation.fadeIn
+-import androidx.compose.animation.fadeOut
+-import androidx.compose.animation.scaleIn
+-import androidx.compose.animation.scaleOut
+-import androidx.compose.animation.core.tween
+-import com.febricahyaa.clockapp.ui.theme.ChronaMotionTokens
+-
+-/**
+- * Navigation-level motion contract. Shared bounds handle spatial identity while
+- * low-amplitude fade/scale keeps destination chrome visually continuous.
+- */
+-object ChronaNavigationMotion {
+-    fun enter(): EnterTransition =
+-        fadeIn(
+-            animationSpec = tween(
+-                durationMillis = ChronaMotionTokens.SpatialDurationMillis,
+-                easing = ChronaMotionTokens.SpatialEasing,
+-            ),
+-            initialAlpha = 0.94f,
+-        ) + scaleIn(
+-            animationSpec = tween(
+-                durationMillis = ChronaMotionTokens.SpatialDurationMillis,
+-                easing = ChronaMotionTokens.SpatialEasing,
+-            ),
+-            initialScale = 0.985f,
+-        )
+-
+-    fun exit(): ExitTransition =
+-        fadeOut(
+-            animationSpec = tween(
+-                durationMillis = ChronaMotionTokens.MicroDurationMillis,
+-                easing = ChronaMotionTokens.SpatialEasing,
+-            ),
+-            targetAlpha = 0.96f,
+-        ) + scaleOut(
+-            animationSpec = tween(
+-                durationMillis = ChronaMotionTokens.MicroDurationMillis,
+-                easing = ChronaMotionTokens.SpatialEasing,
+-            ),
+-            targetScale = 0.99f,
+-        )
+-
+-    fun popEnter(): EnterTransition =
+-        fadeIn(
+-            animationSpec = tween(
+-                durationMillis = ChronaMotionTokens.SpatialDurationMillis,
+-                easing = ChronaMotionTokens.SpatialEasing,
+-            ),
+-            initialAlpha = 0.96f,
+-        ) + scaleIn(
+-            animationSpec = tween(
+-                durationMillis = ChronaMotionTokens.SpatialDurationMillis,
+-                easing = ChronaMotionTokens.SpatialEasing,
+-            ),
+-            initialScale = 0.99f,
+-        )
+-
+-    fun popExit(): ExitTransition =
+-        fadeOut(
+-            animationSpec = tween(
+-                durationMillis = ChronaMotionTokens.MicroDurationMillis,
+-                easing = ChronaMotionTokens.SpatialEasing,
+-            ),
+-            targetAlpha = 0.94f,
+-        ) + scaleOut(
+-            animationSpec = tween(
+-                durationMillis = ChronaMotionTokens.MicroDurationMillis,
+-                easing = ChronaMotionTokens.SpatialEasing,
+-            ),
+-            targetScale = 0.985f,
+-        )
+-}
+diff --git a/app/src/main/java/com/febricahyaa/clockapp/navigation/ChronaRootNavigation.kt b/app/src/main/java/com/febricahyaa/clockapp/navigation/ChronaRootNavigation.kt
+index 3d0bc9d..128c157 100644
+--- a/app/src/main/java/com/febricahyaa/clockapp/navigation/ChronaRootNavigation.kt
++++ b/app/src/main/java/com/febricahyaa/clockapp/navigation/ChronaRootNavigation.kt
+@@ -2,10 +2,8 @@
+ 
+ package com.febricahyaa.clockapp.navigation
+ 
+-import androidx.compose.animation.AnimatedContentScope
+ import androidx.compose.foundation.layout.fillMaxSize
+ import androidx.compose.runtime.Composable
+-import androidx.compose.runtime.CompositionLocalProvider
+ import androidx.compose.runtime.remember
+ import androidx.compose.ui.Modifier
+ import androidx.navigation.NavBackStackEntry
+@@ -48,7 +46,6 @@ fun ChronaRootNavigation(
+         composable(ChronaRoutes.CLOCK) { backStackEntry ->
+             ChronaDestinationScope(
+                 destination = AppDestination.CLOCK,
+-                animatedVisibilityScope = this@composable,
+                 backStackEntry = backStackEntry,
+                 destinationContent = destinationContent,
+                 navigation = navigation,
+@@ -57,7 +54,6 @@ fun ChronaRootNavigation(
+         composable(ChronaRoutes.ALARM) { backStackEntry ->
+             ChronaDestinationScope(
+                 destination = AppDestination.ALARM,
+-                animatedVisibilityScope = this@composable,
+                 backStackEntry = backStackEntry,
+                 destinationContent = destinationContent,
+                 navigation = navigation,
+@@ -66,7 +62,6 @@ fun ChronaRootNavigation(
+         composable(ChronaRoutes.WORLD) { backStackEntry ->
+             ChronaDestinationScope(
+                 destination = AppDestination.WORLD,
+-                animatedVisibilityScope = this@composable,
+                 backStackEntry = backStackEntry,
+                 destinationContent = destinationContent,
+                 navigation = navigation,
+@@ -78,7 +73,6 @@ fun ChronaRootNavigation(
+         ) { backStackEntry ->
+             ChronaDestinationScope(
+                 destination = AppDestination.WORLD_DETAIL,
+-                animatedVisibilityScope = this@composable,
+                 backStackEntry = backStackEntry,
+                 destinationContent = destinationContent,
+                 navigation = navigation,
+@@ -87,7 +81,6 @@ fun ChronaRootNavigation(
+         composable(ChronaRoutes.WORLD_SEARCH) { backStackEntry ->
+             ChronaDestinationScope(
+                 destination = AppDestination.WORLD_SEARCH,
+-                animatedVisibilityScope = this@composable,
+                 backStackEntry = backStackEntry,
+                 destinationContent = destinationContent,
+                 navigation = navigation,
+@@ -96,7 +89,6 @@ fun ChronaRootNavigation(
+         composable(ChronaRoutes.TIMER) { backStackEntry ->
+             ChronaDestinationScope(
+                 destination = AppDestination.TIMER,
+-                animatedVisibilityScope = this@composable,
+                 backStackEntry = backStackEntry,
+                 destinationContent = destinationContent,
+                 navigation = navigation,
+@@ -105,7 +97,6 @@ fun ChronaRootNavigation(
+         composable(ChronaRoutes.STOPWATCH) { backStackEntry ->
+             ChronaDestinationScope(
+                 destination = AppDestination.STOPWATCH,
+-                animatedVisibilityScope = this@composable,
+                 backStackEntry = backStackEntry,
+                 destinationContent = destinationContent,
+                 navigation = navigation,
+@@ -114,7 +105,6 @@ fun ChronaRootNavigation(
+         composable(ChronaRoutes.SETTINGS) { backStackEntry ->
+             ChronaDestinationScope(
+                 destination = AppDestination.SETTINGS,
+-                animatedVisibilityScope = this@composable,
+                 backStackEntry = backStackEntry,
+                 destinationContent = destinationContent,
+                 navigation = navigation,
+@@ -123,7 +113,6 @@ fun ChronaRootNavigation(
+         composable(ChronaRoutes.LEGAL) { backStackEntry ->
+             ChronaDestinationScope(
+                 destination = AppDestination.LEGAL,
+-                animatedVisibilityScope = this@composable,
+                 backStackEntry = backStackEntry,
+                 destinationContent = destinationContent,
+                 navigation = navigation,
+@@ -135,7 +124,6 @@ fun ChronaRootNavigation(
+ @Composable
+ private fun ChronaDestinationScope(
+     destination: AppDestination,
+-    animatedVisibilityScope: AnimatedContentScope,
+     backStackEntry: NavBackStackEntry,
+     destinationContent: @Composable (
+         AppDestination,
+@@ -144,9 +132,5 @@ private fun ChronaDestinationScope(
+     ) -> Unit,
+     navigation: ChronaNavigationActions,
+ ) {
+-    CompositionLocalProvider(
+-        LocalChronaAnimatedVisibilityScope provides animatedVisibilityScope,
+-    ) {
+-        destinationContent(destination, navigation, backStackEntry)
+-    }
++    destinationContent(destination, navigation, backStackEntry)
+ }
+diff --git a/app/src/main/java/com/febricahyaa/clockapp/navigation/ChronaSharedTransition.kt b/app/src/main/java/com/febricahyaa/clockapp/navigation/ChronaSharedTransition.kt
+deleted file mode 100644
+index 28d21b3..0000000
+--- a/app/src/main/java/com/febricahyaa/clockapp/navigation/ChronaSharedTransition.kt
++++ /dev/null
+@@ -1,30 +0,0 @@
+-/* Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. */
+-
+-package com.febricahyaa.clockapp.navigation
+-
+-import androidx.compose.animation.ExperimentalSharedTransitionApi
+-import androidx.compose.runtime.Composable
+-import androidx.compose.ui.Modifier
+-
+-/**
+- * Applies a shared bound only when the root navigation explicitly provides a
+- * shared-transition scope. The production root currently leaves that scope
+- * unset because shared destination rendering caused full-screen ghosting.
+- */
+-@OptIn(ExperimentalSharedTransitionApi::class)
+-@Composable
+-fun Modifier.chronaSharedBounds(
+-    key: String,
+-): Modifier {
+-    val sharedTransitionScope = LocalChronaSharedTransitionScope.current
+-        ?: return this
+-    val animatedVisibilityScope = LocalChronaAnimatedVisibilityScope.current
+-        ?: return this
+-
+-    return with(sharedTransitionScope) {
+-        sharedBounds(
+-            sharedContentState = rememberSharedContentState(key = key),
+-            animatedVisibilityScope = animatedVisibilityScope,
+-        )
+-    }
+-}
+diff --git a/app/src/main/java/com/febricahyaa/clockapp/ui/components/HybridBentoComponents.kt b/app/src/main/java/com/febricahyaa/clockapp/ui/components/HybridBentoComponents.kt
+index 1250a0e..a45964d 100644
+--- a/app/src/main/java/com/febricahyaa/clockapp/ui/components/HybridBentoComponents.kt
++++ b/app/src/main/java/com/febricahyaa/clockapp/ui/components/HybridBentoComponents.kt
+@@ -54,18 +54,23 @@ import com.febricahyaa.clockapp.model.AppThemeMode
+ import com.febricahyaa.clockapp.ui.theme.ClockMotion
+ 
+ /**
+- * One full-screen visual surface used behind every destination.
+- * Keeping the destination surface opaque-ish prevents screen ghosting during
+- * AnimatedContent while retaining a whisper of the ambient background.
++ * One full-screen opaque visual surface used behind every destination.
++ * Destination surfaces must completely cover the parent so stale navigation
++ * entries cannot visually bleed through during a composition/frame switch.
+  */
+ @Composable
+ fun ChronaScreenSurface(content: @Composable BoxScope.() -> Unit) {
+     Box(
+         Modifier
+             .fillMaxSize()
+-            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.985f)),
+-        content = content,
+-    )
++            .background(MaterialTheme.colorScheme.background),
++    ) {
++        ChronaAmbientBackdrop()
++        Box(
++            Modifier.fillMaxSize(),
++            content = content,
++        )
++    }
+ }
+ 
+ @Composable
+diff --git a/app/src/main/java/com/febricahyaa/clockapp/ui/screens/AlarmScreen.kt b/app/src/main/java/com/febricahyaa/clockapp/ui/screens/AlarmScreen.kt
+index 0736a5a..a89d42b 100644
+--- a/app/src/main/java/com/febricahyaa/clockapp/ui/screens/AlarmScreen.kt
++++ b/app/src/main/java/com/febricahyaa/clockapp/ui/screens/AlarmScreen.kt
+@@ -70,8 +70,6 @@ import androidx.compose.ui.res.stringResource
+ import androidx.compose.ui.text.font.FontWeight
+ import androidx.compose.ui.unit.dp
+ import com.febricahyaa.clockapp.model.AlarmItem
+-import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
+-import com.febricahyaa.clockapp.navigation.chronaSharedBounds
+ import com.febricahyaa.clockapp.R
+ import com.febricahyaa.clockapp.ui.components.ChronaCard
+ import com.febricahyaa.clockapp.ui.components.ChronaScaffold
+@@ -117,7 +115,7 @@ fun AlarmScreen(
+                 .fillMaxSize()
+                 .padding(paddingValues)
+                 .padding(horizontal = 20.dp)
+-                .chronaSharedBounds(ChronaMotionKeys.DASHBOARD_ALARM),
++                ,
+         ) {
+             Spacer(Modifier.height(4.dp))
+ 
+@@ -570,7 +568,7 @@ private fun AlarmEditorSheet(
+                 .navigationBarsPadding()
+                 .widthIn(max = 720.dp)
+                 .align(Alignment.CenterHorizontally)
+-                .chronaSharedBounds(ChronaMotionKeys.ALARM_EDITOR),
++                ,
+         ) {
+             Column(
+                 modifier = Modifier.padding(horizontal = 24.dp),
+diff --git a/app/src/main/java/com/febricahyaa/clockapp/ui/screens/ChronaBentoHomeScreen.kt b/app/src/main/java/com/febricahyaa/clockapp/ui/screens/ChronaBentoHomeScreen.kt
+index b3b3f07..874d920 100644
+--- a/app/src/main/java/com/febricahyaa/clockapp/ui/screens/ChronaBentoHomeScreen.kt
++++ b/app/src/main/java/com/febricahyaa/clockapp/ui/screens/ChronaBentoHomeScreen.kt
+@@ -65,8 +65,6 @@ import androidx.compose.ui.zIndex
+ import com.febricahyaa.clockapp.model.AlarmItem
+ import com.febricahyaa.clockapp.model.AppThemeMode
+ import com.febricahyaa.clockapp.navigation.AppDestination
+-import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
+-import com.febricahyaa.clockapp.navigation.chronaSharedBounds
+ import com.febricahyaa.clockapp.R
+ import com.febricahyaa.clockapp.ui.components.BentoIcon
+ import com.febricahyaa.clockapp.ui.components.BentoIconButton
+@@ -229,7 +227,7 @@ private fun HeroCard(
+     onToggleDisplay: () -> Unit,
+ ) {
+     HybridBentoCard(
+-        modifier = modifier.chronaSharedBounds(ChronaMotionKeys.DASHBOARD_HERO_CLOCK),
++        modifier = modifier,
+         themeMode = themeMode,
+     ) {
+         ClockHero(now, dateText, displayMode, use24HourFormat, showSeconds, onToggleDisplay)
+@@ -262,7 +260,7 @@ private fun FloatingActionGrid(
+         ) {
+             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                 TimeActionCard(
+-                    modifier = Modifier.weight(1f).height(136.dp).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_ALARM),
++                    modifier = Modifier.weight(1f).height(136.dp),
+                     themeMode = themeMode,
+                     icon = Icons.Filled.AccessAlarm,
+                     eyebrow = if (hasNextAlarm) stringResource(R.string.home_next_alarm_label) else stringResource(R.string.home_alarm_label),
+@@ -272,7 +270,7 @@ private fun FloatingActionGrid(
+                     onClick = { onNavigate(AppDestination.ALARM) },
+                 )
+                 TimeActionCard(
+-                    modifier = Modifier.weight(1f).height(136.dp).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_TIMER),
++                    modifier = Modifier.weight(1f).height(136.dp),
+                     themeMode = themeMode,
+                     icon = Icons.Filled.Timer,
+                     eyebrow = if (timerRunning) stringResource(R.string.home_timer_live_label) else stringResource(R.string.home_timer_label),
+@@ -284,7 +282,7 @@ private fun FloatingActionGrid(
+             }
+             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                 UtilityCard(
+-                    modifier = Modifier.weight(1f).height(110.dp).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_WORLD_CLOCK),
++                    modifier = Modifier.weight(1f).height(110.dp),
+                     themeMode = themeMode,
+                     icon = Icons.Filled.Public,
+                     title = stringResource(R.string.home_world_clock_title),
+@@ -292,7 +290,7 @@ private fun FloatingActionGrid(
+                     onClick = { onNavigate(AppDestination.WORLD) },
+                 )
+                 UtilityCard(
+-                    modifier = Modifier.weight(1f).height(110.dp).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_STOPWATCH),
++                    modifier = Modifier.weight(1f).height(110.dp),
+                     themeMode = themeMode,
+                     icon = Icons.Filled.AccessTime,
+                     title = stringResource(R.string.home_stopwatch_title),
+@@ -317,7 +315,7 @@ private fun ActionGrid(
+ ) {
+     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+         TimeActionCard(
+-            modifier = Modifier.weight(1f).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_ALARM),
++            modifier = Modifier.weight(1f),
+             themeMode = themeMode,
+             icon = Icons.Filled.AccessAlarm,
+             eyebrow = if (hasNextAlarm) stringResource(R.string.home_next_alarm_label) else stringResource(R.string.home_alarm_label),
+@@ -327,7 +325,7 @@ private fun ActionGrid(
+             onClick = { onNavigate(AppDestination.ALARM) },
+         )
+         TimeActionCard(
+-            modifier = Modifier.weight(1f).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_TIMER),
++            modifier = Modifier.weight(1f),
+             themeMode = themeMode,
+             icon = Icons.Filled.Timer,
+             eyebrow = if (timerRunning) stringResource(R.string.home_timer_live_label) else stringResource(R.string.home_timer_label),
+@@ -339,7 +337,7 @@ private fun ActionGrid(
+     }
+     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+         UtilityCard(
+-            modifier = Modifier.weight(1f).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_WORLD_CLOCK),
++            modifier = Modifier.weight(1f),
+             themeMode = themeMode,
+             icon = Icons.Filled.Public,
+             title = stringResource(R.string.home_world_clock_title),
+@@ -347,7 +345,7 @@ private fun ActionGrid(
+             onClick = { onNavigate(AppDestination.WORLD) },
+         )
+         UtilityCard(
+-            modifier = Modifier.weight(1f).chronaSharedBounds(ChronaMotionKeys.DASHBOARD_STOPWATCH),
++            modifier = Modifier.weight(1f),
+             themeMode = themeMode,
+             icon = Icons.Filled.AccessTime,
+             title = stringResource(R.string.home_stopwatch_title),
+diff --git a/app/src/main/java/com/febricahyaa/clockapp/ui/screens/StopwatchScreen.kt b/app/src/main/java/com/febricahyaa/clockapp/ui/screens/StopwatchScreen.kt
+index 8f90f1e..5e10a61 100644
+--- a/app/src/main/java/com/febricahyaa/clockapp/ui/screens/StopwatchScreen.kt
++++ b/app/src/main/java/com/febricahyaa/clockapp/ui/screens/StopwatchScreen.kt
+@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
+ import androidx.compose.foundation.layout.fillMaxSize
+ import androidx.compose.foundation.layout.fillMaxWidth
+ import androidx.compose.foundation.layout.height
++import androidx.compose.foundation.layout.navigationBarsPadding
+ import androidx.compose.foundation.layout.padding
+ import androidx.compose.foundation.layout.size
+ import androidx.compose.foundation.lazy.LazyColumn
+@@ -41,8 +42,6 @@ import androidx.compose.ui.unit.dp
+ import androidx.compose.ui.unit.sp
+ import androidx.compose.ui.res.stringResource
+ import com.febricahyaa.clockapp.R
+-import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
+-import com.febricahyaa.clockapp.navigation.chronaSharedBounds
+ import com.febricahyaa.clockapp.ui.components.ChronaCard
+ import com.febricahyaa.clockapp.ui.components.ChronaScaffold
+ import com.febricahyaa.clockapp.ui.components.GlassPill
+@@ -79,8 +78,9 @@ fun StopwatchScreen(
+             modifier = Modifier
+                 .fillMaxSize()
+                 .padding(paddingValues)
++                .navigationBarsPadding()
+                 .padding(horizontal = 20.dp, vertical = 8.dp)
+-                .chronaSharedBounds(ChronaMotionKeys.DASHBOARD_STOPWATCH),
++                ,
+         ) {
+             StopwatchTimeSurface(
+                 elapsedMillis = elapsedMillis,
+@@ -124,7 +124,7 @@ private fun StopwatchTimeSurface(
+ 
+     Box(
+         modifier = modifier
+-            .chronaSharedBounds(ChronaMotionKeys.STOPWATCH_STATE_SURFACE),
++            ,
+         contentAlignment = Alignment.Center,
+     ) {
+         AnimatedContent(
+diff --git a/app/src/main/java/com/febricahyaa/clockapp/ui/screens/TimerScreen.kt b/app/src/main/java/com/febricahyaa/clockapp/ui/screens/TimerScreen.kt
+index 467f25c..b613d70 100644
+--- a/app/src/main/java/com/febricahyaa/clockapp/ui/screens/TimerScreen.kt
++++ b/app/src/main/java/com/febricahyaa/clockapp/ui/screens/TimerScreen.kt
+@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Spacer
+ import androidx.compose.foundation.layout.fillMaxSize
+ import androidx.compose.foundation.layout.fillMaxWidth
+ import androidx.compose.foundation.layout.height
++import androidx.compose.foundation.layout.navigationBarsPadding
+ import androidx.compose.foundation.layout.padding
+ import androidx.compose.foundation.layout.size
+ import androidx.compose.foundation.layout.widthIn
+@@ -64,8 +65,6 @@ import androidx.compose.ui.unit.dp
+ import kotlin.math.min
+ import com.febricahyaa.clockapp.core.TimerDurationInput
+ import com.febricahyaa.clockapp.R
+-import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
+-import com.febricahyaa.clockapp.navigation.chronaSharedBounds
+ import com.febricahyaa.clockapp.ui.components.ChronaCard
+ import com.febricahyaa.clockapp.ui.components.IconCircleButton
+ import com.febricahyaa.clockapp.ui.components.ChronaScaffold
+@@ -176,7 +175,7 @@ fun TimerScreen(
+                 .verticalScroll(rememberScrollState())
+                 .padding(paddingValues)
+                 .padding(horizontal = 16.dp, vertical = 4.dp)
+-                .chronaSharedBounds(ChronaMotionKeys.DASHBOARD_TIMER),
++                ,
+         ) {
+             BoxWithConstraints(
+                 modifier = Modifier.fillMaxWidth(),
+@@ -244,7 +243,7 @@ fun TimerScreen(
+                                         heroSize = heroSize,
+                                         heroStroke = heroStroke,
+                                         heroScale = heroScale,
+-                                        modifier = Modifier.chronaSharedBounds(ChronaMotionKeys.TIMER_EDITOR),
++                                        modifier = Modifier,
+                                     )
+                                     Spacer(Modifier.height(16.dp))
+                                     QuickDurations(
+@@ -277,7 +276,7 @@ fun TimerScreen(
+                                         heroSize = heroSize,
+                                         heroStroke = heroStroke,
+                                         heroScale = heroScale,
+-                                        modifier = Modifier.chronaSharedBounds(ChronaMotionKeys.TIMER_EDITOR),
++                                        modifier = Modifier,
+                                     )
+                                     Spacer(Modifier.height(12.dp))
+                                     Text(
+diff --git a/app/src/main/java/com/febricahyaa/clockapp/ui/screens/WorldClockDetailScreen.kt b/app/src/main/java/com/febricahyaa/clockapp/ui/screens/WorldClockDetailScreen.kt
+index b55259f..c00ea8b 100644
+--- a/app/src/main/java/com/febricahyaa/clockapp/ui/screens/WorldClockDetailScreen.kt
++++ b/app/src/main/java/com/febricahyaa/clockapp/ui/screens/WorldClockDetailScreen.kt
+@@ -33,8 +33,6 @@ import androidx.compose.ui.res.stringResource
+ import com.febricahyaa.clockapp.R
+ import com.febricahyaa.clockapp.time.ChronaTimeFormatter
+ import com.febricahyaa.clockapp.model.WorldClockItem
+-import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
+-import com.febricahyaa.clockapp.navigation.chronaSharedBounds
+ import com.febricahyaa.clockapp.ui.components.ChronaCard
+ import com.febricahyaa.clockapp.ui.components.ChronaScaffold
+ import com.febricahyaa.clockapp.ui.components.IconCircleButton
+@@ -99,8 +97,7 @@ fun WorldClockDetailScreen(
+         ) {
+             ChronaCard(
+                 modifier = Modifier
+-                    .fillMaxWidth()
+-                    .chronaSharedBounds(ChronaMotionKeys.worldClockCard(item.id)),
++                    .fillMaxWidth(),
+                 glass = glass,
+             ) {
+                 Column(Modifier.fillMaxWidth().padding(22.dp)) {
+diff --git a/app/src/main/java/com/febricahyaa/clockapp/ui/screens/WorldClockScreen.kt b/app/src/main/java/com/febricahyaa/clockapp/ui/screens/WorldClockScreen.kt
+index 4fff6c8..c4149a9 100644
+--- a/app/src/main/java/com/febricahyaa/clockapp/ui/screens/WorldClockScreen.kt
++++ b/app/src/main/java/com/febricahyaa/clockapp/ui/screens/WorldClockScreen.kt
+@@ -51,8 +51,6 @@ import androidx.compose.ui.text.font.FontWeight
+ import androidx.compose.ui.unit.dp
+ import com.febricahyaa.clockapp.model.TimeZoneCatalog
+ import com.febricahyaa.clockapp.model.WorldClockItem
+-import com.febricahyaa.clockapp.navigation.ChronaMotionKeys
+-import com.febricahyaa.clockapp.navigation.chronaSharedBounds
+ import com.febricahyaa.clockapp.R
+ import com.febricahyaa.clockapp.time.ChronaTimeFormatter
+ import com.febricahyaa.clockapp.ui.components.ChronaCard
+@@ -127,7 +125,7 @@ fun WorldClockScreen(
+                 .fillMaxSize()
+                 .padding(paddingValues)
+                 .padding(horizontal = 20.dp)
+-                .chronaSharedBounds(ChronaMotionKeys.DASHBOARD_WORLD_CLOCK),
++                ,
+         ) {
+             Spacer(Modifier.height(4.dp))
+ 
+@@ -240,8 +238,7 @@ private fun WorldClockCard(
+     ChronaCard(
+         modifier = Modifier
+             .fillMaxWidth()
+-            .clickable(role = Role.Button, onClick = onOpenDetail)
+-            .chronaSharedBounds(ChronaMotionKeys.worldClockCard(item.id)),
++            .clickable(role = Role.Button, onClick = onOpenDetail),
+         glass = glass,
+     ) {
+         Row(
+diff --git a/app/src/main/java/com/febricahyaa/clockapp/ui/screens/WorldClockSearchScreen.kt b/app/src/main/java/com/febricahyaa/clockapp/ui/screens/WorldClockSearchScreen.kt
+index 015569d..94a98c6 100644
+--- a/app/src/main/java/com/febricahyaa/clockapp/ui/screens/WorldClockSearchScreen.kt
++++ b/app/src/main/java/com/febricahyaa/clockapp/ui/screens/WorldClockSearchScreen.kt
+@@ -109,14 +109,15 @@ fun WorldClockSearchScreen(
+             inputField = inputField,
+             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+         )
+-        ExpandedFullScreenSearchBar(
+-            state = searchBarState,
+-            inputField = inputField,
+-        ) {
+-            LazyColumn(
+-                modifier = Modifier.fillMaxSize(),
+-                verticalArrangement = Arrangement.spacedBy(2.dp),
++        if (searchBarState.currentValue == SearchBarValue.Expanded) {
++            ExpandedFullScreenSearchBar(
++                state = searchBarState,
++                inputField = inputField,
+             ) {
++                LazyColumn(
++                    modifier = Modifier.fillMaxSize(),
++                    verticalArrangement = Arrangement.spacedBy(2.dp),
++                ) {
+                 items(results, key = { it.zoneId }, contentType = { "timezone-search" }) { entry ->
+                     ListItem(
+                         onClick = {
+@@ -149,6 +150,7 @@ fun WorldClockSearchScreen(
+                     ) {
+                         Text(entry.city, style = MaterialTheme.typography.titleMedium)
+                     }
++                    }
+                 }
+             }
+         }
+diff --git a/app/src/test/java/com/febricahyaa/clockapp/navigation/ChronaNavigationMotionContractTest.kt b/app/src/test/java/com/febricahyaa/clockapp/navigation/ChronaNavigationMotionContractTest.kt
+deleted file mode 100644
+index 49661ca..0000000
+--- a/app/src/test/java/com/febricahyaa/clockapp/navigation/ChronaNavigationMotionContractTest.kt
++++ /dev/null
+@@ -1,33 +0,0 @@
+-/* Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. */
+-package com.febricahyaa.clockapp.navigation
+-
+-import com.febricahyaa.clockapp.ui.theme.ChronaMotionTokens
+-import org.junit.Assert.assertEquals
+-import org.junit.Assert.assertTrue
+-import org.junit.Test
+-
+-class ChronaNavigationMotionContractTest {
+-    @Test
+-    fun navigation_exit_is_shorter_than_spatial_entry() {
+-        assertTrue(
+-            ChronaMotionTokens.MicroDurationMillis < ChronaMotionTokens.SpatialDurationMillis,
+-        )
+-    }
+-
+-    @Test
+-    fun primary_destination_keys_are_distinct() {
+-        val keys = setOf(
+-            ChronaMotionKeys.DASHBOARD_HERO_CLOCK,
+-            ChronaMotionKeys.DASHBOARD_ALARM,
+-            ChronaMotionKeys.DASHBOARD_TIMER,
+-            ChronaMotionKeys.DASHBOARD_WORLD_CLOCK,
+-            ChronaMotionKeys.DASHBOARD_STOPWATCH,
+-        )
+-        assertEquals(5, keys.size)
+-    }
+-
+-    @Test
+-    fun world_clock_city_key_is_stable() {
+-        assertEquals("world-clock-card:42", ChronaMotionKeys.worldClockCard(42))
+-    }
+-}
+diff --git a/app/src/test/java/com/febricahyaa/clockapp/navigation/ChronaWorldClockRouteTest.kt b/app/src/test/java/com/febricahyaa/clockapp/navigation/ChronaWorldClockRouteTest.kt
+index 317f6b6..1662e80 100644
+--- a/app/src/test/java/com/febricahyaa/clockapp/navigation/ChronaWorldClockRouteTest.kt
++++ b/app/src/test/java/com/febricahyaa/clockapp/navigation/ChronaWorldClockRouteTest.kt
+@@ -14,7 +14,6 @@ class ChronaWorldClockRouteTest {
+         assertTrue("zoneId={zoneId}" in ChronaRoutes.WORLD_DETAIL)
+     }
+ 
+-
+     @Test
+     fun worldDetailRouteEscapesReservedCharactersAndSpaces() {
+         val route = ChronaRoutes.worldDetail("America/Argentina/Buenos Aires?x=1")
+@@ -23,9 +22,4 @@ class ChronaWorldClockRouteTest {
+             route,
+         )
+     }
+-
+-    @Test
+-    fun worldClockMotionKeyIsStableForItemId() {
+-        assertEquals("world-clock-card:42", ChronaMotionKeys.worldClockCard(42L))
+-    }
+ }

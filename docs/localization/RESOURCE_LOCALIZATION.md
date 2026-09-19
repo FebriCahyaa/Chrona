@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
+
 # Chrona resource localization policy
 
 The default `res/values/strings.xml` is the authoritative keyset. The Indonesian resource set is kept synchronized with the default keyset; translated values are preserved where available and new values fall back to the default English copy until reviewed by a translator.

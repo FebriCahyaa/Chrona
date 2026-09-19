@@ -1,0 +1,64 @@
+# Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+name: Chrona Android Toolchain
+
+description: Set up the pinned Chrona Java, Gradle and Android SDK build toolchain.
+
+inputs:
+  install-native:
+    description: Install Chrona's pinned CMake and NDK toolchain.
+    required: false
+    default: 'true'
+  install-emulator:
+    description: Install the Android Emulator package.
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Setup JDK 25 runtime
+      uses: actions/setup-java@v6.0.1
+      with:
+        distribution: temurin
+        java-version: '25'
+        cache: gradle
+
+    - name: Setup JDK 17 compilation toolchain
+      uses: actions/setup-java@v6.0.1
+      id: setup-java-17
+      with:
+        distribution: temurin
+        java-version: '17'
+        set-default: false
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v6.2.0
+      with:
+        cache-provider: basic
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v4.0.1
+      with:
+        cmdline-tools-version: '14742923'
+        packages: |
+          platform-tools
+          platforms;android-37.1
+          build-tools;37.0.0
+
+    - name: Install native toolchain
+      if: inputs.install-native == 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        yes | sdkmanager --licenses >/dev/null || true
+        sdkmanager \
+          'cmake;3.31.5' \
+          'ndk;28.2.13676358'
+
+    - name: Install Android Emulator
+      if: inputs.install-emulator == 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        yes | sdkmanager --licenses >/dev/null || true
+        sdkmanager 'emulator'

@@ -1,0 +1,5 @@
+# Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+fail-on-severity: high
+# Chrona is proprietary, but its dependencies may use permissive/open-source licenses.
+# Deny strong copyleft licenses by default; exceptions must be reviewed explicitly.
+deny-licenses: GPL-2.0, GPL-3.0, AGPL-3.0

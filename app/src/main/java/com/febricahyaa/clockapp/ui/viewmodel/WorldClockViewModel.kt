@@ -6,7 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.febricahyaa.clockapp.core.config.AppDefaults
 import com.febricahyaa.clockapp.data.WorldClockRepository
+import com.febricahyaa.clockapp.data.timezone.TimeZoneCatalog
 import com.febricahyaa.clockapp.model.WorldClockItem
+import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,12 +18,13 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
+/** Complete UI state for the World Clock destination and Dashboard summary. */
 data class WorldClockUiState(
     val items: List<WorldClockItem> = emptyList(),
-    val favorites: Set<String> = AppDefaults.DEFAULT_FAVORITE_CITIES,
+    val favorites: Set<String> = emptySet(),
 )
 
-/** Owns the World Clock list and persistent favorites. */
+/** Owns the World Clock list and persistent favorite zone IDs. */
 class WorldClockViewModel(private val repository: WorldClockRepository) : ViewModel() {
 
     private val mutationMutex = Mutex()
@@ -34,18 +37,19 @@ class WorldClockViewModel(private val repository: WorldClockRepository) : ViewMo
             mutationMutex.withLock {
                 val storedItems = withContext(Dispatchers.IO) { repository.load() }
                 val items = storedItems.ifEmpty { AppDefaults.defaultWorldClocks() }
+
                 if (storedItems.isEmpty()) {
                     withContext(Dispatchers.IO) { repository.save(items) }
                 }
 
                 val storedFavorites = withContext(Dispatchers.IO) { repository.loadFavorites() }
-                val favorites = if (storedFavorites.isEmpty() && storedItems.isEmpty()) {
-                    AppDefaults.DEFAULT_FAVORITE_CITIES
+                val favorites = if (storedItems.isEmpty() && storedFavorites.isEmpty()) {
+                    AppDefaults.DEFAULT_FAVORITE_ZONE_IDS.intersect(items.mapTo(mutableSetOf()) { it.zoneId })
                 } else {
-                    storedFavorites
+                    normalizeFavoriteZoneIds(storedFavorites, items)
                 }
 
-                if (storedFavorites.isEmpty() && storedItems.isEmpty()) {
+                if (favorites != storedFavorites) {
                     withContext(Dispatchers.IO) { repository.saveFavorites(favorites) }
                 }
 
@@ -61,17 +65,35 @@ class WorldClockViewModel(private val repository: WorldClockRepository) : ViewMo
     }
 
     fun remove(item: WorldClockItem) {
-        mutateItems { current -> current - item }
-    }
-
-    fun toggleFavorite(city: String) {
         viewModelScope.launch {
             mutationMutex.withLock {
                 val current = _state.value
-                val updatedFavorites = if (city in current.favorites) {
-                    current.favorites - city
+                val updatedItems = current.items.filterNot { it.id == item.id }
+                val updatedFavorites = current.favorites - item.zoneId
+
+                withContext(Dispatchers.IO) {
+                    repository.save(updatedItems)
+                    repository.saveFavorites(updatedFavorites)
+                }
+
+                _state.value = current.copy(
+                    items = updatedItems,
+                    favorites = updatedFavorites,
+                )
+            }
+        }
+    }
+
+    fun toggleFavorite(zoneId: String) {
+        viewModelScope.launch {
+            mutationMutex.withLock {
+                val current = _state.value
+                if (current.items.none { it.zoneId == zoneId }) return@withLock
+
+                val updatedFavorites = if (zoneId in current.favorites) {
+                    current.favorites - zoneId
                 } else {
-                    current.favorites + city
+                    current.favorites + zoneId
                 }
 
                 withContext(Dispatchers.IO) {
@@ -86,10 +108,31 @@ class WorldClockViewModel(private val repository: WorldClockRepository) : ViewMo
     private fun mutateItems(transform: (List<WorldClockItem>) -> List<WorldClockItem>) {
         viewModelScope.launch {
             mutationMutex.withLock {
-                val updated = transform(_state.value.items)
+                val current = _state.value
+                val updated = transform(current.items)
+                if (updated == current.items) return@withLock
+
                 withContext(Dispatchers.IO) { repository.save(updated) }
-                _state.value = _state.value.copy(items = updated)
+                _state.value = current.copy(items = updated)
             }
         }
+    }
+
+    private fun normalizeFavoriteZoneIds(
+        storedFavorites: Set<String>,
+        items: List<WorldClockItem>,
+    ): Set<String> {
+        val byZone = items.associateBy { it.zoneId }
+        val byCity = items.associateBy { it.city.lowercase(Locale.ROOT) }
+
+        return storedFavorites.mapNotNull { value ->
+            when {
+                value in byZone -> value
+                byCity[value.lowercase(Locale.ROOT)]?.zoneId != null -> byCity[value.lowercase(Locale.ROOT)]?.zoneId
+                else -> TimeZoneCatalog.entries.firstOrNull {
+                    it.city.equals(value, ignoreCase = true) && it.zoneId in byZone
+                }?.zoneId
+            }
+        }.toSet()
     }
 }

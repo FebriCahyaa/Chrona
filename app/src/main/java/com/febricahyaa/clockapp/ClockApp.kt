@@ -229,10 +229,10 @@ private fun ChronaDestinationContent(
                 } else {
                     WorldClockDetailScreen(
                         item = item,
-                        favorite = item.city in worldClockState.favorites,
+                        favorite = item.zoneId in worldClockState.favorites,
                         use24HourFormat = settingsState.use24HourFormat,
                         glass = settingsState.settings.themeMode == AppThemeMode.MATERIAL_YOU,
-                        onToggleFavorite = { worldClockViewModel.toggleFavorite(item.city) },
+                        onToggleFavorite = { worldClockViewModel.toggleFavorite(item.zoneId) },
                         onBack = { navigation.back() },
                     )
                 }
@@ -241,16 +241,16 @@ private fun ChronaDestinationContent(
             AppDestination.WORLD_SEARCH -> {
                 WorldClockSearchScreen(
                     existingZoneIds = worldClockState.items.mapTo(mutableSetOf()) { it.zoneId },
-                onAdd = { city, _, zoneId ->
-                    worldClockViewModel.add(
-                        WorldClockItem(
-                            id = System.currentTimeMillis(),
-                            city = city,
-                            zoneId = zoneId,
-                        ),
-                    )
-                    navigation.replaceCurrent(AppDestination.WORLD)
-                },
+                    onAdd = { city, zoneId ->
+                        worldClockViewModel.add(
+                            WorldClockItem(
+                                id = System.currentTimeMillis(),
+                                city = city,
+                                zoneId = zoneId,
+                            ),
+                        )
+                        navigation.replaceCurrent(AppDestination.WORLD)
+                    },
                     onBack = { navigation.back() },
                 )
             }

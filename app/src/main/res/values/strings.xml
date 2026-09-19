@@ -1,3 +1,4 @@
+<!-- Copyright (c) 2026 Febrian Rahmad Cahya -->
 <resources>
     <string name="app_name">Chrona</string>
     <string name="home_title">Chrona</string>
@@ -67,13 +68,17 @@
     <string name="world_add_to_favorites">Add to favorites</string>
     <string name="world_remove_from_favorites">Remove from favorites</string>
     <string name="world_timezone_details">Timezone details</string>
-    <string name="world_detail_update_note">Updates continuously from the unified Chrona time engine.</string>
+    <string name="world_detail_update_note">Updates continuously from the unified Chrona time engine and follows the device timezone database.</string>
     <string name="world_search_hint">Search a city or country</string>
-    <string name="world_search_summary">Search 25 curated timezones</string>
+    <string name="world_search_summary">Search the worldwide timezone catalog</string>
     <string name="world_search_matches">%1$d matching cities</string>
     <string name="world_search_close">Close search</string>
     <string name="world_search_back">Back to World Clock</string>
     <string name="world_search_add_city">Add %1$s</string>
+    <string name="world_search_no_results">No matching cities</string>
+    <string name="world_search_no_results_hint">Try another city, country, or time zone.</string>
+    <string name="world_favorite_saved_status">Saved to favorites</string>
+    <string name="world_favorite_tap_hint">Tap the star above to add this city to favorites.</string>
     <string name="world_region_all">All</string>
     <string name="world_region_favorites">Favorites</string>
     <string name="world_region_asia">Asia</string>

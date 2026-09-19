@@ -1,0 +1,58 @@
+# Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+name: Chrona Toolchain Audit
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 4 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Pinned + current Android toolchain
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: ./.github/actions/setup-android
+        with:
+          install-native: 'true'
+          install-emulator: 'true'
+      - name: Install current Android CLI
+        run: bash scripts/ci/install-android-cli.sh
+      - name: Verify toolchain
+        env:
+          CHRONA_REQUIRE_ANDROID_CLI: '1'
+        run: bash scripts/ci/verify-toolchain.sh
+      - name: Generate toolchain manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+          from pathlib import Path
+          def out(command):
+              return subprocess.check_output(command, text=True, stderr=subprocess.STDOUT).strip().splitlines()[0]
+          data = {
+              "java": out(["java", "-version"]),
+              "gradle": out(["./gradlew", "--version"]),
+              "androidCli": out(["android", "--version"]),
+              "sdkmanager": out(["sdkmanager", "--version"]),
+              "platform": "android-37.1",
+              "buildTools": "37.0.0",
+              "ndk": "28.2.13676358",
+              "cmake": "3.31.5",
+          }
+          Path("toolchain-manifest.json").write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+          PY
+          cat toolchain-manifest.json
+      - uses: actions/upload-artifact@v7.0.1
+        with:
+          name: chrona-toolchain-${{ github.sha }}
+          path: toolchain-manifest.json
+          if-no-files-found: error
+          retention-days: 14

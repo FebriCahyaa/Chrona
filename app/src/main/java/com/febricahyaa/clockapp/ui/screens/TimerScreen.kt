@@ -174,14 +174,14 @@ fun TimerScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp, vertical = 4.dp)
-                ,
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .navigationBarsPadding(),
         ) {
             BoxWithConstraints(
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                val heroSize = min(maxWidth.value - 24f, 360f).coerceAtLeast(240f).dp
-                val heroScale = (heroSize.value / 320f).coerceIn(0.78f, 1.12f)
+                val heroSize = min(maxWidth.value - 24f, 320f).coerceAtLeast(240f).dp
+                val heroScale = (heroSize.value / 320f).coerceIn(0.78f, 1f)
                 val heroStroke = (14f * heroScale).coerceIn(11f, 18f).dp
 
                 Box(

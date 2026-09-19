@@ -1,0 +1,27 @@
+# Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+name: Telegram / Dependabot
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, closed]
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+      - uses: actions/setup-python@v6.1.0
+        with:
+          python-version: '3.13'
+      - name: Send Dependabot notification
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.CHRONABOT_DEPENDABOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.CHRONABOT_DEPENDABOT_CHAT_ID }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/telegram/notify.py --kind dependabot

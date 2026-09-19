@@ -1,0 +1,79 @@
+# Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+name: Chrona Security
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '41 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    name: Dependency review
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/dependency-review-action@v5
+        with:
+          config-file: ./.github/dependency-review-config.yml
+
+  license-audit:
+    name: License inventory audit
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-python@v6.1.0
+        with:
+          python-version: '3.13'
+      - run: python3 scripts/audit/license-audit.py
+
+  codeql:
+    name: CodeQL / Kotlin + C++
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+      packages: read
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: ./.github/actions/setup-android
+      - uses: github/codeql-action/init@v4.38.0
+        with:
+          languages: java-kotlin, cpp
+          build-mode: manual
+          config-file: ./.github/codeql-config.yml
+      - name: Build for CodeQL
+        run: ./gradlew --no-daemon --stacktrace assembleDebug
+      - uses: github/codeql-action/analyze@v4.38.0
+        with:
+          category: /language:java-kotlin-cpp
+
+  scorecard:
+    if: github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    name: OpenSSF Scorecard
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      security-events: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - name: Run Scorecard
+        uses: ossf/scorecard-action@v2.4.4
+        with:
+          results_file: scorecard-results.sarif
+          results_format: sarif
+          publish_results: true
+      - name: Upload Scorecard results
+        uses: github/codeql-action/upload-sarif@v4.38.0
+        with:
+          sarif_file: scorecard-results.sarif

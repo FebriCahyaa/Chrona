@@ -1,3 +1,25 @@
+<!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
+# Changelog
+
+## Unreleased — Repository Engineering Hardening
+
+- Reorganized active scripts into audit, CI, development, localization, release, Telegram, and World Clock diagnostic domains.
+- Removed proven-dead UI/source classes and superseded CI verifier scripts; preserved historical phase records under `docs/archive/`.
+- Added repository-wide copyright, dependency-license, resource, localization, and dynamic-timezone audit gates.
+- Added the Chrona Android composite toolchain setup for JDK 25 Gradle runtime, JDK 17 compilation toolchain, pinned Android SDK packages, and optional native/emulator components.
+- Added separate Telegram notification bots for CI, ordinary pull requests, Dependabot, and releases with non-overlapping templates.
+- Added Crowdin localization synchronization and a documented expansion policy for additional languages/locales.
+- Kept World Clock data dynamic from Android ICU/IANA runtime data instead of vendoring a frozen timezone database.
+- Rebuilt GitHub Actions around least-privilege permissions, scheduled maintenance, security scanning, device QA, release provenance, and deterministic artifacts.
+- Added a single local `scripts/dev/verify.sh` entrypoint for repeatable repository verification.
+
+### Verification — current source audit
+
+- Repository source/resource/license/timezone/localization audits pass in the offline analysis environment.
+- GitHub Actions YAML parses successfully.
+- Telegram renderer tests pass.
+- Full Gradle execution remains dependent on downloading Gradle 9.7.1 from the configured distribution service on a networked runner.
+
 ## Unreleased — Phase 5A — Unified Time Engine Hardening
 
 - Added an injectable wall-clock source and application-scoped shared wall-clock StateFlow.
@@ -43,7 +65,7 @@
 
 ## 0.10.1 — Edge-to-Edge / CI Resolution Reliability
 
-- Fix `scripts/verify-android17.sh` to validate `ChronaBentoHomeScreen.kt` after the Dashboard rename.
+- Fix `scripts/ci/verify-android17.sh` to validate `ChronaBentoHomeScreen.kt` after the Dashboard rename.
 - Accept the implemented `CircularProgressIndicator` as a valid timer progress surface; the verifier previously rejected the real implementation because it only looked for the wavy indicator or `drawArc`.
 - Verify Dashboard edge-to-edge and collapsing-toolbar APIs explicitly (`enableEdgeToEdge`, `Scaffold`, `LargeTopAppBar`, `exitUntilCollapsedScrollBehavior`, and the nested-scroll connection).
 - Remove the redundant legacy Kotlin `buildscript` classpath declaration so the Kotlin Gradle plugin is resolved only through the plugins DSL.
@@ -137,7 +159,7 @@ Chrona release notes are evidence-based. Completed entries describe changes that
 - Enabled `MaterialExpressiveTheme` with expressive motion and increased shape scale for the Chrona UI.
 - Replaced the timer wavy/seek interaction with a numeric HHMMSS keypad and a thick rounded circular countdown indicator.
 - Added Material 3 Adaptive window APIs, explicit resizeable-activity support, and predictive-back readiness for modern Android windows.
-- Added `scripts/verify-android17.sh`; Debug, package-maintenance, and Release CI now run the Android 17 toolchain verification gate.
+- Added `scripts/ci/verify-android17.sh`; Debug, package-maintenance, and Release CI now run the Android 17 toolchain verification gate.
 - Kept Debug, test, lint, native, and Release responsibilities separated in GitHub Actions.
 - Release signing remains isolated to the `release` GitHub Environment and is not stored in the repository.
 - Release artifacts are designed to be verified with `apksigner` and accompanied by a SHA-256 checksum before publication.

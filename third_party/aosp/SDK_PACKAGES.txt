@@ -1,8 +1,0 @@
-# Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
-Android API: 37
-Android SDK Platform: 37; compile extension/minor requirement is handled by the Android Gradle Plugin
-Build Tools: 37.0.0
-Java: 17
-Android Gradle Plugin: 9.4.0
-Gradle: 9.7.1
-Android SDK management: Android CLI (android sdk)

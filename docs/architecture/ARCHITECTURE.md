@@ -1,112 +1,38 @@
-<!--
-Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
--->
-
+<!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
 # Chrona Architecture
 
-Chrona is a layered Kotlin + Java + C++ Android clock application. UI state is kept separate from persistence, timing engines, and Android background lifecycle so the clock remains correct when the app leaves the foreground.
-
-## Architecture
-
-```text
-Compose UI
-    │
-    ▼
-Feature ViewModels
-    │
-    ▼
-Repositories / Gateways
-    │
-    ├── SharedPreferences persistence
-    ├── AlarmManager
-    ├── Foreground alert services
-    └── Java / JNI time + math boundary
-                       │
-                       ▼
-                    C++ core
+```mermaid
+flowchart TD
+    UI[Jetpack Compose UI] --> VM[Feature ViewModels]
+    VM --> REPO[Repository Interfaces]
+    REPO --> DATA[Android Persistence / Platform Gateways]
+    VM --> TIME[Unified Chrona Time Engine]
+    TIME --> WALL[Wall Clock]
+    TIME --> MONO[Monotonic Clock]
+    TIME --> NATIVE[JNI Bridge]
+    NATIVE --> CPP[C++20 timing/math]
+    DATA --> ANDROID[Android Services / Receivers / WorkManager]
 ```
 
-## Feature boundaries
+## Layers
 
-### Clock
+| Layer | Responsibility |
+| --- | --- |
+| `ui/` | Compose screens, reusable components, theme and screen state rendering |
+| `ui/viewmodel/` | Feature state machines and user-intent orchestration |
+| `data/` | Persistence and external data access |
+| `model/` | Immutable feature models |
+| `navigation/` | Route definitions and navigation policy |
+| `time/` | Unified wall-clock/monotonic timing abstractions |
+| `alarm/` | Exact alarm scheduling, receivers, services, notification/audio behavior |
+| `timer/` | Timer persistence, scheduling, receivers, and foreground service |
+| `core/` | Cross-cutting timing/math/configuration helpers |
+| `data/timezone/` | Runtime timezone catalog backed by Android ICU/IANA IDs |
 
-`ChronaTimeEngine` and `ChronaTimeFormatter` provide the shared Kotlin time/presentation layer. `NativeClock` and the Java `ChronaNativeBridge` expose deterministic native primitives with a Kotlin `ClockTimeMath` fallback. Java is intentionally limited to the JNI/platform boundary; C++ remains a small deterministic primitive layer.
+## State ownership
 
-### Alarm
+Long-lived feature state is owned by feature ViewModels and exposed as `StateFlow`. The application composition root collects the feature flows once and passes immutable state into destinations. This keeps Dashboard and detail screens synchronized without duplicating repositories or creating per-screen state copies.
 
-The alarm lifecycle is intentionally split into short-lived and long-lived responsibilities:
+## Navigation
 
-```text
-AlarmManager
-    ↓
-AlarmReceiver
-    ↓
-AlarmService
-    ├── foreground notification
-    ├── ringtone / vibration
-    └── AlarmStateManager
-            ├── one-shot → disable + cancel
-            └── repeating → schedule next occurrence
-```
-
-`BootReceiver` also reconciles persisted alarms after boot, locale/time changes, package replacement, and exact-alarm permission state changes.
-
-### Timer
-
-```text
-TimerViewModel
-    ├── TimerRepository
-    └── TimerSchedulerGateway
-             ↓
-        AlarmManager
-             ↓
-        TimerReceiver
-             ↓
-        TimerService
-             └── completion alert lifecycle
-```
-
-The timer state and end timestamp are persisted so the visible UI is not the source of truth for whether a timer is active.
-
-### Stopwatch
-
-```text
-StopwatchViewModel
-       ↓
-StopwatchRepository
-       ↓
-SharedPreferences
-```
-
-The ViewModel uses `SystemClock.elapsedRealtime()` for running-time measurement and persists checkpoints so normal process death does not silently reset the stopwatch. A reboot is treated conservatively: the previously running stopwatch is restored as paused rather than fabricating elapsed time across a clock reset.
-
-### World Clock
-
-World Clock cities and favorites are persisted separately from the UI. City identity is based on timezone ID, preventing duplicate entries for the same timezone.
-
-## Dependency direction
-
-```text
-UI
- ↓
-ViewModel
- ↓
-Repository / Gateway
- ↓
-Android implementation
- ↓
-Java / JNI boundary
- ↓
-C++ primitives
-```
-
-`AppContainer` is the manual dependency composition root. Android-instantiated components such as receivers and services read their dependencies from the application container because Android constructs them reflectively.
-
-## Design rules
-
-1. UI code does not own durable alarm, timer, stopwatch, or world-clock state.
-2. Receivers perform only short entry-point work and delegate long-running behavior to services or persistent schedulers.
-3. One-shot and repeating alarm state transitions are explicit and testable.
-4. Exact-alarm capability is checked before scheduling; Android 12–32 may require special access, while newer releases can use the clock/timer exact-alarm capability declared by the application.
-5. Native code does not own Android lifecycle state, persistence, navigation, or Compose state.
-6. Source attribution and license notices are preserved when external source is incorporated; project-owned files use Chrona's project copyright notice.
+Routes are centralized in `ChronaRoutes`. Query arguments are URL-encoded using JVM-safe code rather than Android framework APIs so route logic remains testable in local JVM tests.

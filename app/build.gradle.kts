@@ -3,8 +3,8 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.plugin.compose")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.compose)
 }
 
 // Release signing is intentionally supplied by the CI environment rather than
@@ -158,48 +158,43 @@ kotlin {
 
 dependencies {
     // CHRONA-SECURITY-CONSTRAINTS
-    // Patched transitive versions reported by GitHub Dependency Graph.
-    constraints { implementation("org.bitbucket.b_c:jose4j:0.9.6") }
-    constraints { implementation("org.jdom:jdom2:2.0.6.1") }
-    constraints { implementation("org.apache.httpcomponents:httpclient:4.5.13") }
-    constraints { implementation("org.apache.commons:commons-lang3:3.18.0") }
-    constraints { implementation("org.bouncycastle:bcpkix-jdk18on:1.84") }
+    constraints { implementation(libs.jose4j) }
+    constraints { implementation(libs.jdom2) }
+    constraints { implementation(libs.httpclient) }
+    constraints { implementation(libs.commons.lang3) }
+    constraints { implementation(libs.bouncycastle.bcpkix) }
 
-    val composeBom = platform("androidx.compose:compose-bom-alpha:2026.09.00")
-    implementation(composeBom)
-    androidTestImplementation(composeBom)
+    implementation(platform(libs.compose.bom))
+    androidTestImplementation(platform(libs.compose.bom))
 
-    implementation("androidx.core:core-ktx:1.19.0")
-    implementation("androidx.annotation:annotation:1.9.1")
-    implementation("androidx.activity:activity-compose:1.13.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.10.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.10.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.10.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
-    implementation("androidx.datastore:datastore-preferences:1.2.1")
-    implementation("androidx.work:work-runtime-ktx:2.11.2")
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.navigation:navigation-compose:2.10.0")
-    implementation("androidx.compose.animation:animation")
-    implementation("androidx.compose.runtime:runtime-saveable")
-    implementation("com.squareup.retrofit2:retrofit:3.0.0")
-    implementation("com.squareup.retrofit2:converter-gson:3.0.0")
+    implementation(libs.core.ktx)
+    implementation(libs.annotation)
+    implementation(libs.activity.compose)
+    implementation(libs.lifecycle.runtime.ktx)
+    implementation(libs.lifecycle.runtime.compose)
+    implementation(libs.lifecycle.viewmodel.ktx)
+    implementation(libs.lifecycle.viewmodel.compose)
+    implementation(libs.datastore.preferences)
+    implementation(libs.work.runtime.ktx)
+    implementation(libs.compose.ui)
+    implementation(libs.compose.ui.tooling.preview)
+    implementation(libs.compose.material3)
+    implementation(libs.navigation.compose)
+    implementation(libs.compose.animation)
+    implementation(libs.compose.runtime.saveable)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+    implementation(libs.compose.adaptive)
+    implementation(libs.compose.material.icons.core)
+    implementation(libs.compose.material.icons.extended)
 
-    // Material 3 Expressive / Android 17 UI stack. The alpha BOM is intentional:
-    // it exposes the latest Material 3 Expressive APIs (1.5.0-alpha28) and
-    // Compose 1.13.0-alpha03 as of September 2026.
-    implementation("androidx.compose.material3.adaptive:adaptive:1.4.0-alpha02")
-    implementation("androidx.compose.material:material-icons-core")
-    implementation("androidx.compose.material:material-icons-extended")
+    coreLibraryDesugaring(libs.desugar.jdk)
 
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlin.test)
 
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("org.jetbrains.kotlin:kotlin-test:2.4.20")
-
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    androidTestImplementation(libs.androidx.test.junit)
+    androidTestImplementation(libs.compose.ui.test.junit4)
+    debugImplementation(libs.compose.ui.tooling)
+    debugImplementation(libs.compose.ui.test.manifest)
 }

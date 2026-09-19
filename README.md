@@ -1,152 +1,127 @@
-<!--
-Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
--->
+<!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
 
 # Chrona
 
-**Time, your way.**
+[![Chrona CI](https://github.com/FebriCahyaa/Chrona/actions/workflows/ci.yml/badge.svg)](https://github.com/FebriCahyaa/Chrona/actions/workflows/ci.yml)
+[![Security](https://github.com/FebriCahyaa/Chrona/actions/workflows/security.yml/badge.svg)](https://github.com/FebriCahyaa/Chrona/actions/workflows/security.yml)
+[![Device QA](https://github.com/FebriCahyaa/Chrona/actions/workflows/device-qa.yml/badge.svg)](https://github.com/FebriCahyaa/Chrona/actions/workflows/device-qa.yml)
+[![License](https://img.shields.io/badge/license-proprietary-orange.svg)](LICENSE)
 
-Chrona is an Android clock application built with Jetpack Compose, Kotlin, Java, XML resources, and a small C++/JNI timing layer. The repository is organized around a maintainable application foundation and a reproducible CI/CD pipeline.
+**A calm, precise Android time workspace.**
 
-> The repository homepage intentionally contains only the information needed to understand, build, verify, and navigate the project. Detailed technical notes live in [`docs/`](docs/).
+Chrona combines local time, Alarm, Timer, Stopwatch, and World Clock features in a Jetpack Compose application with a unified time engine, persistent feature state, adaptive layouts, and a reproducible GitHub Actions delivery pipeline.
 
-## Project status
+## Highlights
 
-The current repository is focused on the **Chrona foundation, architecture, and build/release infrastructure**. CI and runtime status are reported from actual workflow results rather than assumed from source configuration.
-
-## Project records
-
-Completed phase handoffs and generated phase patches are archived under `docs/archive/phases/`. The active tree is kept focused on source, resources, tests, tooling, and release configuration.
-
-## What is in the app
-
-| Area | Implementation |
-| --- | --- |
-| UI | Kotlin + Jetpack Compose + Material 3 Expressive + adaptive layouts |
-| Features | Clock, World Clock, Timer, Stopwatch, Alarm, Settings |
-| State | Dedicated feature ViewModels |
-| Data | Repository interfaces + Android implementations |
-| DI | Manual `AppContainer` composition root |
-| Platform | Kotlin time engine, Java JNI bridge/Android receivers, widget provider |
-| Native | C++20 timing/math layer through JNI |
-| Resources | Android XML themes, strings, widget and adaptive icon resources |
+- 🕒 Unified wall-clock and monotonic timing abstractions.
+- ⏰ Persistent alarms with Android scheduling/receiver integration.
+- ⏱️ Timer and Stopwatch with durable state handling.
+- 🌍 World Clock backed by the device's current ICU/IANA timezone data rather than a frozen city list.
+- 🎨 Compose + Material 3 UI with responsive/adaptive layouts.
+- 🔐 Dependency, CodeQL, Scorecard, licensing, and release-provenance checks.
+- 🌐 Crowdin-based localization workflow.
+- 🤖 Dedicated Telegram bots for CI, PR, Dependabot, and release events.
 
 ## Architecture
 
-```text
-Compose UI
-    │
-    ▼
-Feature ViewModels
-    │
-    ▼
-Repositories / Gateways
-    │
-    ├── Android platform services
-    │
-    └── Java time + JNI bridge
-                 │
-                 ▼
-             C++20 core
+```mermaid
+flowchart LR
+    UI[Compose UI] --> VM[ViewModels]
+    VM --> DATA[Repositories]
+    DATA --> PREFS[Android persistence]
+    VM --> TIME[Unified time engine]
+    TIME --> PLATFORM[Android time / lifecycle]
+    TIME --> JNI[JNI bridge]
+    JNI --> CPP[C++20 timing layer]
 ```
 
-The native layer is deliberately small. Application state, navigation, persistence, and Android lifecycle behavior remain in Kotlin/Java.
+## World Clock data model
 
-## Build environment
-
-The project declares an Android 17 / Jetpack Compose UI toolchain in source:
-
-- JDK 17
-- Android 17 (API 37)
-- Android SDK Platform 37 (Android 17 API 37 minor release)
-- Android Build Tools 37.0.0
-- NDK 28.2.13676358
-- CMake 3.31.6
-- Gradle 9.7.1
-- Android Gradle Plugin 9.4.0
-- Kotlin 2.4.20
-- Jetpack Compose BOM 2026.09.00 (alpha channel for the latest Android 17-era Compose APIs)
-- Material 3 Expressive 1.5.0-alpha28 via the Compose alpha BOM
-- Material 3 Adaptive 1.4.0-alpha02 for window-aware layouts
-
-See [`docs/build/BUILD_ENVIRONMENT.md`](docs/build/BUILD_ENVIRONMENT.md) for the authoritative project build notes.
-
-## Local build
-
-```bash
-chmod +x ./gradlew
-./gradlew test
-./gradlew lint
-./gradlew assembleDebug
+```mermaid
+flowchart TD
+    ICU[Android ICU / device tzdata] --> IDS[Canonical IANA zone IDs]
+    IDS --> CATALOG[TimeZoneCatalog]
+    CATALOG --> SEARCH[Search & region filters]
+    CATALOG --> SAVED[Saved World Clock items]
+    SAVED --> FAVORITES[Favorite zone IDs]
+    FAVORITES --> DASH[Dashboard summary]
 ```
 
-Release builds require the release signing environment described in [`docs/release/RELEASE_SIGNING.md`](docs/release/RELEASE_SIGNING.md).
+Chrona follows the timezone data shipped by the Android runtime. The IANA upstream reference for this repository documentation is release 2026d, published 2026-09-11. Chrona does not vendor a duplicate static copy. See https://www.iana.org/time-zones/releases/2026d.
 
-## CI / CD
+## CI/CD
 
-GitHub Actions is intentionally separated by responsibility. Every Android build job installs and verifies the Android 17 SDK platform, Build Tools, NDK, and CMake toolchain with the official Android CLI before Gradle tasks run:
+Chrona uses **AES — Analyze → Execute → Ship**.
 
-| Workflow | Purpose | Automatic? |
-| --- | --- | --- |
-| `debug-matrix.yml` | Debug audit, tests, lint, and APK build matrix | Yes |
-| `release.yml` | Signed release APK, verification, checksum, changelog, GitHub Release | Manual |
-| `package-maintenance.yml` | Build-tool/package maintenance checks | Scheduled / manual |
-| `dependabot-auto-merge.yml` | Handles eligible Dependabot pull requests | Event-driven |
-
-The release pipeline performs the following gates before publishing:
-
-```text
-version input
-    ↓
-tests + lint
-    ↓
-signed release APK
-    ↓
-apksigner verification
-    ↓
-SHA-256 checksum
-    ↓
-verified changelog entry
-    ↓
-repository version/changelog commit
-    ↓
-GitHub Release + artifacts
+```mermaid
+flowchart LR
+    PR[Pull Request] --> A[AES Analyze]
+    MAIN[main] --> A
+    A --> E[AES Execute]
+    E --> D[Device QA]
+    D --> S[AES Ship]
+    S --> GH[GitHub Release]
+    SEC[Security] --> A
+    LOC[Localization] --> PR
 ```
 
-The release workflow uses the `release` GitHub Environment and never stores the private release keystore in the repository.
+The production build is intentionally separate from normal PR CI and is protected by the `release` GitHub Environment.
+
+## Build toolchain
+
+| Tool | Project pin |
+| --- | --- |
+| Gradle | 9.7.1 |
+| Android Gradle Plugin | 9.4.0 |
+| Kotlin | 2.4.20 |
+| Gradle runtime JDK | 25 |
+| Java/Kotlin compilation toolchain | 17 |
+| Android API | 37 / Platform 37.1 |
+| Build Tools | 37.0.0 |
+| CMake | 3.31.5 |
+| NDK | 28.2.13676358 |
 
 ## Repository layout
 
-```text
-Chrona/
-├── app/                     Android application source
-├── .github/                 CI, Dependabot, issue/PR templates, ownership
-├── docs/                    Architecture, build, audit, design, release notes
-├── scripts/                 Repository maintenance scripts
-├── gradle/                  Gradle wrapper files
-├── build.gradle.kts         Root build configuration
-├── settings.gradle.kts      Project/module configuration
-├── gradle.properties        Gradle/Android properties
-├── gradlew                  Gradle wrapper
-├── gradlew.bat              Gradle wrapper for Windows
-├── CHANGELOG.md             Verified release history
-├── LICENSE                  Repository copyright terms
-├── COPYRIGHT.md             Copyright and third-party notice
-└── README.md                Repository overview
+See [`docs/repository/REPOSITORY_STRUCTURE.md`](docs/repository/REPOSITORY_STRUCTURE.md).
+Historical phase records are isolated under `docs/archive/` and are not used by active build, test, or release tooling.
+
+## Local development
+
+```bash
+chmod +x ./gradlew
+./scripts/audit/source-audit.sh
+./gradlew testDebugUnitTest
+./gradlew lintDebug
+./gradlew assembleDebug
 ```
 
-## Documentation
+For environment setup guidance, see [`docs/build/BUILD_ENVIRONMENT.md`](docs/build/BUILD_ENVIRONMENT.md).
 
-Start with [`docs/README.md`](docs/README.md) for the documentation map.
+## Localization
 
-## Release policy
+English is the source language. Translations are managed with Crowdin and synchronized back to Android resource directories through GitHub Actions. See [`docs/localization/LOCALIZATION.md`](docs/localization/LOCALIZATION.md) and [`docs/localization/LANGUAGES.md`](docs/localization/LANGUAGES.md).
 
-Chrona release notes must describe only changes supported by source inspection or successful CI results. Unverified features, fixes, performance claims, and test results are not added to release notes.
+## Security and licensing
 
-Release artifacts include the signed APK, SHA-256 checksum, and signature verification reports.
+Chrona's original source/design/documentation remain proprietary. Third-party software stays under its own licenses and notices. See:
 
-## Copyright
+- [`LICENSE`](LICENSE)
+- [`COPYRIGHT.md`](COPYRIGHT.md)
+- [`docs/legal/DEPENDENCY_LICENSES.md`](docs/legal/DEPENDENCY_LICENSES.md)
+- [`third_party/licenses/THIRD_PARTY_NOTICES.md`](third_party/licenses/THIRD_PARTY_NOTICES.md)
+- [`SECURITY.md`](SECURITY.md)
+
+GitHub Dependency Review provides dependency-diff visibility and can enforce vulnerability/license rules on pull requests.
+
+## Telegram operations
+
+Four independent Telegram bots are supported so CI, pull-request, Dependabot, and release notifications are not mixed together. Configuration is documented in [`docs/operations/TELEGRAM_BOTS.md`](docs/operations/TELEGRAM_BOTS.md).
+
+## Symlinks
+
+Do not use repository-required symlinks. Shared build/CI logic belongs in Gradle version catalogs, reusable Actions, composite Actions, or versioned scripts. See [`docs/repository/SYMLINK_POLICY.md`](docs/repository/SYMLINK_POLICY.md).
+
+## License
 
 © 2026 Febrian Rahmad Cahya. All rights reserved.
-
-See [`COPYRIGHT.md`](COPYRIGHT.md) and [`LICENSE`](LICENSE) for the repository copyright notice and third-party licensing boundary.

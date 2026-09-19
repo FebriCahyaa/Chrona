@@ -1,17 +1,32 @@
 # Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
-
 version: 2
 updates:
   - package-ecosystem: gradle
-    directory: '/'
+    directory: "/"
     schedule:
       interval: weekly
-    open-pull-requests-limit: 10
+      day: monday
+      time: "04:00"
+    open-pull-requests-limit: 8
+    labels: [dependencies, android]
     groups:
-      android-gradle:
-        patterns: ['com.android.tools.build:gradle', 'org.jetbrains.kotlin:*', 'com.google.dagger:*']
+      androidx:
+        patterns:
+          - "androidx.*"
+      compose:
+        patterns:
+          - "androidx.compose.*"
+      kotlin:
+        patterns:
+          - "org.jetbrains.kotlin:*"
+      networking:
+        patterns:
+          - "com.squareup.retrofit2:*"
   - package-ecosystem: github-actions
-    directory: '/'
+    directory: "/"
     schedule:
       interval: weekly
-    open-pull-requests-limit: 10
+      day: monday
+      time: "04:15"
+    open-pull-requests-limit: 8
+    labels: [dependencies, github-actions]

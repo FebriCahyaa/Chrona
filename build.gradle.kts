@@ -1,22 +1,23 @@
 /* Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. */
 
 plugins {
-    id("com.android.application") version "9.4.0" apply false
-    id("org.jetbrains.kotlin.plugin.compose") version "2.4.20" apply false
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.kotlin.compose) apply false
 }
 
 // CHRONA-SECURITY-RESOLUTION
-// These constraints apply to project configurations so patched transitive
-// versions are selected when vulnerable versions are requested.
+// Centralized constraints keep patched transitive versions consistent across
+// all configurations while leaving the direct dependency declarations in the
+// app module version-catalog managed.
 allprojects {
     configurations.configureEach {
         resolutionStrategy.eachDependency {
             when (requested.group to requested.name) {
-                "org.bitbucket.b_c" to "jose4j" -> useVersion("0.9.6")
-                "org.jdom" to "jdom2" -> useVersion("2.0.6.1")
-                "org.apache.httpcomponents" to "httpclient" -> useVersion("4.5.13")
-                "org.apache.commons" to "commons-lang3" -> useVersion("3.18.0")
-                "org.bouncycastle" to "bcpkix-jdk18on" -> useVersion("1.84")
+                "org.bitbucket.b_c" to "jose4j" -> useVersion(libs.versions.jose4j.get())
+                "org.jdom" to "jdom2" -> useVersion(libs.versions.jdom2.get())
+                "org.apache.httpcomponents" to "httpclient" -> useVersion(libs.versions.httpclient.get())
+                "org.apache.commons" to "commons-lang3" -> useVersion(libs.versions.commonsLang3.get())
+                "org.bouncycastle" to "bcpkix-jdk18on" -> useVersion(libs.versions.bouncycastle.get())
             }
         }
     }

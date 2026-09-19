@@ -1,0 +1,8 @@
+# Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+name: Chrona CodeQL
+queries:
+  - uses: security-extended
+paths-ignore:
+  - docs/archive/**
+  - build/**
+  - app/build/**

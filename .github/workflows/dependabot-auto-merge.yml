@@ -1,5 +1,4 @@
 # Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
-
 name: Dependabot Auto Merge
 
 on:
@@ -14,11 +13,9 @@ jobs:
   auto-merge:
     if: github.actor == 'dependabot[bot]' && startsWith(github.event.pull_request.head.ref, 'dependabot/')
     runs-on: ubuntu-24.04
-
     steps:
-      - name: Enable auto-merge for Dependabot PR
+      - name: Enable auto-merge after required checks
         env:
-          GH_TOKEN: ${{ secrets.DEPENDABOT_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
           PR_URL: ${{ github.event.pull_request.html_url }}
-        run: |
-          gh pr merge "$PR_URL" --auto --squash --delete-branch
+        run: gh pr merge "$PR_URL" --auto --squash --delete-branch

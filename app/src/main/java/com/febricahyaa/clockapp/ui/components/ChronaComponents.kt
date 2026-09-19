@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -159,7 +160,7 @@ fun IconCircleButton(
             haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
             onClick()
         },
-        modifier = modifier.size(44.dp),
+        modifier = modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp),
         shape = CircleShape,
         color = if (active) MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
         else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.07f),
@@ -195,7 +196,7 @@ fun ScreenHeader(
                 icon = Icons.AutoMirrored.Filled.ArrowBack,
                 onClick = onBack,
                 contentDescription = stringResource(R.string.nav_back),
-                modifier = Modifier.size(44.dp),
+                modifier = Modifier.size(48.dp),
             )
         }
         Column(Modifier.weight(1f)) {

@@ -1,0 +1,167 @@
+# Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+# Direct/pinned artifacts declared by Chrona. Transitive dependency graphs are additionally checked by GitHub dependency review.
+
+[licenses."androidx.compose:compose-bom-alpha"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/compose/bom"
+scope = "direct"
+
+[licenses."androidx.core:core-ktx"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/androidx/releases/core"
+scope = "direct"
+
+[licenses."androidx.annotation:annotation"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/androidx/releases/annotation"
+scope = "direct"
+
+[licenses."androidx.activity:activity-compose"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/androidx/releases/activity"
+scope = "direct"
+
+[licenses."androidx.lifecycle:lifecycle-runtime-ktx"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/androidx/releases/lifecycle"
+scope = "direct"
+
+[licenses."androidx.lifecycle:lifecycle-runtime-compose"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/androidx/releases/lifecycle"
+scope = "direct"
+
+[licenses."androidx.lifecycle:lifecycle-viewmodel-ktx"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/androidx/releases/lifecycle"
+scope = "direct"
+
+[licenses."androidx.lifecycle:lifecycle-viewmodel-compose"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/androidx/releases/lifecycle"
+scope = "direct"
+
+[licenses."androidx.datastore:datastore-preferences"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/androidx/releases/datastore"
+scope = "direct"
+
+[licenses."androidx.work:work-runtime-ktx"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/androidx/releases/work"
+scope = "direct"
+
+[licenses."androidx.compose.ui:ui"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/compose"
+scope = "direct"
+
+[licenses."androidx.compose.ui:ui-tooling-preview"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/compose"
+scope = "direct"
+
+[licenses."androidx.compose.ui:ui-tooling"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/compose"
+scope = "direct-debug"
+
+[licenses."androidx.compose.ui:ui-test-junit4"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/compose/testing"
+scope = "direct-androidTest"
+
+[licenses."androidx.compose.ui:ui-test-manifest"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/compose/testing"
+scope = "direct-debug"
+
+[licenses."androidx.compose.material3:material3"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/androidx/releases/compose-material3"
+scope = "direct"
+
+[licenses."androidx.compose.material:material-icons-core"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/develop/ui/compose/graphics/images/material-icons"
+scope = "direct"
+
+[licenses."androidx.compose.material:material-icons-extended"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/develop/ui/compose/graphics/images/material-icons"
+scope = "direct"
+
+[licenses."androidx.compose.animation:animation"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/compose"
+scope = "direct"
+
+[licenses."androidx.compose.runtime:runtime-saveable"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/compose"
+scope = "direct"
+
+[licenses."androidx.navigation:navigation-compose"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/androidx/releases/navigation"
+scope = "direct"
+
+[licenses."com.squareup.retrofit2:retrofit"]
+license = "Apache-2.0"
+upstream = "https://github.com/square/retrofit"
+scope = "direct"
+
+[licenses."com.squareup.retrofit2:converter-gson"]
+license = "Apache-2.0"
+upstream = "https://github.com/square/retrofit"
+scope = "direct"
+
+[licenses."androidx.compose.material3.adaptive:adaptive"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/develop/ui/compose/layouts/adaptive"
+scope = "direct"
+
+[licenses."com.android.tools:desugar_jdk_libs"]
+license = "Apache-2.0"
+upstream = "https://github.com/google/desugar_jdk_libs"
+scope = "direct"
+
+[licenses."junit:junit"]
+license = "EPL-1.0"
+upstream = "https://junit.org/junit4/"
+scope = "direct"
+
+[licenses."org.jetbrains.kotlin:kotlin-test"]
+license = "Apache-2.0"
+upstream = "https://github.com/JetBrains/kotlin"
+scope = "direct"
+
+[licenses."androidx.test.ext:junit"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/training/testing"
+scope = "direct"
+
+[licenses."org.bitbucket.b_c:jose4j"]
+license = "Apache-2.0"
+upstream = "https://bitbucket.org/b_c/jose4j"
+scope = "pinned-transitive"
+
+[licenses."org.jdom:jdom2"]
+license = "JDOM License"
+upstream = "https://www.jdom.org/"
+scope = "pinned-transitive"
+
+[licenses."org.apache.httpcomponents:httpclient"]
+license = "Apache-2.0"
+upstream = "https://hc.apache.org/httpcomponents-client-4.5.x/"
+scope = "pinned-transitive"
+
+[licenses."org.apache.commons:commons-lang3"]
+license = "Apache-2.0"
+upstream = "https://commons.apache.org/proper/commons-lang/"
+scope = "pinned-transitive"
+
+[licenses."org.bouncycastle:bcpkix-jdk18on"]
+license = "Bouncy Castle License"
+upstream = "https://www.bouncycastle.org/licence.html"
+scope = "pinned-transitive"

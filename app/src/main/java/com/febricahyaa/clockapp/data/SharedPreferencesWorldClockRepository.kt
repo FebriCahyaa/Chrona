@@ -41,32 +41,29 @@ class SharedPreferencesWorldClockRepository(context: Context) : WorldClockReposi
                 },
             )
         }
-
-        val success = prefs.edit()
-            .putString(KEY_ITEMS, array.toString())
-            .commit()
-
-        check(success) { "Unable to persist Chrona World Clock items" }
+        check(prefs.edit().putString(KEY_ITEMS, array.toString()).commit()) {
+            "Unable to persist Chrona World Clock items"
+        }
     }
 
     override fun loadFavorites(): Set<String> {
         val raw = prefs.getString(KEY_FAVORITES, null) ?: return emptySet()
         return runCatching {
             val array = JSONArray(raw)
-            (0 until array.length()).map { array.getString(it) }.toSet()
+            (0 until array.length())
+                .map { array.getString(it) }
+                .filter(String::isNotBlank)
+                .toSet()
         }.getOrDefault(emptySet())
     }
 
-    override fun saveFavorites(cities: Set<String>) {
+    override fun saveFavorites(zoneIds: Set<String>) {
         val array = JSONArray().apply {
-            cities.sorted().forEach(::put)
+            zoneIds.filter(String::isNotBlank).sorted().forEach(::put)
         }
-
-        val success = prefs.edit()
-            .putString(KEY_FAVORITES, array.toString())
-            .commit()
-
-        check(success) { "Unable to persist Chrona World Clock favorites" }
+        check(prefs.edit().putString(KEY_FAVORITES, array.toString()).commit()) {
+            "Unable to persist Chrona World Clock favorites"
+        }
     }
 
     private companion object {

@@ -1,47 +1,67 @@
 # Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
-
-name: Bug Report
-description: Report a reproducible problem
-title: "[Bug]: "
-labels:
-  - bug
+name: Bug report
+description: Report a reproducible Chrona bug.
+title: "bug: "
+labels: [bug]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for reporting a bug.
-
-  - type: textarea
-    id: description
-    attributes:
-      label: Description
-      description: Describe the problem clearly.
-    validations:
-      required: true
-
-  - type: textarea
-    id: reproduce
-    attributes:
-      label: Steps to reproduce
-      description: Provide the exact steps.
-    validations:
-      required: true
-
+        Please provide reproducible evidence. Never include tokens, private data, or signing material.
   - type: input
     id: version
     attributes:
-      label: App version
-      placeholder: "1.0.0"
-
+      label: Chrona version
+      placeholder: 0.5.0
+    validations:
+      required: true
+  - type: input
+    id: commit
+    attributes:
+      label: Commit SHA
+      placeholder: 12-character or full SHA
   - type: input
     id: android
     attributes:
-      label: Android version
-      placeholder: "Android 17"
-
+      label: Android version / API level
+      placeholder: Android 17 / API 37
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device
+      placeholder: Pixel 9 / emulator
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: 1. Open ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
   - type: textarea
     id: logs
     attributes:
-      label: Logs
-      description: Include relevant logs.
-      render: shell
+      label: Relevant logs / screenshots
+      description: Remove secrets and personal data before posting.
+  - type: checkboxes
+    id: regression
+    attributes:
+      label: Regression check
+      options:
+        - label: I checked whether this worked in an earlier Chrona build.
+        - label: I removed secrets and personal data from attached logs.

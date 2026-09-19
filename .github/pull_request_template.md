@@ -2,26 +2,33 @@
 Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
 -->
 
-## Description
+## Summary
 
-Describe what this pull request changes.
+Describe the user-visible or engineering change in 2–4 sentences.
 
-## Changes
+## Scope
 
-- 
-- 
-- 
+- **Changed:**
+- **Added:**
+- **Removed:**
+- **Not Removed:**
 
-## Testing
+## Verification
 
-- [ ] Build completed
-- [ ] Debug APK tested
-- [ ] Lint passed
-- [ ] Relevant functionality tested
+- [ ] Relevant unit tests pass.
+- [ ] Relevant instrumentation/UI tests pass.
+- [ ] Lint passes.
+- [ ] Debug or release build passes as applicable.
+- [ ] Manual device verification completed where UI/runtime behavior changed.
 
-## Checklist
+## Security / licensing
 
-- [ ] No unnecessary files added
-- [ ] No secrets committed
-- [ ] Existing functionality preserved
-- [ ] Documentation updated when required
+- [ ] No secrets or private credentials added.
+- [ ] Dependency/license impact reviewed.
+- [ ] Third-party notices updated when required.
+
+## UI / localization
+
+- [ ] Accessibility semantics/touch targets checked where UI changed.
+- [ ] Strings use resources rather than hardcoded user-facing text.
+- [ ] Localization implications reviewed.

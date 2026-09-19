@@ -1,0 +1,95 @@
+# Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+name: Chrona CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chrona-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: AES / Analyze
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+      - name: Setup Python
+        uses: actions/setup-python@v6.1.0
+        with:
+          python-version: '3.13'
+      - name: Repository audit
+        run: bash scripts/audit/source-audit.sh
+      - name: Telegram renderer tests
+        run: python3 -m unittest scripts/telegram/test_notify.py
+
+  unit:
+    name: AES / Unit tests
+    needs: analyze
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: ./.github/actions/setup-android
+        with:
+          install-native: 'false'
+      - name: Unit tests
+        run: ./gradlew --no-daemon --stacktrace testDebugUnitTest
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: chrona-unit-test-report-${{ github.sha }}
+          path: app/build/test-results/testDebugUnitTest/**
+          if-no-files-found: warn
+          retention-days: 14
+
+  lint:
+    name: AES / Lint
+    needs: analyze
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: ./.github/actions/setup-android
+        with:
+          install-native: 'false'
+      - name: Lint
+        run: ./gradlew --no-daemon --stacktrace lintDebug
+      - name: Upload lint report
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: chrona-lint-${{ github.sha }}
+          path: app/build/reports/lint-results-debug.*
+          if-no-files-found: warn
+          retention-days: 14
+
+  debug-build:
+    name: AES / Debug APK
+    needs:
+      - unit
+      - lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: ./.github/actions/setup-android
+      - name: Build debug APK
+        run: ./gradlew --no-daemon --stacktrace assembleDebug
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: chrona-debug-${{ github.sha }}
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14

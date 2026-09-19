@@ -2,37 +2,33 @@
 
 package com.febricahyaa.clockapp.ui.screens
 
-import androidx.annotation.StringRes
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.res.stringResource
 import com.febricahyaa.clockapp.R
-import com.febricahyaa.clockapp.time.ChronaTimeFormatter
+import com.febricahyaa.clockapp.data.timezone.TimeZoneCatalog
 import com.febricahyaa.clockapp.model.WorldClockItem
+import com.febricahyaa.clockapp.time.ChronaTimeFormatter
 import com.febricahyaa.clockapp.ui.components.ChronaCard
 import com.febricahyaa.clockapp.ui.components.ChronaScaffold
 import com.febricahyaa.clockapp.ui.components.IconCircleButton
@@ -51,11 +47,15 @@ fun WorldClockDetailScreen(
 ) {
     val epochMillisState = rememberEpochMillisNowState()
     val epochMillis by epochMillisState
+    val locale = LocalConfiguration.current.locales[0]
     val zoneId = remember(item.zoneId) { runCatching { ZoneId.of(item.zoneId) }.getOrNull() }
+    val country = remember(item.zoneId, locale) {
+        TimeZoneCatalog.find(item.zoneId)?.countryName(locale) ?: item.zoneId
+    }
 
     ChronaScaffold(
         title = item.city,
-        subtitle = "${stringResource(countryOfDetail(item.zoneId))} · ${item.zoneId}",
+        subtitle = "$country · ${item.zoneId}",
         onBack = onBack,
     ) { paddingValues ->
         if (zoneId == null) {
@@ -66,11 +66,7 @@ fun WorldClockDetailScreen(
                 Column(Modifier.padding(24.dp)) {
                     Text(stringResource(R.string.world_invalid_timezone), style = MaterialTheme.typography.titleLarge)
                     Spacer(Modifier.height(8.dp))
-                    Text(
-                        item.zoneId,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.error,
-                    )
+                    Text(item.zoneId, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
                 }
             }
             return@ChronaScaffold
@@ -95,11 +91,7 @@ fun WorldClockDetailScreen(
                 .padding(horizontal = 20.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            ChronaCard(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                glass = glass,
-            ) {
+            ChronaCard(Modifier.fillMaxWidth(), glass = glass) {
                 Column(Modifier.fillMaxWidth().padding(22.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -109,17 +101,17 @@ fun WorldClockDetailScreen(
                         Spacer(Modifier.width(16.dp))
                         Column(Modifier.weight(1f)) {
                             Text(item.city, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
-                            Text(
-                                stringResource(countryOfDetail(item.zoneId)),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
+                            Text(country, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         IconCircleButton(
                             icon = if (favorite) Icons.Filled.Star else Icons.Filled.StarBorder,
                             onClick = onToggleFavorite,
                             active = favorite,
-                            contentDescription = if (favorite) stringResource(R.string.world_remove_favorite, item.city) else stringResource(R.string.world_add_favorite, item.city),
+                            contentDescription = if (favorite) {
+                                stringResource(R.string.world_remove_favorite, item.city)
+                            } else {
+                                stringResource(R.string.world_add_favorite, item.city)
+                            },
                         )
                     }
 
@@ -146,10 +138,12 @@ fun WorldClockDetailScreen(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    Spacer(Modifier.height(14.dp))
-                    Button(onClick = onToggleFavorite, modifier = Modifier.fillMaxWidth()) {
-                        Text(if (favorite) stringResource(R.string.world_remove_from_favorites) else stringResource(R.string.world_add_to_favorites))
-                    }
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = if (favorite) stringResource(R.string.world_favorite_saved_status) else stringResource(R.string.world_favorite_tap_hint),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                 }
             }
         }
@@ -171,29 +165,4 @@ private fun formatOffsetDeltaDetail(totalSeconds: Int): String {
             append(stringResource(R.string.world_delta_minutes, minutes))
         }
     }
-}
-
-@StringRes
-private fun countryOfDetail(zoneId: String): Int = when {
-    zoneId == "Asia/Jakarta" || zoneId == "Asia/Makassar" || zoneId == "Asia/Jayapura" -> R.string.country_indonesia
-    zoneId == "Asia/Singapore" -> R.string.country_singapore
-    zoneId == "Asia/Kuala_Lumpur" -> R.string.country_malaysia
-    zoneId == "Asia/Bangkok" -> R.string.country_thailand
-    zoneId == "Asia/Tokyo" -> R.string.country_japan
-    zoneId == "Asia/Seoul" -> R.string.country_south_korea
-    zoneId == "Asia/Shanghai" || zoneId == "Asia/Hong_Kong" -> R.string.country_china
-    zoneId == "Asia/Kolkata" -> R.string.country_india
-    zoneId == "Asia/Dubai" -> R.string.country_united_arab_emirates
-    zoneId == "Europe/London" -> R.string.country_united_kingdom
-    zoneId == "Europe/Paris" -> R.string.country_france
-    zoneId == "Europe/Berlin" -> R.string.country_germany
-    zoneId == "Europe/Moscow" -> R.string.country_russia
-    zoneId == "America/Sao_Paulo" -> R.string.country_brazil
-    zoneId == "America/Toronto" -> R.string.country_canada
-    zoneId.startsWith("America/") -> R.string.country_united_states
-    zoneId == "Australia/Sydney" -> R.string.country_australia
-    zoneId == "Pacific/Auckland" -> R.string.country_new_zealand
-    zoneId == "Africa/Cairo" -> R.string.country_egypt
-    zoneId == "Africa/Johannesburg" -> R.string.country_south_africa
-    else -> R.string.world_region_other
 }

@@ -1,0 +1,51 @@
+# Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+name: Chrona Device QA
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chrona-device-qa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  instrumentation:
+    name: Android 17 / Pixel instrumentation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: ./.github/actions/setup-android
+        with:
+          install-native: 'true'
+          install-emulator: 'true'
+      - name: Verify toolchain
+        run: bash scripts/ci/verify-toolchain.sh
+      - name: Run emulator instrumentation
+        uses: reactivecircus/android-emulator-runner@v2.38.0
+        with:
+          api-level: 37
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          force-avd-creation: true
+          disable-animations: true
+          emulator-boot-timeout: 900
+          script: ./scripts/ci/device-smoke.sh
+      - name: Upload instrumentation reports
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: chrona-device-qa-${{ github.sha }}
+          path: |
+            app/build/reports/androidTests/**
+            app/build/outputs/androidTest-results/**
+          if-no-files-found: warn
+          retention-days: 14

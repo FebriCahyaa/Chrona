@@ -601,7 +601,7 @@ private fun formatWorldClockSummary(
     favorites: Set<String>,
 ): String? {
     val favoriteCities = items.asSequence()
-        .filter { it.city in favorites }
+        .filter { it.zoneId in favorites }
         .map { it.city }
         .distinct()
         .toList()
