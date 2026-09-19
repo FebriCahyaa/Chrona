@@ -25,7 +25,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Backspace
+import androidx.compose.material.icons.automirrored.filled.Backspace
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -503,7 +503,7 @@ private fun TimerKeypad(
                 onClick = { onDigit(0) },
             )
             KeypadButton(
-                icon = Icons.Filled.Backspace,
+                icon = Icons.AutoMirrored.Filled.Backspace,
                 enabled = enabled,
                 modifier = Modifier.weight(1f),
                 onClick = onDelete,

@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -171,10 +172,13 @@ fun WorldClockScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                             Spacer(Modifier.height(12.dp))
-                            TextButton(onClick = {
-                                haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                                onOpenSearch()
-                            }) {
+                            TextButton(
+                                onClick = {
+                                    haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                                    onOpenSearch()
+                                },
+                                modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp),
+                            ) {
                                 Text(stringResource(R.string.world_find_city))
                             }
                         }
@@ -289,11 +293,12 @@ private fun WorldClockCard(
                 Text(time, style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.Light)
                 Text(date, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(6.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     IconCircleButton(
                         icon = if (favorite) Icons.Filled.Star else Icons.Filled.StarBorder,
                         onClick = onToggleFavorite,
                         active = favorite,
+                        modifier = Modifier.size(48.dp),
                         contentDescription = if (favorite) {
                             stringResource(R.string.world_remove_favorite, item.city)
                         } else {
@@ -303,6 +308,7 @@ private fun WorldClockCard(
                     IconCircleButton(
                         icon = Icons.Filled.DeleteOutline,
                         onClick = onRemove,
+                        modifier = Modifier.size(48.dp),
                         contentDescription = stringResource(R.string.world_remove_city, item.city),
                     )
                 }
