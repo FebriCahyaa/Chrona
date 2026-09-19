@@ -56,6 +56,11 @@ license = "Apache-2.0"
 upstream = "https://developer.android.com/jetpack/compose"
 scope = "direct"
 
+[licenses."androidx.compose.ui:ui-text-google-fonts"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/reference/kotlin/androidx/compose/ui/text/googlefonts"
+scope = "direct"
+
 [licenses."androidx.compose.ui:ui-tooling-preview"]
 license = "Apache-2.0"
 upstream = "https://developer.android.com/jetpack/compose"

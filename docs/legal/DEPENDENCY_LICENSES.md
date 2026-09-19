@@ -10,6 +10,7 @@ Chrona's AndroidX, Jetpack Compose, Material 3, Navigation, Retrofit, desugaring
 | Artifact family | License | Upstream |
 | --- | --- | --- |
 | AndroidX / Jetpack Compose / Material 3 / Adaptive / Navigation | Apache-2.0 | developer.android.com |
+| Google Sans Flex font | OFL-1.1 | fonts.google.com / github.com/googlefonts/googlesans-flex |
 | Kotlin / kotlin-test | Apache-2.0 | kotlinlang.org / github.com/JetBrains/kotlin |
 | Retrofit / converter-gson | Apache-2.0 | github.com/square/retrofit |
 | desugar_jdk_libs | Apache-2.0 | github.com/google/desugar_jdk_libs |
