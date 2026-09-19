@@ -335,8 +335,9 @@ private fun ChronaDestinationContent(
                 updateState = updateState,
                 onCheckForUpdates = updateViewModel::checkNow,
                 onOpenUpdate = {
-                    val url = updateState.snapshot.releaseUrl ?: updateState.snapshot.apkUrl
-                    if (!url.isNullOrBlank()) {
+                    val rawUrl = updateState.snapshot.releaseUrl ?: updateState.snapshot.apkUrl
+                    val url = rawUrl?.trim()
+                    if (!url.isNullOrBlank() && (url.startsWith("https://", ignoreCase = true) || url.startsWith("http://", ignoreCase = true))) {
                         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                     }
                 },

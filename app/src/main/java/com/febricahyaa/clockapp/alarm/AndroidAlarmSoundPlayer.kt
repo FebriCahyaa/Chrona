@@ -32,7 +32,14 @@ class AndroidAlarmSoundPlayer(context: Context) : AlarmSoundGateway {
         val uri = ringtoneUri?.let { runCatching { Uri.parse(it) }.getOrNull() }
             ?: RingtoneManager.getActualDefaultRingtoneUri(appContext, RingtoneManager.TYPE_ALARM)
             ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-        ringtone = RingtoneManager.getRingtone(appContext, uri)?.apply {
+        ringtone = runCatching {
+            RingtoneManager.getRingtone(appContext, uri)
+        }.getOrNull() ?: runCatching {
+            val fallbackUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+            RingtoneManager.getRingtone(appContext, fallbackUri)
+        }.getOrNull()
+
+        ringtone?.apply {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 audioAttributes = AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_ALARM)
