@@ -46,9 +46,12 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
+        # Keep 37.1 for compileSdk/compileSdkMinor and 37.0 for the emulator
+        # runner's Major.Minor package.
         sdkmanager --sdk_root="${ANDROID_SDK_ROOT}" \
           'platform-tools' \
           'platforms;android-37.1' \
+          'platforms;android-37.0' \
           'build-tools;37.0.0'
 
     - name: Install native toolchain

@@ -31,7 +31,11 @@ jobs:
       - name: Run emulator instrumentation
         uses: reactivecircus/android-emulator-runner@v2.38.0
         with:
-          api-level: 37
+          # Android 17 uses Major.Minor SDK package names. v2.38.0 constructs
+          # the platform package as `platforms;android-${api-level}`, so 37.0 is
+          # required because `platforms;android-37` is not published.
+          api-level: '37.0'
+          system-image-api-level: '37.0'
           target: google_apis
           arch: x86_64
           profile: pixel_6

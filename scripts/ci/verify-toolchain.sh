@@ -3,7 +3,8 @@
 set -euo pipefail
 
 EXPECTED_GRADLE='9.7.1'
-EXPECTED_PLATFORM='android-37.1'
+EXPECTED_COMPILE_PLATFORM='android-37.1'
+EXPECTED_EMULATOR_PLATFORM='android-37.0'
 EXPECTED_BUILD_TOOLS='37.0.0'
 EXPECTED_NDK='28.2.13676358'
 EXPECTED_CMAKE='3.31.5'
@@ -21,7 +22,8 @@ if [[ "${CHRONA_REQUIRE_NATIVE_TOOLCHAIN:-1}" == "1" ]]; then
   command -v cmake >/dev/null
 fi
 
-test -d "${ANDROID_SDK_ROOT}/platforms/${EXPECTED_PLATFORM}"
+test -d "${ANDROID_SDK_ROOT}/platforms/${EXPECTED_COMPILE_PLATFORM}"
+test -d "${ANDROID_SDK_ROOT}/platforms/${EXPECTED_EMULATOR_PLATFORM}"
 test -d "${ANDROID_SDK_ROOT}/build-tools/${EXPECTED_BUILD_TOOLS}"
 if [[ "${CHRONA_REQUIRE_NATIVE_TOOLCHAIN:-1}" == "1" ]]; then
   test -d "${ANDROID_SDK_ROOT}/ndk/${EXPECTED_NDK}"
