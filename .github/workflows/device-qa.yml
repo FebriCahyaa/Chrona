@@ -33,7 +33,14 @@ jobs:
           sdkmanager --sdk_root="${ANDROID_SDK_ROOT}" \
             'platforms;android-36' \
             'system-images;android-36;google_apis;x86_64'
-          yes | sdkmanager --licenses >/dev/null
+          set +e
+          yes | sdkmanager --licenses >/dev/null 2>&1
+          rc=${PIPESTATUS[1]}
+          set -e
+          if [[ "$rc" -ne 0 ]]; then
+            echo "::error::sdkmanager --licenses failed with exit code $rc"
+            exit "$rc"
+          fi
 
       - name: Verify toolchain
         run: bash scripts/ci/verify-toolchain.sh
