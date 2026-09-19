@@ -32,22 +32,27 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           import json
-          import os
           import subprocess
           from pathlib import Path
+
           def out(command):
-              return subprocess.check_output(command, text=True, stderr=subprocess.STDOUT).strip().splitlines()[0]
+              return subprocess.check_output(
+                  command, text=True, stderr=subprocess.STDOUT
+              ).strip().splitlines()[0]
+
           data = {
               "java": out(["java", "-version"]),
               "gradle": out(["./gradlew", "--version"]),
               "androidCli": out(["android", "--version"]),
               "sdkmanager": out(["sdkmanager", "--version"]),
-              "platform": "android-37.1",
+              "platform": "android-37",
               "buildTools": "37.0.0",
               "ndk": "28.2.13676358",
               "cmake": "3.31.5",
           }
-          Path("toolchain-manifest.json").write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+          Path("toolchain-manifest.json").write_text(
+              json.dumps(data, indent=2) + "\n", encoding="utf-8"
+          )
           PY
           cat toolchain-manifest.json
       - uses: actions/upload-artifact@v7.0.1
