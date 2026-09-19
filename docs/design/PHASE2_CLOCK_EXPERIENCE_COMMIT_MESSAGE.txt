@@ -1,0 +1,35 @@
+feat(clock): refine clock experience with persistent mode surface
+
+Redesign the home clock hero around a stronger Material 3 hierarchy while preserving the existing persisted Digital/Analog preference.
+
+Changed:
+- Refine the hero day/night status row and timezone context.
+- Add a dedicated date/local-time context surface with UTC offset.
+- Add an explicit Material 3 Digital/Analog mode switcher below the clock.
+- Keep the existing quick toggle wired to the same persisted state flow.
+- Increase and stabilize digital hero typography with tabular numerals.
+- Promote AM/PM and seconds into compact tonal chips.
+- Preserve the existing smooth analog clock renderer.
+- Reuse existing localized clock-style strings.
+
+Added:
+- ClockModeSwitcher.
+- ClockModeChoice.
+- UTC offset formatting helper.
+- Phase 2 design documentation.
+
+Removed:
+- No clock persistence, timing engine, or navigation behavior.
+
+Not Removed:
+- Digital/Analog persistence.
+- Default Digital mode.
+- Settings clock-style control.
+- Smooth analog second-hand rendering.
+- 12/24-hour and show-seconds preferences.
+- Existing Material 3 / Glass component APIs.
+
+Verification:
+- Source-anchored apply script.
+- Static marker verification script.
+- Full Gradle build/test must be run in the user's configured Android environment.
