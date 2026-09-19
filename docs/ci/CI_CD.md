@@ -23,7 +23,7 @@ flowchart LR
 
 - Gradle 9.7.1
 - AGP 9.4.0
-- Kotlin 2.4.20
+- Kotlin 2.4.10
 - JDK 25 for Gradle runtime
 - JDK 17 compilation toolchain
 - Android API 37 / Platform 37.1

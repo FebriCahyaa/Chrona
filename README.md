@@ -73,7 +73,7 @@ The production build is intentionally separate from normal PR CI and is protecte
 | --- | --- |
 | Gradle | 9.7.1 |
 | Android Gradle Plugin | 9.4.0 |
-| Kotlin | 2.4.20 |
+| Kotlin | 2.4.10 |
 | Gradle runtime JDK | 25 |
 | Java/Kotlin compilation toolchain | 17 |
 | Android API | 37 / Platform 37.1 |
