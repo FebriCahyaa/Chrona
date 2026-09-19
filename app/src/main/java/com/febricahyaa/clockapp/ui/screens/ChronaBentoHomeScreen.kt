@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
@@ -60,6 +61,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.febricahyaa.clockapp.model.AlarmItem
 import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.navigation.AppDestination
@@ -169,28 +171,41 @@ fun ChronaBentoHomeScreen(
                     }
                 }
             } else {
-                HeroCard(
-                    modifier = Modifier
+                Box(
+                    Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 340.dp),
-                    themeMode = themeMode,
-                    now = now,
-                    dateText = dateText,
-                    displayMode = clockDisplayMode,
-                    use24HourFormat = use24HourFormat,
-                    showSeconds = showSeconds,
-                    onToggleDisplay = { clockDisplayMode = clockDisplayMode.toggle() },
-                )
-                FloatingActionGrid(
-                    themeMode = themeMode,
-                    nextAlarm = alarmTime,
-                    hasNextAlarm = next != null,
-                    alarmMeta = alarmMeta,
-                    worldClockSummary = worldClockSummary,
-                    timerRemainingSeconds = timerRemainingSeconds,
-                    timerRunning = timerRunning,
-                    onNavigate = onNavigate,
-                )
+                        .padding(bottom = 6.dp),
+                ) {
+                    HeroCard(
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 340.dp),
+                        themeMode = themeMode,
+                        now = now,
+                        dateText = dateText,
+                        displayMode = clockDisplayMode,
+                        use24HourFormat = use24HourFormat,
+                        showSeconds = showSeconds,
+                        onToggleDisplay = { clockDisplayMode = clockDisplayMode.toggle() },
+                    )
+                    Box(
+                        Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(horizontal = 10.dp)
+                            .offset(y = 74.dp)
+                            .zIndex(2f),
+                    ) {
+                        FloatingActionGrid(
+                            themeMode = themeMode,
+                            nextAlarm = alarmTime,
+                            hasNextAlarm = next != null,
+                            alarmMeta = alarmMeta,
+                            worldClockSummary = worldClockSummary,
+                            timerRemainingSeconds = timerRemainingSeconds,
+                            timerRunning = timerRunning,
+                            onNavigate = onNavigate,
+                        )
+                    }
+                }
+                Spacer(Modifier.height(78.dp))
                 BentoInfoCard(themeMode)
             }
             Spacer(Modifier.height(12.dp))

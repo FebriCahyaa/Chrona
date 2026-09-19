@@ -18,8 +18,8 @@ concurrency:
 jobs:
   instrumentation:
     name: Android 17 / Pixel instrumentation
-    runs-on: ubuntu-24.04
-    timeout-minutes: 50
+    runs-on: macos-15-intel
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: ./.github/actions/setup-android
@@ -31,17 +31,17 @@ jobs:
       - name: Run emulator instrumentation
         uses: reactivecircus/android-emulator-runner@v2.38.0
         with:
-          # Android 17 uses Major.Minor SDK package names. v2.38.0 constructs
-          # the platform package as `platforms;android-${api-level}`, so 37.0 is
-          # required because `platforms;android-37` is not published.
+          # Android 17 system images use the Major.Minor package name.
+          # google_apis_ps16k is the published x86_64 API 37.0 image used by
+          # current Android CI stacks. The compile platform remains 37.1.
           api-level: '37.0'
           system-image-api-level: '37.0'
-          target: google_apis
+          target: google_apis_ps16k
           arch: x86_64
           profile: pixel_6
           force-avd-creation: true
           disable-animations: true
-          emulator-boot-timeout: 900
+          emulator-boot-timeout: 600
           script: ./scripts/ci/device-smoke.sh
       - name: Upload instrumentation reports
         if: always()
