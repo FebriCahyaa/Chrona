@@ -15,6 +15,11 @@ enum class AppThemeMode {
     GLASS,
 }
 
+enum class ClockDisplayMode {
+    DIGITAL,
+    ANALOG,
+}
+
 enum class ThemeAccent {
     PEACH,
     SYSTEM,
@@ -31,4 +36,5 @@ data class ClockSettings(
     val themeMode: AppThemeMode = AppThemeMode.NEUMORPHIC,
     val showSeconds: Boolean = true,
     val themeAccent: ThemeAccent = ThemeAccent.SYSTEM,
+    val clockDisplayMode: ClockDisplayMode = ClockDisplayMode.DIGITAL,
 )

@@ -29,6 +29,9 @@ import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -46,6 +49,7 @@ import com.febricahyaa.clockapp.BuildConfig
 import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.time.ChronaTimeFormatter
 import com.febricahyaa.clockapp.model.AppThemeMode
+import com.febricahyaa.clockapp.model.ClockDisplayMode
 import com.febricahyaa.clockapp.model.ClockSettings
 import com.febricahyaa.clockapp.model.ThemeAccent
 import com.febricahyaa.clockapp.ui.components.HybridBentoCard
@@ -128,12 +132,6 @@ fun SettingsAppearanceSection(
             Modifier.weight(1f),
             onThemeModeChange,
         )
-        SettingsThemeChoice(
-            AppThemeMode.GLASS,
-            settings.themeMode == AppThemeMode.GLASS,
-            Modifier.weight(1f),
-            onThemeModeChange,
-        )
     }
 
     Spacer(Modifier.height(20.dp))
@@ -186,6 +184,7 @@ fun SettingsClockSection(
     use24HourFormat: Boolean,
     onFormatChange: (Boolean) -> Unit,
     onShowSecondsChange: (Boolean) -> Unit,
+    onClockDisplayModeChange: (ClockDisplayMode) -> Unit,
 ) {
     SettingsSectionTitle(Icons.Filled.Tune, stringResource(R.string.settings_clock_section))
     Spacer(Modifier.height(5.dp))
@@ -201,6 +200,40 @@ fun SettingsClockSection(
         settings.showSeconds,
         onShowSecondsChange,
     )
+
+    Spacer(Modifier.height(10.dp))
+    Text(
+        stringResource(R.string.settings_clock_style_title),
+        style = MaterialTheme.typography.titleSmall,
+        fontWeight = FontWeight.SemiBold,
+    )
+    Spacer(Modifier.height(2.dp))
+    Text(
+        stringResource(R.string.settings_clock_style_subtitle),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    Spacer(Modifier.height(9.dp))
+
+    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+        val modes = listOf(
+            ClockDisplayMode.DIGITAL to R.string.settings_clock_style_digital,
+            ClockDisplayMode.ANALOG to R.string.settings_clock_style_analog,
+        )
+        modes.forEachIndexed { index, (mode, labelRes) ->
+            val selected = settings.clockDisplayMode == mode
+            SegmentedButton(
+                selected = selected,
+                onClick = { onClockDisplayModeChange(mode) },
+                shape = SegmentedButtonDefaults.itemShape(index = index, count = modes.size),
+                icon = {
+                    SegmentedButtonDefaults.Icon(selected = selected)
+                },
+            ) {
+                Text(stringResource(labelRes))
+            }
+        }
+    }
 }
 
 @Composable
@@ -492,7 +525,6 @@ private fun SettingsThemeChoice(
                 when (mode) {
                     AppThemeMode.NEUMORPHIC -> stringResource(R.string.settings_theme_soft)
                     AppThemeMode.MATERIAL_YOU -> stringResource(R.string.settings_theme_dynamic)
-                    AppThemeMode.GLASS -> stringResource(R.string.settings_theme_glass)
                     else -> mode.name.lowercase().replaceFirstChar { it.uppercase() }
                 },
                 fontSize = 11.sp,

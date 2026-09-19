@@ -17,7 +17,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -25,9 +24,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import com.febricahyaa.clockapp.R
-import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.ui.theme.ChronaGlassTokens
-import com.febricahyaa.clockapp.ui.theme.LocalChronaThemeMode
 
 /**
  * Chrona's universal screen shell.
@@ -45,24 +42,9 @@ fun ChronaScaffold(
     actions: @Composable RowScope.() -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
-    val topAppBarState = rememberTopAppBarState()
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
-        state = topAppBarState,
-    )
-    val isGlass = LocalChronaThemeMode.current == AppThemeMode.GLASS
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val background = MaterialTheme.colorScheme.background
     val surface = MaterialTheme.colorScheme.surface
-
-    val expandedContainer = if (isGlass) {
-        background.copy(alpha = ChronaGlassTokens.ToolbarAlpha)
-    } else {
-        background
-    }
-    val collapsedContainer = if (isGlass) {
-        surface.copy(alpha = ChronaGlassTokens.ToolbarScrolledAlpha)
-    } else {
-        surface
-    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -96,8 +78,8 @@ fun ChronaScaffold(
                 },
                 actions = actions,
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = expandedContainer,
-                    scrolledContainerColor = collapsedContainer,
+                    containerColor = background.copy(alpha = ChronaGlassTokens.ToolbarAlpha),
+                    scrolledContainerColor = surface.copy(alpha = ChronaGlassTokens.ToolbarScrolledAlpha),
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                     navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
                     actionIconContentColor = MaterialTheme.colorScheme.onSurface,

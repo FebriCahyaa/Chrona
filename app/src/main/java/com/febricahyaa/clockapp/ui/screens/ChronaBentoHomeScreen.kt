@@ -41,14 +41,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.Modifier
@@ -62,20 +59,20 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import com.febricahyaa.clockapp.model.AlarmItem
 import com.febricahyaa.clockapp.model.AppThemeMode
+import com.febricahyaa.clockapp.model.ClockDisplayMode
 import com.febricahyaa.clockapp.navigation.AppDestination
 import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.ui.components.BentoIcon
 import com.febricahyaa.clockapp.ui.components.BentoIconButton
 import com.febricahyaa.clockapp.ui.components.ChronaScaffold
 import com.febricahyaa.clockapp.ui.components.HybridBentoCard
+import com.febricahyaa.clockapp.ui.components.rememberSmoothZonedNow
 import com.febricahyaa.clockapp.ui.components.rememberZonedNow
 import com.febricahyaa.clockapp.ui.components.ThemeToggle
 import java.time.Duration
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
-
-private enum class ClockDisplayMode { DIGITAL, ANALOG }
 
 @Composable
 fun ChronaBentoHomeScreen(
@@ -87,13 +84,14 @@ fun ChronaBentoHomeScreen(
     timerRemainingSeconds: Int,
     timerRunning: Boolean,
     themeMode: AppThemeMode,
+    clockDisplayMode: ClockDisplayMode,
     onThemeModeChange: (AppThemeMode) -> Unit,
+    onClockDisplayModeChange: (ClockDisplayMode) -> Unit,
     onNavigate: (AppDestination) -> Unit,
     onOpenSettings: () -> Unit,
 ) {
     val now = rememberZonedNow()
     val locale = LocalLocale.current.platformLocale
-    var clockDisplayMode by rememberSaveable { mutableStateOf(ClockDisplayMode.DIGITAL) }
     val next = nextAlarm(alarms, now)
     val alarmTime = next?.time?.let { formatAlarmTime(it, use24HourFormat, locale) } ?: stringResource(R.string.home_alarm_not_set)
     val alarmMeta = when {
@@ -150,9 +148,9 @@ fun ChronaBentoHomeScreen(
                         now = now,
                         dateText = dateText,
                         displayMode = clockDisplayMode,
+                        onDisplayModeChange = onClockDisplayModeChange,
                         use24HourFormat = use24HourFormat,
                         showSeconds = showSeconds,
-                        onToggleDisplay = { clockDisplayMode = clockDisplayMode.toggle() },
                     )
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         ActionGrid(
@@ -175,9 +173,9 @@ fun ChronaBentoHomeScreen(
                     now = now,
                     dateText = dateText,
                     displayMode = clockDisplayMode,
+                    onDisplayModeChange = onClockDisplayModeChange,
                     use24HourFormat = use24HourFormat,
                     showSeconds = showSeconds,
-                    onToggleDisplay = { clockDisplayMode = clockDisplayMode.toggle() },
                 )
                 FloatingActionGrid(
                     themeMode = themeMode,
@@ -207,13 +205,13 @@ private fun HeroCard(
     displayMode: ClockDisplayMode,
     use24HourFormat: Boolean,
     showSeconds: Boolean,
-    onToggleDisplay: () -> Unit,
+    onDisplayModeChange: (ClockDisplayMode) -> Unit,
 ) {
     HybridBentoCard(
         modifier = modifier,
         themeMode = themeMode,
     ) {
-        ClockHero(now, dateText, displayMode, use24HourFormat, showSeconds, onToggleDisplay)
+        ClockHero(now, dateText, displayMode, use24HourFormat, showSeconds, onDisplayModeChange)
     }
 }
 
@@ -373,7 +371,7 @@ private fun ClockHero(
     displayMode: ClockDisplayMode,
     use24HourFormat: Boolean,
     showSeconds: Boolean,
-    onToggleDisplay: () -> Unit,
+    onDisplayModeChange: (ClockDisplayMode) -> Unit,
 ) {
     val day = now.hour in 7..17
     Column(
@@ -390,7 +388,7 @@ private fun ClockHero(
             }
             BentoIconButton(
                 icon = if (displayMode == ClockDisplayMode.DIGITAL) Icons.Filled.AccessTime else Icons.Filled.GridView,
-                onClick = onToggleDisplay,
+                onClick = { onDisplayModeChange(displayMode.toggle()) },
                 contentDescription = if (displayMode == ClockDisplayMode.DIGITAL) stringResource(R.string.home_switch_to_analog) else stringResource(R.string.home_switch_to_digital),
                 active = true,
                 modifier = Modifier.size(42.dp),
@@ -418,11 +416,7 @@ private fun ClockHero(
                         use24HourFormat,
                         showSeconds,
                     )
-                    ClockDisplayMode.ANALOG -> AnalogClockUI(
-                        now.hour,
-                        now.minute,
-                        now.second + now.nano / 1_000_000_000f,
-                    )
+                    ClockDisplayMode.ANALOG -> SmoothAnalogClockUI(now.zone)
                 }
             }
         }
@@ -433,6 +427,16 @@ private fun ClockHero(
             Text(stringResource(R.string.home_local_time), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
+}
+
+@Composable
+private fun SmoothAnalogClockUI(zoneId: java.time.ZoneId) {
+    val smoothNow = rememberSmoothZonedNow(zoneId)
+    AnalogClockUI(
+        hour = smoothNow.hour,
+        minute = smoothNow.minute,
+        second = smoothNow.second + smoothNow.nano / 1_000_000_000f,
+    )
 }
 
 @Composable
@@ -450,18 +454,19 @@ private fun DigitalClockUI(hour24: Int, minute: Int, second: Int, use24HourForma
                 lineHeight = 1.em,
                 fontSize = 76.sp,
                 letterSpacing = (-4.5).sp,
+                fontFeatureSettings = "tnum",
             )
             Text(
                 text = hour.toString().padStart(2, '0'),
                 style = heroClockStyle,
-                fontWeight = FontWeight.ExtraBold,
+                fontWeight = FontWeight.Light,
                 maxLines = 1,
                 softWrap = false,
             )
             Text(
                 text = ":${minute.toString().padStart(2, '0')}",
                 style = heroClockStyle,
-                fontWeight = FontWeight.ExtraBold,
+                fontWeight = FontWeight.Light,
                 color = MaterialTheme.colorScheme.primary,
                 maxLines = 1,
                 softWrap = false,
@@ -532,36 +537,80 @@ private fun UtilityCard(
 @Composable
 fun AnalogClockUI(hour: Int, minute: Int, second: Float) {
     val onSurface = MaterialTheme.colorScheme.onSurface
+    val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
     val primary = MaterialTheme.colorScheme.primary
-    val tertiary = MaterialTheme.colorScheme.tertiary
     val surface = MaterialTheme.colorScheme.surfaceContainerHighest
+    val outline = MaterialTheme.colorScheme.outlineVariant
 
     Canvas(
-        Modifier.fillMaxWidth().padding(horizontal = 54.dp).aspectRatio(1f),
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 42.dp)
+            .aspectRatio(1f),
     ) {
         val center = androidx.compose.ui.geometry.Offset(size.width / 2f, size.height / 2f)
         val radius = size.minDimension / 2f
-        drawCircle(surface, radius * 0.90f, center)
-        drawCircle(primary.copy(alpha = 0.12f), radius * 0.90f, center, style = Stroke(radius * 0.025f))
-        drawCircle(Color.White.copy(alpha = 0.12f), radius * 0.855f, center, style = Stroke(radius * 0.010f))
 
+        // Layered M3-style dial: tonal surface, quiet inner field and a thin outline.
+        drawCircle(
+            brush = Brush.radialGradient(
+                colors = listOf(
+                    surface.copy(alpha = 0.98f),
+                    MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.96f),
+                ),
+                center = center,
+                radius = radius * 0.94f,
+            ),
+            radius = radius * 0.94f,
+            center = center,
+        )
+        drawCircle(
+            color = outline.copy(alpha = 0.70f),
+            radius = radius * 0.93f,
+            center = center,
+            style = Stroke(width = radius * 0.018f),
+        )
+        drawCircle(
+            color = primary.copy(alpha = 0.06f),
+            radius = radius * 0.83f,
+            center = center,
+        )
+
+        // Fine minute ticks plus stronger five-minute markers.
         for (index in 0 until 60) {
             val major = index % 5 == 0
-            rotate(index * 6f, pivot = center) {
-                val outer = radius * 0.78f
-                val inner = radius * if (major) 0.66f else 0.73f
+            androidx.compose.ui.graphics.drawscope.rotate(index * 6f, pivot = center) {
+                val outer = radius * 0.825f
+                val inner = radius * if (major) 0.725f else 0.785f
                 drawLine(
-                    color = onSurface.copy(alpha = if (major) 0.72f else 0.18f),
+                    color = if (major) onSurface.copy(alpha = 0.62f) else onSurfaceVariant.copy(alpha = 0.22f),
                     start = androidx.compose.ui.geometry.Offset(center.x, center.y - outer),
                     end = androidx.compose.ui.geometry.Offset(center.x, center.y - inner),
-                    strokeWidth = radius * if (major) 0.020f else 0.008f,
+                    strokeWidth = radius * if (major) 0.018f else 0.006f,
                     cap = StrokeCap.Round,
                 )
             }
         }
 
-        fun hand(angle: Float, length: Float, width: Float, color: Color, tail: Float = 0f) {
-            rotate(angle, pivot = center) {
+        // Subtle cardinal accents preserve readability without drawing numerals.
+        for (index in 0 until 12) {
+            androidx.compose.ui.graphics.drawscope.rotate(index * 30f, pivot = center) {
+                drawCircle(
+                    color = if (index % 3 == 0) primary.copy(alpha = 0.82f) else onSurfaceVariant.copy(alpha = 0.32f),
+                    radius = radius * if (index % 3 == 0) 0.012f else 0.008f,
+                    center = androidx.compose.ui.geometry.Offset(center.x, center.y - radius * 0.705f),
+                )
+            }
+        }
+
+        fun hand(
+            angle: Float,
+            length: Float,
+            width: Float,
+            color: Color,
+            tail: Float = 0f,
+        ) {
+            androidx.compose.ui.graphics.drawscope.rotate(angle, pivot = center) {
                 drawLine(
                     color = color,
                     start = androidx.compose.ui.geometry.Offset(center.x, center.y + radius * tail),
@@ -571,11 +620,26 @@ fun AnalogClockUI(hour: Int, minute: Int, second: Float) {
                 )
             }
         }
-        hand(((hour % 12) + minute / 60f) * 30f, 0.46f, 0.070f, onSurface, 0.025f)
-        hand((minute + second / 60f) * 6f, 0.64f, 0.046f, primary, 0.045f)
-        hand(second * 6f, 0.73f, 0.014f, tertiary, 0.11f)
-        drawCircle(onSurface, radius * 0.052f, center)
-        drawCircle(primary, radius * 0.022f, center)
+
+        val hourAngle = (hour % 12 + minute / 60f) * 30f
+        val minuteAngle = (minute + second / 60f) * 6f
+        val secondAngle = second * 6f
+
+        // Hour/minute use a restrained tonal palette; the second hand is the accent.
+        hand(hourAngle, 0.43f, 0.062f, onSurface, tail = 0.025f)
+        hand(minuteAngle, 0.65f, 0.040f, onSurface.copy(alpha = 0.88f), tail = 0.040f)
+        hand(secondAngle, 0.76f, 0.010f, primary, tail = 0.13f)
+
+        drawCircle(
+            color = onSurface.copy(alpha = 0.95f),
+            radius = radius * 0.050f,
+            center = center,
+        )
+        drawCircle(
+            color = primary,
+            radius = radius * 0.022f,
+            center = center,
+        )
     }
 }
 

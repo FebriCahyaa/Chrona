@@ -1,3 +1,12 @@
+
+## 2026-09-19 — Phase 2 clock display foundation
+
+- Added persistent Digital/Analog clock display selection with Digital as the default.
+- Added Material 3 segmented clock-style selection to Settings.
+- Refined the dashboard analog clock with a layered Material 3 dial and smoother hand proportions.
+- Added frame-sampled foreground clock rendering for smooth second-hand motion without changing the durable time engine.
+- Preserved existing timing, persistence, navigation, localization, and feature behavior.
+
 <!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
 # Changelog
 
@@ -8,9 +17,6 @@
 - Updated glass cards to use the GLASS rendering mode with restrained translucent surfaces, borders and highlight sheen.
 - Added shared `ChronaGlassTokens` for Phase 1 surface geometry and opacity values.
 - Deferred AGSL refraction and dynamic blur to a later rendering phase.
-- Restored Material 3 ripple indication on interactive Bento cards while preserving tactile press scaling.
-- Made `TopAppBarState` explicit and remembered in `ChronaScaffold` to keep the collapsing toolbar state stable across recomposition.
-- Exposed the persisted `GLASS` mode in Settings and shared its active state through theme composition locals.
 
 ## Unreleased — CI pipeline restructure and app icon refresh
 

@@ -198,11 +198,14 @@
     <string name="settings_live_preview">LIVE PREVIEW</string>
     <string name="settings_theme_soft">Soft / raised</string>
     <string name="settings_theme_dynamic">Dynamic / tonal</string>
-    <string name="settings_theme_glass">Glass / translucent</string>
     <string name="settings_format_title">24-hour format</string>
     <string name="settings_format_subtitle">Use 00:00–23:59 instead of AM/PM</string>
     <string name="settings_seconds_title">Show seconds</string>
     <string name="settings_seconds_subtitle">Show the live seconds readout in the hero clock</string>
+    <string name="settings_clock_style_title">Clock style</string>
+    <string name="settings_clock_style_subtitle">Choose the clock shown on the main dashboard</string>
+    <string name="settings_clock_style_digital">Digital</string>
+    <string name="settings_clock_style_analog">Analog</string>
     <string name="settings_notification_access">Notification access</string>
     <string name="settings_notification_allowed">Allowed for alarms and timer notices</string>
     <string name="settings_notification_denied">Not allowed · tap to open Android notification settings</string>

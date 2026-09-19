@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.febricahyaa.clockapp.data.SettingsRepository
 import com.febricahyaa.clockapp.model.AppThemeMode
+import com.febricahyaa.clockapp.model.ClockDisplayMode
 import com.febricahyaa.clockapp.model.ClockSettings
 import com.febricahyaa.clockapp.model.ThemeAccent
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,6 +49,9 @@ class SettingsViewModel(private val repository: SettingsRepository) : ViewModel(
     fun updateAccent(accent: ThemeAccent) = updateSettings { it.copy(themeAccent = accent) }
 
     fun updateShowSeconds(showSeconds: Boolean) = updateSettings { it.copy(showSeconds = showSeconds) }
+
+    fun updateClockDisplayMode(mode: ClockDisplayMode) =
+        updateSettings { it.copy(clockDisplayMode = mode) }
 
     fun updateUse24HourFormat(use24Hour: Boolean) {
         _state.value = _state.value.copy(use24HourFormat = use24Hour)

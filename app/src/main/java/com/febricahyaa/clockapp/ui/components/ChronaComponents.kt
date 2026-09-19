@@ -39,6 +39,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,10 +50,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.time.LocalChronaTimeEngine
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import kotlinx.coroutines.isActive
 
 val LocalAccentGradient = compositionLocalOf {
     Brush.linearGradient(listOf(Color(0xFFFFD4BD), Color(0xFFFF8E62)))
@@ -67,6 +72,34 @@ fun rememberEpochMillisNowState(): State<Long> {
     ) {
         timeEngine.wallClockMillis.collect { value = it }
     }
+}
+
+@Composable
+fun rememberSmoothEpochMillisNowState(): State<Long> {
+    val timeEngine = LocalChronaTimeEngine.current
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+
+    return produceState(
+        initialValue = timeEngine.currentEpochMillis(),
+        timeEngine,
+        lifecycle,
+    ) {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            while (isActive) {
+                withFrameNanos {
+                    value = timeEngine.currentEpochMillis()
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun rememberSmoothZonedNow(
+    zoneId: ZoneId = ZoneId.systemDefault(),
+): ZonedDateTime {
+    val epochMillis by rememberSmoothEpochMillisNowState()
+    return java.time.Instant.ofEpochMilli(epochMillis).atZone(zoneId)
 }
 
 @Composable

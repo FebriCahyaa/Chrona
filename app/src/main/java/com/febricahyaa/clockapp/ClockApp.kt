@@ -193,7 +193,9 @@ private fun ChronaDestinationContent(
                     timerRemainingSeconds = timerState.remainingSeconds,
                     timerRunning = timerState.isRunning,
                     themeMode = settingsState.settings.themeMode,
+                    clockDisplayMode = settingsState.settings.clockDisplayMode,
                     onThemeModeChange = settingsViewModel::updateThemeMode,
+                    onClockDisplayModeChange = settingsViewModel::updateClockDisplayMode,
                     onNavigate = navigation::navigate,
                     onOpenSettings = { navigation.navigate(AppDestination.SETTINGS) },
                 )
@@ -323,6 +325,7 @@ private fun ChronaDestinationContent(
                 onAccentChange = settingsViewModel::updateAccent,
                 onFormatChange = settingsViewModel::updateUse24HourFormat,
                 onShowSecondsChange = settingsViewModel::updateShowSeconds,
+                onClockDisplayModeChange = settingsViewModel::updateClockDisplayMode,
                 notificationPermissionGranted = Build.VERSION.SDK_INT < 33 ||
                     ContextCompat.checkSelfPermission(
                         context,
