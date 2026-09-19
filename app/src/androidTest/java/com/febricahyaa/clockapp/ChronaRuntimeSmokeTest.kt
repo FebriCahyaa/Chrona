@@ -2,7 +2,7 @@
 
 package com.febricahyaa.clockapp
 
-import androidx.compose.ui.test.assertExists
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onRoot
 import org.junit.Assert.assertFalse
@@ -21,7 +21,7 @@ class ChronaRuntimeSmokeTest {
     @Test
     fun mainActivityRendersRootSurface() {
         composeRule.waitForIdle()
-        composeRule.onRoot().assertExists()
+        composeRule.onRoot().assertIsDisplayed()
     }
 
     @Test
