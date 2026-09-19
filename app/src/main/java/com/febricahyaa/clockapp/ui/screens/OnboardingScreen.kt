@@ -211,22 +211,18 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                         Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        Box(Modifier.fillMaxWidth(0.47f)) {
-                            OnboardingMiniCard(
-                                modifier = Modifier.fillMaxWidth(),
-                                icon = Icons.Filled.Alarm,
-                                title = R.string.onboarding_alarm_title,
-                                body = R.string.onboarding_alarm_body,
-                            )
-                        }
-                        Box(Modifier.fillMaxWidth(0.47f)) {
-                            OnboardingMiniCard(
-                                modifier = Modifier.fillMaxWidth(),
-                                icon = Icons.Filled.Timer,
-                                title = R.string.onboarding_timer_title,
-                                body = R.string.onboarding_timer_body,
-                            )
-                        }
+                        OnboardingMiniCard(
+                            modifier = Modifier.weight(1f),
+                            icon = Icons.Filled.Alarm,
+                            title = R.string.onboarding_alarm_title,
+                            body = R.string.onboarding_alarm_body,
+                        )
+                        OnboardingMiniCard(
+                            modifier = Modifier.weight(1f),
+                            icon = Icons.Filled.Timer,
+                            title = R.string.onboarding_timer_title,
+                            body = R.string.onboarding_timer_body,
+                        )
                     }
                 }
             }
@@ -299,7 +295,9 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                 if (page > 0) {
                     androidx.compose.material3.OutlinedButton(
                         onClick = { goTo(onboardingPreviousPage(page)) },
-                        modifier = Modifier.widthIn(min = 96.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(52.dp),
                         shape = RoundedCornerShape(18.dp),
                     ) {
                         Text(stringResource(R.string.nav_back))
@@ -311,7 +309,15 @@ fun OnboardingScreen(onComplete: () -> Unit) {
                         if (page == pages.lastIndex) finish()
                         else goTo(onboardingNextPage(page))
                     },
-                    modifier = Modifier.widthIn(min = 128.dp),
+                    modifier = if (page > 0) {
+                        Modifier
+                            .weight(1f)
+                            .height(52.dp)
+                    } else {
+                        Modifier
+                            .fillMaxWidth()
+                            .height(52.dp)
+                    },
                     shape = RoundedCornerShape(18.dp),
                 ) {
                     Text(if (page == pages.lastIndex) stringResource(R.string.onboarding_get_started) else stringResource(R.string.onboarding_continue))
@@ -466,7 +472,7 @@ private fun OnboardingMiniCard(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             BentoIcon(icon, Modifier.size(40.dp))
-            Column {
+            Column(Modifier.weight(1f)) {
                 Text(stringResource(title), fontSize = 13.sp, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(3.dp))
                 Text(
