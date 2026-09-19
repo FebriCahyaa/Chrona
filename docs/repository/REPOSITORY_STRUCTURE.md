@@ -26,7 +26,6 @@ Chrona/
 ├── docs/
 │   ├── architecture/
 │   ├── audit/
-│   ├── build/
 │   ├── ci/
 │   ├── design/
 │   ├── legal/
@@ -41,8 +40,7 @@ Chrona/
 │   ├── dev/
 │   ├── localization/
 │   ├── release/
-│   ├── telegram/
-│   └── world-clock/
+│   └── telegram/
 ├── third_party/licenses/
 ├── .github/
 │   ├── actions/setup-android/
@@ -51,7 +49,7 @@ Chrona/
 └── gradle/
 ```
 
-Generated files stay out of the repository. Historical phase handoffs remain under `docs/archive/phases/` and are not mixed with active tooling.
+Generated files and one-off patch scripts stay out of the repository. Active documentation records current contracts and operational guidance only.
 
 ## Localization
 

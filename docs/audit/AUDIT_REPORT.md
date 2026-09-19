@@ -30,7 +30,7 @@ Audited the Android source across Kotlin, Java, C++, JNI, Compose/Material impor
 - Compose Material icon dependency checked and made explicit.
 - Accent gradient CompositionLocal wiring fixed so selected accent reaches UI components.
 - Unit-test timezone assumption fixed so the midnight test is independent of the CI/device timezone.
-- CI workflows, release signing, repository layout, and project Gradle configuration were reworked after the source refactor; the current declared toolchain is recorded under `docs/build/BUILD_ENVIRONMENT.md`.
+- CI workflows, release signing, repository layout, and project Gradle configuration were reworked after the source refactor; the current declared toolchain is recorded under `docs/CI-TOOLCHAIN.md`.
 - Kotlin ViewModel source compiles independently with the local Kotlin compiler using Android lifecycle/coroutines stubs for syntax and type-check coverage.
 - Deterministic `AlarmTimeCalculator` checks pass for one-shot and repeating schedules in a fixed timezone.
 

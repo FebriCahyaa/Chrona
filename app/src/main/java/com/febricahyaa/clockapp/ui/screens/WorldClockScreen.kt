@@ -3,8 +3,8 @@
 package com.febricahyaa.clockapp.ui.screens
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,19 +24,24 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -49,17 +54,14 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.BoxWithConstraints
 import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.data.timezone.TimeZoneCatalog
 import com.febricahyaa.clockapp.model.WorldClockItem
 import com.febricahyaa.clockapp.time.ChronaTimeFormatter
 import com.febricahyaa.clockapp.ui.components.ChronaCard
 import com.febricahyaa.clockapp.ui.components.ChronaScaffold
-import com.febricahyaa.clockapp.ui.components.IconCircleButton
 import com.febricahyaa.clockapp.ui.components.WorldClockMap
 import com.febricahyaa.clockapp.ui.components.rememberEpochMillisNowState
 import java.time.Instant
@@ -119,7 +121,9 @@ fun WorldClockScreen(
         }
     }
     val systemZone = remember { ZoneId.systemDefault() }
-    val localZone = remember(systemZone) { runCatching { ZoneId.of(systemZone.id) }.getOrNull() ?: ZoneId.of("UTC") }
+    val localZone = remember(systemZone) {
+        runCatching { ZoneId.of(systemZone.id) }.getOrNull() ?: ZoneId.of("UTC")
+    }
     val localCity = remember(localZone, locale) {
         TimeZoneCatalog.find(localZone.id)?.city ?: localZone.id.substringAfterLast('/')
     }
@@ -138,7 +142,9 @@ fun WorldClockScreen(
         val ordered = WORLD_SPOTLIGHT_ZONES.mapNotNull { zoneId ->
             visible.firstOrNull { it.zoneId == zoneId }
         }
-        (ordered + visible.sortedWith(compareByDescending<WorldClockItem> { it.zoneId in favorites }.thenBy { it.city }))
+        (ordered + visible.sortedWith(
+            compareByDescending<WorldClockItem> { it.zoneId in favorites }.thenBy { it.city },
+        ))
             .distinctBy { it.id }
             .take(4)
     }
@@ -154,7 +160,10 @@ fun WorldClockScreen(
                     onOpenSearch()
                 },
             ) {
-                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.world_add_city))
+                Icon(
+                    Icons.Filled.Add,
+                    contentDescription = stringResource(R.string.world_add_city),
+                )
             }
         },
     ) { paddingValues ->
@@ -163,11 +172,11 @@ fun WorldClockScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .navigationBarsPadding(),
-            contentPadding = PaddingValues(start = 20.dp, top = 8.dp, end = 20.dp, bottom = 36.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(start = 16.dp, top = 10.dp, end = 16.dp, bottom = 36.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            item(contentType = "local-hero") {
-                LocalWorldClockHero(
+            item(contentType = "local-summary") {
+                LocalWorldClockSummary(
                     city = localCity,
                     country = localCountry,
                     time = localTime,
@@ -191,92 +200,47 @@ fun WorldClockScreen(
                                 haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
                                 regionKey = option.name
                             },
-                            label = { Text(stringResource(option.labelRes), style = MaterialTheme.typography.labelLarge) },
+                            label = {
+                                Text(
+                                    stringResource(option.labelRes),
+                                    style = MaterialTheme.typography.labelLarge,
+                                )
+                            },
                         )
                     }
                 }
             }
 
             if (spotlight.isNotEmpty()) {
-                item(contentType = "spotlight-section") {
+                item(contentType = "spotlight-header") {
                     WorldClockSectionTitle(
                         title = stringResource(R.string.world_section_spotlight),
                         subtitle = stringResource(R.string.world_section_spotlight_subtitle),
                     )
                 }
                 item(contentType = "spotlight-grid") {
-                    BoxWithConstraints(Modifier.fillMaxWidth()) {
-                        val wide = maxWidth >= 700.dp
-                        if (wide) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        spotlight.chunked(2).forEach { pair ->
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
                             ) {
-                                val heroCity = spotlight.first()
-                                WorldClockSpotlightCard(
-                                    item = heroCity,
-                                    favorite = heroCity.zoneId in favorites,
-                                    use24HourFormat = use24HourFormat,
-                                    epochMillisState = epochMillisState,
-                                    glass = glass,
-                                    locale = locale,
-                                    emphasized = true,
-                                    modifier = Modifier.weight(1.05f),
-                                    onRemove = { onRemove(heroCity) },
-                                    onToggleFavorite = { onToggleFavorite(heroCity.zoneId) },
-                                    onOpenDetail = { onOpenDetail(heroCity) },
-                                )
-                                Column(
-                                    modifier = Modifier.weight(1f),
-                                    verticalArrangement = Arrangement.spacedBy(14.dp),
-                                ) {
-                                    spotlight.drop(1).chunked(2).take(2).forEach { pair ->
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.spacedBy(14.dp),
-                                        ) {
-                                            pair.forEach { item ->
-                                                WorldClockSpotlightCard(
-                                                    item = item,
-                                                    favorite = item.zoneId in favorites,
-                                                    use24HourFormat = use24HourFormat,
-                                                    epochMillisState = epochMillisState,
-                                                    glass = glass,
-                                                    locale = locale,
-                                                    emphasized = false,
-                                                    modifier = Modifier.weight(1f),
-                                                    onRemove = { onRemove(item) },
-                                                    onToggleFavorite = { onToggleFavorite(item.zoneId) },
-                                                    onOpenDetail = { onOpenDetail(item) },
-                                                )
-                                            }
-                                            if (pair.size == 1) Spacer(Modifier.weight(1f))
-                                        }
-                                    }
+                                pair.forEach { item ->
+                                    WorldClockSpotlightCard(
+                                        item = item,
+                                        favorite = item.zoneId in favorites,
+                                        use24HourFormat = use24HourFormat,
+                                        epochMillisState = epochMillisState,
+                                        glass = glass,
+                                        locale = locale,
+                                        modifier = Modifier.weight(1f),
+                                        onRemove = { onRemove(item) },
+                                        onToggleFavorite = { onToggleFavorite(item.zoneId) },
+                                        onOpenDetail = { onOpenDetail(item) },
+                                    )
                                 }
-                            }
-                        } else {
-                            spotlight.chunked(2).forEach { pair ->
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                ) {
-                                    pair.forEach { item ->
-                                        WorldClockSpotlightCard(
-                                            item = item,
-                                            favorite = item.zoneId in favorites,
-                                            use24HourFormat = use24HourFormat,
-                                            epochMillisState = epochMillisState,
-                                            glass = glass,
-                                            locale = locale,
-                                            emphasized = false,
-                                            modifier = Modifier.weight(1f),
-                                            onRemove = { onRemove(item) },
-                                            onToggleFavorite = { onToggleFavorite(item.zoneId) },
-                                            onOpenDetail = { onOpenDetail(item) },
-                                        )
-                                    }
-                                    if (pair.size == 1) Spacer(Modifier.weight(1f))
+                                if (pair.size == 1) {
+                                    Spacer(Modifier.weight(1f))
                                 }
                             }
                         }
@@ -285,20 +249,52 @@ fun WorldClockScreen(
             }
 
             item(contentType = "map-section") {
-                ChronaCard(Modifier.fillMaxWidth(), glass = glass) {
-                    Column(Modifier.fillMaxWidth().padding(16.dp)) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.extraLarge,
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(
+                            alpha = if (glass) 0.82f else 1f,
+                        ),
+                    ),
+                    border = BorderStroke(
+                        1.dp,
+                        MaterialTheme.colorScheme.outline.copy(alpha = if (glass) 0.12f else 0.08f),
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
                         WorldClockSectionTitle(
                             title = stringResource(R.string.world_section_map),
                             subtitle = stringResource(R.string.world_map_hint),
                         )
-                        Spacer(Modifier.height(12.dp))
-                        WorldClockMap()
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = MaterialTheme.shapes.large,
+                            color = MaterialTheme.colorScheme.surface.copy(alpha = if (glass) 0.72f else 1f),
+                            tonalElevation = 2.dp,
+                            border = BorderStroke(
+                                1.dp,
+                                MaterialTheme.colorScheme.outline.copy(alpha = 0.08f),
+                            ),
+                        ) {
+                            Box(Modifier.fillMaxWidth().padding(6.dp)) {
+                                WorldClockMap()
+                            }
+                        }
                     }
                 }
             }
 
             if (visible.size > spotlight.size) {
-                val remaining = visible.filterNot { candidate -> spotlight.any { it.id == candidate.id } }
+                val remaining = visible.filterNot { candidate ->
+                    spotlight.any { it.id == candidate.id }
+                }
                 item(contentType = "saved-section") {
                     WorldClockSectionTitle(
                         title = stringResource(R.string.world_section_saved),
@@ -328,12 +324,15 @@ fun WorldClockScreen(
                 item(contentType = "empty") {
                     ChronaCard(Modifier.fillMaxWidth(), glass = glass) {
                         Column(
-                            Modifier
+                            modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(28.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
-                            Text(stringResource(R.string.world_empty_title), style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                stringResource(R.string.world_empty_title),
+                                style = MaterialTheme.typography.titleMedium,
+                            )
                             Spacer(Modifier.height(5.dp))
                             Text(
                                 stringResource(R.string.world_empty_subtitle),
@@ -356,7 +355,7 @@ fun WorldClockScreen(
 }
 
 @Composable
-private fun LocalWorldClockHero(
+private fun LocalWorldClockSummary(
     city: String,
     country: String,
     time: String,
@@ -364,42 +363,72 @@ private fun LocalWorldClockHero(
     utc: String,
     glass: Boolean,
 ) {
-    ChronaCard(Modifier.fillMaxWidth(), glass = glass) {
-        Box(
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(
+                alpha = if (glass) 0.76f else 0.94f,
+            ),
+        ),
+        border = BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+    ) {
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    Brush.linearGradient(
-                        listOf(
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.76f),
-                            MaterialTheme.colorScheme.surface,
-                        ),
-                    ),
-                )
-                .padding(22.dp),
+                .padding(horizontal = 16.dp, vertical = 13.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Column {
+            Surface(
+                modifier = Modifier.size(42.dp),
+                shape = MaterialTheme.shapes.medium,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.13f),
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        Icons.Filled.LocationOn,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+            }
+            Column(Modifier.weight(1f)) {
                 Text(
                     stringResource(R.string.world_section_your_time),
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Bold,
                 )
-                Spacer(Modifier.height(7.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.Bottom,
-                ) {
-                    Column(Modifier.weight(1f)) {
-                        Text(city, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.SemiBold)
-                        Text(country, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    Text(utc, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                Spacer(Modifier.height(18.dp))
-                Text(time, style = MaterialTheme.typography.displayLarge, fontWeight = FontWeight.Light)
-                Spacer(Modifier.height(4.dp))
-                Text(date, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    "$city · $country",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                )
+                Text(
+                    date,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                )
+            }
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    time,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                )
+                Text(
+                    utc,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }
@@ -411,9 +440,17 @@ private fun WorldClockSectionTitle(
     subtitle: String,
 ) {
     Column {
-        Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+        Text(
+            title,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.SemiBold,
+        )
         Spacer(Modifier.height(3.dp))
-        Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            subtitle,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
@@ -425,77 +462,164 @@ private fun WorldClockSpotlightCard(
     epochMillisState: State<Long>,
     glass: Boolean,
     locale: Locale,
-    emphasized: Boolean,
     modifier: Modifier,
     onRemove: () -> Unit,
     onToggleFavorite: () -> Unit,
     onOpenDetail: () -> Unit,
 ) {
     val epochMillis by epochMillisState
-    val zoneId = remember(item.zoneId) { runCatching { ZoneId.of(item.zoneId) }.getOrNull() } ?: return
+    val zoneId = remember(item.zoneId) {
+        runCatching { ZoneId.of(item.zoneId) }.getOrNull()
+    } ?: return
     val country = remember(item.zoneId, locale) {
         TimeZoneCatalog.find(item.zoneId)?.countryName(locale) ?: item.zoneId
     }
-    val zoned = remember(zoneId, epochMillis) { Instant.ofEpochMilli(epochMillis).atZone(zoneId) }
+    val zoned = remember(zoneId, epochMillis) {
+        Instant.ofEpochMilli(epochMillis).atZone(zoneId)
+    }
     val time = remember(zoned, use24HourFormat) {
         ChronaTimeFormatter.shortTime(epochMillis, zoneId, use24HourFormat)
     }
-    val utc = remember(zoned) { ChronaTimeFormatter.utcOffset(zoneId, epochMillis) }
-    val date = remember(zoned) { ChronaTimeFormatter.date(epochMillis, zoneId) }
+    val utc = remember(zoned) {
+        ChronaTimeFormatter.utcOffset(zoneId, epochMillis)
+    }
     val day = zoned.hour in 6..17
-    val container = if (day) {
+    val baseContent = MaterialTheme.colorScheme.onSurface
+    val nightContent = MaterialTheme.colorScheme.inverseOnSurface
+    val background = if (day) {
         MaterialTheme.colorScheme.surface
     } else {
         MaterialTheme.colorScheme.inverseSurface
     }
-    val content = if (day) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.inverseOnSurface
-    val muted = if (day) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.72f)
+    val container = when {
+        !day -> background
+        glass -> background.copy(alpha = 0.83f)
+        else -> background
+    }
+    val content = if (day) baseContent else nightContent
+    val muted = if (day) {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    } else {
+        MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.72f)
+    }
 
-    ChronaCard(
-        modifier = modifier,
-        glass = glass,
+    Card(
+        modifier = modifier.height(184.dp),
         onClick = onOpenDetail,
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = container),
+        border = BorderStroke(
+            1.dp,
+            if (day) {
+                MaterialTheme.colorScheme.outline.copy(alpha = if (glass) 0.13f else 0.08f)
+            } else {
+                Color.White.copy(alpha = 0.08f)
+            },
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (day) 4.dp else 5.dp),
     ) {
         Column(
-            Modifier
-                .fillMaxWidth()
-                .background(container)
-                .padding(if (emphasized) 22.dp else 17.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(14.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
         ) {
             Row(
-                Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Column(Modifier.weight(1f)) {
-                    Text(item.city, style = if (emphasized) MaterialTheme.typography.headlineSmall else MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = content)
-                    Text(country, style = MaterialTheme.typography.bodySmall, color = muted, maxLines = 1)
+                    Text(
+                        item.city,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = content,
+                        maxLines = 1,
+                    )
+                    Text(
+                        country,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = muted,
+                        maxLines = 1,
+                    )
                 }
-                Text(if (day) "DAY" else "NIGHT", style = MaterialTheme.typography.labelSmall, color = muted)
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        utc,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = muted,
+                    )
+                    Text(
+                        if (day) "DAY" else "NIGHT",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = muted,
+                    )
+                }
             }
-            Spacer(Modifier.height(if (emphasized) 22.dp else 16.dp))
-            Text(
-                time,
-                style = if (emphasized) MaterialTheme.typography.displayMedium else MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Light,
-                color = content,
-            )
-            Spacer(Modifier.height(4.dp))
+
             Row(
-                Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(utc, style = MaterialTheme.typography.labelMedium, color = muted)
-                Spacer(Modifier.width(8.dp))
-                Text("•", style = MaterialTheme.typography.labelMedium, color = muted)
-                Spacer(Modifier.width(8.dp))
-                Text(date, style = MaterialTheme.typography.labelMedium, color = muted, maxLines = 1)
-                Spacer(Modifier.weight(1f))
-                IconCircleButton(
-                    icon = if (favorite) Icons.Filled.Star else Icons.Filled.StarBorder,
-                    onClick = onToggleFavorite,
-                    active = favorite,
-                    contentDescription = if (favorite) stringResource(R.string.world_remove_favorite, item.city) else stringResource(R.string.world_add_favorite, item.city),
+                Icon(
+                    imageVector = if (day) Icons.Filled.LightMode else Icons.Filled.DarkMode,
+                    contentDescription = null,
+                    tint = if (day) MaterialTheme.colorScheme.primary else Color(0xFFFFD56B),
+                    modifier = Modifier.size(18.dp),
                 )
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    if (day) "Daylight" else "Night",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = muted,
+                )
+            }
+
+            Text(
+                time,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = content,
+                maxLines = 1,
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    ChronaTimeFormatter.date(epochMillis, zoneId),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = muted,
+                    maxLines = 1,
+                )
+                Spacer(Modifier.weight(1f))
+                IconButton(
+                    onClick = onToggleFavorite,
+                    modifier = Modifier.size(48.dp),
+                ) {
+                    Icon(
+                        imageVector = if (favorite) Icons.Filled.Star else Icons.Filled.StarBorder,
+                        contentDescription = if (favorite) {
+                            stringResource(R.string.world_remove_favorite, item.city)
+                        } else {
+                            stringResource(R.string.world_add_favorite, item.city)
+                        },
+                        tint = if (favorite) MaterialTheme.colorScheme.primary else muted,
+                    )
+                }
+                IconButton(
+                    onClick = onRemove,
+                    modifier = Modifier.size(48.dp),
+                ) {
+                    Icon(
+                        Icons.Filled.DeleteOutline,
+                        contentDescription = stringResource(R.string.world_remove_city, item.city),
+                        tint = muted,
+                    )
+                }
             }
         }
     }
@@ -518,7 +642,9 @@ private fun SavedWorldClockCard(
     val localOffsetSeconds = remember(epochMillis, systemZone) {
         Instant.ofEpochMilli(epochMillis).atZone(systemZone).offset.totalSeconds
     }
-    val zoneId = remember(item.zoneId) { runCatching { ZoneId.of(item.zoneId) }.getOrNull() }
+    val zoneId = remember(item.zoneId) {
+        runCatching { ZoneId.of(item.zoneId) }.getOrNull()
+    }
     val country = remember(item.zoneId, locale) {
         TimeZoneCatalog.find(item.zoneId)?.countryName(locale) ?: item.zoneId
     }
@@ -526,35 +652,62 @@ private fun SavedWorldClockCard(
         ChronaCard(Modifier.fillMaxWidth(), glass = glass) {
             Column(Modifier.fillMaxWidth().padding(16.dp)) {
                 Text(item.city, style = MaterialTheme.typography.titleMedium)
-                Text(stringResource(R.string.world_invalid_timezone), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                Text(
+                    stringResource(R.string.world_invalid_timezone),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
             }
         }
         return
     }
-    val zoned = remember(zoneId, epochMillis) { Instant.ofEpochMilli(epochMillis).atZone(zoneId) }
-    val time = remember(zoned, use24HourFormat) { ChronaTimeFormatter.shortTime(epochMillis, zoneId, use24HourFormat) }
+    val zoned = remember(zoneId, epochMillis) {
+        Instant.ofEpochMilli(epochMillis).atZone(zoneId)
+    }
+    val time = remember(zoned, use24HourFormat) {
+        ChronaTimeFormatter.shortTime(epochMillis, zoneId, use24HourFormat)
+    }
     val date = remember(zoned) { ChronaTimeFormatter.date(epochMillis, zoneId) }
     val utc = remember(zoned) { ChronaTimeFormatter.utcOffset(zoneId, epochMillis) }
     val delta = formatOffsetDelta(zoned.offset.totalSeconds - localOffsetSeconds)
 
-    ChronaCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 0.dp)
-            .clickable(role = Role.Button, onClick = onOpenDetail),
-        glass = glass,
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onOpenDetail,
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow.copy(
+                alpha = if (glass) 0.82f else 1f,
+            ),
+        ),
+        border = BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outline.copy(alpha = 0.08f),
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(15.dp),
+            modifier = Modifier.fillMaxWidth().padding(14.dp),
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            CityThumbnail(item.city, Modifier.size(64.dp))
-            Spacer(Modifier.width(12.dp))
+            CityThumbnail(item.city, Modifier.size(58.dp))
             Column(Modifier.weight(1f)) {
-                Text(item.city, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium)
-                Text(country, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    item.city,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium,
+                )
+                Text(
+                    country,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 Spacer(Modifier.height(5.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(7.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(7.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     Text(utc, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text("•", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.outline)
                     Text(delta, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
@@ -563,25 +716,42 @@ private fun SavedWorldClockCard(
             Column(horizontalAlignment = Alignment.End) {
                 Text(time, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Light)
                 Text(date, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    IconCircleButton(
-                        icon = if (favorite) Icons.Filled.Star else Icons.Filled.StarBorder,
+                Row(horizontalArrangement = Arrangement.spacedBy(0.dp)) {
+                    IconButton(
                         onClick = onToggleFavorite,
-                        active = favorite,
-                        contentDescription = if (favorite) stringResource(R.string.world_remove_favorite, item.city) else stringResource(R.string.world_add_favorite, item.city),
-                    )
-                    IconCircleButton(
-                        icon = Icons.Filled.DeleteOutline,
+                        modifier = Modifier.size(48.dp),
+                    ) {
+                        Icon(
+                            imageVector = if (favorite) Icons.Filled.Star else Icons.Filled.StarBorder,
+                            contentDescription = if (favorite) {
+                                stringResource(R.string.world_remove_favorite, item.city)
+                            } else {
+                                stringResource(R.string.world_add_favorite, item.city)
+                            },
+                            tint = if (favorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    IconButton(
                         onClick = onRemove,
-                        contentDescription = stringResource(R.string.world_remove_city, item.city),
-                    )
+                        modifier = Modifier.size(48.dp),
+                    ) {
+                        Icon(
+                            Icons.Filled.DeleteOutline,
+                            contentDescription = stringResource(R.string.world_remove_city, item.city),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
         }
     }
 }
 
-private data class CityVisual(val topHue: Float, val bottomHue: Float, val buildingHeights: List<Float>)
+private data class CityVisual(
+    val topHue: Float,
+    val bottomHue: Float,
+    val buildingHeights: List<Float>,
+)
 
 internal fun cityThumbnailHues(cityHash: Int): Pair<Float, Float> {
     val seed = Math.floorMod(cityHash, 360)
@@ -596,7 +766,9 @@ internal fun CityThumbnail(city: String, modifier: Modifier = Modifier) {
         CityVisual(
             topHue = topHue,
             bottomHue = bottomHue,
-            buildingHeights = List(6) { index -> 0.22f + ((index + city.length) % 4) * 0.10f },
+            buildingHeights = List(6) { index ->
+                0.22f + ((index + city.length) % 4) * 0.10f
+            },
         )
     }
     val top = Color.hsv(visual.topHue, 0.30f, 0.92f)

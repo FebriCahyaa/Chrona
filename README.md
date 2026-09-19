@@ -70,7 +70,7 @@ The production build is intentionally separate from normal PR CI and is protecte
 | Tool | Project pin |
 | --- | --- |
 | Gradle | 9.7.1 |
-| Android Gradle Plugin | 9.4.0 |
+| Android Gradle Plugin | 9.4.1 |
 | Kotlin | 2.4.10 |
 | Gradle runtime JDK | 25 |
 | Java/Kotlin compilation toolchain | 17 |
@@ -82,7 +82,6 @@ The production build is intentionally separate from normal PR CI and is protecte
 ## Repository layout
 
 See [`docs/repository/REPOSITORY_STRUCTURE.md`](docs/repository/REPOSITORY_STRUCTURE.md).
-Historical phase records are isolated under `docs/archive/` and are not used by active build, test, or release tooling.
 
 ## Local development
 
@@ -94,7 +93,7 @@ chmod +x ./gradlew
 ./gradlew assembleDebug
 ```
 
-For environment setup guidance, see [`docs/build/BUILD_ENVIRONMENT.md`](docs/build/BUILD_ENVIRONMENT.md).
+For environment setup guidance, see [`docs/CI-TOOLCHAIN.md`](docs/CI-TOOLCHAIN.md).
 
 ## Localization
 

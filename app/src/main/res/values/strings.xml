@@ -57,6 +57,17 @@
     <string name="nav_search">Search</string>
     <string name="world_screen_title">World Clock</string>
     <string name="world_screen_subtitle">A live, persistent view of your saved cities</string>
+    <string name="world_night">Night</string>
+    <string name="world_daylight">Daylight</string>
+    <string name="world_section_saved_subtitle">%1$d more cities in your clock list</string>
+    <string name="world_section_saved">Saved cities</string>
+    <string name="world_map_open_water">Open water</string>
+    <string name="world_map_hint">Drag the red meridian to explore the UTC offset.</string>
+    <string name="world_section_map">World map</string>
+    <string name="world_section_spotlight_subtitle">A quick view of the cities that matter most.</string>
+    <string name="world_section_spotlight">Spotlight cities</string>
+    <string name="world_section_your_time">YOUR TIME</string>
+    <string name="world_local_timezone">Local timezone</string>
     <string name="world_add_city">Add city</string>
     <string name="world_find_city">Find a city</string>
     <string name="world_empty_title">No cities here yet</string>

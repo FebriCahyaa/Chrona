@@ -58,6 +58,17 @@
     <string name="nav_search">Search</string>
     <string name="world_screen_title">World Clock</string>
     <string name="world_screen_subtitle">A live, persistent view of your saved cities</string>
+    <string name="world_night">Malam</string>
+    <string name="world_daylight">Siang</string>
+    <string name="world_section_saved_subtitle">%1$d kota lain di daftar jam Anda</string>
+    <string name="world_section_saved">Kota tersimpan</string>
+    <string name="world_map_open_water">Perairan terbuka</string>
+    <string name="world_map_hint">Geser garis meridian merah untuk menjelajahi offset UTC.</string>
+    <string name="world_section_map">Peta dunia</string>
+    <string name="world_section_spotlight_subtitle">Tampilan cepat untuk kota yang paling penting bagi Anda.</string>
+    <string name="world_section_spotlight">Kota pilihan</string>
+    <string name="world_section_your_time">WAKTU ANDA</string>
+    <string name="world_local_timezone">Zona waktu lokal</string>
     <string name="world_add_city">Add city</string>
     <string name="world_find_city">Find a city</string>
     <string name="world_empty_title">No cities here yet</string>

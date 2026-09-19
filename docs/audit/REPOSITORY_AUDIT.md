@@ -3,10 +3,10 @@
 
 ## Structural cleanup
 
-- Historical phase handoffs moved out of the root.
+- Historical phase handoffs and obsolete patch archives are excluded from the active repository tree.
 - Vendored metadata directories for AOSP/Material icons removed because the Android build does not consume them.
 - Phase-specific automation scripts removed from the active `scripts/` tree.
-- Active scripts are organized by purpose: audit, CI, development, localization, release, Telegram, and world-clock diagnostics.
+- Active scripts are limited to durable audit, CI, development, localization, release, and Telegram tooling.
 
 ## Safety rule
 
@@ -28,4 +28,4 @@ No source/module/resource was removed solely because its filename looked unused.
 
 ## Proven-dead source cleanup
 
-The active source tree no longer contains the unused `ClockDisplay.kt`, `NightstandDialog.kt`, or `LegalContent.kt` classes. A superseded `scripts/ci/verify-android17.sh` verifier was also removed because `scripts/ci/verify-toolchain.sh` is the active toolchain gate. Historical references remain only in `docs/archive/` or the historical changelog.
+The active source tree no longer contains the unused `ClockDisplay.kt`, `NightstandDialog.kt`, or `LegalContent.kt` classes. A superseded `scripts/ci/verify-android17.sh` verifier was also removed because `scripts/ci/verify-toolchain.sh` is the active toolchain gate. Historical phase archives are not retained in the active repository tree.

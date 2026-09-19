@@ -35,6 +35,6 @@ Chrona uses `gradle/actions/setup-gradle@v6.2.0` with the **Basic Cache Provider
 4. Security: dependency review, CodeQL, secret scanning, SBOM, and artifact attestation.
 5. Visual QA: Android CLI `layout`, `screen`, screenshots, and journey-style smoke tests once a device-based test path is reintroduced.
 
-The emulator-based Device QA workflow was removed; instrumentation tests under `app/src/androidTest` remain runnable locally with `./scripts/dev/verify.sh full` on a connected device.
+Instrumentation tests under `app/src/androidTest` remain available to a connected-device validation environment. The repository does not require a dedicated emulator script.
 
 Do not change production build dependencies to dynamic versions such as `9.+`, `latest`, or an unpinned nightly. Keep future-version compatibility checks in separate scheduled workflows.

@@ -18,6 +18,12 @@
 <!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
 # Changelog
 
+## Unreleased — World Clock UI/UX
+
+- Reworked the World Clock destination into a mobile-first 2×2 city-card dashboard with Material 3 cards, layered elevation, day/night surfaces, and live local-time presentation.
+- Added a compact local-time summary, retained region filters, preserved saved-city interactions, and placed the existing interactive world map inside a dedicated elevated map surface.
+- Removed one-off World Clock/phase patch scripts and historical phase archives so the repository contains only durable project tooling and current documentation.
+
 ## Unreleased — Phase 1 — Material 3 + Glass UI foundation
 
 - Replaced the custom dual collapse implementation in `ChronaScaffold` with Material 3 `LargeFlexibleTopAppBar`, giving title, subtitle, back navigation and actions one scroll/collapse state.
