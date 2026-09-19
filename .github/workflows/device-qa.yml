@@ -17,52 +17,49 @@ concurrency:
 
 jobs:
   instrumentation:
-    name: Android 17 / Pixel instrumentation
-    runs-on: macos-15
-    timeout-minutes: 35
+    name: Android 16 / Pixel instrumentation
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: ./.github/actions/setup-android
         with:
           install-native: 'true'
           install-emulator: 'true'
+      - name: Install API 36 emulator image
+        shell: bash
+        run: |
+          set -euo pipefail
+          sdkmanager --sdk_root="${ANDROID_SDK_ROOT}" \
+            'platforms;android-36' \
+            'system-images;android-36;google_apis;x86_64'
+          yes | sdkmanager --licenses >/dev/null
+
       - name: Verify toolchain
         run: bash scripts/ci/verify-toolchain.sh
+
       - name: Run emulator instrumentation
         uses: reactivecircus/android-emulator-runner@v2.38.0
         with:
-          # Android 17 system images use the Major.Minor package name.
-          # google_apis_ps16k is the published x86_64 API 37.0 image used by
-          # current Android CI stacks. The compile platform remains 37.1.
-          api-level: '37.0'
-          system-image-api-level: '37.0'
-          target: google_apis_ps16k
-          arch: arm64-v8a
+          api-level: '36'
+          target: google_apis
+          arch: x86_64
           profile: pixel_6
-          cores: 4
+          cores: 2
           ram-size: 4096M
           heap-size: 512M
-          disk-size: 8G
           force-avd-creation: true
           disable-animations: true
-          emulator-boot-timeout: 600
-          emulator-port: 5554
-          # Do not rely on the action default: swiftshader_indirect is an old
-          # renderer. API 37 has a 4 GB minimum AVD RAM requirement, so keep
-          # the AVD resources explicit as well.
+          disable-spellchecker: true
+          emulator-boot-timeout: 300
           emulator-options: >-
             -no-window
-            -gpu software
-            -no-snapshot-save
-            -no-snapshot-load
+            -gpu swiftshader
+            -no-snapshot
             -noaudio
             -no-boot-anim
-            -camera-back none
-            -camera-front none
-          pre-emulator-launch-script: |
-            adb kill-server || true
-            adb start-server
           script: ./scripts/ci/device-smoke.sh
+
       - name: Upload instrumentation reports
         if: always()
         uses: actions/upload-artifact@v7.0.1
