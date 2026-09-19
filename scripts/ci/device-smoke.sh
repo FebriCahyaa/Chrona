@@ -9,16 +9,20 @@ if [[ ! -x "$ADB" ]]; then
 fi
 
 SERIAL="${ANDROID_SERIAL:-emulator-5554}"
+export ANDROID_ADB_SERVER_PORT="${ANDROID_ADB_SERVER_PORT:-5037}"
 
 echo "== ADB VERSION =="
 "$ADB" version
+
+echo "== START ADB SERVER =="
+"$ADB" start-server
 
 echo "== ADB DEVICES =="
 "$ADB" devices -l
 
 echo "== WAIT FOR DEVICE =="
 
-deadline=$((SECONDS + 120))
+deadline=$((SECONDS + 300))
 
 while (( SECONDS < deadline )); do
   state="$("$ADB" -s "$SERIAL" get-state 2>/dev/null || true)
@@ -29,12 +33,22 @@ while (( SECONDS < deadline )); do
     break
   fi
 
+  if [[ "$state" == "offline" ]]; then
+    "$ADB" start-server >/dev/null 2>&1 || true
+  fi
+
   sleep 2
 done
 
 if [[ "$("$ADB" -s "$SERIAL" get-state 2>/dev/null || true)" != "device" ]]; then
-  echo "::error::Android emulator did not become ready within 120 seconds."
+  echo "::error::Android emulator did not become ready within 300 seconds."
+  echo "== FINAL ADB DEVICES =="
   "$ADB" devices -l || true
+  echo "== EMULATOR PROCESSES =="
+  pgrep -a emulator || true
+  pgrep -a qemu || true
+  echo "== KVM =="
+  ls -la /dev/kvm || true
   exit 1
 fi
 

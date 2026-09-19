@@ -20,6 +20,8 @@ jobs:
     name: Android 16 / Pixel instrumentation
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      ANDROID_ADB_SERVER_PORT: '5037'
     steps:
       - uses: actions/checkout@v7.0.1
       - name: Enable KVM
@@ -48,6 +50,24 @@ jobs:
         with:
           install-native: 'true'
           install-emulator: 'true'
+
+      - name: Verify emulator acceleration and ADB
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          echo "===== KVM ====="
+          ls -la /dev/kvm
+          test -r /dev/kvm
+          test -w /dev/kvm
+
+          echo "===== EMULATOR ACCELERATION ====="
+          "${ANDROID_HOME}/emulator/emulator" -accel-check
+
+          echo "===== ADB SERVER ====="
+          "${ANDROID_HOME}/platform-tools/adb" start-server
+          "${ANDROID_HOME}/platform-tools/adb" version
+          "${ANDROID_HOME}/platform-tools/adb" devices -l
       - name: Install API 36 emulator image
         shell: bash
         run: |
@@ -80,6 +100,7 @@ jobs:
           force-avd-creation: true
           disable-animations: true
           disable-spellchecker: true
+          disable-linux-hw-accel: 'false'
           emulator-boot-timeout: 300
           emulator-options: >-
             -no-window
@@ -87,6 +108,10 @@ jobs:
             -no-snapshot
             -noaudio
             -no-boot-anim
+          pre-emulator-launch-script: |
+            adb start-server
+            adb version
+            adb devices -l
           script: ./scripts/ci/device-smoke.sh
 
       - name: Upload instrumentation reports
