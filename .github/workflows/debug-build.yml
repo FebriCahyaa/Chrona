@@ -78,7 +78,7 @@ jobs:
             'platforms;android-37.1' \
             'platform-tools' \
             'emulator' \
-            'system-images;android-37.1;google_apis_ps16k;x86_64'
+            'system-images;android-37.0;google_apis_ps16k;x86_64'
 
       - name: Install Android Emulator host dependencies
         shell: bash
@@ -90,6 +90,34 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libpulse0
 
+      - name: Prepare Android 17 system-image metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          IMAGE_DIR="${ANDROID_SDK_ROOT}/system-images/android-37.0/google_apis_ps16k/x86_64"
+          DEVICE_XML="${IMAGE_DIR}/devices.xml"
+
+          # Some Android 17 system-image packages omit the optional devices.xml
+          # file. avdmanager versions used by CI may still try to parse it while
+          # building the aggregate device list, so provide a valid empty catalog.
+          if [[ ! -s "${DEVICE_XML}" ]]; then
+            echo 'Creating missing Android 17 system-image devices.xml metadata.'
+            mkdir -p "${IMAGE_DIR}"
+            cat > "${DEVICE_XML}" <<'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <d:devices
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xmlns:d="http://schemas.android.com/sdk/devices/7">
+          </d:devices>
+          EOF
+            python3 - "${DEVICE_XML}" <<'PY'
+          import sys
+          import xml.etree.ElementTree as ET
+          ET.parse(sys.argv[1])
+          PY
+          fi
+
       - name: Verify Pixel 10a AVD profile
         shell: bash
         run: |
@@ -100,7 +128,6 @@ jobs:
 
           if [[ ! -x "${EMULATOR}" ]]; then
             echo "ERROR: Android Emulator binary was not installed at ${EMULATOR}"
-            echo 'Installed emulator directory:'
             ls -la "${ANDROID_SDK_ROOT}/emulator" || true
             exit 1
           fi
@@ -114,28 +141,28 @@ jobs:
           fi
 
           echo 'Installed Android Emulator:'
-          "${EMULATOR}" -version | head -n 3
-
-          QEMU_BIN="$(find "${ANDROID_SDK_ROOT}/emulator" -type f -name 'qemu-system-x86_64' -print -quit)"
-          if [[ -n "${QEMU_BIN}" ]]; then
-            echo 'Checking QEMU host-library dependencies:'
-            MISSING_DEPS="$(ldd "${QEMU_BIN}" | awk '/=> not found/{print $1}')"
-            if [[ -n "${MISSING_DEPS}" ]]; then
-              echo 'ERROR: Android Emulator has unresolved host libraries:'
-              printf '%s\n' "${MISSING_DEPS}"
-              exit 1
-            fi
-            echo 'QEMU host-library dependencies: satisfied'
-          fi
+          "${EMULATOR}" -version | sed -n '1,3p'
 
           echo 'Available Pixel device profiles:'
-          DEVICE_LIST="$("${AVDMANAGER}" list device)"
-          if ! grep -qE '(^id: pixel_10a$|^[[:space:]]*Name: Pixel 10a$)' <<< "${DEVICE_LIST}"; then
-            echo 'ERROR: Pixel 10a hardware profile is not available in the installed SDK/device definitions.'
+          set +e
+          DEVICE_LIST="$(${AVDMANAGER} list device 2>&1)"
+          DEVICE_STATUS=$?
+          set -e
+          printf '%s\n' "${DEVICE_LIST}"
+          if [[ ${DEVICE_STATUS} -ne 0 ]]; then
+            echo "ERROR: avdmanager list device failed with exit code ${DEVICE_STATUS}."
+            exit "${DEVICE_STATUS}"
+          fi
+
+          # Current avdmanager output normally renders IDs as `id: N or "pixel_10a"`,
+          # not as a bare `id: pixel_10a`. Match both the ID and display-name forms.
+          if ! grep -qE '(^id: .*"pixel_10a"|^[[:space:]]*Name: Pixel 10a$)' <<< "${DEVICE_LIST}"; then
+            echo 'ERROR: Pixel 10a hardware profile is not available in the installed command-line tools.'
             echo 'Available Pixel profiles:'
-            grep -E '(^id: pixel_10|^[[:space:]]*Name: Pixel 10)' <<< "${DEVICE_LIST}" || true
+            grep -E '(^id: .*"pixel_10|^[[:space:]]*Name: Pixel 10)' <<< "${DEVICE_LIST}" || true
             exit 1
           fi
+
           echo 'Pixel 10a profile: available'
 
       - name: Create instrumentation AVD
@@ -143,42 +170,24 @@ jobs:
         run: |
           set -euo pipefail
 
-          IMAGE_DIR="${ANDROID_SDK_ROOT}/system-images/android-37.1/google_apis_ps16k/x86_64"
           AVDMANAGER="${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/avdmanager"
           [[ -x "${AVDMANAGER}" ]] || AVDMANAGER="$(command -v avdmanager)"
-
-          # Some Android 17 system-image packages do not ship the optional
-          # devices.xml metadata file expected by avdmanager. The hardware
-          # profile itself comes from the SDK device definitions; an empty
-          # valid device catalog is sufficient to let avdmanager proceed.
-          if [[ ! -s "${IMAGE_DIR}/devices.xml" ]]; then
-            echo 'Creating missing Android 17 system-image devices.xml metadata.'
-            mkdir -p "${IMAGE_DIR}"
-            cat > "${IMAGE_DIR}/devices.xml" <<'EOF'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <d:devices
-              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-              xmlns:d="http://schemas.android.com/sdk/devices/7">
-          </d:devices>
-          EOF
-            python3 - "${IMAGE_DIR}/devices.xml" <<'PY'
-          import sys
-          import xml.etree.ElementTree as ET
-          ET.parse(sys.argv[1])
-          PY
-          fi
 
           echo no | "${AVDMANAGER}" create avd \
             --force \
             --name chrona-test \
-            --package 'system-images;android-37.1;google_apis_ps16k;x86_64' \
+            --package 'system-images;android-37.0;google_apis_ps16k;x86_64' \
             --device 'pixel_10a'
+
           cat >> "${ANDROID_AVD_HOME:-$HOME/.android/avd}/chrona-test.avd/config.ini" <<'EOF'
           hw.cpu.ncore=4
           hw.ramSize=4096M
           hw.heapSize=512M
           hw.keyboard=yes
           EOF
+
+          echo 'Created AVD:'
+          "${AVDMANAGER}" list avd | sed -n '/Name: chrona-test/,/^$/p'
 
       - name: Run Android instrumentation tests
         shell: bash
