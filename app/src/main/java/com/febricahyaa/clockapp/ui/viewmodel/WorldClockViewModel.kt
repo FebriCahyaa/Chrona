@@ -7,7 +7,6 @@ package com.febricahyaa.clockapp.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.febricahyaa.clockapp.core.config.AppDefaults
 import com.febricahyaa.clockapp.data.WorldClockRepository
 import com.febricahyaa.clockapp.data.timezone.TimeZoneCatalog
 import com.febricahyaa.clockapp.model.WorldClockItem
@@ -38,25 +37,18 @@ class WorldClockViewModel(private val repository: WorldClockRepository) : ViewMo
     init {
         viewModelScope.launch {
             mutationMutex.withLock {
-                val storedItems = withContext(Dispatchers.IO) { repository.load() }
-                val items = storedItems.ifEmpty { AppDefaults.defaultWorldClocks() }
-
-                if (storedItems.isEmpty()) {
-                    withContext(Dispatchers.IO) { repository.save(items) }
-                }
-
+                val items = withContext(Dispatchers.IO) { repository.load() }
                 val storedFavorites = withContext(Dispatchers.IO) { repository.loadFavorites() }
-                val favorites = if (storedItems.isEmpty() && storedFavorites.isEmpty()) {
-                    AppDefaults.DEFAULT_FAVORITE_ZONE_IDS.intersect(items.mapTo(mutableSetOf()) { it.zoneId })
-                } else {
-                    normalizeFavoriteZoneIds(storedFavorites, items)
-                }
+                val favorites = normalizeFavoriteZoneIds(storedFavorites, items)
 
                 if (favorites != storedFavorites) {
                     withContext(Dispatchers.IO) { repository.saveFavorites(favorites) }
                 }
 
-                _state.value = WorldClockUiState(items = items, favorites = favorites)
+                _state.value = WorldClockUiState(
+                    items = items,
+                    favorites = favorites,
+                )
             }
         }
     }

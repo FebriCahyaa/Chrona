@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 data class OnboardingUiState(
     val completed: Boolean = false,
     val notificationPermissionPrompted: Boolean = false,
+    val locationPermissionPrompted: Boolean = false,
     val isLoaded: Boolean = false,
 )
 
@@ -43,5 +44,10 @@ class OnboardingViewModel(private val repository: OnboardingRepository) : ViewMo
     fun markNotificationPermissionPrompted() {
         if (state.value.notificationPermissionPrompted) return
         viewModelScope.launch { repository.markNotificationPermissionPrompted() }
+    }
+
+    fun markLocationPermissionPrompted() {
+        if (state.value.locationPermissionPrompted) return
+        viewModelScope.launch { repository.markLocationPermissionPrompted() }
     }
 }

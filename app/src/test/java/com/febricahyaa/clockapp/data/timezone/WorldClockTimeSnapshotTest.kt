@@ -7,7 +7,7 @@ package com.febricahyaa.clockapp.data.timezone
 
 import java.time.Instant
 import java.time.ZoneId
-import kotlin.test.Test
+import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue

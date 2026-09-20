@@ -54,6 +54,7 @@ import com.febricahyaa.clockapp.timer.TimerRunningNotification
 import com.febricahyaa.clockapp.stopwatch.StopwatchNotification
 import com.febricahyaa.clockapp.ui.theme.ChronaTheme
 import com.febricahyaa.clockapp.ui.viewmodel.AlarmViewModel
+import com.febricahyaa.clockapp.ui.viewmodel.CurrentLocationViewModel
 import com.febricahyaa.clockapp.ui.viewmodel.AppUpdateViewModel
 import com.febricahyaa.clockapp.ui.viewmodel.OnboardingViewModel
 import com.febricahyaa.clockapp.ui.viewmodel.SettingsViewModel
@@ -74,6 +75,8 @@ fun ClockApp() {
     val updateViewModel: AppUpdateViewModel = viewModel(factory = viewModelFactory)
     val alarmViewModel: AlarmViewModel = viewModel(factory = viewModelFactory)
     val worldClockViewModel: WorldClockViewModel = viewModel(factory = viewModelFactory)
+    val currentLocationViewModel: CurrentLocationViewModel =
+        viewModel(factory = viewModelFactory)
     val timerViewModel: TimerViewModel = viewModel(factory = viewModelFactory)
     val stopwatchViewModel: StopwatchViewModel = viewModel(factory = viewModelFactory)
 
@@ -81,6 +84,7 @@ fun ClockApp() {
     val onboardingState by onboardingViewModel.state.collectAsStateWithLifecycle()
     val alarms by alarmViewModel.alarms.collectAsStateWithLifecycle()
     val worldClockState by worldClockViewModel.state.collectAsStateWithLifecycle()
+    val currentLocationState by currentLocationViewModel.state.collectAsStateWithLifecycle()
     val timerState by timerViewModel.state.collectAsStateWithLifecycle()
     val stopwatchState by stopwatchViewModel.state.collectAsStateWithLifecycle()
 
@@ -115,6 +119,15 @@ fun ClockApp() {
         onboardingViewModel.markNotificationPermissionPrompted()
     }
 
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions(),
+    ) {
+        onboardingViewModel.markLocationPermissionPrompted()
+        if (hasLocationPermission(context)) {
+            currentLocationViewModel.refresh()
+        }
+    }
+
     LaunchedEffect(
         onboardingState.completed,
         onboardingState.notificationPermissionPrompted,
@@ -133,6 +146,35 @@ fun ClockApp() {
             onboardingViewModel.markNotificationPermissionPrompted()
         } else {
             notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    LaunchedEffect(
+        onboardingState.completed,
+        onboardingState.notificationPermissionPrompted,
+        onboardingState.locationPermissionPrompted,
+    ) {
+        val notificationFlowComplete =
+            Build.VERSION.SDK_INT < 33 ||
+                onboardingState.notificationPermissionPrompted
+
+        if (!onboardingState.completed ||
+            !notificationFlowComplete ||
+            onboardingState.locationPermissionPrompted
+        ) {
+            return@LaunchedEffect
+        }
+
+        if (hasLocationPermission(context)) {
+            onboardingViewModel.markLocationPermissionPrompted()
+            currentLocationViewModel.refresh()
+        } else {
+            locationPermissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                ),
+            )
         }
     }
 
@@ -176,6 +218,21 @@ fun ClockApp() {
                         stopwatchViewModel = stopwatchViewModel,
                         alarms = alarms,
                         worldClockState = worldClockState,
+                        currentLocationState = currentLocationState,
+                        locationPermissionGranted = hasLocationPermission(context),
+                        preciseLocationGranted = hasPreciseLocationPermission(context),
+                        onRequestLocationPermission = {
+                            locationPermissionLauncher.launch(
+                                arrayOf(
+                                    Manifest.permission.ACCESS_FINE_LOCATION,
+                                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                                ),
+                            )
+                        },
+                        onOpenLocationSettings = {
+                            openAppLocationSettings(context)
+                        },
+                        onRefreshLocation = currentLocationViewModel::refresh,
                         timerState = timerState,
                         stopwatchState = stopwatchState,
                         backStackEntry = backStackEntry,
@@ -202,6 +259,12 @@ private fun ChronaDestinationContent(
     stopwatchViewModel: StopwatchViewModel,
     alarms: List<com.febricahyaa.clockapp.model.AlarmItem>,
     worldClockState: com.febricahyaa.clockapp.ui.viewmodel.WorldClockUiState,
+    currentLocationState: com.febricahyaa.clockapp.ui.viewmodel.CurrentLocationUiState,
+    locationPermissionGranted: Boolean,
+    preciseLocationGranted: Boolean,
+    onRequestLocationPermission: () -> Unit,
+    onOpenLocationSettings: () -> Unit,
+    onRefreshLocation: () -> Unit,
     timerState: com.febricahyaa.clockapp.ui.viewmodel.TimerUiState,
     stopwatchState: com.febricahyaa.clockapp.ui.viewmodel.StopwatchUiState,
     backStackEntry: NavBackStackEntry,
@@ -238,6 +301,12 @@ private fun ChronaDestinationContent(
                     clockDisplayMode = settingsState.settings.clockDisplayMode,
                     onClockDisplayModeChange = settingsViewModel::updateClockDisplayMode,
                     onFormatChange = settingsViewModel::updateUse24HourFormat,
+                    currentLocationState = currentLocationState,
+                    locationPermissionGranted = locationPermissionGranted,
+                    preciseLocationGranted = preciseLocationGranted,
+                    onRequestLocationPermission = onRequestLocationPermission,
+                    onOpenLocationSettings = onOpenLocationSettings,
+                    onRefreshLocation = onRefreshLocation,
                     glass = glassSurfaces,
                     onRemove = worldClockViewModel::remove,
                     onToggleFavorite = worldClockViewModel::toggleFavorite,
@@ -394,6 +463,31 @@ private fun requestExactAlarmAccess(context: android.content.Context) {
     context.startActivity(
         Intent(
             Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+            Uri.parse("package:${context.packageName}"),
+        ),
+    )
+}
+
+private fun hasLocationPermission(context: android.content.Context): Boolean =
+    ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+    ) == PackageManager.PERMISSION_GRANTED ||
+        ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+        ) == PackageManager.PERMISSION_GRANTED
+
+private fun hasPreciseLocationPermission(context: android.content.Context): Boolean =
+    ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+    ) == PackageManager.PERMISSION_GRANTED
+
+private fun openAppLocationSettings(context: android.content.Context) {
+    context.startActivity(
+        Intent(
+            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
             Uri.parse("package:${context.packageName}"),
         ),
     )

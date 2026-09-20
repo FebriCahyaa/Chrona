@@ -24,6 +24,8 @@ import com.febricahyaa.clockapp.data.TimerRepository
 import com.febricahyaa.clockapp.data.SharedPreferencesAlarmRepository
 import com.febricahyaa.clockapp.data.SharedPreferencesSettingsRepository
 import com.febricahyaa.clockapp.data.SharedPreferencesWorldClockRepository
+import com.febricahyaa.clockapp.data.location.AndroidCurrentLocationRepository
+import com.febricahyaa.clockapp.data.location.CurrentLocationRepository
 import com.febricahyaa.clockapp.data.WorldClockRepository
 import com.febricahyaa.clockapp.time.ChronaTimeEngine
 import com.febricahyaa.clockapp.time.DefaultChronaTimeEngine
@@ -47,6 +49,7 @@ interface AppContainer {
     val settingsRepository: SettingsRepository
     val alarmRepository: AlarmRepository
     val worldClockRepository: WorldClockRepository
+    val currentLocationRepository: CurrentLocationRepository
     val alarmScheduler: AlarmSchedulerGateway
     val alarmSoundPlayer: AlarmSoundGateway
     val alarmStateManager: AlarmStateManager
@@ -79,6 +82,10 @@ class DefaultAppContainer(context: Context) : AppContainer {
 
     override val worldClockRepository: WorldClockRepository by lazy {
         SharedPreferencesWorldClockRepository(appContext)
+    }
+
+    override val currentLocationRepository: CurrentLocationRepository by lazy {
+        AndroidCurrentLocationRepository(appContext)
     }
 
     override val alarmScheduler: AlarmSchedulerGateway by lazy {

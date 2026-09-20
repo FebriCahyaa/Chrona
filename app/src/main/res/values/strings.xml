@@ -79,6 +79,17 @@
     <string name="world_section_spotlight">Spotlight cities</string>
     <string name="world_section_spotlight_subtitle">A quick view of the cities that matter most.</string>
     <string name="world_section_your_time">YOUR TIME</string>
+    <string name="world_current_location_title">Current location</string>
+    <string name="world_current_location_permission_body">Allow location access to show the city you are currently in. Your device timezone is used for the local clock.</string>
+    <string name="world_current_location_allow">Allow location</string>
+    <string name="world_current_location_improve_accuracy">Improve accuracy</string>
+    <string name="world_current_location_loading">Finding your current location…</string>
+    <string name="world_current_location_unavailable">Current location is unavailable. Check that Location is enabled on your device.</string>
+    <string name="world_current_location_refresh">Refresh current location</string>
+    <string name="world_current_location_precise">Precise location</string>
+    <string name="world_current_location_approximate">Approximate location</string>
+    <string name="world_current_location_accuracy">About %1$d m accuracy</string>
+    <string name="world_current_location_device_timezone">Device timezone · %1$s</string>
     <string name="world_local_timezone">Local timezone</string>
     <string name="world_night">Night</string>
     <string name="world_daylight">Daylight</string>

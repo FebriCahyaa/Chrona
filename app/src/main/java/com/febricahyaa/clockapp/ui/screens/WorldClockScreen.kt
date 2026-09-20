@@ -41,6 +41,8 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Schedule
@@ -86,6 +88,7 @@ import androidx.compose.ui.unit.sp
 import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.data.timezone.TimeZoneCatalog
 import com.febricahyaa.clockapp.model.ClockDisplayMode
+import com.febricahyaa.clockapp.ui.viewmodel.CurrentLocationUiState
 import com.febricahyaa.clockapp.model.WorldClockItem
 import com.febricahyaa.clockapp.time.ChronaTimeFormatter
 import com.febricahyaa.clockapp.ui.components.ChronaCard
@@ -109,6 +112,12 @@ fun WorldClockScreen(
     clockDisplayMode: ClockDisplayMode,
     onClockDisplayModeChange: (ClockDisplayMode) -> Unit,
     onFormatChange: (Boolean) -> Unit,
+    currentLocationState: CurrentLocationUiState,
+    locationPermissionGranted: Boolean,
+    preciseLocationGranted: Boolean,
+    onRequestLocationPermission: () -> Unit,
+    onOpenLocationSettings: () -> Unit,
+    onRefreshLocation: () -> Unit,
     glass: Boolean,
     onRemove: (WorldClockItem) -> Unit,
     onToggleFavorite: (String) -> Unit,
@@ -235,13 +244,34 @@ fun WorldClockScreen(
         },
     ) { paddingValues ->
         if (selectedItem == null || selectedZone == null) {
-            EmptyWorldClockState(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues),
-                glass = glass,
-                onFindCity = onOpenSearch,
-            )
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
+                CurrentLocationCard(
+                    state = currentLocationState,
+                    permissionGranted = locationPermissionGranted,
+                    preciseLocationGranted = preciseLocationGranted,
+                    epochMillis = epochMillis,
+                    use24HourFormat = use24HourFormat,
+                    glass = glass,
+                    onRequestPermission = onRequestLocationPermission,
+                    onOpenSettings = onOpenLocationSettings,
+                    onRefresh = onRefreshLocation,
+                )
+
+                EmptyWorldClockState(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(280.dp),
+                    glass = glass,
+                    onFindCity = onOpenSearch,
+                )
+            }
         } else {
             val city = selectedItem
             val zone = selectedZone
@@ -261,6 +291,20 @@ fun WorldClockScreen(
                     .padding(horizontal = 20.dp, vertical = 4.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+                CurrentLocationCard(
+                    state = currentLocationState,
+                    permissionGranted = locationPermissionGranted,
+                    preciseLocationGranted = preciseLocationGranted,
+                    epochMillis = epochMillis,
+                    use24HourFormat = use24HourFormat,
+                    glass = glass,
+                    onRequestPermission = onRequestLocationPermission,
+                    onOpenSettings = onOpenLocationSettings,
+                    onRefresh = onRefreshLocation,
+                )
+
+                Spacer(Modifier.height(18.dp))
+
                 CityClockHero(
                     item = city,
                     country = country,
@@ -741,6 +785,216 @@ private fun WorldClockLibrarySheet(
                     Icon(Icons.Filled.Search, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
                     Text(stringResource(R.string.world_find_city), fontWeight = FontWeight.SemiBold)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CurrentLocationCard(
+    state: CurrentLocationUiState,
+    permissionGranted: Boolean,
+    preciseLocationGranted: Boolean,
+    epochMillis: Long,
+    use24HourFormat: Boolean,
+    glass: Boolean,
+    onRequestPermission: () -> Unit,
+    onOpenSettings: () -> Unit,
+    onRefresh: () -> Unit,
+) {
+    val zone = ZoneId.systemDefault()
+    val localTime = remember(epochMillis, zone, use24HourFormat) {
+        ChronaTimeFormatter.shortTime(epochMillis, zone, use24HourFormat)
+    }
+    val offset = remember(epochMillis, zone) {
+        ChronaTimeFormatter.utcOffset(zone, epochMillis)
+    }
+
+    ChronaCard(
+        modifier = Modifier.fillMaxWidth(),
+        glass = glass,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(22.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Icon(
+                        Icons.Filled.LocationOn,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                    Text(
+                        stringResource(R.string.world_current_location_title),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                }
+
+                if (permissionGranted) {
+                    IconButton(onClick = onRefresh) {
+                        Icon(
+                            Icons.Filled.Refresh,
+                            contentDescription = stringResource(
+                                R.string.world_current_location_refresh,
+                            ),
+                        )
+                    }
+                }
+            }
+
+            when {
+                !permissionGranted -> {
+                    Text(
+                        stringResource(R.string.world_current_location_permission_body),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Surface(
+                        onClick = onRequestPermission,
+                        shape = MaterialTheme.shapes.large,
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                    ) {
+                        Text(
+                            stringResource(R.string.world_current_location_allow),
+                            modifier = Modifier.padding(
+                                horizontal = 16.dp,
+                                vertical = 11.dp,
+                            ),
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
+                }
+
+                state.isLoading -> {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        androidx.compose.material3.CircularProgressIndicator(
+                            modifier = Modifier.size(22.dp),
+                            strokeWidth = 2.dp,
+                        )
+                        Text(
+                            stringResource(R.string.world_current_location_loading),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+
+                state.location != null -> {
+                    val location = state.location
+                    Text(
+                        localTime,
+                        style = MaterialTheme.typography.displayMedium,
+                        fontWeight = FontWeight.Normal,
+                    )
+                    Text(
+                        location.city ?: stringResource(
+                            R.string.world_current_location_title,
+                        ),
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Normal,
+                    )
+
+                    location.country?.takeIf { it.isNotBlank() }?.let { country ->
+                        Text(
+                            country,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            stringResource(
+                                R.string.world_current_location_device_timezone,
+                                offset,
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text("•", color = MaterialTheme.colorScheme.outline)
+
+                        Text(
+                            stringResource(
+                                if (preciseLocationGranted) {
+                                    R.string.world_current_location_precise
+                                } else {
+                                    R.string.world_current_location_approximate
+                                },
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+
+                    location.accuracyMeters?.takeIf { it > 0f }?.let { accuracy ->
+                        Text(
+                            stringResource(
+                                R.string.world_current_location_accuracy,
+                                accuracy.roundToInt(),
+                            ),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+
+                    if (!preciseLocationGranted) {
+                        Surface(
+                            onClick = onOpenSettings,
+                            shape = MaterialTheme.shapes.large,
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                        ) {
+                            Text(
+                                stringResource(
+                                    R.string.world_current_location_improve_accuracy,
+                                ),
+                                modifier = Modifier.padding(
+                                    horizontal = 16.dp,
+                                    vertical = 10.dp,
+                                ),
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        }
+                    }
+                }
+
+                else -> {
+                    Text(
+                        stringResource(R.string.world_current_location_unavailable),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Surface(
+                        onClick = onRefresh,
+                        shape = MaterialTheme.shapes.large,
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                    ) {
+                        Text(
+                            stringResource(R.string.world_current_location_refresh),
+                            modifier = Modifier.padding(
+                                horizontal = 16.dp,
+                                vertical = 10.dp,
+                            ),
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    )
                 }
             }
         }

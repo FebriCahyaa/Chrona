@@ -15,6 +15,7 @@ import com.febricahyaa.clockapp.ui.viewmodel.StopwatchViewModel
 import com.febricahyaa.clockapp.ui.viewmodel.TimerViewModel
 import com.febricahyaa.clockapp.ui.viewmodel.OnboardingViewModel
 import com.febricahyaa.clockapp.ui.viewmodel.WorldClockViewModel
+import com.febricahyaa.clockapp.ui.viewmodel.CurrentLocationViewModel
 
 /**
  * Constructs every Chrona ViewModel from [container]. Timer and Stopwatch
@@ -30,6 +31,9 @@ class AppViewModelFactory(private val container: AppContainer) : ViewModelProvid
             AppUpdateViewModel::class.java -> AppUpdateViewModel(container.updateRepository)
             AlarmViewModel::class.java -> AlarmViewModel(container.alarmRepository, container.alarmScheduler)
             WorldClockViewModel::class.java -> WorldClockViewModel(container.worldClockRepository)
+            CurrentLocationViewModel::class.java -> CurrentLocationViewModel(
+                container.currentLocationRepository,
+            )
             TimerViewModel::class.java -> TimerViewModel(
                 container.timerRepository,
                 container.timerScheduler,

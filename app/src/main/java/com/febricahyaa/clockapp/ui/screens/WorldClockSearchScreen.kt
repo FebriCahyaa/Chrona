@@ -169,7 +169,7 @@ private fun SearchResultsList(
         if (results.isEmpty() && query.isNotBlank()) {
             item(contentType = "empty-search") { SearchEmptyState() }
         }
-        items(results, key = { it.zoneId }, contentType = { "timezone-search" }) { entry ->
+        items(results, key = { "${it.city}|${it.zoneId}" }, contentType = { "timezone-search" }) { entry ->
             ListItem(
                 onClick = {
                     haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
@@ -243,7 +243,7 @@ private fun WorldClockSearchIdle(
             if (results.isEmpty() && searchText.isNotBlank()) {
                 item(contentType = "empty-search") { SearchEmptyState() }
             }
-            items(results, key = { it.zoneId }, contentType = { "timezone-search" }) { entry ->
+            items(results, key = { "${it.city}|${it.zoneId}" }, contentType = { "timezone-search" }) { entry ->
                 ListItem(
                     onClick = {
                         haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)

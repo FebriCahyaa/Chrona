@@ -24,12 +24,14 @@ private val Context.chronaOnboardingDataStore: DataStore<Preferences> by
 data class OnboardingPreferences(
     val completed: Boolean = false,
     val notificationPermissionPrompted: Boolean = false,
+    val locationPermissionPrompted: Boolean = false,
 )
 
 interface OnboardingRepository {
     val preferences: Flow<OnboardingPreferences>
     suspend fun complete()
     suspend fun markNotificationPermissionPrompted()
+    suspend fun markLocationPermissionPrompted()
 }
 
 class DataStoreOnboardingRepository(context: Context) : OnboardingRepository {
