@@ -7,8 +7,9 @@ Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
 ### Fixed
 - Corrected Android 17 instrumentation provisioning to use the official `android-37.0;google_apis_ps16k;x86_64` system image while keeping the repository compile/target platform at `android-37.1`.
 - Removed the misleading `ldd` preflight against the emulator's private QEMU binary; the emulator launcher manages its bundled library search path, so that check falsely reported bundled libraries as missing.
-- Hardened Pixel 10a profile detection for the actual `avdmanager list device` output format.
-- Restored the Android 17 system-image `devices.xml` compatibility shim before any `avdmanager` device enumeration.
+- Switched Android 17 instrumentation from Pixel 10a to the Pixel 6 hardware profile used by proven GitHub-hosted CI Android 37.0 provisioning.
+- Restored the Android 17 system-image `devices.xml` compatibility shim before `avdmanager` device enumeration.
+- Added an AVD target assertion to ensure the created Android 17 system image records `target=android-37.0`.
 
 # Changelog
 
@@ -18,16 +19,16 @@ corresponding validation actually runs.
 
 ## Unreleased — Android 17 emulator profile correction
 
-- Uses the stable Android Emulator 37.1.11 Pixel 10a hardware profile for instrumentation.
+- Uses the Pixel 6 hardware profile for instrumentation, matching proven Android 37.0 CI provisioning patterns.
 - Uses the Android 17 `android-37.0` `google_apis_ps16k` x86_64 system-image package used by current Chromium Android 17 CI.
 - Keeps `platforms;android-37.1` for the project's compile/target toolchain.
 
 ## Unreleased — CI Android 17 emulator provisioning
 
-- Resolve the emulator binary by its SDK path during Pixel 10a preflight.
-- Validate the Pixel 10a profile without relying on a pipe under `pipefail`.
+- Resolve the emulator binary by its SDK path during Pixel 6 preflight.
+- Validate the Pixel 6 profile without relying on a pipe under `pipefail`.
 - Restore the Android 17 system-image `devices.xml` compatibility shim for `avdmanager` before device enumeration.
-- Keep the Pixel 10a profile and the Android 17 `google_apis_ps16k` x86_64 image family unchanged.
+- Keep the Pixel 6 profile and the Android 17 `google_apis_ps16k` x86_64 image family unchanged.
 
 ## Unreleased — Enterprise runtime foundation
 

@@ -71,9 +71,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Keep instrumentation on the same Android 17 minor level as the
-          # repository toolchain and use the 16 KB page-size image intended
-          # for current Pixel-class Android 17 testing.
+          # Keep the repository compile/target platform at Android 17.1 while using
+          # the Android 17.0 16 KB page-size system image proven in CI.
           sdkmanager --sdk_root="${ANDROID_SDK_ROOT}" \
             'platforms;android-37.1' \
             'platform-tools' \
@@ -118,7 +117,7 @@ jobs:
           PY
           fi
 
-      - name: Verify Pixel 10a AVD profile
+      - name: Verify Pixel 6 AVD profile
         shell: bash
         run: |
           set -euo pipefail
@@ -154,16 +153,16 @@ jobs:
             exit "${DEVICE_STATUS}"
           fi
 
-          # Current avdmanager output normally renders IDs as `id: N or "pixel_10a"`,
-          # not as a bare `id: pixel_10a`. Match both the ID and display-name forms.
-          if ! grep -qE '(^id: .*"pixel_10a"|^[[:space:]]*Name: Pixel 10a$)' <<< "${DEVICE_LIST}"; then
-            echo 'ERROR: Pixel 10a hardware profile is not available in the installed command-line tools.'
+          # Pixel 6 is used because it is a known-good hardware profile for Android 37.0
+          # system-image provisioning on GitHub-hosted Ubuntu runners.
+          if ! grep -qE '(^id: .*"pixel_6"|^[[:space:]]*Name: Pixel 6$)' <<< "${DEVICE_LIST}"; then
+            echo 'ERROR: Pixel 6 hardware profile is not available in the installed command-line tools.'
             echo 'Available Pixel profiles:'
-            grep -E '(^id: .*"pixel_10|^[[:space:]]*Name: Pixel 10)' <<< "${DEVICE_LIST}" || true
+            grep -E '(^id: .*"pixel_|^[[:space:]]*Name: Pixel )' <<< "${DEVICE_LIST}" || true
             exit 1
           fi
 
-          echo 'Pixel 10a profile: available'
+          echo 'Pixel 6 profile: available'
 
       - name: Create instrumentation AVD
         shell: bash
@@ -177,7 +176,7 @@ jobs:
             --force \
             --name chrona-test \
             --package 'system-images;android-37.0;google_apis_ps16k;x86_64' \
-            --device 'pixel_10a'
+            --device 'pixel_6'
 
           cat >> "${ANDROID_AVD_HOME:-$HOME/.android/avd}/chrona-test.avd/config.ini" <<'EOF'
           hw.cpu.ncore=4
@@ -186,8 +185,21 @@ jobs:
           hw.keyboard=yes
           EOF
 
+          AVD_CONFIG="${ANDROID_AVD_HOME:-$HOME/.android/avd}/chrona-test.ini"
+          if [[ ! -f "${AVD_CONFIG}" ]]; then
+            echo "ERROR: AVD configuration was not created at ${AVD_CONFIG}"
+            exit 1
+          fi
+          AVD_TARGET="$(grep '^target=' "${AVD_CONFIG}" || true)"
+          if [[ "${AVD_TARGET}" != 'target=android-37.0' ]]; then
+            echo "ERROR: Unexpected AVD target: ${AVD_TARGET:-<missing>}"
+            cat "${AVD_CONFIG}"
+            exit 1
+          fi
+
           echo 'Created AVD:'
           "${AVDMANAGER}" list avd | sed -n '/Name: chrona-test/,/^$/p'
+          echo "AVD target: ${AVD_TARGET}"
 
       - name: Run Android instrumentation tests
         shell: bash
