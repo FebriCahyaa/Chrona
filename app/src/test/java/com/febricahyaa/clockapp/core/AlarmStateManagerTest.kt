@@ -28,7 +28,7 @@ class AlarmStateManagerTest {
 
         AlarmStateManager(repo, scheduler).onAlarmTriggered(1L)
 
-        assertFalse(repo.alarms.single().enabled)
+        assertFalse(repo.currentAlarms().single().enabled)
         assertTrue(scheduler.cancelled.contains(1L))
     }
 
@@ -50,11 +50,23 @@ class AlarmStateManagerTest {
     }
 
     private class FakeAlarmRepository(initial: List<AlarmItem>) : AlarmRepository {
-        var alarms: List<AlarmItem> = initial
-        override val alarms: Flow<List<AlarmItem>> get() = MutableStateFlow(this.alarms)
-        override suspend fun load(): List<AlarmItem> = alarms
-        override suspend fun save(alarms: List<AlarmItem>) { this.alarms = alarms }
-        override suspend fun recordHistory(alarmId: Long, eventType: String, triggeredAtEpochMillis: Long) = Unit
+        private val alarmState = MutableStateFlow(initial)
+
+        override val alarms: Flow<List<AlarmItem>> = alarmState
+
+        override suspend fun load(): List<AlarmItem> = alarmState.value
+
+        override suspend fun save(alarms: List<AlarmItem>) {
+            alarmState.value = alarms
+        }
+
+        override suspend fun recordHistory(
+            alarmId: Long,
+            eventType: String,
+            triggeredAtEpochMillis: Long,
+        ) = Unit
+
+        fun currentAlarms(): List<AlarmItem> = alarmState.value
     }
 
     private class FakeAlarmScheduler : AlarmSchedulerGateway {
