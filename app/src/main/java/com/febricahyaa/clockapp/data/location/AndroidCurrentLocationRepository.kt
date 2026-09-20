@@ -123,10 +123,6 @@ class AndroidCurrentLocationRepository(
                     continuation.resume(null)
                 }
             }
-        }.also { location ->
-            // The one-shot request normally removes itself after the callback.
-            // The cancellation handler remains responsible for timeout/cancel.
-            location
         }
 
     private fun enabledProvider(): String? {

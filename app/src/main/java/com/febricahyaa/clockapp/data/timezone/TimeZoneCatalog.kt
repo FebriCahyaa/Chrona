@@ -82,7 +82,11 @@ object TimeZoneCatalog {
     private val byZoneId: Map<String, Entry>
         get() = entries.groupBy(Entry::zoneId).mapValues { (_, values) -> values.first() }
 
-    fun find(zoneId: String): Entry? = byZoneId[canonicalize(zoneId)]
+    fun find(zoneId: String): Entry? {
+        val normalized = zoneId.trim()
+        return byZoneId[normalized]
+            ?: canonicalize(normalized)?.let(byZoneId::get)
+    }
 
     fun search(
         query: String,
