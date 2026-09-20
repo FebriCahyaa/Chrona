@@ -11,12 +11,12 @@ import java.time.ZoneId
 import java.util.Locale
 
 /**
- * World Clock catalog backed by the device's current IANA/ICU time-zone data.
+ * World Clock catalog backed by Android's current IANA/ICU timezone data.
  *
- * Chrona deliberately does not freeze a hand-maintained list of countries.
- * Android ships and updates its time-zone database; this catalog canonicalizes
- * those IDs at runtime so new legal/technical timezone changes can be picked
- * up without shipping a new Chrona database file.
+ * A curated city layer supplies human-friendly labels and aliases for the
+ * common cities a user expects to find quickly. The full legal timezone set
+ * still comes from Android at runtime, so timezone rules and DST remain owned
+ * by the platform rather than by a frozen offset table.
  */
 object TimeZoneCatalog {
 
@@ -24,6 +24,7 @@ object TimeZoneCatalog {
         val city: String,
         val countryCode: String,
         val zoneId: String,
+        val aliases: Set<String> = emptySet(),
     ) {
         fun countryName(locale: Locale): String {
             if (countryCode.length != 2) return "World"
@@ -45,22 +46,41 @@ object TimeZoneCatalog {
     val tzDataVersion: String
         get() = runCatching { IcuTimeZone.getTZDataVersion() }.getOrDefault("unknown")
 
-    /** Canonical geographic timezones suitable for a user-facing world clock. */
+    /**
+     * Common city catalog first, followed by all other user-facing canonical
+     * timezone IDs known by the device.
+     */
     val entries: List<Entry> by lazy(LazyThreadSafetyMode.PUBLICATION) {
-        ZoneId.getAvailableZoneIds()
-            .asSequence()
-            .mapNotNull(::canonicalEntry)
-            .distinctBy { it.zoneId }
-            .sortedWith(
-                compareBy<Entry> { areaRank(it.zoneId) }
-                    .thenBy { it.countryCode }
-                    .thenBy(String.CASE_INSENSITIVE_ORDER) { it.city },
+        val curated = WorldClockCityCatalog.entries.mapNotNull { city ->
+            if (city.zoneId !in ZoneId.getAvailableZoneIds()) return@mapNotNull null
+            if (city.zoneId.substringBefore('/') !in USER_FACING_AREAS) return@mapNotNull null
+            Entry(
+                city = city.cityName,
+                countryCode = city.countryCode,
+                zoneId = city.zoneId,
+                aliases = city.aliases,
             )
+        }
+        val curatedKeys = curated
+            .mapTo(hashSetOf()) { it.zoneId }
+
+        val fallback = ZoneId.getAvailableZoneIds()
+            .asSequence()
+            .mapNotNull(::fallbackEntry)
+            .filter { it.zoneId !in curatedKeys }
+            .distinctBy { it.zoneId }
             .toList()
+
+        (curated + fallback).sortedWith(
+            compareBy<Entry> { if (it.zoneId in curatedKeys) 0 else 1 }
+                .thenBy { areaRank(it.zoneId) }
+                .thenBy { it.countryCode }
+                .thenBy(String.CASE_INSENSITIVE_ORDER) { it.city },
+        )
     }
 
     private val byZoneId: Map<String, Entry>
-        get() = entries.associateBy(Entry::zoneId)
+        get() = entries.groupBy(Entry::zoneId).mapValues { (_, values) -> values.first() }
 
     fun find(zoneId: String): Entry? = byZoneId[canonicalize(zoneId)]
 
@@ -82,10 +102,11 @@ object TimeZoneCatalog {
         return city.lowercase(locale).contains(normalized) ||
             countryCode.lowercase(locale).contains(normalized) ||
             countryName(locale).lowercase(locale).contains(normalized) ||
-            zoneId.lowercase(locale).contains(normalized)
+            zoneId.lowercase(locale).contains(normalized) ||
+            aliases.any { it.lowercase(locale).contains(normalized) }
     }
 
-    private fun canonicalEntry(zoneId: String): Entry? {
+    private fun fallbackEntry(zoneId: String): Entry? {
         val canonical = canonicalize(zoneId) ?: return null
         if (canonical !in ZoneId.getAvailableZoneIds()) return null
         if (canonical.substringBefore('/') !in USER_FACING_AREAS) return null

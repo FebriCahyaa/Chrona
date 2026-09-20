@@ -20,9 +20,9 @@ private val Roboto = FontFamily.SansSerif
 private fun googleSansFlexStyle(
     fontSize: Float,
     lineHeight: Float,
-    weight: Float,
+    weight: Int,
     width: Float = 100f,
-    grade: Float = 0f,
+    grade: Int = 0,
     roundness: Float = 100f,
 ): TextStyle {
     val family = FontFamily(
@@ -61,15 +61,15 @@ private fun robotoStyle(
 )
 
 val ChronaTypography = Typography(
-    displayLarge = googleSansFlexStyle(57f, 64f, 340f, width = 98f, roundness = 92f),
-    displayMedium = googleSansFlexStyle(45f, 52f, 360f, width = 99f, roundness = 94f),
-    displaySmall = googleSansFlexStyle(36f, 44f, 380f, width = 100f, roundness = 96f),
-    headlineLarge = googleSansFlexStyle(32f, 40f, 430f, width = 100f, roundness = 96f),
-    headlineMedium = googleSansFlexStyle(28f, 36f, 450f, width = 100f, roundness = 96f),
-    headlineSmall = googleSansFlexStyle(24f, 32f, 470f, width = 100f, roundness = 98f),
-    titleLarge = googleSansFlexStyle(22f, 28f, 560f, width = 100f, roundness = 100f),
-    titleMedium = googleSansFlexStyle(16f, 24f, 560f, width = 100f, roundness = 100f),
-    titleSmall = googleSansFlexStyle(14f, 20f, 560f, width = 100f, roundness = 100f),
+    displayLarge = googleSansFlexStyle(57f, 64f, 340, width = 98f, roundness = 92f),
+    displayMedium = googleSansFlexStyle(45f, 52f, 360, width = 99f, roundness = 94f),
+    displaySmall = googleSansFlexStyle(36f, 44f, 380, width = 100f, roundness = 96f),
+    headlineLarge = googleSansFlexStyle(32f, 40f, 430, width = 100f, roundness = 96f),
+    headlineMedium = googleSansFlexStyle(28f, 36f, 450, width = 100f, roundness = 96f),
+    headlineSmall = googleSansFlexStyle(24f, 32f, 470, width = 100f, roundness = 98f),
+    titleLarge = googleSansFlexStyle(22f, 28f, 560, width = 100f, roundness = 100f),
+    titleMedium = googleSansFlexStyle(16f, 24f, 560, width = 100f, roundness = 100f),
+    titleSmall = googleSansFlexStyle(14f, 20f, 560, width = 100f, roundness = 100f),
     bodyLarge = robotoStyle(16f, 24f, letterSpacing = 0.5f),
     bodyMedium = robotoStyle(14f, 20f),
     bodySmall = robotoStyle(12f, 16f),

@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package com.febricahyaa.clockapp.ui.screens
 
 import androidx.compose.animation.AnimatedContent
@@ -12,6 +14,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -29,6 +32,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -42,7 +46,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
-import androidx.compose.material3.BorderStroke
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -105,6 +108,7 @@ fun WorldClockScreen(
     showSeconds: Boolean,
     clockDisplayMode: ClockDisplayMode,
     onClockDisplayModeChange: (ClockDisplayMode) -> Unit,
+    onFormatChange: (Boolean) -> Unit,
     glass: Boolean,
     onRemove: (WorldClockItem) -> Unit,
     onToggleFavorite: (String) -> Unit,
@@ -114,6 +118,13 @@ fun WorldClockScreen(
 ) {
     val haptics = LocalHapticFeedback.current
     val locale = LocalConfiguration.current.locales[0]
+    val displayModeDescription = stringResource(
+        if (clockDisplayMode == ClockDisplayMode.DIGITAL) {
+            R.string.home_switch_to_analog
+        } else {
+            R.string.home_switch_to_digital
+        },
+    )
     val epochMillisState = rememberEpochMillisNowState()
     val epochMillis by epochMillisState
     var selectedZoneId by rememberSaveable {
@@ -170,14 +181,8 @@ fun WorldClockScreen(
                         )
                     },
                     modifier = Modifier.semantics {
-                        contentDescription = stringResource(
-                            if (clockDisplayMode == ClockDisplayMode.DIGITAL) {
-                                R.string.home_switch_to_analog
-                            } else {
-                                R.string.home_switch_to_digital
-                            },
-                        )
-                    },
+                        contentDescription = displayModeDescription
+                    }
                 ) {
                     Icon(Icons.Filled.Schedule, contentDescription = null)
                 }
@@ -186,8 +191,7 @@ fun WorldClockScreen(
                     use24HourFormat = use24HourFormat,
                     onFormatChange = { next ->
                         haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
-                        // The settings owner persists this preference from the main screen.
-                        // The World Clock route intentionally does not own the preference state.
+                        onFormatChange(next)
                     },
                 )
             }
@@ -663,8 +667,8 @@ private fun WorldClockLibrarySheet(
                 modifier = Modifier.fillMaxWidth().height(420.dp),
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
-                androidx.compose.foundation.lazy.items(
-                    items,
+                items(
+                    items = items,
                     key = { it.id },
                     contentType = { "world-clock-library-item" },
                 ) { item ->
