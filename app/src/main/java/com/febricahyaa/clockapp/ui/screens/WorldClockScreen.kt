@@ -994,12 +994,11 @@ private fun CurrentLocationCard(
                             ),
                             fontWeight = FontWeight.SemiBold,
                         )
-                    )
+                    }
                 }
             }
         }
     }
-}
 
 @Composable
 private fun EmptyWorldClockState(

@@ -8,6 +8,7 @@ package com.febricahyaa.clockapp.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.febricahyaa.clockapp.data.location.CurrentLocationRepository
+import com.febricahyaa.clockapp.data.location.CurrentLocation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

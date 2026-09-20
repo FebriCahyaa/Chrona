@@ -46,6 +46,7 @@ class DataStoreOnboardingRepository(context: Context) : OnboardingRepository {
             OnboardingPreferences(
                 completed = values[KEY_COMPLETED] ?: false,
                 notificationPermissionPrompted = values[KEY_NOTIFICATION_PERMISSION_PROMPTED] ?: false,
+                locationPermissionPrompted = values[KEY_LOCATION_PERMISSION_PROMPTED] ?: false,
             )
         }
 
@@ -61,8 +62,15 @@ class DataStoreOnboardingRepository(context: Context) : OnboardingRepository {
         }
     }
 
+    override suspend fun markLocationPermissionPrompted() {
+        appContext.chronaOnboardingDataStore.edit { values ->
+            values[KEY_LOCATION_PERMISSION_PROMPTED] = true
+        }
+    }
+
     private companion object {
         val KEY_COMPLETED = booleanPreferencesKey("completed")
         val KEY_NOTIFICATION_PERMISSION_PROMPTED = booleanPreferencesKey("notification_permission_prompted")
+        val KEY_LOCATION_PERMISSION_PROMPTED = booleanPreferencesKey("location_permission_prompted")
     }
 }
