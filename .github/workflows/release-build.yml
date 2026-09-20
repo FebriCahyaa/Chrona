@@ -210,7 +210,7 @@ jobs:
           fetch-depth: 0
           ref: ${{ inputs.tag }}
 
-      - uses: actions/setup-python@v6.1.0
+      - uses: actions/setup-python@v7.0.0
         with:
           python-version: '3.13'
 
