@@ -999,6 +999,7 @@ private fun CurrentLocationCard(
             }
         }
     }
+}
 
 @Composable
 private fun EmptyWorldClockState(
