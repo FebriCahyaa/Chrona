@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.febricahyaa.clockapp.model.ClockSettings
 import com.febricahyaa.clockapp.ui.theme.ChronaTheme
 
 
@@ -29,7 +30,7 @@ class TimerRingActivity : ComponentActivity() {
         setShowWhenLocked(true)
         setTurnScreenOn(true)
         setContent {
-            ChronaTheme {
+            ChronaTheme(ClockSettings()) {
                 Column(
                     modifier = Modifier.fillMaxSize().padding(32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,

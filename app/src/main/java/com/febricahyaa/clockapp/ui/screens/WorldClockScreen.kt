@@ -17,6 +17,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -80,6 +81,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -89,7 +93,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.lerp
+import androidx.compose.ui.util.lerp
 import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.data.location.CurrentLocation
 import com.febricahyaa.clockapp.data.timezone.TimeZoneCatalog
@@ -623,7 +627,7 @@ private fun WorldClockHero(
                         style = MaterialTheme.typography.labelMedium,
                     )
                     Text(
-                        ChronaTimeFormatter.utcOffset(zoned.toInstant().toEpochMilli(), zoned.zone),
+                        ChronaTimeFormatter.utcOffset(zoned.zone, zoned.toInstant().toEpochMilli()),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -874,7 +878,7 @@ private fun SavedCityCard(
                         style = MaterialTheme.typography.labelMedium,
                     )
                     Text(
-                        ChronaTimeFormatter.utcOffset(epochMillis, zone),
+                        ChronaTimeFormatter.utcOffset(zone, epochMillis),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -1002,4 +1006,57 @@ internal fun cityThumbnailHues(cityHash: Int): Pair<Float, Float> {
     val seed = Math.floorMod(cityHash, 360)
     val bottom = Math.floorMod(seed + 34, 360)
     return seed.toFloat() to bottom.toFloat()
+}
+
+@Composable
+internal fun CityThumbnail(
+    city: String,
+    modifier: Modifier = Modifier,
+) {
+    val visual = remember(city) {
+        val (topHue, bottomHue) = cityThumbnailHues(city.hashCode())
+        CityVisual(
+            topHue = topHue,
+            bottomHue = bottomHue,
+            buildingHeights = List(7) { index ->
+                0.22f + ((city.hashCode() ushr (index * 3)) and 0x1F) / 31f * 0.48f
+            },
+        )
+    }
+
+    Canvas(
+        modifier = modifier.clip(RoundedCornerShape(20.dp)),
+    ) {
+        drawRect(
+            brush = Brush.verticalGradient(
+                colors = listOf(
+                    Color.hsv(visual.topHue, 0.30f, 0.96f),
+                    Color.hsv(visual.bottomHue, 0.42f, 0.68f),
+                ),
+            ),
+        )
+
+        val horizon = size.height * 0.70f
+        drawRect(
+            color = Color.Black.copy(alpha = 0.10f),
+            topLeft = androidx.compose.ui.geometry.Offset(0f, horizon),
+            size = androidx.compose.ui.geometry.Size(size.width, size.height - horizon),
+        )
+
+        val buildingGap = size.width * 0.025f
+        val buildingWidth =
+            (size.width - buildingGap * (visual.buildingHeights.size + 1)) /
+                visual.buildingHeights.size
+
+        visual.buildingHeights.forEachIndexed { index, heightFraction ->
+            val left = buildingGap + index * (buildingWidth + buildingGap)
+            val buildingHeight = size.height * heightFraction
+            val top = size.height - buildingHeight
+            drawRect(
+                color = Color.White.copy(alpha = 0.16f + index * 0.012f),
+                topLeft = androidx.compose.ui.geometry.Offset(left, top),
+                size = androidx.compose.ui.geometry.Size(buildingWidth, buildingHeight),
+            )
+        }
+    }
 }

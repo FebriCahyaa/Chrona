@@ -44,11 +44,25 @@ if [[ -f app/src/main/cpp/chrona_time.cpp && -f app/src/main/cpp/chrona_clock.cp
     fi
 
     AAudioInclude=""
+    NDK_CLANG=""
     if [[ -n "${ANDROID_NDK_ROOT:-}" ]]; then
-      candidate="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include"
-      if [[ -f "$candidate/aaudio/AAudio.h" ]]; then
-        AAudioInclude="$candidate"
+      candidate="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++"
+      candidate_sysroot="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
+      if [[ -x "$candidate" && -f "$candidate_sysroot/usr/include/aaudio/AAudio.h" ]]; then
+        NDK_CLANG="$candidate"
+        AAudioInclude="$candidate_sysroot"
       fi
+    fi
+    if [[ -n "$NDK_CLANG" ]]; then
+      "$NDK_CLANG" \
+        --target=aarch64-linux-android26 \
+        --sysroot="$AAudioInclude" \
+        -std=c++20 -Wall -Wextra -Werror=return-type -fsyntax-only \
+        app/src/main/cpp/chrona_audio.cpp
+      echo '✅ AAudio native syntax     PASS'
+    else
+      echo 'ℹ️ AAudio native syntax     SKIPPED (Android NDK AAudio toolchain unavailable)'
+    fi
     fi
     if [[ -n "$AAudioInclude" ]]; then
       clang++ -std=c++20 -Wall -Wextra -Werror=return-type -fsyntax-only \
