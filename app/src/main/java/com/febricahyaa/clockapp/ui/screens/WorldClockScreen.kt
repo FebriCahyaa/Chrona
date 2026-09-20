@@ -93,7 +93,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.lerp
+import androidx.compose.ui.unit.lerp as lerpDp
+import androidx.compose.ui.util.lerp as lerpFloat
 import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.data.location.CurrentLocation
 import com.febricahyaa.clockapp.data.timezone.TimeZoneCatalog
@@ -532,9 +533,9 @@ private fun WorldClockHero(
     collapseProgress: Float,
     onFormatChange: (Boolean) -> Unit,
 ) {
-    val corner = lerp(32.dp, 24.dp, collapseProgress)
+    val corner = lerpDp(32.dp, 24.dp, collapseProgress)
     val scale by animateFloatAsState(
-        targetValue = lerp(1f, 0.78f, collapseProgress),
+        targetValue = lerpFloat(1f, 0.78f, collapseProgress),
         animationSpec = spring(dampingRatio = 0.86f, stiffness = Spring.StiffnessMediumLow),
         label = "world_clock_hero_scale",
     )
