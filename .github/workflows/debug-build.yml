@@ -59,8 +59,8 @@ jobs:
           # The runner action installs its platform from `api-level`.
           # Use the Android 17 base platform for the emulator; the app itself
           # compiles against the separate 37.1 minor SDK in setup-android.
-          api-level: 37.0
-          system-image-api-level: 37.0
+          api-level: '37.0'
+          system-image-api-level: '37.0'
           target: google_apis
           arch: x86_64
           profile: pixel_2
