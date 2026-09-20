@@ -155,7 +155,35 @@ jobs:
           "$ADB" -s "emulator-${EMULATOR_PORT}" shell settings put global transition_animation_scale 0.0 || true
           "$ADB" -s "emulator-${EMULATOR_PORT}" shell settings put global animator_duration_scale 0.0 || true
 
-          ./gradlew --no-daemon --stacktrace connectedOssDebugAndroidTest
+          TEST_EXIT=0
+          ./gradlew --no-daemon --stacktrace --info --console=plain connectedOssDebugAndroidTest || TEST_EXIT=$?
+
+          REPORT_DIR="${GITHUB_WORKSPACE}/artifacts/instrumented-test"
+          mkdir -p "${REPORT_DIR}"
+
+          if [[ -d "app/build/reports/androidTests/connected" ]]; then
+            cp -a app/build/reports/androidTests/connected "${REPORT_DIR}/android-test-report"
+          fi
+          if [[ -d "app/build/outputs/androidTest-results" ]]; then
+            cp -a app/build/outputs/androidTest-results "${REPORT_DIR}/android-test-results"
+          fi
+
+          "$ADB" -s "emulator-${EMULATOR_PORT}" shell getprop > "${REPORT_DIR}/device-properties.txt" 2>&1 || true
+          "$ADB" -s "emulator-${EMULATOR_PORT}" shell dumpsys activity top > "${REPORT_DIR}/activity-top.txt" 2>&1 || true
+          "$ADB" -s "emulator-${EMULATOR_PORT}" logcat -b all -d > "${REPORT_DIR}/logcat.txt" 2>&1 || true
+          cp "${RUNNER_TEMP}/chrona-emulator.log" "${REPORT_DIR}/emulator.log" 2>/dev/null || true
+
+          echo "Instrumentation test exit code: ${TEST_EXIT}"
+          exit "${TEST_EXIT}"
+
+      - name: Upload instrumentation diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: chrona-instrumented-diagnostics-${{ github.sha }}
+          path: artifacts/instrumented-test/
+          if-no-files-found: warn
+          retention-days: 14
 
   apk:
     name: Debug / ${{ matrix.abi }}
