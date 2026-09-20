@@ -2,6 +2,12 @@
 Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
 -->
 
+## [Unreleased]
+
+### Fixed
+- Hardened Android 17 instrumentation provisioning by installing the PulseAudio client library required by the emulator QEMU runtime on Ubuntu 24.04 GitHub-hosted runners.
+- Added a QEMU host-library preflight so missing shared libraries are reported before AVD creation.
+
 # Changelog
 
 Chrona release notes describe changes that exist in the repository. Build,
