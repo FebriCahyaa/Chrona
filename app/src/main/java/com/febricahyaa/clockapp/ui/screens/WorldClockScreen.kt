@@ -22,11 +22,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -112,7 +115,6 @@ fun WorldClockScreen(
     onClockDisplayModeChange: (ClockDisplayMode) -> Unit,
     onFormatChange: (Boolean) -> Unit,
     currentLocationState: CurrentLocationUiState,
-    epochMillis: Long,
     locationPermissionGranted: Boolean,
     preciseLocationGranted: Boolean,
     onRequestLocationPermission: () -> Unit,
@@ -234,7 +236,6 @@ fun WorldClockScreen(
                     collapseProgress = collapseProgress,
                     currentLocationState = currentLocationState,
                     epochMillis = epochMillis,
-                    use24HourFormat = use24HourFormat,
                     locationPermissionGranted = locationPermissionGranted,
                     preciseLocationGranted = preciseLocationGranted,
                     glass = glass,
@@ -407,6 +408,7 @@ private fun WorldClockHeroHeader(
     onFormatChange: (Boolean) -> Unit,
     collapseProgress: Float,
     currentLocationState: CurrentLocationUiState,
+    epochMillis: Long,
     locationPermissionGranted: Boolean,
     preciseLocationGranted: Boolean,
     glass: Boolean,
@@ -480,16 +482,17 @@ private fun WorldClockHeroHeader(
                             overflow = TextOverflow.Ellipsis,
                         )
                     }
+                    val switchDescription = stringResource(
+                        if (displayMode == ClockDisplayMode.DIGITAL) {
+                            R.string.home_switch_to_analog
+                        } else {
+                            R.string.home_switch_to_digital
+                        },
+                    )
                     FilledTonalIconButton(
                         onClick = onToggleDisplayMode,
                         modifier = Modifier.semantics {
-                            contentDescription = stringResource(
-                                if (displayMode == ClockDisplayMode.DIGITAL) {
-                                    R.string.home_switch_to_analog
-                                } else {
-                                    R.string.home_switch_to_digital
-                                },
-                            )
+                            contentDescription = switchDescription
                         },
                     ) {
                         Icon(Icons.Filled.Schedule, contentDescription = null)
@@ -611,16 +614,25 @@ private fun WorldClockCollapsedBar(
     onToggleDisplayMode: () -> Unit,
     onFormatChange: (Boolean) -> Unit,
 ) {
+    val density = LocalDensity.current
     val alpha = (collapseProgress * 1.15f).coerceIn(0f, 1f)
     val targetHeight = lerp(64.dp, 66.dp, alpha)
+    val offsetY = with(density) { (-8).dp.toPx() }
+    val switchDescription = stringResource(
+        if (clockDisplayMode == ClockDisplayMode.DIGITAL) {
+            R.string.home_switch_to_analog
+        } else {
+            R.string.home_switch_to_digital
+        },
+    )
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .height(targetHeight)
             .statusBarsPadding()
             .graphicsLayer {
-                alpha = alpha
-                translationY = lerpFloat(with(LocalDensity.current) { (-8).dp.toPx() }, 0f, alpha)
+                this.alpha = alpha
+                translationY = lerpFloat(offsetY, 0f, alpha)
             },
         color = MaterialTheme.colorScheme.surface.copy(alpha = ChronaGlassTokens.ToolbarScrolledAlpha),
         shadowElevation = lerp(0.dp, 3.dp, alpha),
@@ -656,13 +668,7 @@ private fun WorldClockCollapsedBar(
             FilledTonalIconButton(
                 onClick = onToggleDisplayMode,
                 modifier = Modifier.semantics {
-                    contentDescription = stringResource(
-                        if (clockDisplayMode == ClockDisplayMode.DIGITAL) {
-                            R.string.home_switch_to_analog
-                        } else {
-                            R.string.home_switch_to_digital
-                        },
-                    )
+                    contentDescription = switchDescription
                 },
             ) {
                 Icon(Icons.Filled.Schedule, contentDescription = null)
@@ -915,7 +921,10 @@ private fun WorldClockCityCard(
         visible = visible,
         enter = fadeIn(ClockMotion.contentEmphasis) +
             slideInVertically(
-                animationSpec = ClockMotion.contentEmphasis,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = Spring.StiffnessMediumLow,
+                ),
                 initialOffsetY = { 22 },
             ) +
             scaleIn(
