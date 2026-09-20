@@ -84,13 +84,33 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
+          EMULATOR="${ANDROID_SDK_ROOT}/emulator/emulator"
+          AVDMANAGER="${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/avdmanager"
+
+          if [[ ! -x "${EMULATOR}" ]]; then
+            echo "ERROR: Android Emulator binary was not installed at ${EMULATOR}"
+            echo 'Installed emulator directory:'
+            ls -la "${ANDROID_SDK_ROOT}/emulator" || true
+            exit 1
+          fi
+          if [[ ! -x "${AVDMANAGER}" ]]; then
+            AVDMANAGER="$(command -v avdmanager || true)"
+          fi
+          if [[ -z "${AVDMANAGER}" || ! -x "${AVDMANAGER}" ]]; then
+            echo 'ERROR: avdmanager is not available.'
+            command -v avdmanager || true
+            exit 1
+          fi
+
           echo 'Installed Android Emulator:'
-          emulator -version | head -n 3
+          "${EMULATOR}" -version | head -n 3
           echo 'Available Pixel device profiles:'
-          if ! avdmanager list device | grep -qE '(^id: pixel_10a$|^[[:space:]]*Name: Pixel 10a$)'; then
-            echo 'ERROR: Pixel 10a hardware profile is not available in the installed command-line tools.'
+          DEVICE_LIST="$("${AVDMANAGER}" list device)"
+          if ! grep -qE '(^id: pixel_10a$|^[[:space:]]*Name: Pixel 10a$)' <<< "${DEVICE_LIST}"; then
+            echo 'ERROR: Pixel 10a hardware profile is not available in the installed SDK/device definitions.'
             echo 'Available Pixel profiles:'
-            avdmanager list device | grep -E '^id: pixel_10' || true
+            grep -E '(^id: pixel_10|^[[:space:]]*Name: Pixel 10)' <<< "${DEVICE_LIST}" || true
             exit 1
           fi
           echo 'Pixel 10a profile: available'
@@ -99,7 +119,33 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo no | avdmanager create avd \
+
+          IMAGE_DIR="${ANDROID_SDK_ROOT}/system-images/android-37.1/google_apis_ps16k/x86_64"
+          AVDMANAGER="${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/avdmanager"
+          [[ -x "${AVDMANAGER}" ]] || AVDMANAGER="$(command -v avdmanager)"
+
+          # Some Android 17 system-image packages do not ship the optional
+          # devices.xml metadata file expected by avdmanager. The hardware
+          # profile itself comes from the SDK device definitions; an empty
+          # valid device catalog is sufficient to let avdmanager proceed.
+          if [[ ! -s "${IMAGE_DIR}/devices.xml" ]]; then
+            echo 'Creating missing Android 17 system-image devices.xml metadata.'
+            mkdir -p "${IMAGE_DIR}"
+            cat > "${IMAGE_DIR}/devices.xml" <<'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <d:devices
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xmlns:d="http://schemas.android.com/sdk/devices/7">
+          </d:devices>
+          EOF
+            python3 - "${IMAGE_DIR}/devices.xml" <<'PY'
+          import sys
+          import xml.etree.ElementTree as ET
+          ET.parse(sys.argv[1])
+          PY
+          fi
+
+          echo no | "${AVDMANAGER}" create avd \
             --force \
             --name chrona-test \
             --package 'system-images;android-37.1;google_apis_ps16k;x86_64' \

@@ -8,6 +8,13 @@ Chrona release notes describe changes that exist in the repository. Build,
 test, lint, release and performance claims are recorded only when the
 corresponding validation actually runs.
 
+## Unreleased — CI Android 17 emulator provisioning
+
+- Resolve the emulator binary by its SDK path during Pixel 10a preflight.
+- Validate the Pixel 10a profile without relying on a pipe under `pipefail`.
+- Restore the Android 17 system-image `devices.xml` compatibility shim for `avdmanager`.
+- Keep the Pixel 10a profile and Android 17 `google_apis_ps16k` image unchanged.
+
 ## Unreleased — Enterprise runtime foundation
 
 - Added Hilt dependency injection across application ViewModels, repositories and Android entry points.
