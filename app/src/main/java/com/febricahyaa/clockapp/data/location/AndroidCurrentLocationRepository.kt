@@ -11,12 +11,7 @@ import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Geocoder
 import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
 import android.os.Build
-import android.os.CancellationSignal
-import android.os.Looper
-import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -25,19 +20,29 @@ import kotlinx.coroutines.withTimeoutOrNull
 import java.util.Locale
 import kotlin.coroutines.resume
 
+/**
+ * Application-facing repository for the device's current location.
+ *
+ * Provider selection is delegated to [CurrentLocationProvider]. The repository
+ * owns normalization, freshness filtering, and reverse geocoding only.
+ */
 class AndroidCurrentLocationRepository(
     context: Context,
+    private val provider: CurrentLocationProvider = AdaptiveCurrentLocationProvider(
+        listOf(
+            AndroidFusedLocationProvider(context),
+            AndroidPlatformLocationProvider(context),
+        ),
+    ),
 ) : CurrentLocationRepository {
 
     private val appContext = context.applicationContext
-    private val locationManager =
-        appContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
     override suspend fun getCurrentLocation(): CurrentLocation? {
         if (!hasLocationPermission()) return null
 
         val location = withTimeoutOrNull(LOCATION_PROVIDER_TIMEOUT_MS) {
-            requestFreshLocation()
+            provider.getFreshLocation()
         } ?: bestRecentLastKnownLocation()
 
         location ?: return null
@@ -55,134 +60,22 @@ class AndroidCurrentLocationRepository(
         )
     }
 
-    private suspend fun requestFreshLocation(): Location? {
-        val provider = enabledProvider() ?: return null
-
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            requestCurrentLocation(provider)
-        } else {
-            requestLegacySingleUpdate(provider)
-        }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.R)
-    private suspend fun requestCurrentLocation(provider: String): Location? {
-        if (!hasLocationPermission()) return null
-
-        return suspendCancellableCoroutine { continuation ->
-            val cancellationSignal = CancellationSignal()
-
-            continuation.invokeOnCancellation {
-                cancellationSignal.cancel()
-            }
-
-            try {
-                locationManager.getCurrentLocation(
-                    provider,
-                    cancellationSignal,
-                    ContextCompat.getMainExecutor(appContext),
-                ) { location ->
-                    if (continuation.isActive) {
-                        continuation.resume(location)
-                    }
-                }
-            } catch (_: SecurityException) {
-                if (continuation.isActive) {
-                    continuation.resume(null)
-                }
-            } catch (_: IllegalArgumentException) {
-                if (continuation.isActive) {
-                    continuation.resume(null)
-                }
-            }
-        }
-    }
-
-    @Suppress("DEPRECATION")
-    private suspend fun requestLegacySingleUpdate(provider: String): Location? {
-        if (!hasLocationPermission()) return null
-
-        return suspendCancellableCoroutine { continuation ->
-            val listener = object : LocationListener {
-                override fun onLocationChanged(location: Location) {
-                    if (continuation.isActive) {
-                        continuation.resume(location)
-                    }
-                }
-            }
-
-            continuation.invokeOnCancellation {
-                runCatching { locationManager.removeUpdates(listener) }
-            }
-
-            try {
-                locationManager.requestSingleUpdate(
-                    provider,
-                    listener,
-                    Looper.getMainLooper(),
-                )
-            } catch (_: SecurityException) {
-                if (continuation.isActive) {
-                    continuation.resume(null)
-                }
-            } catch (_: IllegalArgumentException) {
-                if (continuation.isActive) {
-                    continuation.resume(null)
-                }
-            }
-        }
-    }
-
-    private fun enabledProvider(): String? {
-        val providers = runCatching {
-            locationManager.getProviders(true)
-        }.getOrDefault(emptyList())
-
-        return when {
-            LocationManager.GPS_PROVIDER in providers -> LocationManager.GPS_PROVIDER
-            LocationManager.NETWORK_PROVIDER in providers -> LocationManager.NETWORK_PROVIDER
-            else -> null
-        }
-    }
-
-    private fun bestRecentLastKnownLocation(): Location? {
-        if (!hasLocationPermission()) return null
-
-        val now = System.currentTimeMillis()
-        val maxAge = 30 * 60 * 1000L
-
-        val candidates = listOf(
-            LocationManager.GPS_PROVIDER,
-            LocationManager.NETWORK_PROVIDER,
-        ).mapNotNull { provider ->
-            try {
-                locationManager.getLastKnownLocation(provider)
-            } catch (_: SecurityException) {
-                null
-            }
+    private suspend fun bestRecentLastKnownLocation(): Location? =
+        provider.getLastKnownLocation()?.takeIf { location ->
+            val now = System.currentTimeMillis()
+            val age = now - location.time
+            location.time > 0L && age in 0..MAX_LAST_KNOWN_AGE_MS
         }
 
-        return candidates
-            .filter { it.time > 0L && now - it.time in 0..maxAge }
-            .minWithOrNull(
-                compareBy<Location> { if (it.accuracy > 0f) it.accuracy else Float.MAX_VALUE }
-                    .thenByDescending { it.time },
-            )
-    }
-
-    private fun hasLocationPermission(): Boolean {
-        val fine = ContextCompat.checkSelfPermission(
+    private fun hasLocationPermission(): Boolean =
+        ContextCompat.checkSelfPermission(
             appContext,
             Manifest.permission.ACCESS_FINE_LOCATION,
-        ) == PackageManager.PERMISSION_GRANTED
-
-        val coarse = ContextCompat.checkSelfPermission(
-            appContext,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-        ) == PackageManager.PERMISSION_GRANTED
-
-        return fine || coarse
-    }
+        ) == PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(
+                appContext,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+            ) == PackageManager.PERMISSION_GRANTED
 
     private suspend fun reverseGeocode(location: Location): Address? {
         if (!Geocoder.isPresent()) return null
@@ -237,5 +130,6 @@ class AndroidCurrentLocationRepository(
 
     private companion object {
         const val LOCATION_PROVIDER_TIMEOUT_MS = 12_000L
+        const val MAX_LAST_KNOWN_AGE_MS = 30 * 60 * 1000L
     }
 }

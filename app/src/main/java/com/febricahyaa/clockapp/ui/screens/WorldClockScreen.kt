@@ -92,6 +92,7 @@ import com.febricahyaa.clockapp.ui.viewmodel.CurrentLocationUiState
 import com.febricahyaa.clockapp.model.WorldClockItem
 import com.febricahyaa.clockapp.time.ChronaTimeFormatter
 import com.febricahyaa.clockapp.ui.components.ChronaCard
+import com.febricahyaa.clockapp.ui.components.ChronaLocationPermissionButton
 import com.febricahyaa.clockapp.ui.components.Material3AnalogClock
 import com.febricahyaa.clockapp.ui.components.WorldClockMap
 import com.febricahyaa.clockapp.ui.components.rememberEpochMillisNowState
@@ -116,6 +117,7 @@ fun WorldClockScreen(
     locationPermissionGranted: Boolean,
     preciseLocationGranted: Boolean,
     onRequestLocationPermission: () -> Unit,
+    onLocationPermissionResult: (Boolean) -> Unit,
     onOpenLocationSettings: () -> Unit,
     onRefreshLocation: () -> Unit,
     glass: Boolean,
@@ -260,6 +262,7 @@ fun WorldClockScreen(
                     use24HourFormat = use24HourFormat,
                     glass = glass,
                     onRequestPermission = onRequestLocationPermission,
+                    onPermissionResult = onLocationPermissionResult,
                     onOpenSettings = onOpenLocationSettings,
                     onRefresh = onRefreshLocation,
                 )
@@ -299,6 +302,7 @@ fun WorldClockScreen(
                     use24HourFormat = use24HourFormat,
                     glass = glass,
                     onRequestPermission = onRequestLocationPermission,
+                    onPermissionResult = onLocationPermissionResult,
                     onOpenSettings = onOpenLocationSettings,
                     onRefresh = onRefreshLocation,
                 )
@@ -800,6 +804,7 @@ private fun CurrentLocationCard(
     use24HourFormat: Boolean,
     glass: Boolean,
     onRequestPermission: () -> Unit,
+    onPermissionResult: (Boolean) -> Unit,
     onOpenSettings: () -> Unit,
     onRefresh: () -> Unit,
 ) {
@@ -860,20 +865,16 @@ private fun CurrentLocationCard(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    Surface(
-                        onClick = onRequestPermission,
-                        shape = MaterialTheme.shapes.large,
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                    ) {
-                        Text(
-                            stringResource(R.string.world_current_location_allow),
-                            modifier = Modifier.padding(
-                                horizontal = 16.dp,
-                                vertical = 11.dp,
-                            ),
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                    }
+                    ChronaLocationPermissionButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                        textColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        iconTint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        cornerRadius = 18.dp,
+                        pressedCornerRadius = 14.dp,
+                        onRequestPermissions = onRequestPermission,
+                        onPermissionResult = onPermissionResult,
+                    )
                 }
 
                 state.isLoading -> {

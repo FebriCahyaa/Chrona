@@ -13,6 +13,7 @@
     <!-- World Clock current-location context -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.USE_LOCATION_BUTTON" />
 
     <!-- Alarm / timer core -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />

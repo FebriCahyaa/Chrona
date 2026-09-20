@@ -189,6 +189,8 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
     implementation(libs.compose.adaptive)
+    implementation(libs.play.services.location)
+    implementation(libs.locationbutton.compose)
     implementation(libs.compose.material.icons.core)
     implementation(libs.compose.material.icons.extended)
 

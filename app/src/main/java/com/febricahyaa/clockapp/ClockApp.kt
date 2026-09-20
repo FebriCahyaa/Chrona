@@ -149,34 +149,9 @@ fun ClockApp() {
         }
     }
 
-    LaunchedEffect(
-        onboardingState.completed,
-        onboardingState.notificationPermissionPrompted,
-        onboardingState.locationPermissionPrompted,
-    ) {
-        val notificationFlowComplete =
-            Build.VERSION.SDK_INT < 33 ||
-                onboardingState.notificationPermissionPrompted
-
-        if (!onboardingState.completed ||
-            !notificationFlowComplete ||
-            onboardingState.locationPermissionPrompted
-        ) {
-            return@LaunchedEffect
-        }
-
-        if (hasLocationPermission(context)) {
-            onboardingViewModel.markLocationPermissionPrompted()
-            currentLocationViewModel.refresh()
-        } else {
-            locationPermissionLauncher.launch(
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                ),
-            )
-        }
-    }
+    // Current Location permission is requested in context from the World Clock
+    // Location Button instead of being launched automatically after onboarding.
+    // This matches Android's current guidance for session-based location access.
 
     ChronaTheme(settingsState.settings) {
         CompositionLocalProvider(
@@ -305,6 +280,12 @@ private fun ChronaDestinationContent(
                     locationPermissionGranted = locationPermissionGranted,
                     preciseLocationGranted = preciseLocationGranted,
                     onRequestLocationPermission = onRequestLocationPermission,
+                    onLocationPermissionResult = { granted ->
+                        onboardingViewModel.markLocationPermissionPrompted()
+                        if (granted) {
+                            currentLocationViewModel.refresh()
+                        }
+                    },
                     onOpenLocationSettings = onOpenLocationSettings,
                     onRefreshLocation = onRefreshLocation,
                     glass = glassSurfaces,
