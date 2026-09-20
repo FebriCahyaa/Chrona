@@ -66,8 +66,10 @@ class AndroidCurrentLocationRepository(
     }
 
     @RequiresApi(Build.VERSION_CODES.R)
-    private suspend fun requestCurrentLocation(provider: String): Location? =
-        suspendCancellableCoroutine { continuation ->
+    private suspend fun requestCurrentLocation(provider: String): Location? {
+        if (!hasLocationPermission()) return null
+
+        return suspendCancellableCoroutine { continuation ->
             val cancellationSignal = CancellationSignal()
 
             continuation.invokeOnCancellation {
@@ -94,10 +96,13 @@ class AndroidCurrentLocationRepository(
                 }
             }
         }
+    }
 
     @Suppress("DEPRECATION")
-    private suspend fun requestLegacySingleUpdate(provider: String): Location? =
-        suspendCancellableCoroutine { continuation ->
+    private suspend fun requestLegacySingleUpdate(provider: String): Location? {
+        if (!hasLocationPermission()) return null
+
+        return suspendCancellableCoroutine { continuation ->
             val listener = object : LocationListener {
                 override fun onLocationChanged(location: Location) {
                     if (continuation.isActive) {
@@ -126,6 +131,7 @@ class AndroidCurrentLocationRepository(
                 }
             }
         }
+    }
 
     private fun enabledProvider(): String? {
         val providers = runCatching {
@@ -140,6 +146,8 @@ class AndroidCurrentLocationRepository(
     }
 
     private fun bestRecentLastKnownLocation(): Location? {
+        if (!hasLocationPermission()) return null
+
         val now = System.currentTimeMillis()
         val maxAge = 30 * 60 * 1000L
 
