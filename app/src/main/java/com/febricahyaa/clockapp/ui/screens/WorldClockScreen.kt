@@ -3,20 +3,17 @@
  * SPDX-License-Identifier: MIT
  */
 
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
-
 package com.febricahyaa.clockapp.ui.screens
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,12 +26,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsTopHeight
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccessTime
@@ -42,33 +40,29 @@ import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Public
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalIconButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -76,32 +70,36 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.data.timezone.TimeZoneCatalog
 import com.febricahyaa.clockapp.model.ClockDisplayMode
-import com.febricahyaa.clockapp.ui.viewmodel.CurrentLocationUiState
 import com.febricahyaa.clockapp.model.WorldClockItem
 import com.febricahyaa.clockapp.time.ChronaTimeFormatter
-import com.febricahyaa.clockapp.ui.components.ChronaCard
 import com.febricahyaa.clockapp.ui.components.ChronaLocationPermissionButton
 import com.febricahyaa.clockapp.ui.components.Material3AnalogClock
 import com.febricahyaa.clockapp.ui.components.WorldClockMap
 import com.febricahyaa.clockapp.ui.components.rememberEpochMillisNowState
+import com.febricahyaa.clockapp.ui.theme.ChronaGlassTokens
+import com.febricahyaa.clockapp.ui.theme.ClockMotion
+import com.febricahyaa.clockapp.ui.viewmodel.CurrentLocationUiState
+import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 import java.util.Locale
-import kotlin.math.abs
 import kotlin.math.roundToInt
 
 @Composable
@@ -114,6 +112,7 @@ fun WorldClockScreen(
     onClockDisplayModeChange: (ClockDisplayMode) -> Unit,
     onFormatChange: (Boolean) -> Unit,
     currentLocationState: CurrentLocationUiState,
+    epochMillis: Long,
     locationPermissionGranted: Boolean,
     preciseLocationGranted: Boolean,
     onRequestLocationPermission: () -> Unit,
@@ -129,59 +128,96 @@ fun WorldClockScreen(
 ) {
     val haptics = LocalHapticFeedback.current
     val locale = LocalConfiguration.current.locales[0]
-    val displayModeDescription = stringResource(
-        if (clockDisplayMode == ClockDisplayMode.DIGITAL) {
-            R.string.home_switch_to_analog
-        } else {
-            R.string.home_switch_to_digital
-        },
-    )
     val epochMillisState = rememberEpochMillisNowState()
     val epochMillis by epochMillisState
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+
     var selectedZoneId by rememberSaveable {
-        mutableStateOf(favorites.firstOrNull() ?: items.firstOrNull()?.zoneId)
+        mutableStateOf(
+            items.firstOrNull { it.zoneId in favorites }?.zoneId
+                ?: items.firstOrNull()?.zoneId,
+        )
     }
     var selectedUtcHour by rememberSaveable {
         mutableIntStateOf(currentWholeUtcHour(epochMillis))
     }
-    var libraryOpen by rememberSaveable { mutableStateOf(false) }
-    var mapMode by rememberSaveable { mutableStateOf(false) }
 
     val selectedItem = remember(items, selectedZoneId) {
         items.firstOrNull { it.zoneId == selectedZoneId } ?: items.firstOrNull()
     }
 
-    if (selectedItem != null && selectedItem.zoneId != selectedZoneId) {
-        selectedZoneId = selectedItem.zoneId
+    LaunchedEffect(items, selectedItem?.zoneId) {
+        if (selectedItem?.zoneId != selectedZoneId) {
+            selectedZoneId = selectedItem?.zoneId
+        }
     }
 
-    val selectedZone = remember(selectedItem?.zoneId) {
-        selectedItem?.zoneId?.let { runCatching { ZoneId.of(it) }.getOrNull() }
+    val heroZone = remember(selectedItem?.zoneId) {
+        runCatching {
+            ZoneId.of(selectedItem?.zoneId ?: ZoneId.systemDefault().id)
+        }.getOrElse { ZoneId.systemDefault() }
+    }
+    val heroCity = remember(selectedItem?.zoneId, currentLocationState.location?.city, heroZone) {
+        selectedItem?.city
+            ?: currentLocationState.location?.city
+            ?: TimeZoneCatalog.find(heroZone.id)?.city
+            ?: heroZone.id.substringAfterLast('/').replace('_', ' ')
+    }
+    val heroCountry = remember(selectedItem?.zoneId, currentLocationState.location?.country, locale, heroZone) {
+        selectedItem?.let { TimeZoneCatalog.find(it.zoneId)?.countryName(locale) }
+            ?: currentLocationState.location?.country
+            ?: TimeZoneCatalog.find(heroZone.id)?.countryName(locale)
+            ?: heroZone.id
+    }
+    val heroZoned = remember(heroZone, epochMillis) {
+        Instant.ofEpochMilli(epochMillis).atZone(heroZone)
     }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        containerColor = Color.Transparent,
-        topBar = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                IconButton(onClick = {
-                    haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                    onBack()
-                }) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.nav_back),
-                    )
-                }
-                Spacer(Modifier.weight(1f))
-                FilledTonalIconButton(
-                    onClick = {
+    val collapseRangePx = 520f
+    val rawCollapseProgress by remember {
+        derivedStateOf {
+            val offset = if (listState.firstVisibleItemIndex == 0) {
+                listState.firstVisibleItemScrollOffset.toFloat()
+            } else {
+                collapseRangePx
+            }
+            (offset / collapseRangePx).coerceIn(0f, 1f)
+        }
+    }
+    val collapseProgress = rawCollapseProgress
+    val cityRows = remember(items) { items.chunked(2) }
+    val mapItemIndex = 3 + cityRows.size + if (cityRows.isEmpty()) 1 else 0
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+    ) {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                top = 0.dp,
+                bottom = 120.dp,
+            ),
+            verticalArrangement = Arrangement.spacedBy(18.dp),
+        ) {
+            item(key = "status-bar-spacer") {
+                Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
+            }
+
+            item(key = "hero") {
+                WorldClockHeroHeader(
+                    city = heroCity,
+                    country = heroCountry,
+                    zone = heroZone,
+                    zoned = heroZoned,
+                    use24HourFormat = use24HourFormat,
+                    showSeconds = showSeconds,
+                    displayMode = clockDisplayMode,
+                    onBack = onBack,
+                    onToggleDisplayMode = {
                         haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
                         onClockDisplayModeChange(
                             if (clockDisplayMode == ClockDisplayMode.DIGITAL) {
@@ -191,813 +227,942 @@ fun WorldClockScreen(
                             },
                         )
                     },
-                    modifier = Modifier.semantics {
-                        contentDescription = displayModeDescription
-                    }
-                ) {
-                    Icon(Icons.Filled.Schedule, contentDescription = null)
-                }
-                Spacer(Modifier.width(10.dp))
-                HourFormatToggle(
-                    use24HourFormat = use24HourFormat,
                     onFormatChange = { next ->
                         haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
                         onFormatChange(next)
                     },
-                )
-            }
-        },
-        bottomBar = {
-            NavigationBar(
-                modifier = Modifier.navigationBarsPadding(),
-                tonalElevation = 3.dp,
-            ) {
-                NavigationBarItem(
-                    selected = false,
-                    onClick = {
-                        haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                        onOpenSearch()
-                    },
-                    icon = { Icon(Icons.Filled.Search, contentDescription = null) },
-                    label = { Text(stringResource(R.string.nav_search)) },
-                    alwaysShowLabel = false,
-                )
-                NavigationBarItem(
-                    selected = true,
-                    onClick = {
-                        haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                        libraryOpen = false
-                    },
-                    icon = { Icon(Icons.Filled.AccessTime, contentDescription = null) },
-                    label = { Text(stringResource(R.string.world_screen_title)) },
-                    alwaysShowLabel = false,
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = {
-                        haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                        libraryOpen = true
-                    },
-                    icon = { Icon(Icons.Filled.Public, contentDescription = null) },
-                    label = { Text(stringResource(R.string.world_section_saved)) },
-                    alwaysShowLabel = false,
-                )
-            }
-        },
-    ) { paddingValues ->
-        if (selectedItem == null || selectedZone == null) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp),
-            ) {
-                CurrentLocationCard(
-                    state = currentLocationState,
-                    permissionGranted = locationPermissionGranted,
-                    preciseLocationGranted = preciseLocationGranted,
+                    collapseProgress = collapseProgress,
+                    currentLocationState = currentLocationState,
                     epochMillis = epochMillis,
                     use24HourFormat = use24HourFormat,
+                    locationPermissionGranted = locationPermissionGranted,
+                    preciseLocationGranted = preciseLocationGranted,
                     glass = glass,
-                    onRequestPermission = onRequestLocationPermission,
-                    onPermissionResult = onLocationPermissionResult,
-                    onOpenSettings = onOpenLocationSettings,
-                    onRefresh = onRefreshLocation,
+                    onRequestLocationPermission = onRequestLocationPermission,
+                    onLocationPermissionResult = onLocationPermissionResult,
+                    onOpenLocationSettings = onOpenLocationSettings,
+                    onRefreshLocation = onRefreshLocation,
                 )
+            }
 
-                EmptyWorldClockState(
+            item(key = "saved-heading") {
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(280.dp),
+                        .padding(horizontal = 20.dp),
+                    verticalAlignment = Alignment.Bottom,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            stringResource(R.string.world_section_saved),
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Medium,
+                        )
+                        Text(
+                            stringResource(R.string.world_section_saved_subtitle, items.size),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    FilledTonalIconButton(onClick = onOpenSearch) {
+                        Icon(Icons.Filled.Search, contentDescription = stringResource(R.string.nav_search))
+                    }
+                }
+            }
+
+            if (cityRows.isEmpty()) {
+                item(key = "empty") {
+                    EmptyWorldClockState(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                            .height(260.dp),
+                        glass = glass,
+                        onFindCity = onOpenSearch,
+                    )
+                }
+            } else {
+                items(
+                    items = cityRows,
+                    key = { row -> "row-${row.firstOrNull()?.id ?: row.hashCode()}" },
+                    contentType = { "world-clock-row" },
+                ) { row ->
+                    WorldClockCityRow(
+                        row = row,
+                        favorites = favorites,
+                        epochMillis = epochMillis,
+                        use24HourFormat = use24HourFormat,
+                        showSeconds = showSeconds,
+                        selectedZoneId = selectedZoneId,
+                        glass = glass,
+                        onSelect = {
+                            haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                            selectedZoneId = it.zoneId
+                        },
+                        onRemove = onRemove,
+                        onToggleFavorite = onToggleFavorite,
+                        onOpenDetail = onOpenDetail,
+                    )
+                }
+            }
+
+            item(key = "map") {
+                WorldClockMapSection(
+                    selectedUtcHour = selectedUtcHour,
                     glass = glass,
-                    onFindCity = onOpenSearch,
+                    onUtcHourChange = { selectedUtcHour = it },
                 )
             }
-        } else {
-            val city = selectedItem
-            val zone = selectedZone
-            val zoned = remember(zone, epochMillis) {
-                Instant.ofEpochMilli(epochMillis).atZone(zone)
-            }
-            val country = remember(city.zoneId, locale) {
-                TimeZoneCatalog.find(city.zoneId)?.countryName(locale) ?: city.zoneId
-            }
-            val previousMode = clockDisplayMode
 
+            item(key = "find-city") {
+                Surface(
+                    onClick = onOpenSearch,
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                    shape = RoundedCornerShape(22.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    tonalElevation = 2.dp,
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 18.dp, vertical = 15.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        Icon(Icons.Filled.Search, contentDescription = null)
+                        Text(
+                            stringResource(R.string.world_find_city),
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Icon(Icons.Filled.Public, contentDescription = null)
+                    }
+                }
+            }
+        }
+
+        WorldClockCollapsedBar(
+            city = heroCity,
+            time = ChronaTimeFormatter.time(
+                epochMillis,
+                heroZone,
+                use24HourFormat,
+                showSeconds,
+            ),
+            collapseProgress = collapseProgress,
+            use24HourFormat = use24HourFormat,
+            clockDisplayMode = clockDisplayMode,
+            onBack = onBack,
+            onToggleDisplayMode = {
+                haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                onClockDisplayModeChange(
+                    if (clockDisplayMode == ClockDisplayMode.DIGITAL) {
+                        ClockDisplayMode.ANALOG
+                    } else {
+                        ClockDisplayMode.DIGITAL
+                    },
+                )
+            },
+            onFormatChange = onFormatChange,
+        )
+
+        WorldClockFloatingNavigation(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
+                .padding(bottom = 16.dp),
+            collapseProgress = collapseProgress,
+            onSearch = {
+                haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                onOpenSearch()
+            },
+            onClock = {
+                haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                scope.launch {
+                    listState.animateScrollToItem(1)
+                }
+            },
+            onMap = {
+                haptics.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                scope.launch {
+                    listState.animateScrollToItem(mapItemIndex)
+                }
+            },
+        )
+    }
+}
+
+@Composable
+private fun WorldClockHeroHeader(
+    city: String,
+    country: String,
+    zone: ZoneId,
+    zoned: ZonedDateTime,
+    use24HourFormat: Boolean,
+    showSeconds: Boolean,
+    displayMode: ClockDisplayMode,
+    onBack: () -> Unit,
+    onToggleDisplayMode: () -> Unit,
+    onFormatChange: (Boolean) -> Unit,
+    collapseProgress: Float,
+    currentLocationState: CurrentLocationUiState,
+    locationPermissionGranted: Boolean,
+    preciseLocationGranted: Boolean,
+    glass: Boolean,
+    onRequestLocationPermission: () -> Unit,
+    onLocationPermissionResult: (Boolean) -> Unit,
+    onOpenLocationSettings: () -> Unit,
+    onRefreshLocation: () -> Unit,
+) {
+    val density = LocalDensity.current
+    val cornerRadius = lerp(34.dp, 24.dp, collapseProgress)
+    val cardColor = if (glass) {
+        MaterialTheme.colorScheme.surface.copy(alpha = 0.78f)
+    } else {
+        MaterialTheme.colorScheme.surfaceContainerLow
+    }
+    val clockScale = lerpFloat(1f, 0.72f, collapseProgress)
+    val clockTranslationY = lerpFloat(0f, with(density) { (-82).dp.toPx() }, collapseProgress)
+    val titleAlpha = lerpFloat(1f, 0.35f, collapseProgress)
+    val locationAlpha = lerpFloat(1f, 0.0f, collapseProgress)
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp)
+            .height(424.dp)
+            .graphicsLayer {
+                scaleX = lerpFloat(1f, 0.985f, collapseProgress)
+                scaleY = lerpFloat(1f, 0.985f, collapseProgress)
+                shadowElevation = lerpFloat(4f, 1f, collapseProgress)
+            },
+        shape = RoundedCornerShape(cornerRadius),
+        color = cardColor,
+        tonalElevation = 3.dp,
+        shadowElevation = 1.dp,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.10f)),
+    ) {
+        Box(Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp, vertical = 4.dp),
+                    .padding(horizontal = 22.dp, vertical = 20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                CurrentLocationCard(
-                    state = currentLocationState,
-                    permissionGranted = locationPermissionGranted,
-                    preciseLocationGranted = preciseLocationGranted,
-                    epochMillis = epochMillis,
-                    use24HourFormat = use24HourFormat,
-                    glass = glass,
-                    onRequestPermission = onRequestLocationPermission,
-                    onPermissionResult = onLocationPermissionResult,
-                    onOpenSettings = onOpenLocationSettings,
-                    onRefresh = onRefreshLocation,
-                )
-
-                Spacer(Modifier.height(18.dp))
-
-                CityClockHero(
-                    item = city,
-                    country = country,
-                    zoned = zoned,
-                    use24HourFormat = use24HourFormat,
-                    showSeconds = showSeconds,
-                    displayMode = previousMode,
-                )
-
-                Spacer(Modifier.height(26.dp))
-
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.Top,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .graphicsLayer {
+                            alpha = lerpFloat(1f, 0.25f, collapseProgress)
+                            translationY = lerpFloat(0f, with(density) { (-20).dp.toPx() }, collapseProgress)
+                        },
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(2.dp),
-                    ) {
-                        Text(
-                            city.city,
-                            style = MaterialTheme.typography.headlineLarge,
-                            fontWeight = FontWeight.Normal,
-                            lineHeight = 32.sp,
-                        )
-                        Text(
-                            country,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontWeight = FontWeight.Normal,
-                        )
-                        Text(
-                            city.zoneId.replace('_', ' '),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.nav_back),
                         )
                     }
-                    Spacer(Modifier.width(12.dp))
-                    Column(horizontalAlignment = Alignment.End) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        ) {
-                            Icon(
-                                if (zoned.hour in 6..17) Icons.Filled.LightMode else Icons.Filled.DarkMode,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp),
-                                tint = if (zoned.hour in 6..17) {
-                                    MaterialTheme.colorScheme.primary
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            stringResource(R.string.world_screen_title),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            zone.id,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                    FilledTonalIconButton(
+                        onClick = onToggleDisplayMode,
+                        modifier = Modifier.semantics {
+                            contentDescription = stringResource(
+                                if (displayMode == ClockDisplayMode.DIGITAL) {
+                                    R.string.home_switch_to_analog
                                 } else {
-                                    MaterialTheme.colorScheme.secondary
+                                    R.string.home_switch_to_digital
                                 },
                             )
-                            Text(
-                                stringResource(if (zoned.hour in 6..17) R.string.world_day else R.string.world_night),
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                        }
-                        Spacer(Modifier.height(5.dp))
+                        },
+                    ) {
+                        Icon(Icons.Filled.Schedule, contentDescription = null)
+                    }
+                    Spacer(Modifier.size(6.dp))
+                    HourFormatToggle(
+                        use24HourFormat = use24HourFormat,
+                        onFormatChange = onFormatChange,
+                    )
+                }
+
+                Spacer(Modifier.weight(1f))
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.graphicsLayer {
+                        scaleX = clockScale
+                        scaleY = clockScale
+                        translationY = clockTranslationY
+                    },
+                ) {
+                    if (displayMode == ClockDisplayMode.DIGITAL) {
                         Text(
-                            ChronaTimeFormatter.utcOffset(zone, epochMillis),
+                            ChronaTimeFormatter.time(
+                                zoned.toInstant().toEpochMilli(),
+                                zone,
+                                use24HourFormat,
+                                showSeconds,
+                            ),
+                            style = MaterialTheme.typography.displayLarge.copy(
+                                fontSize = if (showSeconds) 46.sp else 58.sp,
+                                lineHeight = if (showSeconds) 52.sp else 64.sp,
+                            ),
+                            fontWeight = FontWeight.Light,
+                            letterSpacing = (-2.2).sp,
+                        )
+                    } else {
+                        Material3AnalogClock(
+                            zoned = zoned,
+                            showSeconds = showSeconds,
+                            modifier = Modifier.size(190.dp),
+                        )
+                    }
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        city,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.graphicsLayer { alpha = titleAlpha },
+                    )
+                    Text(
+                        country,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.graphicsLayer { alpha = titleAlpha },
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.graphicsLayer { alpha = titleAlpha },
+                    ) {
+                        Icon(
+                            if (zoned.hour in 6..17) Icons.Filled.LightMode else Icons.Filled.DarkMode,
+                            contentDescription = null,
+                            tint = if (zoned.hour in 6..17) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.secondary
+                            },
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Text(
+                            stringResource(if (zoned.hour in 6..17) R.string.world_day else R.string.world_night),
+                            style = MaterialTheme.typography.labelLarge,
+                        )
+                        Text(
+                            ChronaTimeFormatter.utcOffset(zone, zoned.toInstant().toEpochMilli()),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
 
-                Spacer(Modifier.height(22.dp))
-                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f))
-                Spacer(Modifier.height(18.dp))
+                Spacer(Modifier.weight(1f))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    SmallClockAction(
-                        selected = city.zoneId in favorites,
-                        icon = if (city.zoneId in favorites) Icons.Filled.Star else Icons.Filled.StarBorder,
-                        contentDescription = if (city.zoneId in favorites) {
-                            stringResource(R.string.world_remove_favorite, city.city)
-                        } else {
-                            stringResource(R.string.world_add_favorite, city.city)
-                        },
-                        onClick = { onToggleFavorite(city.zoneId) },
-                    )
-                    SmallClockAction(
-                        selected = false,
-                        icon = Icons.Filled.DeleteOutline,
-                        contentDescription = stringResource(R.string.world_remove_city, city.city),
-                        onClick = { onRemove(city) },
-                    )
-                }
+                CurrentLocationInline(
+                    state = currentLocationState,
+                    epochMillis = epochMillis,
+                    use24HourFormat = use24HourFormat,
+                    permissionGranted = locationPermissionGranted,
+                    preciseLocationGranted = preciseLocationGranted,
+                    glass = glass,
+                    modifier = Modifier.graphicsLayer {
+                        alpha = locationAlpha
+                        translationY = lerpFloat(0f, with(density) { 34.dp.toPx() }, collapseProgress)
+                    },
+                    onRequestPermission = onRequestLocationPermission,
+                    onPermissionResult = onLocationPermissionResult,
+                    onOpenSettings = onOpenLocationSettings,
+                    onRefresh = onRefreshLocation,
+                )
             }
-        }
-    }
-
-    if (libraryOpen) {
-        ModalBottomSheet(
-            onDismissRequest = { libraryOpen = false },
-            containerColor = MaterialTheme.colorScheme.surface,
-        ) {
-            WorldClockLibrarySheet(
-                items = items,
-                favorites = favorites,
-                locale = locale,
-                epochMillis = epochMillis,
-                use24HourFormat = use24HourFormat,
-                mapMode = mapMode,
-                selectedUtcHour = selectedUtcHour,
-                glass = glass,
-                onMapModeChange = { mapMode = it },
-                onUtcHourChange = { selectedUtcHour = it.coerceIn(-12, 12) },
-                onSelect = { item ->
-                    selectedZoneId = item.zoneId
-                    libraryOpen = false
-                    mapMode = false
-                },
-                onToggleFavorite = onToggleFavorite,
-                onRemove = onRemove,
-                onOpenDetail = { item ->
-                    libraryOpen = false
-                    onOpenDetail(item)
-                },
-                onOpenSearch = {
-                    libraryOpen = false
-                    onOpenSearch()
-                },
-            )
         }
     }
 }
 
+
 @Composable
-private fun HourFormatToggle(
+private fun WorldClockCollapsedBar(
+    city: String,
+    time: String,
+    collapseProgress: Float,
     use24HourFormat: Boolean,
+    clockDisplayMode: ClockDisplayMode,
+    onBack: () -> Unit,
+    onToggleDisplayMode: () -> Unit,
     onFormatChange: (Boolean) -> Unit,
 ) {
-    SingleChoiceSegmentedButtonRow {
-        val choices = listOf(false to "12h", true to "24h")
-        choices.forEachIndexed { index, (value, label) ->
-            SegmentedButton(
-                selected = use24HourFormat == value,
-                onClick = { onFormatChange(value) },
-                shape = SegmentedButtonDefaults.itemShape(index, choices.size),
-                icon = { SegmentedButtonDefaults.Icon(active = use24HourFormat == value) },
-            ) {
-                Text(label)
-            }
-        }
-    }
-}
-
-@Composable
-private fun CityClockHero(
-    item: WorldClockItem,
-    country: String,
-    zoned: ZonedDateTime,
-    use24HourFormat: Boolean,
-    showSeconds: Boolean,
-    displayMode: com.febricahyaa.clockapp.model.ClockDisplayMode,
-) {
-    AnimatedContent(
-        targetState = displayMode,
-        transitionSpec = {
-            (fadeIn(animationSpec = androidx.compose.animation.core.tween(220)) +
-                slideInVertically(animationSpec = androidx.compose.animation.core.tween(260)) { it / 8 })
-                .togetherWith(
-                    fadeOut(animationSpec = androidx.compose.animation.core.tween(160)) +
-                        slideOutVertically(animationSpec = androidx.compose.animation.core.tween(180)) { -it / 8 },
-                )
-                .using(SizeTransform(clip = false))
-        },
-        label = "world-clock-mode",
-    ) { mode ->
-        when (mode) {
-            ClockDisplayMode.DIGITAL -> {
-                DigitalClockHero(
-                    zoned = zoned,
-                    use24HourFormat = use24HourFormat,
-                    showSeconds = showSeconds,
-                )
-            }
-            ClockDisplayMode.ANALOG -> {
-                Material3AnalogClock(
-                    zoned = zoned,
-                    showSeconds = showSeconds,
-                    modifier = Modifier
-                        .fillMaxWidth(0.82f)
-                        .height(300.dp),
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun DigitalClockHero(
-    zoned: ZonedDateTime,
-    use24HourFormat: Boolean,
-    showSeconds: Boolean,
-) {
-    val locale = LocalConfiguration.current.locales[0]
-    val hour = formatHour(zoned, use24HourFormat, locale)
-    val minute = DateTimeFormatter.ofPattern("mm", locale).format(zoned)
-    val meridiem = if (use24HourFormat) "" else DateTimeFormatter.ofPattern("a", locale).format(zoned)
-    val date = DateTimeFormatter.ofPattern("EEE,\nd MMM", locale).format(zoned)
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center,
-    ) {
-        Column(
-            horizontalAlignment = Alignment.End,
-            verticalArrangement = Arrangement.spacedBy((-10).dp),
-        ) {
-            Text(
-                hour,
-                style = MaterialTheme.typography.displayLarge.copy(
-                    fontSize = 104.sp,
-                    lineHeight = 92.sp,
-                    letterSpacing = (-4.5).sp,
-                ),
-                fontWeight = FontWeight.Normal,
-            )
-            Text(
-                minute,
-                style = MaterialTheme.typography.displayLarge.copy(
-                    fontSize = 104.sp,
-                    lineHeight = 92.sp,
-                    letterSpacing = (-4.5).sp,
-                ),
-                fontWeight = FontWeight.Normal,
-            )
-        }
-        Spacer(Modifier.width(18.dp))
-        Column(
-            modifier = Modifier.padding(top = 8.dp),
-            horizontalAlignment = Alignment.Start,
-        ) {
-            Text(
-                date,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                lineHeight = 18.sp,
-            )
-            if (meridiem.isNotBlank()) {
-                Spacer(Modifier.height(14.dp))
-                Text(
-                    meridiem,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Medium,
-                )
-            }
-            if (showSeconds) {
-                Spacer(Modifier.height(14.dp))
-                SecondsWheel(seconds = zoned.second)
-            }
-        }
-    }
-}
-
-@Composable
-private fun SecondsWheel(seconds: Int) {
-    val previous = (seconds + 59) % 60
-    val next = (seconds + 1) % 60
-    Column(
-        horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.spacedBy((-2).dp),
-        modifier = Modifier.width(34.dp),
-    ) {
-        Text(
-            "%02d".format(previous),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.20f),
-        )
-        Box(
-            modifier = Modifier.height(30.dp),
-            contentAlignment = Alignment.CenterStart,
-        ) {
-            AnimatedContent(
-                targetState = seconds,
-                transitionSpec = {
-                    (slideInVertically(animationSpec = androidx.compose.animation.core.tween(230)) { it } +
-                        fadeIn(animationSpec = androidx.compose.animation.core.tween(230)))
-                        .togetherWith(
-                            slideOutVertically(animationSpec = androidx.compose.animation.core.tween(170)) { -it } +
-                                fadeOut(animationSpec = androidx.compose.animation.core.tween(170)),
-                        )
-                        .using(SizeTransform(clip = false))
-                },
-                label = "seconds-wheel",
-            ) { value ->
-                Text(
-                    "%02d".format(value),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Medium,
-                )
-            }
-        }
-        Text(
-            "%02d".format(next),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.20f),
-        )
-    }
-}
-
-@Composable
-private fun SmallClockAction(
-    selected: Boolean,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    contentDescription: String,
-    onClick: () -> Unit,
-) {
-    FilledTonalIconButton(
-        onClick = onClick,
-        modifier = Modifier.size(48.dp),
-    ) {
-        Icon(
-            icon,
-            contentDescription = contentDescription,
-            tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-@Composable
-private fun WorldClockLibrarySheet(
-    items: List<WorldClockItem>,
-    favorites: Set<String>,
-    locale: Locale,
-    epochMillis: Long,
-    use24HourFormat: Boolean,
-    mapMode: Boolean,
-    selectedUtcHour: Int,
-    glass: Boolean,
-    onMapModeChange: (Boolean) -> Unit,
-    onUtcHourChange: (Int) -> Unit,
-    onSelect: (WorldClockItem) -> Unit,
-    onToggleFavorite: (String) -> Unit,
-    onRemove: (WorldClockItem) -> Unit,
-    onOpenDetail: (WorldClockItem) -> Unit,
-    onOpenSearch: () -> Unit,
-) {
-    Column(
+    val alpha = (collapseProgress * 1.15f).coerceIn(0f, 1f)
+    val targetHeight = lerp(64.dp, 66.dp, alpha)
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp)
-            .navigationBarsPadding(),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+            .height(targetHeight)
+            .statusBarsPadding()
+            .graphicsLayer {
+                alpha = alpha
+                translationY = lerpFloat(with(LocalDensity.current) { (-8).dp.toPx() }, 0f, alpha)
+            },
+        color = MaterialTheme.colorScheme.surface.copy(alpha = ChronaGlassTokens.ToolbarScrolledAlpha),
+        shadowElevation = lerp(0.dp, 3.dp, alpha),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.10f * alpha)),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            IconButton(onClick = onBack) {
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.nav_back),
+                )
+            }
             Column(Modifier.weight(1f)) {
                 Text(
-                    stringResource(R.string.world_section_saved),
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Normal,
+                    city,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    stringResource(R.string.world_section_saved_subtitle, items.size),
-                    style = MaterialTheme.typography.bodySmall,
+                    time,
+                    style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            Text(
-                if (mapMode) "MAP" else "LIST",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary,
+            FilledTonalIconButton(
+                onClick = onToggleDisplayMode,
+                modifier = Modifier.semantics {
+                    contentDescription = stringResource(
+                        if (clockDisplayMode == ClockDisplayMode.DIGITAL) {
+                            R.string.home_switch_to_analog
+                        } else {
+                            R.string.home_switch_to_digital
+                        },
+                    )
+                },
+            ) {
+                Icon(Icons.Filled.Schedule, contentDescription = null)
+            }
+            HourFormatToggle(
+                use24HourFormat = use24HourFormat,
+                onFormatChange = onFormatChange,
             )
-            Spacer(Modifier.width(6.dp))
-            FilledTonalIconButton(onClick = { onMapModeChange(!mapMode) }) {
-                Icon(
-                    if (mapMode) Icons.Filled.Public else Icons.Filled.AccessTime,
-                    contentDescription = null,
-                )
-            }
-        }
-
-        if (mapMode) {
-            Surface(
-                shape = MaterialTheme.shapes.large,
-                color = MaterialTheme.colorScheme.surfaceContainerLow,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.10f)),
-                tonalElevation = 1.dp,
-            ) {
-                Column(Modifier.fillMaxWidth().padding(8.dp)) {
-                    WorldClockMap(
-                        utcHour = selectedUtcHour,
-                        onUtcHourChange = onUtcHourChange,
-                    )
-                    Spacer(Modifier.height(10.dp))
-                    Slider(
-                        value = selectedUtcHour.toFloat(),
-                        onValueChange = { onUtcHourChange(it.roundToInt()) },
-                        valueRange = -12f..12f,
-                        steps = 23,
-                    )
-                }
-            }
-        } else {
-            androidx.compose.foundation.lazy.LazyColumn(
-                modifier = Modifier.fillMaxWidth().height(420.dp),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
-            ) {
-                items(
-                    items = items,
-                    key = { it.id },
-                    contentType = { "world-clock-library-item" },
-                ) { item ->
-                    val zone = runCatching { ZoneId.of(item.zoneId) }.getOrNull()
-                    val country = TimeZoneCatalog.find(item.zoneId)?.countryName(locale) ?: item.zoneId
-                    val time = zone?.let {
-                        ChronaTimeFormatter.shortTime(epochMillis, it, use24HourFormat)
-                    } ?: "—"
-                    Surface(
-                        onClick = { onSelect(item) },
-                        color = Color.Transparent,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = MaterialTheme.shapes.medium,
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 9.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Column(Modifier.weight(1f)) {
-                                Text(item.city, style = MaterialTheme.typography.titleMedium)
-                                Text(
-                                    "$country · ${ChronaTimeFormatter.utcOffset(zone ?: ZoneId.of("UTC"), epochMillis)}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                            Text(
-                                time,
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Normal,
-                            )
-                            Spacer(Modifier.width(4.dp))
-                            IconButton(onClick = { onToggleFavorite(item.zoneId) }) {
-                                Icon(
-                                    if (item.zoneId in favorites) Icons.Filled.Star else Icons.Filled.StarBorder,
-                                    contentDescription = if (item.zoneId in favorites) {
-                                        stringResource(R.string.world_remove_favorite, item.city)
-                                    } else {
-                                        stringResource(R.string.world_add_favorite, item.city)
-                                    },
-                                )
-                            }
-                            IconButton(onClick = { onRemove(item) }) {
-                                Icon(
-                                    Icons.Filled.DeleteOutline,
-                                    contentDescription = stringResource(R.string.world_remove_city, item.city),
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Surface(
-                onClick = onOpenSearch,
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(18.dp),
-                color = MaterialTheme.colorScheme.primaryContainer,
-            ) {
-                Row(
-                    Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(Icons.Filled.Search, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.world_find_city), fontWeight = FontWeight.SemiBold)
-                }
-            }
         }
     }
 }
 
 @Composable
-private fun CurrentLocationCard(
+private fun CurrentLocationInline(
     state: CurrentLocationUiState,
-    permissionGranted: Boolean,
-    preciseLocationGranted: Boolean,
     epochMillis: Long,
     use24HourFormat: Boolean,
+    permissionGranted: Boolean,
+    preciseLocationGranted: Boolean,
     glass: Boolean,
+    modifier: Modifier = Modifier,
     onRequestPermission: () -> Unit,
     onPermissionResult: (Boolean) -> Unit,
     onOpenSettings: () -> Unit,
     onRefresh: () -> Unit,
 ) {
     val zone = ZoneId.systemDefault()
-    val localTime = remember(epochMillis, zone, use24HourFormat) {
-        ChronaTimeFormatter.shortTime(epochMillis, zone, use24HourFormat)
-    }
-    val offset = remember(epochMillis, zone) {
-        ChronaTimeFormatter.utcOffset(zone, epochMillis)
-    }
+    val time = ChronaTimeFormatter.shortTime(epochMillis, zone, use24HourFormat)
+    val location = state.location
 
-    ChronaCard(
-        modifier = Modifier.fillMaxWidth(),
-        glass = glass,
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        color = if (glass) {
+            MaterialTheme.colorScheme.surface.copy(alpha = 0.62f)
+        } else {
+            MaterialTheme.colorScheme.surfaceContainerHighest
+        },
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.09f)),
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(22.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
+        when {
+            !permissionGranted -> {
                 Row(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Icon(Icons.Filled.LocationOn, contentDescription = null)
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            stringResource(R.string.world_current_location_title),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Text(
+                            stringResource(R.string.world_current_location_permission_body),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                    ChronaLocationPermissionButton(
+                        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                        textColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        iconTint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        cornerRadius = 16.dp,
+                        pressedCornerRadius = 12.dp,
+                        onRequestPermissions = onRequestPermission,
+                        onPermissionResult = onPermissionResult,
+                    )
+                }
+            }
+
+            state.isLoading -> {
+                Row(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
+                    Text(
+                        stringResource(R.string.world_current_location_loading),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+
+            location != null -> {
+                Row(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
                         Icons.Filled.LocationOn,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
                     )
-                    Text(
-                        stringResource(R.string.world_current_location_title),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                }
-
-                if (permissionGranted) {
+                    Spacer(Modifier.size(10.dp))
+                    Column(Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                location.city ?: stringResource(R.string.world_local_timezone),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            Spacer(Modifier.size(7.dp))
+                            Surface(
+                                shape = RoundedCornerShape(50),
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                            ) {
+                                Text(
+                                    stringResource(
+                                        if (preciseLocationGranted) {
+                                            R.string.world_current_location_precise
+                                        } else {
+                                            R.string.world_current_location_approximate
+                                        },
+                                    ),
+                                    modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                            }
+                        }
+                        Text(
+                            buildString {
+                                append(location.country ?: zone.id)
+                                append(" · ")
+                                append(time)
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                     IconButton(onClick = onRefresh) {
                         Icon(
                             Icons.Filled.Refresh,
-                            contentDescription = stringResource(
-                                R.string.world_current_location_refresh,
-                            ),
+                            contentDescription = stringResource(R.string.world_current_location_refresh),
                         )
                     }
                 }
             }
 
-            when {
-                !permissionGranted -> {
-                    Text(
-                        stringResource(R.string.world_current_location_permission_body),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    ChronaLocationPermissionButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        backgroundColor = MaterialTheme.colorScheme.primaryContainer,
-                        textColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                        iconTint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        cornerRadius = 18.dp,
-                        pressedCornerRadius = 14.dp,
-                        onRequestPermissions = onRequestPermission,
-                        onPermissionResult = onPermissionResult,
-                    )
-                }
-
-                state.isLoading -> {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        androidx.compose.material3.CircularProgressIndicator(
-                            modifier = Modifier.size(22.dp),
-                            strokeWidth = 2.dp,
+            else -> {
+                Row(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Icon(Icons.Filled.LocationOn, contentDescription = null)
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            stringResource(R.string.world_current_location_title),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
                         )
                         Text(
-                            stringResource(R.string.world_current_location_loading),
-                            style = MaterialTheme.typography.bodyMedium,
+                            stringResource(R.string.world_current_location_unavailable),
+                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(Icons.Filled.Tune, contentDescription = stringResource(R.string.world_current_location_improve_accuracy))
+                    }
+                    FilledTonalIconButton(onClick = onRefresh) {
+                        Icon(Icons.Filled.Refresh, contentDescription = stringResource(R.string.world_current_location_refresh))
+                    }
                 }
+            }
+        }
+    }
+}
 
-                state.location != null -> {
-                    val location = state.location
-                    Text(
-                        localTime,
-                        style = MaterialTheme.typography.displayMedium,
-                        fontWeight = FontWeight.Normal,
-                    )
-                    Text(
-                        location.city ?: stringResource(
-                            R.string.world_current_location_title,
-                        ),
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Normal,
-                    )
+@Composable
+private fun WorldClockCityRow(
+    row: List<WorldClockItem>,
+    favorites: Set<String>,
+    epochMillis: Long,
+    use24HourFormat: Boolean,
+    showSeconds: Boolean,
+    selectedZoneId: String?,
+    glass: Boolean,
+    onSelect: (WorldClockItem) -> Unit,
+    onRemove: (WorldClockItem) -> Unit,
+    onToggleFavorite: (String) -> Unit,
+    onOpenDetail: (WorldClockItem) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        row.forEach { item ->
+            WorldClockCityCard(
+                modifier = Modifier.weight(1f),
+                item = item,
+                isFavorite = item.zoneId in favorites,
+                isSelected = item.zoneId == selectedZoneId,
+                epochMillis = epochMillis,
+                use24HourFormat = use24HourFormat,
+                showSeconds = showSeconds,
+                glass = glass,
+                onSelect = { onSelect(item) },
+                onRemove = { onRemove(item) },
+                onToggleFavorite = { onToggleFavorite(item.zoneId) },
+                onOpenDetail = { onOpenDetail(item) },
+            )
+        }
+        if (row.size == 1) Spacer(Modifier.weight(1f))
+    }
+}
 
-                    location.country?.takeIf { it.isNotBlank() }?.let { country ->
+@Composable
+private fun WorldClockCityCard(
+    modifier: Modifier,
+    item: WorldClockItem,
+    isFavorite: Boolean,
+    isSelected: Boolean,
+    epochMillis: Long,
+    use24HourFormat: Boolean,
+    showSeconds: Boolean,
+    glass: Boolean,
+    onSelect: () -> Unit,
+    onRemove: () -> Unit,
+    onToggleFavorite: () -> Unit,
+    onOpenDetail: () -> Unit,
+) {
+    val zone = remember(item.zoneId) {
+        runCatching { ZoneId.of(item.zoneId) }.getOrNull()
+    }
+    val zoned = remember(zone, epochMillis) {
+        zone?.let { Instant.ofEpochMilli(epochMillis).atZone(it) }
+    }
+    val country = remember(item.zoneId) {
+        TimeZoneCatalog.find(item.zoneId)?.countryName(Locale.getDefault()) ?: item.zoneId
+    }
+    var visible by remember(item.id) { mutableStateOf(false) }
+
+    LaunchedEffect(item.id) {
+        visible = true
+    }
+
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn(ClockMotion.contentEmphasis) +
+            slideInVertically(
+                animationSpec = ClockMotion.contentEmphasis,
+                initialOffsetY = { 22 },
+            ) +
+            scaleIn(
+                animationSpec = ClockMotion.contentEmphasis,
+                initialScale = 0.96f,
+            ),
+        exit = fadeOut(ClockMotion.contentEmphasis),
+        modifier = modifier,
+    ) {
+        Surface(
+            onClick = onSelect,
+            modifier = Modifier
+                .fillMaxWidth()
+                .animateContentSize(animationSpec = ClockMotion.alarmExpand)
+                .border(
+                    width = if (isSelected) 1.5.dp else 1.dp,
+                    color = if (isSelected) {
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.58f)
+                    } else {
+                        MaterialTheme.colorScheme.outline.copy(alpha = 0.10f)
+                    },
+                    shape = RoundedCornerShape(28.dp),
+                ),
+            shape = RoundedCornerShape(28.dp),
+            color = if (glass) {
+                MaterialTheme.colorScheme.surface.copy(alpha = if (isSelected) 0.82f else 0.66f)
+            } else {
+                MaterialTheme.colorScheme.surfaceContainerLow
+            },
+            tonalElevation = if (isSelected) 5.dp else 2.dp,
+            shadowElevation = if (isSelected) 7.dp else 1.dp,
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(9.dp),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            item.city,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
                         Text(
                             country,
-                            style = MaterialTheme.typography.bodyLarge,
+                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+                    Surface(
+                        shape = CircleShape,
+                        color = if (isFavorite) {
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
+                        } else {
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)
+                        },
                     ) {
-                        Text(
-                            stringResource(
-                                R.string.world_current_location_device_timezone,
-                                offset,
-                            ),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Text("•", color = MaterialTheme.colorScheme.outline)
-
-                        Text(
-                            stringResource(
-                                if (preciseLocationGranted) {
-                                    R.string.world_current_location_precise
+                        IconButton(onClick = onToggleFavorite, modifier = Modifier.size(34.dp)) {
+                            Icon(
+                                if (isFavorite) Icons.Filled.Star else Icons.Filled.StarBorder,
+                                contentDescription = if (isFavorite) {
+                                    stringResource(R.string.world_remove_favorite, item.city)
                                 } else {
-                                    R.string.world_current_location_approximate
+                                    stringResource(R.string.world_add_favorite, item.city)
                                 },
-                            ),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                    }
-
-                    location.accuracyMeters?.takeIf { it > 0f }?.let { accuracy ->
-                        Text(
-                            stringResource(
-                                R.string.world_current_location_accuracy,
-                                accuracy.roundToInt(),
-                            ),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-
-                    if (!preciseLocationGranted) {
-                        Surface(
-                            onClick = onOpenSettings,
-                            shape = MaterialTheme.shapes.large,
-                            color = MaterialTheme.colorScheme.secondaryContainer,
-                        ) {
-                            Text(
-                                stringResource(
-                                    R.string.world_current_location_improve_accuracy,
-                                ),
-                                modifier = Modifier.padding(
-                                    horizontal = 16.dp,
-                                    vertical = 10.dp,
-                                ),
-                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.size(18.dp),
                             )
                         }
                     }
                 }
 
-                else -> {
+                if (zoned != null) {
                     Text(
-                        stringResource(R.string.world_current_location_unavailable),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        ChronaTimeFormatter.time(
+                            epochMillis,
+                            zone!!,
+                            use24HourFormat,
+                            showSeconds,
+                        ),
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            fontSize = if (showSeconds) 24.sp else 28.sp,
+                            lineHeight = 32.sp,
+                        ),
+                        fontWeight = FontWeight.Light,
+                        letterSpacing = (-0.8).sp,
                     )
-                    Surface(
-                        onClick = onRefresh,
-                        shape = MaterialTheme.shapes.large,
-                        color = MaterialTheme.colorScheme.primaryContainer,
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(7.dp),
                     ) {
+                        Icon(
+                            if (zoned.hour in 6..17) Icons.Filled.LightMode else Icons.Filled.DarkMode,
+                            contentDescription = null,
+                            modifier = Modifier.size(15.dp),
+                            tint = if (zoned.hour in 6..17) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.secondary
+                            },
+                        )
                         Text(
-                            stringResource(R.string.world_current_location_refresh),
-                            modifier = Modifier.padding(
-                                horizontal = 16.dp,
-                                vertical = 10.dp,
-                            ),
-                            fontWeight = FontWeight.SemiBold,
+                            ChronaTimeFormatter.utcOffset(zone, epochMillis),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Spacer(Modifier.weight(1f))
+                        Text(
+                            if (zoned.hour in 6..17) {
+                                stringResource(R.string.world_day)
+                            } else {
+                                stringResource(R.string.world_night)
+                            },
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    FilledTonalIconButton(
+                        onClick = onOpenDetail,
+                        modifier = Modifier.size(38.dp),
+                    ) {
+                        Icon(Icons.Filled.AccessTime, contentDescription = stringResource(R.string.world_timezone_details))
+                    }
+                    FilledTonalIconButton(
+                        onClick = onRemove,
+                        modifier = Modifier.size(38.dp),
+                    ) {
+                        Icon(Icons.Filled.DeleteOutline, contentDescription = stringResource(R.string.world_remove_city, item.city))
+                    }
+                }
             }
+        }
+    }
+}
+
+@Composable
+private fun WorldClockMapSection(
+    selectedUtcHour: Int,
+    glass: Boolean,
+    onUtcHourChange: (Int) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Text(
+            stringResource(R.string.world_section_map),
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Medium,
+        )
+        Text(
+            stringResource(R.string.world_map_hint),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(30.dp),
+            color = if (glass) {
+                MaterialTheme.colorScheme.surface.copy(alpha = 0.68f)
+            } else {
+                MaterialTheme.colorScheme.surfaceContainerLow
+            },
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.10f)),
+            tonalElevation = 3.dp,
+        ) {
+            Column(Modifier.padding(10.dp)) {
+                WorldClockMap(
+                    utcHour = selectedUtcHour,
+                    onUtcHourChange = onUtcHourChange,
+                )
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    stringResource(R.string.world_utc_selected, formatWorldMapUtc(selectedUtcHour)),
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun WorldClockFloatingNavigation(
+    modifier: Modifier = Modifier,
+    collapseProgress: Float,
+    onSearch: () -> Unit,
+    onClock: () -> Unit,
+    onMap: () -> Unit,
+) {
+    Surface(
+        modifier = modifier
+            .graphicsLayer {
+                alpha = lerpFloat(0.96f, 1f, collapseProgress)
+                scaleX = lerpFloat(0.98f, 1f, collapseProgress)
+                scaleY = lerpFloat(0.98f, 1f, collapseProgress)
+            },
+        shape = RoundedCornerShape(28.dp),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
+        shadowElevation = 10.dp,
+        tonalElevation = 4.dp,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.10f)),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            NavigationAction(Icons.Filled.Search, stringResource(R.string.nav_search), onSearch, false)
+            NavigationAction(Icons.Filled.AccessTime, stringResource(R.string.world_screen_title), onClock, true)
+            NavigationAction(Icons.Filled.Map, stringResource(R.string.world_section_map), onMap, false)
+        }
+    }
+}
+
+@Composable
+private fun NavigationAction(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    description: String,
+    onClick: () -> Unit,
+    selected: Boolean,
+) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(22.dp),
+        color = if (selected) {
+            MaterialTheme.colorScheme.primaryContainer
+        } else {
+            Color.Transparent
+        },
+    ) {
+        Box(
+            modifier = Modifier.size(48.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(icon, contentDescription = description)
         }
     }
 }
@@ -1008,14 +1173,26 @@ private fun EmptyWorldClockState(
     glass: Boolean,
     onFindCity: () -> Unit,
 ) {
-    ChronaCard(modifier, glass = glass) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(28.dp),
+        color = if (glass) {
+            MaterialTheme.colorScheme.surface.copy(alpha = 0.70f)
+        } else {
+            MaterialTheme.colorScheme.surfaceContainerLow
+        },
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.10f)),
+        tonalElevation = 2.dp,
+    ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(30.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(28.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Icon(Icons.Filled.Public, contentDescription = null, modifier = Modifier.size(38.dp))
-            Spacer(Modifier.height(14.dp))
+            Icon(Icons.Filled.Public, contentDescription = null, modifier = Modifier.size(42.dp))
+            Spacer(Modifier.height(12.dp))
             Text(stringResource(R.string.world_empty_title), style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(6.dp))
             Text(
@@ -1031,7 +1208,7 @@ private fun EmptyWorldClockState(
             ) {
                 Text(
                     stringResource(R.string.world_find_city),
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 11.dp),
+                    modifier = Modifier.padding(horizontal = 18.dp, vertical = 11.dp),
                     fontWeight = FontWeight.SemiBold,
                 )
             }
@@ -1039,8 +1216,64 @@ private fun EmptyWorldClockState(
     }
 }
 
-private fun formatHour(zoned: ZonedDateTime, use24HourFormat: Boolean, locale: Locale): String =
-    DateTimeFormatter.ofPattern(if (use24HourFormat) "HH" else "hh", locale).format(zoned)
+@Composable
+private fun HourFormatToggle(
+    use24HourFormat: Boolean,
+    onFormatChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(18.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.62f))
+            .border(
+                1.dp,
+                MaterialTheme.colorScheme.outline.copy(alpha = 0.08f),
+                RoundedCornerShape(18.dp),
+            )
+            .padding(3.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        FormatChip(
+            selected = use24HourFormat,
+            label = "24h",
+            onClick = { onFormatChange(true) },
+        )
+        FormatChip(
+            selected = !use24HourFormat,
+            label = "12h",
+            onClick = { onFormatChange(false) },
+        )
+    }
+}
+
+@Composable
+private fun FormatChip(
+    selected: Boolean,
+    label: String,
+    onClick: () -> Unit,
+) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(15.dp),
+        color = if (selected) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            Color.Transparent
+        },
+    ) {
+        Text(
+            label,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            style = MaterialTheme.typography.labelMedium,
+            color = if (selected) {
+                MaterialTheme.colorScheme.onPrimary
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            },
+            fontWeight = FontWeight.SemiBold,
+        )
+    }
+}
 
 private fun currentWholeUtcHour(epochMillis: Long): Int {
     val offsetSeconds = Instant.ofEpochMilli(epochMillis)
@@ -1099,10 +1332,21 @@ internal fun CityThumbnail(city: String, modifier: Modifier = Modifier) {
                 Box(
                     Modifier
                         .weight(1f)
-                        .height((44f * fraction).dp)
-                        .background(Color.Black.copy(alpha = 0.30f), MaterialTheme.shapes.small),
+                        .height((44.dp * fraction.coerceIn(0.12f, 0.9f)))
+                        .clip(RoundedCornerShape(topStart = 2.dp, topEnd = 2.dp))
+                        .background(Color.White.copy(alpha = 0.18f)),
                 )
             }
         }
     }
 }
+
+private fun lerpFloat(start: Float, stop: Float, fraction: Float): Float =
+    start + (stop - start) * fraction.coerceIn(0f, 1f)
+
+private fun formatWorldMapUtc(hour: Int): String {
+    val sign = if (hour < 0) "−" else "+"
+    return "UTC $sign${hour.absoluteValueCompat()}"
+}
+
+private fun Int.absoluteValueCompat(): Int = if (this < 0) -this else this
