@@ -22,7 +22,7 @@ constexpr double kTwoPi = 6.28318530717958647692;
 constexpr double kToneHz = 880.0;
 constexpr float kAmplitude = 0.16f;
 
-AAudioStream_dataCallbackResult_t data_callback(
+aaudio_data_callback_result_t data_callback(
         AAudioStream* stream,
         void*,
         void* audio_data,
