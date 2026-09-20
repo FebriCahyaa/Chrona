@@ -18,6 +18,13 @@ Chrona's AndroidX, Jetpack Compose, Material 3, Navigation, Retrofit, desugaring
 | Google Play services Location | Apache-2.0 | developers.google.com |
 | AndroidX Location Button Compose | Apache-2.0 | developer.android.com |
 | JUnit 4 | EPL-1.0 | junit.org |
+| Hilt / AndroidX Hilt | Apache-2.0 | dagger.dev / developer.android.com |
+| Room | Apache-2.0 | developer.android.com |
+| AndroidX Metrics | Apache-2.0 | developer.android.com |
+| Lottie Android | Apache-2.0 | github.com/airbnb/lottie-android |
+| MockK | Apache-2.0 | github.com/mockk/mockk |
+| AndroidX Test / Espresso | Apache-2.0 | developer.android.com |
+| Firebase Crashlytics / NDK | Apache-2.0 | firebase.google.com |
 
 ## Pinned transitive artifacts
 

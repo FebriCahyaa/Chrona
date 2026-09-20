@@ -9,17 +9,23 @@ import com.febricahyaa.clockapp.alarm.AlarmSchedulerGateway
 import com.febricahyaa.clockapp.alarm.AlarmStateManager
 import com.febricahyaa.clockapp.data.AlarmRepository
 import com.febricahyaa.clockapp.model.AlarmItem
+import java.time.DayOfWeek
+import java.time.LocalTime
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.time.DayOfWeek
-import java.time.LocalTime
 
 class AlarmStateManagerTest {
     @Test
-    fun oneShotAlarmIsDisabledAfterTrigger() {
-        val repo = FakeAlarmRepository(listOf(AlarmItem(1L, LocalTime.of(8, 0), label = "", enabled = true, repeatDays = emptySet())))
+    fun oneShotAlarmIsDisabledAfterTrigger() = runBlocking {
+        val repo = FakeAlarmRepository(
+            listOf(AlarmItem(1L, LocalTime.of(8, 0), label = "", enabled = true, repeatDays = emptySet())),
+        )
         val scheduler = FakeAlarmScheduler()
+
         AlarmStateManager(repo, scheduler).onAlarmTriggered(1L)
 
         assertFalse(repo.alarms.single().enabled)
@@ -27,7 +33,7 @@ class AlarmStateManagerTest {
     }
 
     @Test
-    fun repeatingAlarmIsScheduledAgain() {
+    fun repeatingAlarmIsScheduledAgain() = runBlocking {
         val alarm = AlarmItem(
             id = 2L,
             time = LocalTime.of(8, 0),
@@ -37,6 +43,7 @@ class AlarmStateManagerTest {
         )
         val repo = FakeAlarmRepository(listOf(alarm))
         val scheduler = FakeAlarmScheduler()
+
         AlarmStateManager(repo, scheduler).onAlarmTriggered(2L)
 
         assertTrue(scheduler.scheduled.contains(alarm))
@@ -44,8 +51,10 @@ class AlarmStateManagerTest {
 
     private class FakeAlarmRepository(initial: List<AlarmItem>) : AlarmRepository {
         var alarms: List<AlarmItem> = initial
-        override fun load(): List<AlarmItem> = alarms
-        override fun save(alarms: List<AlarmItem>) { this.alarms = alarms }
+        override val alarms: Flow<List<AlarmItem>> get() = MutableStateFlow(this.alarms)
+        override suspend fun load(): List<AlarmItem> = alarms
+        override suspend fun save(alarms: List<AlarmItem>) { this.alarms = alarms }
+        override suspend fun recordHistory(alarmId: Long, eventType: String, triggeredAtEpochMillis: Long) = Unit
     }
 
     private class FakeAlarmScheduler : AlarmSchedulerGateway {

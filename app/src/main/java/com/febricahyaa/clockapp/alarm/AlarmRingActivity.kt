@@ -43,19 +43,19 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.febricahyaa.clockapp.ClockApplication
 import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.core.config.AppDefaults
-import com.febricahyaa.clockapp.di.AppContainer
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 /**
  * Full-screen "alarm is ringing" UI, launched over the lock screen by the
  * alarm notification's full-screen intent.
  */
+@AndroidEntryPoint
 class AlarmRingActivity : ComponentActivity() {
-
-    private val container: AppContainer
-        get() = (application as ClockApplication).container
+    @Inject lateinit var alarmSoundPlayer: AlarmSoundGateway
+    @Inject lateinit var alarmScheduler: AlarmSchedulerGateway
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,10 +74,10 @@ class AlarmRingActivity : ComponentActivity() {
                     label = label,
                     onDismiss = { finishAlarm(alarmId) },
                     onSnooze = {
-                        container.alarmSoundPlayer.stop()
+                        alarmSoundPlayer.stop()
                         stopService(Intent(this, AlarmService::class.java))
                         AlarmReceiver.cancelNotification(this, alarmId)
-                        container.alarmScheduler.scheduleSnooze(alarmId, label, AppDefaults.SNOOZE_MINUTES)
+                        alarmScheduler.scheduleSnooze(alarmId, label, AppDefaults.SNOOZE_MINUTES)
                         finish()
                     }
                 )
@@ -86,7 +86,7 @@ class AlarmRingActivity : ComponentActivity() {
     }
 
     private fun finishAlarm(alarmId: Long) {
-        container.alarmSoundPlayer.stop()
+        alarmSoundPlayer.stop()
         stopService(Intent(this, AlarmService::class.java))
         AlarmReceiver.cancelNotification(this, alarmId)
         finish()

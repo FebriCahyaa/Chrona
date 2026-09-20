@@ -8,11 +8,19 @@ package com.febricahyaa.clockapp.alarm
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.febricahyaa.clockapp.ClockApplication
 import com.febricahyaa.clockapp.core.config.AppDefaults
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
-/** Handles taps on the Dismiss/Snooze actions from the alarm notification. */
+@AndroidEntryPoint
 class AlarmActionReceiver : BroadcastReceiver() {
+    @Inject lateinit var stateManager: AlarmStateManager
+    @Inject lateinit var alarmSoundPlayer: AlarmSoundGateway
+    @Inject lateinit var alarmScheduler: AlarmSchedulerGateway
 
     companion object {
         const val ACTION_DISMISS = "com.febricahyaa.clockapp.action.ALARM_DISMISS"
@@ -20,21 +28,23 @@ class AlarmActionReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
+        val pendingResult = goAsync()
         val appContext = context.applicationContext
-        val app = appContext as ClockApplication
         val alarmId = intent.getLongExtra(AlarmIntentKeys.EXTRA_ALARM_ID, -1L)
+        val label = intent.getStringExtra(AlarmIntentKeys.EXTRA_ALARM_LABEL).orEmpty()
 
-        // Commit the trigger transition even if the foreground service is
-        // dismissed before it reaches AlarmStateManager. This keeps one-shot
-        // alarms disabled and repeating alarms reconciled across process death.
-        app.container.alarmStateManager.onAlarmTriggered(alarmId)
-        app.container.alarmSoundPlayer.stop()
-        appContext.stopService(Intent(appContext, AlarmService::class.java))
-        AlarmReceiver.cancelNotification(appContext, alarmId)
-
-        if (intent.action == ACTION_SNOOZE) {
-            val label = intent.getStringExtra(AlarmIntentKeys.EXTRA_ALARM_LABEL).orEmpty()
-            app.container.alarmScheduler.scheduleSnooze(alarmId, label, AppDefaults.SNOOZE_MINUTES)
+        CoroutineScope(SupervisorJob() + Dispatchers.Default).launch {
+            try {
+                stateManager.onAlarmTriggered(alarmId)
+                alarmSoundPlayer.stop()
+                appContext.stopService(Intent(appContext, AlarmService::class.java))
+                AlarmReceiver.cancelNotification(appContext, alarmId)
+                if (intent.action == ACTION_SNOOZE) {
+                    alarmScheduler.scheduleSnooze(alarmId, label, AppDefaults.SNOOZE_MINUTES)
+                }
+            } finally {
+                pendingResult.finish()
+            }
         }
     }
 }

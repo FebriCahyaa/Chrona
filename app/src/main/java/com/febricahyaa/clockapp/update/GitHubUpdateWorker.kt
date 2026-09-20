@@ -6,24 +6,28 @@
 package com.febricahyaa.clockapp.update
 
 import android.content.Context
+import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
+import com.febricahyaa.clockapp.data.onboarding.OnboardingRepository
+import com.febricahyaa.clockapp.data.update.AppUpdateRepository
 import kotlinx.coroutines.flow.first
-import com.febricahyaa.clockapp.ClockApplication
 
-class GitHubUpdateWorker(
-    appContext: Context,
-    workerParams: WorkerParameters,
+@HiltWorker
+class GitHubUpdateWorker @AssistedInject constructor(
+    @Assisted appContext: Context,
+    @Assisted workerParams: WorkerParameters,
+    private val onboardingRepository: OnboardingRepository,
+    private val updateRepository: AppUpdateRepository,
 ) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
-        val application = applicationContext as? ClockApplication ?: return Result.failure()
-        val onboarding = application.container.onboardingRepository.preferences.first()
+        val onboarding = onboardingRepository.preferences.first()
         if (!onboarding.completed) return Result.success()
 
-        return runCatching {
-            application.container.updateRepository.checkLatest()
-        }.fold(
+        return runCatching { updateRepository.checkLatest() }.fold(
             onSuccess = { Result.success() },
             onFailure = { error ->
                 if (AppUpdateRetryPolicy.shouldRetry(error)) Result.retry() else Result.failure()

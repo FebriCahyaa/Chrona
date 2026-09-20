@@ -6,9 +6,11 @@
 package com.febricahyaa.clockapp.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import androidx.lifecycle.viewModelScope
-import com.febricahyaa.clockapp.data.location.CurrentLocationRepository
 import com.febricahyaa.clockapp.data.location.CurrentLocation
+import com.febricahyaa.clockapp.data.location.CurrentLocationRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,9 +21,11 @@ data class CurrentLocationUiState(
     val location: CurrentLocation? = null,
     val isLoading: Boolean = false,
     val hasError: Boolean = false,
+    val requestId: Long = 0L,
 )
 
-class CurrentLocationViewModel(
+@HiltViewModel
+class CurrentLocationViewModel @Inject constructor(
     private val repository: CurrentLocationRepository,
 ) : ViewModel() {
 
@@ -31,22 +35,22 @@ class CurrentLocationViewModel(
     fun refresh() {
         if (_state.value.isLoading) return
 
+        val requestId = _state.value.requestId + 1L
         _state.update {
             it.copy(
                 isLoading = true,
                 hasError = false,
+                requestId = requestId,
             )
         }
 
         viewModelScope.launch {
-            val location = runCatching {
-                repository.getCurrentLocation()
-            }.getOrNull()
-
+            val location = runCatching { repository.getCurrentLocation() }.getOrNull()
             _state.value = CurrentLocationUiState(
                 location = location,
                 isLoading = false,
                 hasError = location == null,
+                requestId = requestId,
             )
         }
     }

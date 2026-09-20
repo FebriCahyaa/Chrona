@@ -6,11 +6,13 @@
 package com.febricahyaa.clockapp.data
 
 import com.febricahyaa.clockapp.model.WorldClockItem
+import kotlinx.coroutines.flow.Flow
 
-/** Persists the user's saved World Clock locations and favorite zone IDs. */
 interface WorldClockRepository {
-    fun load(): List<WorldClockItem>
-    fun save(items: List<WorldClockItem>)
-    fun loadFavorites(): Set<String>
-    fun saveFavorites(zoneIds: Set<String>)
+    val items: Flow<List<WorldClockItem>>
+    val favorites: Flow<Set<String>>
+    suspend fun load(): List<WorldClockItem>
+    suspend fun save(items: List<WorldClockItem>)
+    suspend fun loadFavorites(): Set<String>
+    suspend fun saveFavorites(zoneIds: Set<String>)
 }

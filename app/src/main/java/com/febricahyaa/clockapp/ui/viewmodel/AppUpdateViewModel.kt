@@ -6,6 +6,8 @@
 package com.febricahyaa.clockapp.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import androidx.annotation.StringRes
 import androidx.lifecycle.viewModelScope
 import com.febricahyaa.clockapp.BuildConfig
@@ -20,7 +22,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-class AppUpdateViewModel(private val repository: AppUpdateRepository) : ViewModel() {
+@HiltViewModel
+class AppUpdateViewModel @Inject constructor(private val repository: AppUpdateRepository) : ViewModel() {
     private val _state = MutableStateFlow(UpdateUiState())
     val state: StateFlow<UpdateUiState> = _state.asStateFlow()
 

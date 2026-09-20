@@ -7,6 +7,7 @@ package com.febricahyaa.clockapp.data.location
 
 import android.Manifest
 import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import android.content.pm.PackageManager
 import android.location.Location
 import androidx.core.content.ContextCompat
@@ -21,6 +22,7 @@ import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
+import javax.inject.Inject
 
 /**
  * Google Play services fused location provider.
@@ -30,8 +32,8 @@ import kotlin.coroutines.resume
  * fall back to the platform provider without losing the Current Location
  * feature.
  */
-class AndroidFusedLocationProvider(
-    context: Context,
+class AndroidFusedLocationProvider @Inject constructor(
+    @ApplicationContext context: Context,
 ) : CurrentLocationProvider {
 
     private val appContext = context.applicationContext

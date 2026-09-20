@@ -15,7 +15,7 @@ The Indonesian translation uses `values-id`, matching Android resource locale co
 
 ## Automation
 
-The GitHub Action at `.github/workflows/localization.yml` uploads the English source, downloads approved translations, and creates a pull request for localized resource changes. Crowdin's current GitHub Action v3 uses Crowdin CLI 5 and supports this upload/download/PR workflow.
+The `sync-source.yml` workflow uploads the English source, downloads approved translations, and creates a pull request for localized resource changes. Crowdin's current GitHub Action v3 uses Crowdin CLI 5 and supports this upload/download/PR workflow.
 
 Required repository secrets:
 

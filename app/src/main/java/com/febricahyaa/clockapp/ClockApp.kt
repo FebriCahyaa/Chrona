@@ -28,10 +28,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavBackStackEntry
-import com.febricahyaa.clockapp.di.AppContainer
-import com.febricahyaa.clockapp.di.AppViewModelFactory
 import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.model.WorldClockItem
 import com.febricahyaa.clockapp.navigation.AppDestination
@@ -63,22 +61,21 @@ import com.febricahyaa.clockapp.ui.viewmodel.TimerViewModel
 import com.febricahyaa.clockapp.ui.viewmodel.WorldClockViewModel
 
 @Composable
-fun ClockApp() {
+fun ClockApp(
+    initialDestination: AppDestination? = null,
+    initialAlarmId: Long? = null,
+) {
     val context = LocalContext.current
-    val container = remember(context) {
-        (context.applicationContext as ClockApplication).container
-    }
-    val viewModelFactory = remember(container) { AppViewModelFactory(container) }
-
-    val settingsViewModel: SettingsViewModel = viewModel(factory = viewModelFactory)
-    val onboardingViewModel: OnboardingViewModel = viewModel(factory = viewModelFactory)
-    val updateViewModel: AppUpdateViewModel = viewModel(factory = viewModelFactory)
-    val alarmViewModel: AlarmViewModel = viewModel(factory = viewModelFactory)
-    val worldClockViewModel: WorldClockViewModel = viewModel(factory = viewModelFactory)
-    val currentLocationViewModel: CurrentLocationViewModel =
-        viewModel(factory = viewModelFactory)
-    val timerViewModel: TimerViewModel = viewModel(factory = viewModelFactory)
-    val stopwatchViewModel: StopwatchViewModel = viewModel(factory = viewModelFactory)
+    val runtimeViewModel: com.febricahyaa.clockapp.ui.viewmodel.ChronaRuntimeViewModel = hiltViewModel()
+    val timeEngine = runtimeViewModel.timeEngine
+    val settingsViewModel: SettingsViewModel = hiltViewModel()
+    val onboardingViewModel: OnboardingViewModel = hiltViewModel()
+    val updateViewModel: AppUpdateViewModel = hiltViewModel()
+    val alarmViewModel: AlarmViewModel = hiltViewModel()
+    val worldClockViewModel: WorldClockViewModel = hiltViewModel()
+    val currentLocationViewModel: CurrentLocationViewModel = hiltViewModel()
+    val timerViewModel: TimerViewModel = hiltViewModel()
+    val stopwatchViewModel: StopwatchViewModel = hiltViewModel()
 
     val settingsState by settingsViewModel.state.collectAsStateWithLifecycle()
     val onboardingState by onboardingViewModel.state.collectAsStateWithLifecycle()
@@ -88,7 +85,7 @@ fun ClockApp() {
     val timerState by timerViewModel.state.collectAsStateWithLifecycle()
     val stopwatchState by stopwatchViewModel.state.collectAsStateWithLifecycle()
 
-    ChronaRuntimeLifecycleEffect(container.timeEngine)
+    ChronaRuntimeLifecycleEffect(timeEngine)
 
     // Ongoing notifications are event-driven. Android's Chronometer updates
     // the visible time itself, so these effects only react to start/stop
@@ -103,10 +100,10 @@ fun ClockApp() {
 
     LaunchedEffect(timerState.isRunning) {
         if (timerState.isRunning) {
-            val remainingMillis = container.timeEngine.state.value.timer.remainingMillis
+            val remainingMillis = timeEngine.state.value.timer.remainingMillis
             TimerRunningNotification.show(
                 context,
-                container.timeEngine.currentEpochMillis() + remainingMillis.coerceAtLeast(0L),
+                timeEngine.currentEpochMillis() + remainingMillis.coerceAtLeast(0L),
             )
         } else {
             TimerRunningNotification.cancel(context)
@@ -155,7 +152,7 @@ fun ClockApp() {
 
     ChronaTheme(settingsState.settings) {
         CompositionLocalProvider(
-            LocalChronaTimeEngine provides container.timeEngine,
+            LocalChronaTimeEngine provides timeEngine,
         ) {
             when {
             !onboardingState.isLoaded -> {
@@ -178,12 +175,24 @@ fun ClockApp() {
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background),
             ) {
-                ChronaRootNavigation { destination, navigation, backStackEntry ->
+                ChronaRootNavigation(
+                    startDestination = initialDestination?.let { destination ->
+                        when (destination) {
+                            AppDestination.CLOCK -> com.febricahyaa.clockapp.navigation.ChronaRoutes.CLOCK
+                            AppDestination.ALARM -> com.febricahyaa.clockapp.navigation.ChronaRoutes.ALARM
+                            AppDestination.WORLD -> com.febricahyaa.clockapp.navigation.ChronaRoutes.WORLD
+                            AppDestination.TIMER -> com.febricahyaa.clockapp.navigation.ChronaRoutes.TIMER
+                            AppDestination.STOPWATCH -> com.febricahyaa.clockapp.navigation.ChronaRoutes.STOPWATCH
+                            AppDestination.SETTINGS -> com.febricahyaa.clockapp.navigation.ChronaRoutes.SETTINGS
+                            else -> com.febricahyaa.clockapp.navigation.ChronaRoutes.CLOCK
+                        }
+                    } ?: com.febricahyaa.clockapp.navigation.ChronaRoutes.CLOCK,
+                ) { destination, navigation, backStackEntry ->
                     ChronaDestinationContent(
                         destination = destination,
                         navigation = navigation,
                         context = context,
-                        container = container,
+                        initialAlarmId = initialAlarmId,
                         settingsViewModel = settingsViewModel,
                         settingsState = settingsState,
                         updateViewModel = updateViewModel,
@@ -230,7 +239,7 @@ private fun ChronaDestinationContent(
     destination: AppDestination,
     navigation: ChronaNavigationActions,
     context: android.content.Context,
-    container: AppContainer,
+    initialAlarmId: Long?,
     settingsViewModel: SettingsViewModel,
     settingsState: com.febricahyaa.clockapp.ui.viewmodel.SettingsUiState,
     updateViewModel: AppUpdateViewModel,
@@ -280,6 +289,7 @@ private fun ChronaDestinationContent(
                     favorites = worldClockState.favorites,
                     use24HourFormat = settingsState.use24HourFormat,
                     showSeconds = settingsState.settings.showSeconds,
+                    secondsDisplayMode = settingsState.settings.secondsDisplayMode,
                     clockDisplayMode = settingsState.settings.clockDisplayMode,
                     onClockDisplayModeChange = settingsViewModel::updateClockDisplayMode,
                     onFormatChange = settingsViewModel::updateUse24HourFormat,
@@ -351,7 +361,7 @@ private fun ChronaDestinationContent(
                 running = timerState.isRunning,
                 glass = glassSurfaces,
                 onToggle = {
-                    if (!timerState.isRunning && !container.alarmScheduler.canScheduleExactAlarms()) {
+                    if (!timerState.isRunning && !alarmViewModel.canScheduleExactAlarms()) {
                         requestExactAlarmAccess(context)
                     } else {
                         timerViewModel.toggle()
@@ -384,13 +394,13 @@ private fun ChronaDestinationContent(
                 onBack = { navigation.back() },
                 onAdd = { alarm ->
                     alarmViewModel.add(alarm)
-                    if (!container.alarmScheduler.canScheduleExactAlarms()) {
+                    if (!alarmViewModel.canScheduleExactAlarms()) {
                         requestExactAlarmAccess(context)
                     }
                 },
                 onToggle = { alarm, enabled ->
                     alarmViewModel.setEnabled(alarm, enabled)
-                    if (enabled && !container.alarmScheduler.canScheduleExactAlarms()) {
+                    if (enabled && !alarmViewModel.canScheduleExactAlarms()) {
                         requestExactAlarmAccess(context)
                     }
                 },
@@ -409,6 +419,7 @@ private fun ChronaDestinationContent(
                 onAccentChange = settingsViewModel::updateAccent,
                 onFormatChange = settingsViewModel::updateUse24HourFormat,
                 onShowSecondsChange = settingsViewModel::updateShowSeconds,
+                onSecondsDisplayModeChange = settingsViewModel::updateSecondsDisplayMode,
                 onClockDisplayModeChange = settingsViewModel::updateClockDisplayMode,
                 notificationPermissionGranted = Build.VERSION.SDK_INT < 33 ||
                     ContextCompat.checkSelfPermission(

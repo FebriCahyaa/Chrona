@@ -9,29 +9,52 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.content.ContextCompat
-import com.febricahyaa.clockapp.ClockApplication
 import com.febricahyaa.clockapp.core.AlarmTriggerPolicy
+import com.febricahyaa.clockapp.data.AlarmRepository
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
-/** Exact-alarm entry point. Long-running work is delegated to AlarmService. */
+/** Exact-alarm entry point. All persistence is asynchronous and process-safe. */
+@AndroidEntryPoint
 class AlarmReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent) {
-        val app = context.applicationContext as ClockApplication
-        val alarmId = intent.getLongExtra(AlarmIntentKeys.EXTRA_ALARM_ID, -1L)
-        if (alarmId < 0L) return
+    @Inject lateinit var repository: AlarmRepository
+    @Inject lateinit var scheduler: AlarmSchedulerGateway
 
-        val isSnooze = intent.getBooleanExtra(AlarmIntentKeys.EXTRA_ALARM_IS_SNOOZE, false)
-        val alarm = app.container.alarmRepository.load().firstOrNull { it.id == alarmId }
-        if (!AlarmTriggerPolicy.shouldRing(alarm, isSnooze)) {
-            app.container.alarmScheduler.cancel(alarmId)
+    override fun onReceive(context: Context, intent: Intent) {
+        val pendingResult = goAsync()
+        val alarmId = intent.getLongExtra(AlarmIntentKeys.EXTRA_ALARM_ID, -1L)
+        if (alarmId < 0L) {
+            pendingResult.finish()
             return
         }
 
-        val serviceIntent = Intent(context, AlarmService::class.java).apply {
-            putExtra(AlarmIntentKeys.EXTRA_ALARM_ID, alarmId)
-            putExtra(AlarmIntentKeys.EXTRA_ALARM_LABEL, intent.getStringExtra(AlarmIntentKeys.EXTRA_ALARM_LABEL).orEmpty())
-            putExtra(AlarmIntentKeys.EXTRA_ALARM_IS_SNOOZE, isSnooze)
+        val appContext = context.applicationContext
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            try {
+                val isSnooze = intent.getBooleanExtra(AlarmIntentKeys.EXTRA_ALARM_IS_SNOOZE, false)
+                val alarm = repository.load().firstOrNull { it.id == alarmId }
+                if (!AlarmTriggerPolicy.shouldRing(alarm, isSnooze)) {
+                    scheduler.cancel(alarmId)
+                    return@launch
+                }
+
+                val serviceIntent = Intent(appContext, AlarmService::class.java).apply {
+                    putExtra(AlarmIntentKeys.EXTRA_ALARM_ID, alarmId)
+                    putExtra(
+                        AlarmIntentKeys.EXTRA_ALARM_LABEL,
+                        intent.getStringExtra(AlarmIntentKeys.EXTRA_ALARM_LABEL).orEmpty(),
+                    )
+                    putExtra(AlarmIntentKeys.EXTRA_ALARM_IS_SNOOZE, isSnooze)
+                }
+                ContextCompat.startForegroundService(appContext, serviceIntent)
+            } finally {
+                pendingResult.finish()
+            }
         }
-        ContextCompat.startForegroundService(context, serviceIntent)
     }
 
     companion object {

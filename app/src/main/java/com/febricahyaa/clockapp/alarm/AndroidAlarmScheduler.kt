@@ -8,7 +8,9 @@ package com.febricahyaa.clockapp.alarm
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import android.content.Intent
+import javax.inject.Inject
 import android.os.Build
 import android.util.Log
 import com.febricahyaa.clockapp.MainActivity
@@ -16,7 +18,7 @@ import com.febricahyaa.clockapp.core.config.AppDefaults
 import com.febricahyaa.clockapp.model.AlarmItem
 
 /** Android AlarmManager implementation for user-facing alarm-clock events. */
-class AndroidAlarmScheduler(context: Context) : AlarmSchedulerGateway {
+class AndroidAlarmScheduler @Inject constructor(@ApplicationContext context: Context) : AlarmSchedulerGateway {
     private val appContext = context.applicationContext
     private val alarmManager: AlarmManager
         get() = appContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager

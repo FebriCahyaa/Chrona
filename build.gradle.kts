@@ -6,12 +6,13 @@
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.compose) apply false
+    alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.hilt) apply false
+    alias(libs.plugins.google.services) apply false
+    alias(libs.plugins.crashlytics) apply false
 }
 
 // CHRONA-SECURITY-RESOLUTION
-// Centralized constraints keep patched transitive versions consistent across
-// all configurations while leaving the direct dependency declarations in the
-// app module version-catalog managed.
 allprojects {
     configurations.configureEach {
         resolutionStrategy.eachDependency {

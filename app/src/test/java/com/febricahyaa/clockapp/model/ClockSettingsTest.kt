@@ -19,4 +19,13 @@ class ClockSettingsTest {
         assertEquals("DIGITAL", ClockDisplayMode.DIGITAL.name)
         assertEquals("ANALOG", ClockDisplayMode.ANALOG.name)
     }
+
+    @Test
+    fun secondsDisplayModesHaveStablePersistedNames() {
+        assertEquals("STACKED", SecondsDisplayMode.STACKED.name)
+        assertEquals("INLINE", SecondsDisplayMode.INLINE.name)
+        assertEquals("FADING_SCROLL", SecondsDisplayMode.FADING_SCROLL.name)
+        assertEquals("MINIMAL", SecondsDisplayMode.MINIMAL.name)
+        assertEquals("CIRCULAR", SecondsDisplayMode.CIRCULAR.name)
+    }
 }

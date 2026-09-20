@@ -1,216 +1,101 @@
-## 2026-09-19 — Phase 2 background activity notifications
-
-- Added an ongoing Stopwatch notification with Pause and Lap actions while timing.
-- Added an ongoing Timer countdown notification with Pause and Reset actions while the timer is running.
-- Reused Android system chronometer rendering instead of an app-side high-frequency notification update loop.
-- Added a low-importance active-timer notification channel while preserving the existing timer completion channel.
-- Kept Timer/Stopwatch persistence and ChronaTimeEngine ownership unchanged.
-
-
-## 2026-09-19 — Phase 2 clock display foundation
-
-- Added persistent Digital/Analog clock display selection with Digital as the default.
-- Added Material 3 segmented clock-style selection to Settings.
-- Refined the dashboard analog clock with a layered Material 3 dial and smoother hand proportions.
-- Added frame-sampled foreground clock rendering for smooth second-hand motion without changing the durable time engine.
-- Preserved existing timing, persistence, navigation, localization, and feature behavior.
-
-<!-- Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved. -->
-# Changelog
-
-## Unreleased — World Clock UI/UX
-
-- Reworked the World Clock destination into a mobile-first 2×2 city-card dashboard with Material 3 cards, layered elevation, day/night surfaces, and live local-time presentation.
-- Added a compact local-time summary, retained region filters, preserved saved-city interactions, and placed the existing interactive world map inside a dedicated elevated map surface.
-- Removed one-off World Clock/phase patch scripts and historical phase archives so the repository contains only durable project tooling and current documentation.
-
-## Unreleased — Phase 1 — Material 3 + Glass UI foundation
-
-- Replaced the custom dual collapse implementation in `ChronaScaffold` with Material 3 `LargeFlexibleTopAppBar`, giving title, subtitle, back navigation and actions one scroll/collapse state.
-- Activated the persisted `GLASS` theme mode in the design system with a Material 3-compatible translucent color scheme.
-- Updated glass cards to use the GLASS rendering mode with restrained translucent surfaces, borders and highlight sheen.
-- Added shared `ChronaGlassTokens` for Phase 1 surface geometry and opacity values.
-- Deferred AGSL refraction and dynamic blur to a later rendering phase.
-
-## Unreleased — CI pipeline restructure and app icon refresh
-
-- Restructured `ci.yml` into a staged pipeline: `analyze` → `verify` (matrix: unit tests, lint) → `debug-build` → `ci-status` aggregate gate. Existing job names (`AES / Analyze`, `AES / Unit tests`, `AES / Lint`, `AES / Debug APK`) are preserved.
-- Ordered `security.yml` so the cheap license audit gates the CodeQL build, and added a `security-status` aggregate gate that tolerates event-dependent skipped jobs.
-- Split `release.yml` into `tag` → `build` → `attest` → `publish` jobs with per-job least-privilege permissions; signing secrets are confined to the build job and artifacts are handed over via `upload-artifact`/`download-artifact`.
-- Removed the Device QA emulator workflow (`device-qa.yml`), `scripts/ci/device-smoke.sh`, the `install-emulator` option and the emulator-only `platforms;android-37.0` package from the shared toolchain action, and Device QA references from Telegram notifications, README and docs. Local instrumentation via `scripts/dev/verify.sh full` is unchanged.
-- Anchored the `release/` ignore rule to the repository root so `scripts/release/` is no longer ignored by Git.
-- Refreshed the app icon (indigo → violet gradient dial with 10:10 hands, coral second hand, Themed Icons monochrome layer) as `ic_chrona_*` resources, with a single `mipmap-anydpi-v26` definition and regenerated legacy PNG fallbacks.
-- Added `ic_stat_chrona` as a dedicated 24dp alpha-only notification small icon for alarm and timer notifications.
-
-## Unreleased — Repository Engineering Hardening
-
-- Reorganized active scripts into audit, CI, development, localization, release, Telegram, and World Clock diagnostic domains.
-- Removed proven-dead UI/source classes and superseded CI verifier scripts; preserved historical phase records under `docs/archive/`.
-- Added repository-wide copyright, dependency-license, resource, localization, and dynamic-timezone audit gates.
-- Added the Chrona Android composite toolchain setup for JDK 25 Gradle runtime, JDK 17 compilation toolchain, pinned Android SDK packages, and optional native/emulator components.
-- Added separate Telegram notification bots for CI, ordinary pull requests, Dependabot, and releases with non-overlapping templates.
-- Added Crowdin localization synchronization and a documented expansion policy for additional languages/locales.
-- Kept World Clock data dynamic from Android ICU/IANA runtime data instead of vendoring a frozen timezone database.
-- Rebuilt GitHub Actions around least-privilege permissions, scheduled maintenance, security scanning, device QA, release provenance, and deterministic artifacts.
-- Added a single local `scripts/dev/verify.sh` entrypoint for repeatable repository verification.
-
-### Verification — current source audit
-
-- Repository source/resource/license/timezone/localization audits pass in the offline analysis environment.
-- GitHub Actions YAML parses successfully.
-- Telegram renderer tests pass.
-- Full Gradle execution remains dependent on downloading Gradle 9.7.1 from the configured distribution service on a networked runner.
-
-## Unreleased — Phase 5A — Unified Time Engine Hardening
-
-- Added an injectable wall-clock source and application-scoped shared wall-clock StateFlow.
-- Exposed monotonic and wall-clock reads through the shared ChronaTimeEngine.
-- Replaced independent foreground clock polling loops with the shared engine flow.
-- Changed active engine refresh cadence to 50ms for stopwatch and 100ms for timer; wall-clock UI projection refreshes at 250ms.
-- Removed one-second fixed-delay timing loops from foreground engine/UI paths.
-- Migrated Timer and Stopwatch ViewModels to the shared engine clock APIs.
-- Added focused ChronaTimeEngine smoke/unit coverage for monotonic elapsed and timer boundary behavior.
-
-## 0.5.0 — 2026-09-18
-
-### 🏗️ Foundation
-- Release built from the verified repository source.
-
-### ⚙️ Build System
-- Release APK assembled by GitHub Actions.
-- Release checks completed before publication.
-
-### 🔐 Security
-- APK signature verified with apksigner.
-- SHA-256 checksum generated for the APK artifact.
-
-### 📦 Build Metadata
-- Commit: `6f43c9be2fc012dbd82d90324c74560f6f0806ab`
-- versionCode: `34`
-- SHA-256: `4f11bd56156730c320ab56a819fcbf918422c46581a7b44d53ec483678c7a613`
-
-### ⚠️ Known Issues
-- Only issues confirmed by CI or documented source audit belong here.
-## 0.6.0 — Production Hardening / UX Integration
-
-- Harden onboarding persistence with a dedicated notification-permission prompt marker and idempotent completion handling.
-- Add onboarding system-back handling and a real Skip action.
-- Prevent the background GitHub updater from performing release checks before onboarding has completed.
-- Serialize GitHub release requests so foreground and WorkManager checks cannot overlap on the shared repository instance.
-- Validate GitHub release tags before accepting release metadata.
-- Distinguish transient GitHub failures (HTTP 429/5xx and network I/O) from terminal HTTP failures such as 403/404 for WorkManager retry behavior.
-- Surface actionable updater errors in Settings instead of a generic failure string.
-- Refactor Settings into focused appearance, clock, notification, update, and about sections while preserving the existing public Settings API.
-- Add notification permission status and a direct route to Android notification settings.
-- Bump the application to version `0.6.0` (`versionCode` 33).
-
-## 0.10.1 — Edge-to-Edge / CI Resolution Reliability
-
-- Fix `scripts/ci/verify-android17.sh` to validate `ChronaBentoHomeScreen.kt` after the Dashboard rename.
-- Accept the implemented `CircularProgressIndicator` as a valid timer progress surface; the verifier previously rejected the real implementation because it only looked for the wavy indicator or `drawArc`.
-- Verify Dashboard edge-to-edge and collapsing-toolbar APIs explicitly (`enableEdgeToEdge`, `Scaffold`, `LargeTopAppBar`, `exitUntilCollapsedScrollBehavior`, and the nested-scroll connection).
-- Remove the redundant legacy Kotlin `buildscript` classpath declaration so the Kotlin Gradle plugin is resolved only through the plugins DSL.
-- Prefer Gradle 9.7.0, which is within the fully supported Gradle range documented for Kotlin 2.4.20, while remaining above AGP 9.4.0's minimum Gradle requirement.
-- Add a transient Gradle dependency-resolution retry helper for Maven HTTP 429/5xx and common network failures.
-- Limit Debug Matrix concurrency to two Gradle jobs at a time to reduce synchronized Maven Central requests.
-- Keep application behavior unchanged; this release fixes verification/build infrastructure rather than timer/dashboard product behavior.
-
 <!--
 Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
 -->
 
 # Changelog
 
-Chrona release notes are evidence-based. Completed entries describe changes that exist in the repository source; build and release claims are added only after the corresponding CI gates succeed.
+Chrona release notes describe changes that exist in the repository. Build,
+test, lint, release and performance claims are recorded only when the
+corresponding validation actually runs.
 
-## Toolchain maintenance — 2026-09-18
+## Unreleased — Enterprise runtime foundation
 
+- Added Hilt dependency injection across application ViewModels, repositories and Android entry points.
+- Added Room for structured alarms/world-clock/history data and DataStore-backed durable settings/timer/stopwatch/update state.
+- Added one-time legacy storage migration and an offline-first repository boundary.
+- Added Hilt-enabled WorkManager maintenance workers for deferrable update/timezone health work.
+- Added internal Binder/AIDL service boundary, Android Keystore secret storage, R8/ProGuard release rules and flavor-specific telemetry adapters.
+- Added `oss`/`play` product flavors, MockK/JUnit unit coverage, Hilt instrumentation coverage, and Compose/Espresso smoke coverage.
+- Added verified App Link/deep-link contract, optional Lottie adapter, and framework XML metadata for shortcuts/backup/network policy.
+- Added timer full-screen completion activity, SystemUI countdown chronometer, exact completion scheduling, audio focus and haptic alerting; stopwatch foreground-service support remains separate from exact alarm scheduling.
+- Preserved the existing native C++20/JNI/AAudio boundary without moving Android lifecycle responsibilities into C++.
+
+## Unreleased — Deep source rebuild
+
+### Build / Toolchain
+- Migrated Hilt and Room annotation processing from KAPT to KSP.
+- Upgraded Dagger/Hilt to 2.60.1 for stable KSP support.
+- Added AndroidX Hilt compiler 1.4.0 for Hilt WorkManager code generation.
+- Pinned KSP at 2.3.11 while retaining Kotlin 2.4.10.
+
+### Architecture
+- Consolidated the application around Kotlin, Coroutines/Flow, feature ViewModels, repository interfaces, Android platform gateways and a dedicated Java/JNI native boundary.
+- Moved native bridge/facade sources into `app/src/main/java/com/febricahyaa/clockapp/nativelayer/`.
+- Preserved the shared Chrona time engine and the existing alarm, timer, stopwatch, update and widget feature boundaries.
+
+### World Clock
+- Rebuilt the World Clock as a single Material 3 scrolling dashboard.
+- Kept the first four favorites in a 2×2 grid and rendered remaining saved cities as full-width cards.
+- Kept Current Location foreground-only and driven by Fused Location → LocationManager → recent last-known location → reverse geocoding.
+- Changed location failures into transient Material 3 snackbar notifications instead of persistent dashboard placeholders.
+- Rebuilt the fixed offline world map around device latitude/longitude without drag, pan or pinch gestures.
+- Preserved the runtime Android ICU/IANA timezone catalog as the authority for timezone IDs and civil-time rules.
+
+### Seconds display
+- Added a persisted `SecondsDisplayMode` setting.
+- Added `STACKED`, `INLINE`, `FADING_SCROLL`, `MINIMAL` and Material 3 `CIRCULAR` presentations.
+- Added focused unit coverage for second progress and minute-cycle behavior.
+
+### Android platform integration
+- Retained `AlarmManager.setAlarmClock()` for exact alarm scheduling and the existing foreground-service/receiver recovery paths.
+- Added/standardized `res/xml/` metadata for widget configuration, launcher shortcuts, network security and backup/data extraction rules.
+- Kept Android `Vibrator`/`VibrationEffect` as the system haptic boundary and added an AAudio C++ fallback tone only when no usable alarm ringtone is available.
+
+### Material 3
+- Standardized feature UI on Material 3 components and tokens.
+- Added a source audit that rejects Material 2 UI imports while allowing the standard Compose Material icon artifact.
+
+### CI/CD
+- Reduced GitHub Actions to exactly five workflow files:
+  `update-commit.yml`, `debug-build.yml`, `release-build.yml`,
+  `sync-source.yml` and `pull-request-issue.yml`.
+- Added a four-ABI Debug compilation matrix.
+- Made debug APK artifact upload explicit/manual rather than automatic on push.
+- Made release packaging/publication manual-only.
+- Folded security, dependency, localization, Telegram and maintenance checks
+  into the five primary workflows.
+
+### Documentation
+- Reworked the README, repository structure, architecture, World Clock UI/data,
+  CI/CD, release and Telegram documentation to describe the current source
+  tree instead of phase/prototype artifacts.
+- Removed obsolete active-repository audit/refactoring/phase documents.
+
+## 0.5.0 — 2026-09-18
+
+### Foundation
+- Release built from the verified repository source.
+- Release APK signature was checked with `apksigner`.
+- SHA-256 checksum was generated for the release APK.
+
+### Build metadata
+- versionCode: `34`
+- versionName: `0.5.0`
+
+## Historical changes
+
+Older release notes below are retained as historical context. They do not define
+the current implementation contract; the current source tree and `AGENTS.md`
+are authoritative.
+
+### 2026-09-18 — Toolchain maintenance
 - Bumped the checked-in Gradle wrapper to `9.7.1`.
-- Replaced repository CI SDK package management with the official Android CLI (`android sdk`).
-- Added scheduled package-maintenance source synchronization for Gradle and Android 17 toolchain pins.
+- Standardized Android 17 / API 37 build tooling and native toolchain pins.
+- Kept release signing outside the repository and supplied through GitHub Environment Secrets.
 
-## Unreleased — Phase 2 — Onboarding & Updates
-
-- Added a first-run onboarding flow backed by Preferences DataStore, so completion persists transactionally across app restarts.
-- Added a GitHub Releases updater for the public `FebriCahyaa/Chrona` repository using Retrofit 3.0.0.
-- Added a lifecycle-safe update status surface in Settings with manual update checks and a release link when a newer version is available.
-- Added a persistent WorkManager job that checks for releases every 24 hours when network connectivity is available, with exponential retry backoff.
-- Added semantic version comparison and unit coverage for GitHub release tag handling.
-
-### ⚙️ Build System
-
-- Bumped application `versionName` to `0.5.0`.
-- Bumped application `versionCode` from `31` to `32`.
-- Added AndroidX DataStore Preferences `1.2.1`.
-- Added WorkManager `2.11.2`.
-- Added Retrofit `3.0.0` and Gson converter `3.0.0`.
-
-### 🔐 Privacy & Control
-
-- Onboarding state remains local to the device.
-- Update checking reads the public GitHub Releases API; no GitHub account or access token is required.
-- Chrona does not silently install APKs; the user opens the published release page explicitly.
-
-### ⚠️ Validation
-
-- Static source validation and patch checks are required before merge.
-- Full Android compilation must be confirmed by the networked GitHub Actions build host.
-
-## Unreleased — Production UI/UX Refactor
-
-### 🎨 UI / UX
-
-- Rebuilt Timer editing around a numeric 0–9 keypad with right-to-left `HHMMSS` entry; no `Slider`, Android `SeekBar`, or Chrona slider component remains in app source.
-- Rebuilt running Timer visualization with Material 3 `CircularProgressIndicator`, 16dp stroke, rounded stroke caps, animated progress, and a lightweight `graphicsLayer` pulse.
-- Rebuilt Alarm rows as expandable cards with `animateContentSize`, Material 3 switches/filter chips, ringtone selection through the Android system picker, vibration persistence, and delete actions.
-- Added a dedicated World Clock city search screen using the current stateful Material 3 `SearchBar` API, plus a curated 25-city timezone catalog and live UTC offset presentation.
-- Added tactile feedback to required actions through `LocalHapticFeedback`, including keypad input, buttons, filters, and toggles.
-
-### ⚡ Compose / Performance
-
-- Moved timer parsing/formatting into pure `TimerDurationInput` code and added unit coverage for HHMMSS input validation and serialization.
-- Used stable `LazyColumn` keys and `contentType` for Alarm and World Clock lists.
-- Kept World Clock ticking on a single screen-level epoch ticker instead of spawning a coroutine per row.
-- Kept calculations and object construction for clock cards outside custom `DrawScope` rendering; Timer no longer uses a custom countdown Canvas.
-
-### 🌐 System integration
-
-- Preserved `INTERNET` and `ACCESS_NETWORK_STATE` so Chrona remains network-capable for online features.
-- Retained the expanded Android notification-channel taxonomy and alarm/timer service architecture.
-
-## Unreleased — Foundation / Build System
-
-### 🏗️ Foundation
-
-- Added `AlarmService` so alarm playback and foreground lifecycle no longer depend on a `BroadcastReceiver` remaining alive.
-- Added `AlarmStateManager` for explicit one-shot disable and repeating-alarm rescheduling transitions.
-- Extended alarm recovery to boot, locale, time, timezone, package replacement, and exact-alarm permission-state changes.
-- Added persistent Timer state and a dedicated timer scheduler/service path.
-- Added persistent Stopwatch state and recovery-safe elapsed-time checkpoints.
-- Persisted World Clock favorites alongside the user's saved city list.
-- Extracted alarm trigger-time calculation into a testable `AlarmTimeCalculator`.
-
-### ⚙️ Build System
-
-- Bumped the application to version `0.4.0` (`versionCode` 31).
-- Updated the app to Android 17 API 37 for both `compileSdk` and `targetSdk`.
-- Standardized Android SDK Build Tools to `37.0.0` across local project configuration and CI workflows.
-- Kept Android Gradle Plugin `9.4.0` with Gradle `9.6.1`, the supported Android 17 build combination used by this project.
-- Upgraded the Compose dependency line to `compose-bom-alpha:2026.09.00`, bringing the Android 17-era Compose stack and Material 3 Expressive `1.5.0-alpha28`.
-- Enabled `MaterialExpressiveTheme` with expressive motion and increased shape scale for the Chrona UI.
-- Replaced the timer wavy/seek interaction with a numeric HHMMSS keypad and a thick rounded circular countdown indicator.
-- Added Material 3 Adaptive window APIs, explicit resizeable-activity support, and predictive-back readiness for modern Android windows.
-- Added `scripts/ci/verify-android17.sh`; Debug, package-maintenance, and Release CI now run the Android 17 toolchain verification gate.
-- Kept Debug, test, lint, native, and Release responsibilities separated in GitHub Actions.
-- Release signing remains isolated to the `release` GitHub Environment and is not stored in the repository.
-- Release artifacts are designed to be verified with `apksigner` and accompanied by a SHA-256 checksum before publication.
-
-### 🔐 Security
-
-- Release keystore material remains outside the checked-out repository and is supplied through GitHub Environment Secrets.
-- No production secret is introduced into the new alarm/timer/stopwatch lifecycle code.
-
-### ⚠️ Known Issues
-
-- Full Android compilation and device-level lifecycle testing still require a networked Android build host.
-- Physical-device validation is still required for lock-screen alarm presentation, ringtone behavior, vendor background restrictions, and reboot/time-change edge cases.
+### Earlier foundation work
+- Added the shared Chrona time engine with wall-clock and monotonic timing abstractions.
+- Added persistent Alarm, Timer, Stopwatch and World Clock state.
+- Added foreground alarm/timer service paths and reboot/timezone recovery receivers.
+- Added dynamic timezone catalog behavior based on Android ICU/IANA runtime data.
+- Added Compose Material 3 UI, adaptive settings layouts, localization audits and repository security/license checks.

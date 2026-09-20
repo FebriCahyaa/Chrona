@@ -14,4 +14,4 @@ CURRENT_VERSION="$(sed -nE 's/^[[:space:]]*versionName = "([^"]+)".*/\1/p' app/b
   exit 1
 }
 
-./gradlew --no-daemon --stacktrace testDebugUnitTest lintDebug
+./gradlew --no-daemon --stacktrace testOssDebugUnitTest lintOssDebug

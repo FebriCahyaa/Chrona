@@ -8,6 +8,10 @@ package com.febricahyaa.clockapp
 import androidx.compose.ui.test.assertExists
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onRoot
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.matcher.ViewMatchers.isRoot
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import org.junit.Assert.assertFalse
 import org.junit.Rule
 import org.junit.Test
@@ -25,6 +29,11 @@ class ChronaRuntimeSmokeTest {
     fun mainActivityRendersRootSurface() {
         composeRule.waitForIdle()
         composeRule.onRoot().assertExists()
+    }
+
+    @Test
+    fun espressoCanReachActivityRoot() {
+        onView(isRoot()).check(matches(isDisplayed()))
     }
 
     @Test

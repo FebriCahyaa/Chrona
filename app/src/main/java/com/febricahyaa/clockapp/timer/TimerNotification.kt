@@ -30,6 +30,7 @@ object TimerNotification {
             .setContentText(context.getString(R.string.timer_notification_body))
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setFullScreenIntent(fullScreenPendingIntent(context), true)
             .setOngoing(true)
             .addAction(0, context.getString(R.string.timer_notification_dismiss), dismiss)
             .build()
@@ -41,8 +42,16 @@ object TimerNotification {
         .setContentText(context.getString(R.string.timer_notification_body))
         .setCategory(NotificationCompat.CATEGORY_ALARM)
         .setPriority(NotificationCompat.PRIORITY_HIGH)
+        .setFullScreenIntent(fullScreenPendingIntent(context), true)
         .setAutoCancel(true)
         .build()
+
+    private fun fullScreenPendingIntent(context: Context): PendingIntent = PendingIntent.getActivity(
+        context,
+        42_103,
+        Intent(context, TimerRingActivity::class.java),
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+    )
 
     fun postFinished(context: Context): Boolean {
         val manager = context.getSystemService(NotificationManager::class.java) ?: return false

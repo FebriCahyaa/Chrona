@@ -6,15 +6,11 @@
 package com.febricahyaa.clockapp.data
 
 import com.febricahyaa.clockapp.model.AlarmItem
+import kotlinx.coroutines.flow.Flow
 
-/**
- * Persists the user's alarms so they survive process death and device
- * reboots (needed for [com.febricahyaa.clockapp.alarm.BootReceiver] to
- * reschedule them). Abstracted from the storage mechanism so
- * [com.febricahyaa.clockapp.ui.viewmodel.AlarmViewModel] never touches
- * Android SharedPreferences directly.
- */
 interface AlarmRepository {
-    fun load(): List<AlarmItem>
-    fun save(alarms: List<AlarmItem>)
+    val alarms: Flow<List<AlarmItem>>
+    suspend fun load(): List<AlarmItem>
+    suspend fun save(alarms: List<AlarmItem>)
+    suspend fun recordHistory(alarmId: Long, eventType: String, triggeredAtEpochMillis: Long)
 }

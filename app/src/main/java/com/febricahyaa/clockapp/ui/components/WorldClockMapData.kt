@@ -6,9 +6,10 @@
 package com.febricahyaa.clockapp.ui.components
 
 /**
- * Compact offline world-map geometry derived from the supplied world-map HTML fallback.
- * The source map intentionally uses continent-level polygons when remote geometry is unavailable;
- * Chrona keeps that same deterministic fallback so the World Clock remains fully offline.
+ * Compact deterministic offline geometry for the World Clock visualization.
+ *
+ * The polygons are intentionally lightweight and are not authoritative geographic
+ * boundaries. Timezone calculations always use Android ICU/IANA runtime data.
  */
 internal data class WorldMapFeatureData(
     val id: String,

@@ -6,6 +6,8 @@
 package com.febricahyaa.clockapp.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import androidx.lifecycle.viewModelScope
 import com.febricahyaa.clockapp.data.onboarding.OnboardingRepository
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,7 +23,8 @@ data class OnboardingUiState(
     val isLoaded: Boolean = false,
 )
 
-class OnboardingViewModel(private val repository: OnboardingRepository) : ViewModel() {
+@HiltViewModel
+class OnboardingViewModel @Inject constructor(private val repository: OnboardingRepository) : ViewModel() {
     val state: StateFlow<OnboardingUiState> = repository.preferences
         .map { preferences ->
             OnboardingUiState(

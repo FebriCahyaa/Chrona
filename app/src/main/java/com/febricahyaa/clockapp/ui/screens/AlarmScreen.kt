@@ -57,6 +57,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -95,10 +96,15 @@ fun AlarmScreen(
     onToggle: (AlarmItem, Boolean) -> Unit,
     onDelete: (AlarmItem) -> Unit,
     onUpdate: (AlarmItem) -> Unit,
+    initialAlarmId: Long? = null,
     onEdit: () -> Unit = {},
 ) {
     val haptics = LocalHapticFeedback.current
-    var editorAlarmId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var editorAlarmId by rememberSaveable { mutableStateOf<Long?>(initialAlarmId) }
+
+    LaunchedEffect(initialAlarmId) {
+        initialAlarmId?.let { editorAlarmId = it }
+    }
 
     ChronaScaffold(
         title = stringResource(R.string.alarm_screen_title),

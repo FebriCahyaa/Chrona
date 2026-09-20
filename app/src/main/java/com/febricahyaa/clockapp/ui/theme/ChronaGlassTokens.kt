@@ -7,7 +7,7 @@ package com.febricahyaa.clockapp.ui.theme
 
 import androidx.compose.ui.unit.dp
 
-/** Shared rendering contract for Phase 1 glass surfaces. */
+/** Shared rendering contract for translucent/glass-inspired surfaces. */
 object ChronaGlassTokens {
     val CardRadius = 28.dp
     val CardBorderWidth = 1.dp

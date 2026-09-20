@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.math.max
@@ -70,7 +71,7 @@ interface ChronaTimeEngine : AutoCloseable {
     suspend fun resetTimer()
 }
 
-class DefaultChronaTimeEngine(
+class DefaultChronaTimeEngine @Inject constructor(
     private val scope: CoroutineScope,
     private val monotonicClock: ChronaMonotonicClock = AndroidChronaMonotonicClock,
     private val wallClock: ChronaWallClock = AndroidChronaWallClock,

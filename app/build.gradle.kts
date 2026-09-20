@@ -8,10 +8,35 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
-// Release signing is intentionally supplied by the CI environment rather than
-// checked into the repository. Debug/local builds do not require release keys.
+// Firebase/Google Services are applied only when a real configuration file is
+// present (or explicitly enabled by CI). OSS builds therefore remain
+// credential-free and reproducible.
+val firebaseExplicitlyEnabled = providers.gradleProperty("chronaEnableFirebase")
+    .map(String::toBoolean)
+    .orElse(false)
+    .get()
+val firebaseConfigFile = file("google-services.json")
+val firebaseEnabled = firebaseExplicitlyEnabled || firebaseConfigFile.isFile
+
+if (firebaseEnabled) {
+    if (!firebaseConfigFile.isFile) {
+        throw GradleException(
+            "Firebase is enabled but app/google-services.json is missing. " +
+                "Provide the Play configuration or build with -PchronaEnableFirebase=false."
+        )
+    }
+    apply(plugin = "com.google.gms.google-services")
+    apply(plugin = "com.google.firebase.crashlytics")
+}
+
+val chronaTargetAbi = providers.gradleProperty("chronaTargetAbi")
+    .orNull
+    ?.takeIf { it in setOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64") }
+
 val releaseKeystorePath = providers.environmentVariable("CHRONA_KEYSTORE_PATH")
     .orNull
     ?.takeIf { it.isNotBlank() }
@@ -52,11 +77,34 @@ android {
         versionCode = 34
         versionName = "0.5.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders["chronaAppLinkHost"] = providers.gradleProperty("chronaAppLinkHost")
+            .orElse("chrona.example.invalid")
+            .get()
+        buildConfigField("String", "CHRONA_DISTRIBUTION", "\"unknown\"")
+        buildConfigField("Boolean", "CRASH_REPORTING_ENABLED", firebaseEnabled.toString())
+        ndk {
+            chronaTargetAbi?.let { abiFilters.add(it) }
+        }
         externalNativeBuild {
             cmake {
                 cppFlags += listOf("-std=c++20", "-O2", "-ffast-math", "-fvisibility=hidden")
                 arguments += listOf("-DANDROID_STL=c++_static")
             }
+        }
+    }
+
+    flavorDimensions += "distribution"
+    productFlavors {
+        create("oss") {
+            dimension = "distribution"
+            applicationIdSuffix = ".oss"
+            buildConfigField("String", "CHRONA_DISTRIBUTION", "\"oss\"")
+            buildConfigField("Boolean", "CRASH_REPORTING_ENABLED", "false")
+        }
+        create("play") {
+            dimension = "distribution"
+            buildConfigField("String", "CHRONA_DISTRIBUTION", "\"play\"")
+            buildConfigField("Boolean", "CRASH_REPORTING_ENABLED", firebaseEnabled.toString())
         }
     }
 
@@ -73,19 +121,18 @@ android {
 
     buildTypes {
         release {
-            // Keep the build configuration loadable for Debug/Test tasks. The
-            // dedicated verification task below fails clearly when Release is
-            // requested without the required CI signing environment.
             if (releaseSigningConfigured) {
                 signingConfig = signingConfigs.getByName("release")
             }
-
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            ndk {
+                debugSymbolLevel = "FULL"
+            }
         }
         debug {
             applicationIdSuffix = ".debug"
@@ -96,6 +143,7 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+        aidl = true
     }
 
     externalNativeBuild {
@@ -118,8 +166,11 @@ android {
     }
 }
 
-// This check is only attached to Release packaging tasks so that ordinary
-// Debug/Test/Lint jobs remain independent of the private release keystore.
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+    arg("room.incremental", "true")
+}
+
 val verifyReleaseSigning = tasks.register("verifyReleaseSigning") {
     group = "verification"
     description = "Verify that the required Chrona release signing environment is configured."
@@ -144,9 +195,14 @@ val verifyReleaseSigning = tasks.register("verifyReleaseSigning") {
 }
 
 tasks.matching {
-    it.name == "assembleRelease" ||
-        it.name == "bundleRelease" ||
-        it.name == "packageRelease"
+    it.name in setOf(
+        "assemblePlayRelease",
+        "bundlePlayRelease",
+        "packagePlayRelease",
+        "assembleOssRelease",
+        "bundleOssRelease",
+        "packageOssRelease",
+    )
 }.configureEach {
     dependsOn(verifyReleaseSigning)
 }
@@ -177,8 +233,15 @@ dependencies {
     implementation(libs.lifecycle.runtime.compose)
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.lifecycle.viewmodel.compose)
+    implementation(libs.hilt.android)
+    implementation(libs.hilt.work)
+    implementation(libs.hilt.lifecycle.viewmodel.compose)
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
     implementation(libs.datastore.preferences)
     implementation(libs.work.runtime.ktx)
+    implementation(libs.metrics.performance)
+    implementation(libs.lottie.compose)
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.text.google.fonts)
     implementation(libs.compose.ui.tooling.preview)
@@ -194,12 +257,27 @@ dependencies {
     implementation(libs.compose.material.icons.core)
     implementation(libs.compose.material.icons.extended)
 
+    ksp(libs.hilt.android.compiler)
+    ksp(libs.room.compiler)
+    ksp(libs.hilt.compiler)
+    kspAndroidTest(libs.hilt.android.compiler)
+    kspAndroidTest(libs.hilt.compiler)
+
+    "playImplementation"(platform(libs.firebase.bom))
+    "playImplementation"(libs.firebase.crashlytics)
+    "playImplementation"(libs.firebase.crashlytics.ndk)
+
     coreLibraryDesugaring(libs.desugar.jdk)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlin.test)
+    testImplementation(libs.room.testing)
+    testImplementation(libs.mockk)
 
     androidTestImplementation(libs.androidx.test.junit)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.hilt.android.testing)
+    androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.compose.ui.test.junit4)
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)

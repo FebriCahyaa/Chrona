@@ -6,6 +6,7 @@
 package com.febricahyaa.clockapp.data.update
 
 import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -22,6 +23,7 @@ import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Headers
 import java.io.IOException
+import javax.inject.Inject
 
 private val Context.chronaUpdateDataStore: DataStore<Preferences> by
     preferencesDataStore(name = "chrona_updates")
@@ -67,9 +69,9 @@ interface AppUpdateRepository {
     suspend fun checkLatest(): AppUpdateSnapshot
 }
 
-class GitHubReleaseRepository(
-    context: Context,
-    private val api: GitHubReleaseApi = createApi(),
+class GitHubReleaseRepository @Inject constructor(
+    @ApplicationContext context: Context,
+    private val api: GitHubReleaseApi,
 ) : AppUpdateRepository {
     private val appContext = context.applicationContext
     private val checkMutex = Mutex()
@@ -136,16 +138,6 @@ class GitHubReleaseRepository(
 
     companion object {
         private const val MAX_NOTES_LENGTH = 8_000
-        private const val BASE_URL = "https://api.github.com/"
-
-        private val retrofit by lazy {
-            retrofit2.Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .addConverterFactory(retrofit2.converter.gson.GsonConverterFactory.create())
-                .build()
-        }
-
-        private fun createApi(): GitHubReleaseApi = retrofit.create(GitHubReleaseApi::class.java)
 
         fun normalizeVersion(value: String): String =
             value.trim().removePrefix("v").removePrefix("V")

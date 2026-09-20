@@ -180,3 +180,93 @@ scope = "pinned-transitive"
 license = "Bouncy Castle License"
 upstream = "https://www.bouncycastle.org/licence.html"
 scope = "pinned-transitive"
+
+[licenses."com.google.dagger:hilt-android"]
+license = "Apache-2.0"
+upstream = "https://dagger.dev/hilt/"
+scope = "direct"
+
+[licenses."com.google.dagger:hilt-android-compiler"]
+license = "Apache-2.0"
+upstream = "https://dagger.dev/hilt/"
+scope = "direct-build"
+
+[licenses."com.google.dagger:hilt-android-testing"]
+license = "Apache-2.0"
+upstream = "https://dagger.dev/hilt/testing.html"
+scope = "direct-androidTest"
+
+[licenses."androidx.hilt:hilt-work"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/androidx/releases/hilt"
+scope = "direct"
+
+[licenses."androidx.hilt:hilt-compiler"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/androidx/releases/hilt"
+scope = "direct-build"
+
+[licenses."androidx.hilt:hilt-lifecycle-viewmodel-compose"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/androidx/releases/hilt"
+scope = "direct"
+
+[licenses."androidx.room:room-runtime"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/androidx/releases/room"
+scope = "direct"
+
+[licenses."androidx.room:room-ktx"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/androidx/releases/room"
+scope = "direct"
+
+[licenses."androidx.room:room-compiler"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/androidx/releases/room"
+scope = "direct-build"
+
+[licenses."androidx.room:room-testing"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/androidx/releases/room"
+scope = "direct-test"
+
+[licenses."androidx.metrics:metrics-performance"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/jetpack/androidx/releases/metrics"
+scope = "direct"
+
+[licenses."com.airbnb.android:lottie-compose"]
+license = "Apache-2.0"
+upstream = "https://github.com/airbnb/lottie-android"
+scope = "direct"
+
+[licenses."io.mockk:mockk"]
+license = "Apache-2.0"
+upstream = "https://github.com/mockk/mockk"
+scope = "direct-test"
+
+[licenses."androidx.test:runner"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/reference/androidx/test/runner/AndroidJUnitRunner"
+scope = "direct-androidTest"
+
+[licenses."androidx.test.espresso:espresso-core"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/training/testing/espresso"
+scope = "direct-androidTest"
+
+[licenses."com.google.firebase:firebase-bom"]
+license = "Apache-2.0"
+upstream = "https://firebase.google.com/docs/android/setup"
+scope = "direct-play"
+
+[licenses."com.google.firebase:firebase-crashlytics"]
+license = "Apache-2.0"
+upstream = "https://firebase.google.com/docs/crashlytics"
+scope = "direct-play"
+
+[licenses."com.google.firebase:firebase-crashlytics-ndk"]
+license = "Apache-2.0"
+upstream = "https://firebase.google.com/docs/crashlytics/ndk"
+scope = "direct-play"

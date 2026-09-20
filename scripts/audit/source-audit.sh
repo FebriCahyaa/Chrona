@@ -38,13 +38,29 @@ if [[ -f app/src/main/cpp/chrona_time.cpp && -f app/src/main/cpp/chrona_clock.cp
         -I"$JAVA_INCLUDE" -I"$JAVA_INCLUDE/linux" \
         app/src/main/cpp/chrona_time.cpp \
         app/src/main/cpp/chrona_clock.cpp
-      echo '✅ C++ syntax              PASS'
+      echo '✅ C++ JNI syntax          PASS'
     else
-      echo 'ℹ️ C++ syntax              SKIPPED (JNI headers unavailable)'
+      echo 'ℹ️ C++ JNI syntax          SKIPPED (JNI headers unavailable)'
+    fi
+
+    AAudioInclude=""
+    if [[ -n "${ANDROID_NDK_ROOT:-}" ]]; then
+      candidate="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include"
+      if [[ -f "$candidate/aaudio/AAudio.h" ]]; then
+        AAudioInclude="$candidate"
+      fi
+    fi
+    if [[ -n "$AAudioInclude" ]]; then
+      clang++ -std=c++20 -Wall -Wextra -Werror=return-type -fsyntax-only \
+        -I"$AAudioInclude" \
+        app/src/main/cpp/chrona_audio.cpp
+      echo '✅ AAudio native syntax     PASS'
+    else
+      echo 'ℹ️ AAudio native syntax     SKIPPED (Android NDK AAudio headers unavailable)'
     fi
   else
     echo 'ℹ️ C++ syntax              SKIPPED (clang++ unavailable)'
-  fi
+fi
 else
   echo 'ℹ️ C++ syntax              SKIPPED (native source unavailable)'
 fi
@@ -54,6 +70,10 @@ python3 scripts/audit/resource-audit.py
 python3 scripts/audit/license-audit.py
 python3 scripts/localization/audit-resources.py
 python3 scripts/audit/check-timezone-catalog.py
+python3 scripts/audit/material3-only.py
+python3 scripts/audit/enterprise-architecture-audit.py
+python3 scripts/audit/workflow-audit.py
+python3 -m unittest scripts/telegram/test_notify.py
 
 if (( failures > 0 )); then
   echo "Repository audit failed with ${failures} missing host tools." >&2

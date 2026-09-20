@@ -6,6 +6,7 @@
 package com.febricahyaa.clockapp.data.onboarding
 
 import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import java.io.IOException
+import javax.inject.Inject
 
 private val Context.chronaOnboardingDataStore: DataStore<Preferences> by
     preferencesDataStore(name = "chrona_onboarding")
@@ -34,7 +36,7 @@ interface OnboardingRepository {
     suspend fun markLocationPermissionPrompted()
 }
 
-class DataStoreOnboardingRepository(context: Context) : OnboardingRepository {
+class DataStoreOnboardingRepository @Inject constructor(@ApplicationContext context: Context) : OnboardingRepository {
     private val appContext = context.applicationContext
 
     override val preferences: Flow<OnboardingPreferences> = appContext.chronaOnboardingDataStore.data

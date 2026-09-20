@@ -6,26 +6,29 @@
 package com.febricahyaa.clockapp.alarm
 
 import com.febricahyaa.clockapp.data.AlarmRepository
+import javax.inject.Inject
 
-/**
- * Owns alarm state transitions that must remain correct outside the UI.
- * In particular, one-shot alarms are disabled after firing while repeating
- * alarms are immediately scheduled for their next matching day.
- */
-class AlarmStateManager(
+/** Durable alarm transitions shared by UI, exact-alarm receivers and services. */
+class AlarmStateManager @Inject constructor(
     private val repository: AlarmRepository,
     private val scheduler: AlarmSchedulerGateway,
 ) {
-    fun rescheduleAll() {
+    suspend fun rescheduleAll() {
         scheduler.rescheduleAll(repository.load())
     }
 
-    fun onAlarmTriggered(alarmId: Long) {
-        val alarm = repository.load().firstOrNull { it.id == alarmId } ?: return
+    suspend fun onAlarmTriggered(alarmId: Long) {
+        val alarms = repository.load()
+        val alarm = alarms.firstOrNull { it.id == alarmId } ?: return
         if (!alarm.enabled) return
 
+        repository.recordHistory(
+            alarmId = alarmId,
+            eventType = if (alarm.repeatDays.isEmpty()) "ONE_SHOT" else "REPEATING",
+            triggeredAtEpochMillis = System.currentTimeMillis(),
+        )
+
         if (alarm.repeatDays.isEmpty()) {
-            val alarms = repository.load()
             repository.save(alarms.map { item ->
                 if (item.id == alarmId) item.copy(enabled = false) else item
             })

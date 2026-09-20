@@ -1,0 +1,165 @@
+# Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+# SPDX-License-Identifier: MIT
+#
+# Main-branch commit maintenance and repository-wide health checks.
+name: Chrona Update Commit
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '23 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chrona-update-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-audit:
+    name: Update / Source audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: actions/setup-python@v6.1.0
+        with:
+          python-version: '3.13'
+
+      - name: Repository audit
+        run: bash scripts/audit/source-audit.sh
+
+      - name: Material 3 audit
+        run: python3 scripts/audit/material3-only.py
+
+      - name: Workflow contract audit
+        run: python3 scripts/audit/workflow-audit.py
+
+      - name: Telegram renderer tests
+        run: python3 -m unittest scripts/telegram/test_notify.py
+
+  dependency-audit:
+    name: Update / Dependency audit
+    needs: source-audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: ./.github/actions/setup-android
+        with:
+          install-native: 'false'
+
+      - name: Dependency graph
+        run: ./gradlew --no-daemon --stacktrace :app:dependencies --configuration ossDebugRuntimeClasspath
+
+  codeql:
+    name: Update / CodeQL Kotlin + C++
+    needs: source-audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+      packages: read
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: ./.github/actions/setup-android
+        with:
+          install-native: 'true'
+
+      - uses: github/codeql-action/init@v4.38.0
+        with:
+          languages: java-kotlin, cpp
+          build-mode: manual
+          config-file: ./.github/codeql-config.yml
+
+      - name: Build for CodeQL
+        run: ./gradlew --no-daemon --no-build-cache --stacktrace clean assembleOssDebug
+
+      - uses: github/codeql-action/analyze@v4.38.0
+        with:
+          category: /language:kotlin-cpp
+
+  scorecard:
+    name: Update / OpenSSF Scorecard
+    if: github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    needs: source-audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ossf/scorecard-action@v2.4.4
+        with:
+          results_file: scorecard-results.sarif
+          results_format: sarif
+          publish_results: true
+
+      - uses: github/codeql-action/upload-sarif@v4.38.0
+        with:
+          sarif_file: scorecard-results.sarif
+
+  commit-summary:
+    name: Update / Commit summary
+    if: always()
+    needs: [source-audit, dependency-audit, codeql, scorecard]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Write commit summary
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+
+          needs = json.loads(os.environ['NEEDS'])
+          lines = [
+              '# Chrona update commit',
+              '',
+              f"Commit: `{os.environ.get('GITHUB_SHA', '')[:12]}`",
+              '',
+              '| Job | Result |',
+              '| --- | --- |',
+          ]
+          for name, item in needs.items():
+              lines.append(f"| `{name}` | `{item['result']}` |")
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as fh:
+              fh.write('\n'.join(lines) + '\n')
+
+  telegram:
+    name: Update / Telegram
+    if: ${{ always() && github.event_name == 'push' }}
+    needs: [source-audit, dependency-audit, codeql]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Send commit notification
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.CHRONABOT_CI_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.CHRONABOT_CI_CHAT_ID }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          if [[ -z "${TELEGRAM_BOT_TOKEN:-}" || -z "${TELEGRAM_CHAT_ID:-}" ]]; then
+            echo "Telegram credentials are not configured; notification skipped."
+            exit 0
+          fi
+          python3 scripts/telegram/notify.py --kind ci

@@ -1,0 +1,143 @@
+# Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+# SPDX-License-Identifier: MIT
+#
+# Pull-request verification and issue intake checks live in one workflow so
+# repository protection has one clear entry point for review-time automation.
+name: Chrona Pull Request and Issue Check
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize, ready_for_review]
+  issues:
+    types: [opened, edited, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+
+concurrency:
+  group: chrona-pr-issue-${{ github.event.pull_request.number || github.event.issue.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pull-request:
+    name: PR / Unit + Lint + Audit
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-android
+        with:
+          install-native: 'false'
+
+      - uses: actions/setup-python@v6.1.0
+        with:
+          python-version: '3.13'
+
+      - name: Repository audit
+        run: bash scripts/audit/source-audit.sh
+
+      - name: Material 3 audit
+        run: python3 scripts/audit/material3-only.py
+
+      - name: Unit tests
+        run: ./gradlew --no-daemon --stacktrace testOssDebugUnitTest
+
+      - name: Lint
+        run: ./gradlew --no-daemon --stacktrace lintOssDebug
+
+  dependency-review:
+    name: PR / Dependency review
+    if: github.event_name == 'pull_request'
+    needs: pull-request
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/dependency-review-action@v5
+        with:
+          config-file: ./.github/dependency-review-config.yml
+
+  codeql:
+    name: PR / CodeQL Kotlin + C++
+    if: github.event_name == 'pull_request'
+    needs: pull-request
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+      packages: read
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - uses: ./.github/actions/setup-android
+        with:
+          install-native: 'true'
+
+      - uses: github/codeql-action/init@v4.38.0
+        with:
+          languages: java-kotlin, cpp
+          build-mode: manual
+          config-file: ./.github/codeql-config.yml
+
+      - name: Build for CodeQL
+        run: ./gradlew --no-daemon --no-build-cache --stacktrace clean assembleOssDebug
+
+      - uses: github/codeql-action/analyze@v4.38.0
+        with:
+          category: /language:kotlin-cpp
+
+  issue:
+    name: Issue / Intake check
+    if: github.event_name == 'issues'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Validate issue payload
+        env:
+          TITLE: ${{ github.event.issue.title }}
+          BODY: ${{ github.event.issue.body }}
+        run: |
+          set -euo pipefail
+          test -n "$TITLE"
+          BODY="${BODY:-No issue body provided.}"
+          test "${#TITLE}" -le 120
+          echo "Issue intake check passed for: $TITLE"
+
+  telegram:
+    name: PR / Telegram
+    if: ${{ always() && github.event_name == 'pull_request' }}
+    needs: [pull-request, dependency-review, codeql]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - uses: actions/setup-python@v6.1.0
+        with:
+          python-version: '3.13'
+
+      - name: Send PR notification
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.CHRONABOT_PR_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.CHRONABOT_PR_CHAT_ID }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          if [[ -z "${TELEGRAM_BOT_TOKEN:-}" || -z "${TELEGRAM_CHAT_ID:-}" ]]; then
+            echo "Telegram credentials are not configured; notification skipped."
+            exit 0
+          fi
+          python3 scripts/telegram/notify.py --kind pr

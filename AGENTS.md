@@ -18,7 +18,7 @@ truth for every new task.
 - Application ID: `com.febricahyaa.clockapp`
 - Repository default branch: `main`
 - Current module graph: root project + `:app`
-- Native timing layer: C++20 under `app/src/main/cpp/`
+- Native layer: C++20 under `app/src/main/cpp/` with Java JNI boundary in `nativelayer/`
 
 Chrona is a time and world-clock application focused on accurate timekeeping,
 timezone correctness, world-clock visualization, reliable navigation, and a
@@ -159,10 +159,12 @@ Current source areas include:
 `app/src/main/java/com/febricahyaa/clockapp/`
 - `alarm/`
 - `core/`
+- `data/location/`
 - `data/timezone/`
 - `di/`
 - `model/`
 - `navigation/`
+- `nativelayer/` — Java JNI bridge, native Kotlin facades and low-latency alert audio entry point
 - `notification/`
 - `time/`
 - `timer/`
@@ -201,6 +203,10 @@ Preserve these unless the task explicitly changes them:
 - accessibility semantics
 - light and dark theme support
 - responsive world-clock interaction
+- Material 3-only application UI (icon vector imports are allowed)
+- foreground-only current-location UX
+- fixed/offline world map visualization
+- persisted seconds-display mode
 - native timing integration and its public contracts
 - localization and source/translation audit behavior
 
@@ -248,64 +254,29 @@ The native timing layer is performance-sensitive and correctness-sensitive.
 
 ## 11. CI/CD Contract
 
-Chrona uses staged CI and security gates.
+Chrona intentionally exposes exactly five workflow files. Do not create separate Telegram, security, localization, maintenance, or toolchain workflow files. Put related jobs into the appropriate primary workflow.
 
-### CI — `.github/workflows/ci.yml`
+### `update-commit.yml`
 
-Pipeline:
-- `AES / Analyze`
-- `AES / Unit tests` and `AES / Lint`
-- `AES / Debug APK`
-- `AES / CI status`
+Main-branch and scheduled health checks: source/header audit, Material 3 audit, workflow contract audit, dependency graph, CodeQL, Scorecard, Telegram renderer tests, and commit summary.
 
-Analyze currently includes:
-- repository/source audit
-- Telegram renderer unit tests
+### `debug-build.yml`
 
-Verify currently runs:
-- `testDebugUnitTest`
-- `lintDebug`
+Debug validation plus a four-ABI native build matrix (`arm64-v8a`, `armeabi-v7a`, `x86`, `x86_64`). APK upload is manual-only.
 
-Debug packaging currently runs:
-- `assembleDebug`
+### `release-build.yml`
 
-Preserve the aggregate gate unless the CI architecture itself is the task.
+Manual signed APK/AAB build, provenance attestation and optional GitHub Release publication. Signing secrets remain inside the `release` Environment.
 
-### Security — `.github/workflows/security.yml`
+### `sync-source.yml`
 
-Current checks:
-- dependency review on pull requests
-- license inventory audit
-- CodeQL for Kotlin/Java and C++
-- OpenSSF Scorecard on push/schedule/manual runs
-- aggregate `Security status`
+Source/resource synchronization, localization synchronization and dependency graph checks.
 
-Do not bypass these checks to make a PR green.
+### `pull-request-issue.yml`
 
-### Release — `.github/workflows/release.yml`
+Pull-request source/build/security checks and issue intake validation. Dependabot is handled as a PR event with a distinct Telegram renderer.
 
-Release pipeline:
-- resolve/validate tag
-- signed APK + AAB build
-- provenance attestation
-- GitHub Release publication
-
-Signing boundary:
-- release secrets exist only in the `release` GitHub Environment
-- the keystore is reconstructed in the runner's temporary directory
-- `verifyReleaseSigning` guards release packaging
-- signing material is removed after use
-- attestation and publish jobs do not receive signing secrets
-
-Never commit signing files or print secret values.
-
-### Maintenance
-
-`.github/workflows/maintenance.yml` performs scheduled repository audits,
-localization coverage checks, timezone strategy checks, dependency snapshots,
-and Android CLI/toolchain verification.
-
-Do not remove maintenance coverage as unrelated cleanup.
+Push and pull-request runs must not publish APK/ZIP artifacts.
 
 ## 12. Required Validation
 
@@ -313,9 +284,9 @@ Choose validation based on the changed surface.
 
 For Kotlin/Compose changes, prefer as applicable:
 ```bash
-./gradlew testDebugUnitTest
-./gradlew lintDebug
-./gradlew assembleDebug
+./gradlew testOssDebugUnitTest
+./gradlew lintOssDebug
+./gradlew assembleOssDebug
 ```
 
 For repository/tooling changes, also consider:

@@ -6,8 +6,10 @@
 package com.febricahyaa.clockapp.data
 
 import com.febricahyaa.clockapp.model.StopwatchSnapshot
+import kotlinx.coroutines.flow.Flow
 
 interface StopwatchRepository {
-    fun load(): StopwatchSnapshot
-    fun save(snapshot: StopwatchSnapshot)
+    val snapshot: Flow<StopwatchSnapshot>
+    suspend fun load(): StopwatchSnapshot
+    suspend fun save(snapshot: StopwatchSnapshot)
 }

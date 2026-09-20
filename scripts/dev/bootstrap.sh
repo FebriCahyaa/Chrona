@@ -15,6 +15,5 @@ printf 'Gradle: '
 printf 'Android SDK: %s\n' "${ANDROID_SDK_ROOT:-${ANDROID_HOME:-not configured}}"
 printf '\nRecommended checks:\n'
 printf '%s\n' '  ./scripts/audit/source-audit.sh'
-printf '%s\n' '  ./gradlew testDebugUnitTest'
-printf '%s\n' '  ./gradlew lintDebug'
-printf '%s\n' '  ./gradlew assembleDebug'
+printf '%s\n' '  ./scripts/dev/verify.sh quick'
+printf '%s\n' '  ./gradlew testOssDebugUnitTest lintOssDebug assembleOssDebug'

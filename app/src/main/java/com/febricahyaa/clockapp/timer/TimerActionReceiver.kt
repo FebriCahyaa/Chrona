@@ -8,14 +8,17 @@ package com.febricahyaa.clockapp.timer
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.febricahyaa.clockapp.ClockApplication
+import com.febricahyaa.clockapp.alarm.AlarmSoundGateway
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class TimerActionReceiver : BroadcastReceiver() {
+    @Inject lateinit var alarmSoundPlayer: AlarmSoundGateway
     override fun onReceive(context: Context, intent: Intent?) {
         if (intent?.action != ACTION_DISMISS) return
         val appContext = context.applicationContext
-        val app = appContext as ClockApplication
-        app.container.alarmSoundPlayer.stop()
+        alarmSoundPlayer.stop()
         appContext.stopService(Intent(appContext, TimerService::class.java))
         TimerNotification.cancel(appContext)
     }

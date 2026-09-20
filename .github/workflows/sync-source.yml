@@ -1,0 +1,120 @@
+# Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+# SPDX-License-Identifier: MIT
+#
+# Source, localization and dependency synchronization. This workflow never
+# manufactures APKs or release archives.
+name: Chrona Sync Source
+
+on:
+  schedule:
+    - cron: '13 5 * * 2'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chrona-sync-source
+  cancel-in-progress: true
+
+jobs:
+  repository-audit:
+    name: Sync / Repository audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: actions/setup-python@v6.1.0
+        with:
+          python-version: '3.13'
+
+      - name: Source audit
+        run: bash scripts/audit/source-audit.sh
+
+  dependency-report:
+    name: Sync / Dependency graph
+    needs: repository-audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: ./.github/actions/setup-android
+        with:
+          install-native: 'false'
+
+      - name: Resolve debug dependency graph
+        run: ./gradlew --no-daemon --stacktrace :app:dependencies --configuration ossDebugRuntimeClasspath
+
+      - name: Verify pinned toolchain contract
+        env:
+          CHRONA_REQUIRE_NATIVE_TOOLCHAIN: '0'
+          CHRONA_REQUIRE_ANDROID_CLI: '1'
+        run: scripts/ci/verify-toolchain.sh
+
+  localization-audit:
+    name: Sync / Localization audit
+    needs: repository-audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Localization coverage
+        run: python3 scripts/localization/audit-resources.py
+
+  crowdin:
+    name: Sync / Crowdin source
+    needs: [repository-audit, localization-audit]
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: crowdin/github-action@v3
+        with:
+          upload_sources: true
+          upload_translations: false
+          download_translations: true
+          download_language: id
+          skip_untranslated_strings: true
+          localization_branch_name: l10n-crowdin
+          create_pull_request: true
+          pull_request_title: 'chore(l10n): synchronize Indonesian translations'
+          pull_request_body: |
+            Automated localization synchronization from Crowdin.
+
+            Review translated Android resources before merging.
+          pull_request_base_branch_name: main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
+
+  summary:
+    name: Sync / Summary
+    if: always()
+    needs: [repository-audit, dependency-report, localization-audit, crowdin]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Write synchronization summary
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+
+          needs = json.loads(os.environ['NEEDS'])
+          lines = ['# Chrona source synchronization', '', '| Job | Result |', '| --- | --- |']
+          for name, item in needs.items():
+              lines.append(f"| `{name}` | `{item['result']}` |")
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as fh:
+              fh.write('\n'.join(lines) + '\n')
+          PY

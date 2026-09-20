@@ -6,6 +6,8 @@
 package com.febricahyaa.clockapp.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import androidx.lifecycle.viewModelScope
 import com.febricahyaa.clockapp.core.config.AppDefaults
 import com.febricahyaa.clockapp.data.TimerRepository
@@ -32,7 +34,8 @@ data class TimerUiState(
  * monotonic source of truth for foreground rendering, so UI updates never
  * depend on a fixed-delay counter.
  */
-class TimerViewModel(
+@HiltViewModel
+class TimerViewModel @Inject constructor(
     private val repository: TimerRepository,
     private val scheduler: TimerSchedulerGateway,
     private val timeEngine: ChronaTimeEngine,

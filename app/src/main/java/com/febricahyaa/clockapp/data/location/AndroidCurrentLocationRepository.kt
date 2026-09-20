@@ -7,6 +7,7 @@ package com.febricahyaa.clockapp.data.location
 
 import android.Manifest
 import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Geocoder
@@ -18,6 +19,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import java.util.Locale
+import javax.inject.Inject
 import kotlin.coroutines.resume
 
 /**
@@ -26,14 +28,9 @@ import kotlin.coroutines.resume
  * Provider selection is delegated to [CurrentLocationProvider]. The repository
  * owns normalization, freshness filtering, and reverse geocoding only.
  */
-class AndroidCurrentLocationRepository(
-    context: Context,
-    private val provider: CurrentLocationProvider = AdaptiveCurrentLocationProvider(
-        listOf(
-            AndroidFusedLocationProvider(context),
-            AndroidPlatformLocationProvider(context),
-        ),
-    ),
+class AndroidCurrentLocationRepository @Inject constructor(
+    @ApplicationContext context: Context,
+    private val provider: AdaptiveCurrentLocationProvider,
 ) : CurrentLocationRepository {
 
     private val appContext = context.applicationContext

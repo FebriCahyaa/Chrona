@@ -40,6 +40,7 @@ import com.febricahyaa.clockapp.R
 import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.model.ClockDisplayMode
 import com.febricahyaa.clockapp.model.ClockSettings
+import com.febricahyaa.clockapp.model.SecondsDisplayMode
 import com.febricahyaa.clockapp.model.ThemeAccent
 import com.febricahyaa.clockapp.ui.components.ChronaScaffold
 import com.febricahyaa.clockapp.ui.update.ChronaReleaseTimeline
@@ -53,6 +54,7 @@ fun SettingsSheetContent(
     onAccentChange: (ThemeAccent) -> Unit,
     onFormatChange: (Boolean) -> Unit,
     onShowSecondsChange: (Boolean) -> Unit,
+    onSecondsDisplayModeChange: (SecondsDisplayMode) -> Unit,
     onClockDisplayModeChange: (ClockDisplayMode) -> Unit,
     onOpenNotificationSettings: () -> Unit = {},
     notificationPermissionGranted: Boolean = true,
@@ -102,6 +104,7 @@ fun SettingsSheetContent(
                         onAccentChange = onAccentChange,
                         onFormatChange = onFormatChange,
                         onShowSecondsChange = onShowSecondsChange,
+                        onSecondsDisplayModeChange = onSecondsDisplayModeChange,
                         onClockDisplayModeChange = onClockDisplayModeChange,
                         onOpenNotificationSettings = onOpenNotificationSettings,
                         notificationPermissionGranted = notificationPermissionGranted,
@@ -119,6 +122,7 @@ fun SettingsSheetContent(
                         onAccentChange = onAccentChange,
                         onFormatChange = onFormatChange,
                         onShowSecondsChange = onShowSecondsChange,
+                        onSecondsDisplayModeChange = onSecondsDisplayModeChange,
                         onClockDisplayModeChange = onClockDisplayModeChange,
                         onOpenNotificationSettings = onOpenNotificationSettings,
                         notificationPermissionGranted = notificationPermissionGranted,
@@ -136,6 +140,7 @@ fun SettingsSheetContent(
                         onAccentChange = onAccentChange,
                         onFormatChange = onFormatChange,
                         onShowSecondsChange = onShowSecondsChange,
+                        onSecondsDisplayModeChange = onSecondsDisplayModeChange,
                         onClockDisplayModeChange = onClockDisplayModeChange,
                         onOpenNotificationSettings = onOpenNotificationSettings,
                         notificationPermissionGranted = notificationPermissionGranted,
@@ -170,6 +175,7 @@ private fun SettingsCompactDashboard(
     onAccentChange: (ThemeAccent) -> Unit,
     onFormatChange: (Boolean) -> Unit,
     onShowSecondsChange: (Boolean) -> Unit,
+    onSecondsDisplayModeChange: (SecondsDisplayMode) -> Unit,
     onClockDisplayModeChange: (ClockDisplayMode) -> Unit,
     onOpenNotificationSettings: () -> Unit,
     notificationPermissionGranted: Boolean,
@@ -183,7 +189,7 @@ private fun SettingsCompactDashboard(
     Spacer(Modifier.height(18.dp))
     SettingsAppearanceSection(settings, onThemeModeChange, onAccentChange)
     Spacer(Modifier.height(18.dp))
-    SettingsClockSection(settings, use24HourFormat, onFormatChange, onShowSecondsChange, onClockDisplayModeChange)
+    SettingsClockSection(settings, use24HourFormat, onFormatChange, onShowSecondsChange, onSecondsDisplayModeChange, onClockDisplayModeChange)
     Spacer(Modifier.height(18.dp))
     SettingsNotificationsSection(notificationPermissionGranted, onOpenNotificationSettings)
     Spacer(Modifier.height(18.dp))
@@ -200,6 +206,7 @@ private fun SettingsMediumDashboard(
     onAccentChange: (ThemeAccent) -> Unit,
     onFormatChange: (Boolean) -> Unit,
     onShowSecondsChange: (Boolean) -> Unit,
+    onSecondsDisplayModeChange: (SecondsDisplayMode) -> Unit,
     onClockDisplayModeChange: (ClockDisplayMode) -> Unit,
     onOpenNotificationSettings: () -> Unit,
     notificationPermissionGranted: Boolean,
@@ -219,7 +226,7 @@ private fun SettingsMediumDashboard(
         SettingsDashboardPanel(Modifier.weight(1f)) {
             SettingsAppearanceSection(settings, onThemeModeChange, onAccentChange)
             Spacer(Modifier.height(22.dp))
-            SettingsClockSection(settings, use24HourFormat, onFormatChange, onShowSecondsChange, onClockDisplayModeChange)
+            SettingsClockSection(settings, use24HourFormat, onFormatChange, onShowSecondsChange, onSecondsDisplayModeChange, onClockDisplayModeChange)
         }
         SettingsDashboardPanel(Modifier.weight(1f)) {
             SettingsNotificationsSection(notificationPermissionGranted, onOpenNotificationSettings)
@@ -239,6 +246,7 @@ private fun SettingsExpandedDashboard(
     onAccentChange: (ThemeAccent) -> Unit,
     onFormatChange: (Boolean) -> Unit,
     onShowSecondsChange: (Boolean) -> Unit,
+    onSecondsDisplayModeChange: (SecondsDisplayMode) -> Unit,
     onClockDisplayModeChange: (ClockDisplayMode) -> Unit,
     onOpenNotificationSettings: () -> Unit,
     notificationPermissionGranted: Boolean,
@@ -256,7 +264,7 @@ private fun SettingsExpandedDashboard(
         SettingsDashboardPanel(Modifier.weight(1.15f)) {
             SettingsPreviewCard(settings, use24HourFormat)
             Spacer(Modifier.height(18.dp))
-            SettingsClockSection(settings, use24HourFormat, onFormatChange, onShowSecondsChange, onClockDisplayModeChange)
+            SettingsClockSection(settings, use24HourFormat, onFormatChange, onShowSecondsChange, onSecondsDisplayModeChange, onClockDisplayModeChange)
         }
         SettingsDashboardPanel(Modifier.weight(1f)) {
             SettingsAppearanceSection(settings, onThemeModeChange, onAccentChange)
@@ -299,6 +307,7 @@ fun SettingsScreen(
     onAccentChange: (ThemeAccent) -> Unit,
     onFormatChange: (Boolean) -> Unit,
     onShowSecondsChange: (Boolean) -> Unit,
+    onSecondsDisplayModeChange: (SecondsDisplayMode) -> Unit,
     onClockDisplayModeChange: (ClockDisplayMode) -> Unit,
     onOpenNotificationSettings: () -> Unit = {},
     notificationPermissionGranted: Boolean = true,
@@ -320,6 +329,7 @@ fun SettingsScreen(
             onAccentChange = onAccentChange,
             onFormatChange = onFormatChange,
             onShowSecondsChange = onShowSecondsChange,
+            onSecondsDisplayModeChange = onSecondsDisplayModeChange,
             onClockDisplayModeChange = onClockDisplayModeChange,
             onOpenNotificationSettings = onOpenNotificationSettings,
             notificationPermissionGranted = notificationPermissionGranted,

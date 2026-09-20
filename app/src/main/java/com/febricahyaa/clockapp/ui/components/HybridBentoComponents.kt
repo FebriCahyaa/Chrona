@@ -95,10 +95,6 @@ fun ChronaAmbientBackdrop(modifier: Modifier = Modifier) {
     }
 }
 
-/** Backward-compatible alias for legacy callers. */
-@Composable
-fun ChronaGlassBackdrop(modifier: Modifier = Modifier) = ChronaAmbientBackdrop(modifier)
-
 @Composable
 fun HybridBentoCard(
     modifier: Modifier = Modifier,

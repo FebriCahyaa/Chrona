@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright 2026 Febrian Rahmad Cahya
+  ~ SPDX-License-Identifier: MIT
+  -->
+
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="world_clock"
+        android:enabled="true"
+        android:icon="@drawable/ic_stat_chrona"
+        android:shortcutShortLabel="@string/shortcut_world_clock_short"
+        android:shortcutLongLabel="@string/shortcut_world_clock_long">
+        <intent
+            android:action="com.febricahyaa.clockapp.action.OPEN_WORLD_CLOCK"
+            android:targetPackage="com.febricahyaa.clockapp"
+            android:targetClass="com.febricahyaa.clockapp.MainActivity" />
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="new_alarm"
+        android:enabled="true"
+        android:icon="@drawable/ic_stat_chrona"
+        android:shortcutShortLabel="@string/shortcut_new_alarm_short"
+        android:shortcutLongLabel="@string/shortcut_new_alarm_long">
+        <intent
+            android:action="com.febricahyaa.clockapp.action.OPEN_ALARM"
+            android:targetPackage="com.febricahyaa.clockapp"
+            android:targetClass="com.febricahyaa.clockapp.MainActivity" />
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="stopwatch"
+        android:enabled="true"
+        android:icon="@drawable/ic_stat_chrona"
+        android:shortcutShortLabel="@string/shortcut_stopwatch_short"
+        android:shortcutLongLabel="@string/shortcut_stopwatch_long">
+        <intent
+            android:action="com.febricahyaa.clockapp.action.OPEN_STOPWATCH"
+            android:targetPackage="com.febricahyaa.clockapp"
+            android:targetClass="com.febricahyaa.clockapp.MainActivity" />
+    </shortcut>
+</shortcuts>

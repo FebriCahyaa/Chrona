@@ -6,10 +6,13 @@
 package com.febricahyaa.clockapp.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import androidx.lifecycle.viewModelScope
 import com.febricahyaa.clockapp.data.StopwatchRepository
 import com.febricahyaa.clockapp.model.StopwatchSnapshot
 import com.febricahyaa.clockapp.time.ChronaTimeEngine
+import com.febricahyaa.clockapp.stopwatch.StopwatchServiceGateway
 import com.febricahyaa.clockapp.time.StopwatchLap
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,9 +32,11 @@ data class StopwatchUiState(
  * The repository remains responsible for persistence while the engine owns
  * the monotonic running interval and shared timing ticker.
  */
-class StopwatchViewModel(
+@HiltViewModel
+class StopwatchViewModel @Inject constructor(
     private val repository: StopwatchRepository,
     private val timeEngine: ChronaTimeEngine,
+    private val serviceGateway: StopwatchServiceGateway,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(StopwatchUiState())
@@ -59,6 +64,7 @@ class StopwatchViewModel(
                 timeEngine.startStopwatch()
             }
             persistCurrentState()
+            syncServiceState()
         }
     }
 
@@ -67,6 +73,7 @@ class StopwatchViewModel(
             if (!timeEngine.state.value.stopwatch.isRunning) return@launch
             timeEngine.recordLap()
             persistCurrentState()
+            syncServiceState()
         }
     }
 
@@ -74,6 +81,7 @@ class StopwatchViewModel(
         viewModelScope.launch {
             timeEngine.resetStopwatch()
             persistCurrentState()
+            syncServiceState()
         }
     }
 
@@ -96,6 +104,10 @@ class StopwatchViewModel(
             startedAtElapsedRealtimeMillis = resumeStartElapsedRealtimeMillis,
         )
 
+        if (canResume) {
+            serviceGateway.start()
+        }
+
         if (snapshot.running && !canResume) {
             repository.save(
                 snapshot.copy(
@@ -105,6 +117,11 @@ class StopwatchViewModel(
                 ),
             )
         }
+    }
+
+    private fun syncServiceState() {
+        if (timeEngine.state.value.stopwatch.isRunning) serviceGateway.start()
+        else serviceGateway.stop()
     }
 
     private suspend fun persistCurrentState() {

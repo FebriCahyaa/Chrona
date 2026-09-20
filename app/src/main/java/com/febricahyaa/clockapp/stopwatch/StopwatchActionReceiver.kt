@@ -8,8 +8,10 @@ package com.febricahyaa.clockapp.stopwatch
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.febricahyaa.clockapp.ClockApplication
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import com.febricahyaa.clockapp.data.StopwatchRepository
+import com.febricahyaa.clockapp.time.ChronaTimeEngine
 import com.febricahyaa.clockapp.model.StopwatchSnapshot
 import com.febricahyaa.clockapp.time.StopwatchLap
 import com.febricahyaa.clockapp.notification.LiveTimingMath
@@ -18,15 +20,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /** Handles Pause/Lap actions from the ongoing stopwatch notification. */
+@AndroidEntryPoint
 class StopwatchActionReceiver : BroadcastReceiver() {
+    @Inject lateinit var repository: StopwatchRepository
+    @Inject lateinit var timeEngine: ChronaTimeEngine
+    @Inject lateinit var serviceGateway: StopwatchServiceGateway
 
     override fun onReceive(context: Context, intent: Intent?) {
         val pendingResult = goAsync()
-        val app = context.applicationContext as ClockApplication
-
         CoroutineScope(Dispatchers.Default).launch {
             try {
-                handleAction(app, intent?.action)
+                handleAction(context.applicationContext, intent?.action)
             } finally {
                 pendingResult.finish()
             }
@@ -34,61 +38,55 @@ class StopwatchActionReceiver : BroadcastReceiver() {
     }
 
     private suspend fun handleAction(
-        app: ClockApplication,
+        appContext: Context,
         action: String?,
     ) {
-        val container = app.container
-        val repository = container.stopwatchRepository
         val snapshot = repository.load()
-
         if (!snapshot.running) {
-            StopwatchNotification.cancel(app)
+            serviceGateway.stop()
+            StopwatchNotification.cancel(appContext)
             return
         }
 
-        val now = container.timeEngine.currentElapsedRealtimeMillis()
+        val now = timeEngine.currentElapsedRealtimeMillis()
         val elapsed = LiveTimingMath.stopwatchElapsedMillis(snapshot, now)
-        val start = if (snapshot.running) now - elapsed else 0L
+        val start = now - elapsed
 
-        container.timeEngine.restoreStopwatch(
+        timeEngine.restoreStopwatch(
             elapsedMillis = elapsed,
             laps = snapshot.laps.mapIndexed { index, millis ->
                 StopwatchLap(index + 1, millis.coerceAtLeast(0L))
             },
-            running = snapshot.running,
+            running = true,
             startedAtElapsedRealtimeMillis = start,
         )
-
-        // A notification action may wake a cold process. Once the command has
-        // been applied, keep the engine ticker suspended until the Activity is
-        // visible again; notification rendering uses the system chronometer.
-        container.timeEngine.setForegroundActive(false)
+        timeEngine.setForegroundActive(false)
 
         when (action) {
-            StopwatchNotification.ACTION_PAUSE -> container.timeEngine.pauseStopwatch()
-            StopwatchNotification.ACTION_LAP -> container.timeEngine.recordLap()
+            StopwatchNotification.ACTION_PAUSE -> timeEngine.pauseStopwatch()
+            StopwatchNotification.ACTION_LAP -> timeEngine.recordLap()
             else -> return
         }
 
-        val state = container.timeEngine.state.value.stopwatch
+        val state = timeEngine.state.value.stopwatch
         repository.save(
             StopwatchSnapshot(
                 elapsedMillis = state.elapsedMillis,
                 running = state.isRunning,
                 startElapsedRealtimeMillis = if (state.isRunning) {
-                    container.timeEngine.currentElapsedRealtimeMillis() - state.elapsedMillis
-                } else {
-                    0L
-                },
-                savedElapsedRealtimeMillis = container.timeEngine.currentElapsedRealtimeMillis(),
+                    timeEngine.currentElapsedRealtimeMillis() - state.elapsedMillis
+                } else 0L,
+                savedElapsedRealtimeMillis = timeEngine.currentElapsedRealtimeMillis(),
                 laps = state.laps.map(StopwatchLap::elapsedMillis),
             ),
         )
 
         if (state.isRunning) {
-            StopwatchNotification.show(app, state.elapsedMillis)
+            serviceGateway.start()
+            StopwatchNotification.show(appContext, state.elapsedMillis)
         } else {
-            StopwatchNotification.cancel(app)
+            serviceGateway.stop()
+            StopwatchNotification.cancel(appContext)
         }
     }
 

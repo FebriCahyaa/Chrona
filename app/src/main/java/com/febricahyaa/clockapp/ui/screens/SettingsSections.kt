@@ -54,6 +54,7 @@ import com.febricahyaa.clockapp.time.ChronaTimeFormatter
 import com.febricahyaa.clockapp.model.AppThemeMode
 import com.febricahyaa.clockapp.model.ClockDisplayMode
 import com.febricahyaa.clockapp.model.ClockSettings
+import com.febricahyaa.clockapp.model.SecondsDisplayMode
 import com.febricahyaa.clockapp.model.ThemeAccent
 import com.febricahyaa.clockapp.ui.components.HybridBentoCard
 import com.febricahyaa.clockapp.ui.components.SectionEyebrow
@@ -135,6 +136,12 @@ fun SettingsAppearanceSection(
             Modifier.weight(1f),
             onThemeModeChange,
         )
+        SettingsThemeChoice(
+            AppThemeMode.GLASS,
+            settings.themeMode == AppThemeMode.GLASS,
+            Modifier.weight(1f),
+            onThemeModeChange,
+        )
     }
 
     Spacer(Modifier.height(20.dp))
@@ -187,6 +194,7 @@ fun SettingsClockSection(
     use24HourFormat: Boolean,
     onFormatChange: (Boolean) -> Unit,
     onShowSecondsChange: (Boolean) -> Unit,
+    onSecondsDisplayModeChange: (SecondsDisplayMode) -> Unit,
     onClockDisplayModeChange: (ClockDisplayMode) -> Unit,
 ) {
     SettingsSectionTitle(Icons.Filled.Tune, stringResource(R.string.settings_clock_section))
@@ -203,6 +211,52 @@ fun SettingsClockSection(
         settings.showSeconds,
         onShowSecondsChange,
     )
+
+    Spacer(Modifier.height(12.dp))
+    Text(
+        stringResource(R.string.settings_seconds_display_title),
+        style = MaterialTheme.typography.titleSmall,
+        fontWeight = FontWeight.SemiBold,
+    )
+    Spacer(Modifier.height(3.dp))
+    Text(
+        stringResource(R.string.settings_seconds_display_subtitle),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    Spacer(Modifier.height(7.dp))
+
+    val secondModes = listOf(
+        SecondsDisplayMode.STACKED to R.string.settings_seconds_mode_stacked,
+        SecondsDisplayMode.INLINE to R.string.settings_seconds_mode_inline,
+        SecondsDisplayMode.FADING_SCROLL to R.string.settings_seconds_mode_fading,
+        SecondsDisplayMode.MINIMAL to R.string.settings_seconds_mode_minimal,
+        SecondsDisplayMode.CIRCULAR to R.string.settings_seconds_mode_circular,
+    )
+    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+        secondModes.take(3).forEachIndexed { index, (mode, labelRes) ->
+            SegmentedButton(
+                selected = settings.secondsDisplayMode == mode,
+                onClick = { onSecondsDisplayModeChange(mode) },
+                shape = SegmentedButtonDefaults.itemShape(index = index, count = 3),
+            ) {
+                Text(stringResource(labelRes), maxLines = 1)
+            }
+        }
+    }
+    Spacer(Modifier.height(6.dp))
+    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+        secondModes.drop(3).forEachIndexed { index, (mode, labelRes) ->
+            SegmentedButton(
+                selected = settings.secondsDisplayMode == mode,
+                onClick = { onSecondsDisplayModeChange(mode) },
+                shape = SegmentedButtonDefaults.itemShape(index = index, count = 2),
+            ) {
+                Text(stringResource(labelRes), maxLines = 1)
+            }
+        }
+        Spacer(Modifier.weight(1f))
+    }
 
     Spacer(Modifier.height(10.dp))
     Text(
@@ -528,6 +582,7 @@ private fun SettingsThemeChoice(
                 when (mode) {
                     AppThemeMode.NEUMORPHIC -> stringResource(R.string.settings_theme_soft)
                     AppThemeMode.MATERIAL_YOU -> stringResource(R.string.settings_theme_dynamic)
+                    AppThemeMode.GLASS -> stringResource(R.string.settings_theme_glass)
                     else -> mode.name.lowercase().replaceFirstChar { it.uppercase() }
                 },
                 fontSize = 11.sp,

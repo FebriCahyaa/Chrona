@@ -8,12 +8,14 @@ package com.febricahyaa.clockapp.timer
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import android.content.Intent
 import android.os.Build
 import android.util.Log
+import javax.inject.Inject
 
 /** Schedules timer expiry with exact semantics when permitted by the OS. */
-class AndroidTimerScheduler(context: Context) : TimerSchedulerGateway {
+class AndroidTimerScheduler @Inject constructor(@ApplicationContext context: Context) : TimerSchedulerGateway {
     private val appContext = context.applicationContext
     private val alarmManager: AlarmManager
         get() = appContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager

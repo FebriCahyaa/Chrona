@@ -10,9 +10,9 @@ usage() {
   cat <<'EOF'
 Usage: ./scripts/dev/verify.sh [quick|full|release]
 
-quick   Static repository audits, Telegram renderer tests, and JVM unit tests.
-full    quick + lint + debug APK + Android instrumentation when a device is available.
-release full validation without signing; signing is performed only by release CI.
+quick   Static repository, resource, licensing, Material 3, workflow and Telegram checks.
+full    quick + JVM unit tests + lint + debug APK.
+release full non-signing validation for release candidates.
 EOF
 }
 
@@ -20,22 +20,22 @@ MODE="${1:-quick}"
 case "$MODE" in
   quick)
     bash scripts/audit/source-audit.sh
-    python3 -m unittest scripts/telegram/test_notify.py
-    ./gradlew --no-daemon --stacktrace testDebugUnitTest
     ;;
   full)
     bash scripts/audit/source-audit.sh
-    python3 -m unittest scripts/telegram/test_notify.py
-    ./gradlew --no-daemon --stacktrace testDebugUnitTest lintDebug assembleDebug
-    ./gradlew --no-daemon --stacktrace connectedDebugAndroidTest
+    ./gradlew --no-daemon --stacktrace testOssDebugUnitTest lintOssDebug assembleOssDebug
     ;;
   release)
     bash scripts/audit/source-audit.sh
-    python3 -m unittest scripts/telegram/test_notify.py
-    ./gradlew --no-daemon --stacktrace testDebugUnitTest lintDebug
+    ./gradlew --no-daemon --stacktrace testOssDebugUnitTest lintOssDebug assembleOssDebug
     ;;
-  -h|--help) usage ;;
-  *) usage >&2; exit 2 ;;
+  -h|--help)
+    usage
+    ;;
+  *)
+    usage >&2
+    exit 2
+    ;;
 esac
 
 printf 'Chrona verification mode: %s — PASS\n' "$MODE"

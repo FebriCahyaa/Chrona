@@ -5,11 +5,6 @@
 
 package com.febricahyaa.clockapp.model
 
-/** Visual themes used by Chrona's design system.
- *
- * LIGHT/DARK remain persisted compatibility modes. GLASS is an active visual
- * mode while retaining the existing settings storage contract.
- */
 enum class AppThemeMode {
     NEUMORPHIC,
     MATERIAL_YOU,
@@ -21,6 +16,14 @@ enum class AppThemeMode {
 enum class ClockDisplayMode {
     DIGITAL,
     ANALOG,
+}
+
+enum class SecondsDisplayMode {
+    STACKED,
+    INLINE,
+    FADING_SCROLL,
+    MINIMAL,
+    CIRCULAR,
 }
 
 enum class ThemeAccent {
@@ -38,6 +41,7 @@ data class ClockSettings(
     val isDarkTheme: Boolean = true,
     val themeMode: AppThemeMode = AppThemeMode.NEUMORPHIC,
     val showSeconds: Boolean = true,
+    val secondsDisplayMode: SecondsDisplayMode = SecondsDisplayMode.STACKED,
     val themeAccent: ThemeAccent = ThemeAccent.SYSTEM,
     val clockDisplayMode: ClockDisplayMode = ClockDisplayMode.DIGITAL,
 )

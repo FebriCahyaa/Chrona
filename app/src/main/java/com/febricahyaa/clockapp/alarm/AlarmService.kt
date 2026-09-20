@@ -10,19 +10,23 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
-import com.febricahyaa.clockapp.ClockApplication
 import com.febricahyaa.clockapp.core.AlarmTriggerPolicy
+import com.febricahyaa.clockapp.data.AlarmRepository
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
-/**
- * Owns the alarm-ringing lifecycle. AlarmReceiver remains intentionally tiny:
- * it only wakes this service. The service then owns foreground state,
- * ringtone/vibration, and the alarm state transition.
- */
+@AndroidEntryPoint
 class AlarmService : Service() {
+    @Inject lateinit var repository: AlarmRepository
+    @Inject lateinit var stateManager: AlarmStateManager
+    @Inject lateinit var alarmSoundPlayer: AlarmSoundGateway
 
-    private val appContainer
-        get() = (application as ClockApplication).container
-
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var currentAlarmId: Long = -1L
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -35,39 +39,44 @@ class AlarmService : Service() {
         currentAlarmId = alarmId
         val label = intent?.getStringExtra(AlarmIntentKeys.EXTRA_ALARM_LABEL).orEmpty()
         val isSnooze = intent?.getBooleanExtra(AlarmIntentKeys.EXTRA_ALARM_IS_SNOOZE, false) ?: false
-        val alarm = appContainer.alarmRepository.load().firstOrNull { it.id == alarmId }
-        if (!AlarmTriggerPolicy.shouldRing(alarm, isSnooze)) {
-            stopSelf(startId)
-            return START_NOT_STICKY
-        }
-        val notification = AlarmNotificationFactory.build(this, alarmId, label)
 
+        startForegroundSafely(
+            AlarmReceiver.notificationId(alarmId),
+            AlarmNotificationFactory.build(this, alarmId, label),
+        )
+
+        serviceScope.launch {
+            val alarm = repository.load().firstOrNull { it.id == alarmId }
+            if (!AlarmTriggerPolicy.shouldRing(alarm, isSnooze)) {
+                stopSelf(startId)
+                return@launch
+            }
+
+            stateManager.onAlarmTriggered(alarmId)
+            alarmSoundPlayer.start(
+                ringtoneUri = alarm?.ringtoneUri,
+                vibrate = alarm?.vibrate ?: true,
+            )
+        }
+        return START_NOT_STICKY
+    }
+
+    private fun startForegroundSafely(id: Int, notification: android.app.Notification) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             startForeground(
-                AlarmReceiver.notificationId(alarmId),
+                id,
                 notification,
                 ServiceInfo.FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED,
             )
         } else {
-            startForeground(AlarmReceiver.notificationId(alarmId), notification)
+            startForeground(id, notification)
         }
-
-        // Reconcile durable alarm state before starting any user-visible side
-        // effect. If sound startup fails or the process dies immediately after
-        // this point, the alarm is still correctly consumed/re-scheduled.
-        appContainer.alarmStateManager.onAlarmTriggered(alarmId)
-        appContainer.alarmSoundPlayer.start(
-            ringtoneUri = alarm?.ringtoneUri,
-            vibrate = alarm?.vibrate ?: true,
-        )
-        return START_NOT_STICKY
     }
 
     override fun onDestroy() {
-        appContainer.alarmSoundPlayer.stop()
-        if (currentAlarmId >= 0L) {
-            AlarmReceiver.cancelNotification(this, currentAlarmId)
-        }
+        serviceScope.cancel()
+        alarmSoundPlayer.stop()
+        if (currentAlarmId >= 0L) AlarmReceiver.cancelNotification(this, currentAlarmId)
         super.onDestroy()
     }
 

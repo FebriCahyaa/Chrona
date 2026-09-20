@@ -61,7 +61,7 @@ object ThemeEngine {
      * The palette remains fully Material 3 compatible; translucency is confined
      * to surface roles so the ambient backdrop can remain visible through cards
      * and top-app-bar chrome. Full backdrop refraction/AGSL belongs to a later
-     * rendering phase and is deliberately not forced into every component here.
+     * advanced rendering is deliberately kept behind explicit theme surfaces rather than forced into every component.
      */
     fun glassScheme(seed: Color, dark: Boolean): ColorScheme {
         val base = schemeFor(seed, dark)

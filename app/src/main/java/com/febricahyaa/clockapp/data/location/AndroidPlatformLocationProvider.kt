@@ -7,6 +7,7 @@ package com.febricahyaa.clockapp.data.location
 
 import android.Manifest
 import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
@@ -19,12 +20,13 @@ import androidx.core.content.ContextCompat
 import androidx.core.location.LocationManagerCompat
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
+import javax.inject.Inject
 
 /**
  * Pure Android platform location fallback for devices without usable GMS.
  */
-class AndroidPlatformLocationProvider(
-    context: Context,
+class AndroidPlatformLocationProvider @Inject constructor(
+    @ApplicationContext context: Context,
 ) : CurrentLocationProvider {
 
     private val appContext = context.applicationContext

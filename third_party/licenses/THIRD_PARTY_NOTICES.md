@@ -17,6 +17,7 @@ The following direct dependencies are declared in `gradle/libs.versions.toml` an
 - Google Play services Location (`com.google.android.gms:play-services-location:21.4.0`) — Apache License 2.0.
 - AndroidX Location Button Compose (`androidx.core.locationbutton:locationbutton-compose:1.0.0-alpha01`) — Apache License 2.0.
 - JUnit 4.13.2 — Eclipse Public License 1.0.
+- Hilt / AndroidX Hilt, Room, AndroidX Metrics, Lottie Android, MockK, AndroidX Test/Espresso and Firebase Crashlytics/NDK — Apache License 2.0.
 
 ## Pinned transitive dependencies
 

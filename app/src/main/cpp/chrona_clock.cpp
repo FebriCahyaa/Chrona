@@ -7,9 +7,10 @@
 #include <cstdint>
 #include <cstring>
 #include "chrona_time.h"
+#include "chrona_audio.h"
 
 namespace {
-constexpr char kBridgeClass[] = "com/febricahyaa/clockapp/core/ChronaNativeBridge";
+constexpr char kBridgeClass[] = "com/febricahyaa/clockapp/nativelayer/ChronaNativeBridge";
 
 jfloatArray make_float_array(JNIEnv* env, const float* values, jsize size) {
     const jfloatArray result = env->NewFloatArray(size);
@@ -104,6 +105,14 @@ jdouble native_cubic_bezier(
     return chrona::cubic_bezier(t, p0, p1, p2, p3);
 }
 
+jboolean native_start_low_latency_alert_tone(JNIEnv*, jclass) {
+    return chrona::start_low_latency_alert_tone() ? JNI_TRUE : JNI_FALSE;
+}
+
+void native_stop_low_latency_alert_tone(JNIEnv*, jclass) {
+    chrona::stop_low_latency_alert_tone();
+}
+
 // JNI class/method names and descriptors below are ABI metadata required by RegisterNatives;
 // they intentionally remain in native source and are not Android UI/localization resources.
 JNINativeMethod kMethods[] = {
@@ -115,6 +124,8 @@ JNINativeMethod kMethods[] = {
         {const_cast<char*>("nativeMoonState"), const_cast<char*>("(J)[D"), reinterpret_cast<void*>(native_moon_state)},
         {const_cast<char*>("nativeSpringProgress"), const_cast<char*>("(DDDD)D"), reinterpret_cast<void*>(native_spring_progress)},
         {const_cast<char*>("nativeCubicBezier"), const_cast<char*>("(DDDDD)D"), reinterpret_cast<void*>(native_cubic_bezier)},
+        {const_cast<char*>("nativeStartLowLatencyAlertTone"), const_cast<char*>("()Z"), reinterpret_cast<void*>(native_start_low_latency_alert_tone)},
+        {const_cast<char*>("nativeStopLowLatencyAlertTone"), const_cast<char*>("()V"), reinterpret_cast<void*>(native_stop_low_latency_alert_tone)},
 };
 }
 

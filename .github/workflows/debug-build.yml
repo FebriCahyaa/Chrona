@@ -1,0 +1,94 @@
+# Copyright (c) 2026 Febrian Rahmad Cahya. All rights reserved.
+# SPDX-License-Identifier: MIT
+#
+# Debug validation and multi-ABI packaging. APK artifacts are optional and
+# only uploaded when a maintainer explicitly dispatches this workflow.
+name: Chrona Debug Build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      upload_artifact:
+        description: Upload debug APK artifacts
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chrona-debug-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validation:
+    name: Debug / Unit + Lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: ./.github/actions/setup-android
+        with:
+          install-native: 'false'
+
+      - name: Unit tests
+        run: ./gradlew --no-daemon --stacktrace testOssDebugUnitTest
+
+      - name: Lint
+        run: ./gradlew --no-daemon --stacktrace lintOssDebug
+
+  instrumented-test:
+    name: Debug / Instrumented Compose + Espresso
+    needs: validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: ./.github/actions/setup-android
+        with:
+          install-native: 'true'
+
+      - name: Run Android instrumentation tests
+        uses: reactivecircus/android-emulator-runner@v2.38.0
+        with:
+          api-level: 37
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          emulator-options: -no-window -gpu swiftshader -no-snapshot -noaudio -no-boot-anim
+          disable-animations: true
+          emulator-boot-timeout: 900
+          script: ./gradlew --no-daemon --stacktrace connectedOssDebugAndroidTest
+
+  apk:
+    name: Debug / ${{ matrix.abi }}
+    needs: validation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        abi: [arm64-v8a, armeabi-v7a, x86, x86_64]
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: ./.github/actions/setup-android
+        with:
+          install-native: 'true'
+
+      - name: Build debug APK
+        run: ./gradlew --no-daemon --stacktrace assembleOssDebug -PchronaTargetAbi=${{ matrix.abi }}
+
+      - name: Upload APK artifact
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.upload_artifact }}
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: chrona-debug-${{ matrix.abi }}-${{ github.sha }}
+          path: app/build/outputs/apk/oss/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14

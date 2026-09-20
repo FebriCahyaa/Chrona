@@ -10,6 +10,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_library(chrona_clock SHARED
     chrona_clock.cpp
     chrona_time.cpp
+    chrona_audio.cpp
 )
 
 target_compile_features(chrona_clock PRIVATE cxx_std_20)
@@ -23,4 +24,4 @@ target_compile_options(chrona_clock PRIVATE
     -Werror=return-type
 )
 
-target_link_libraries(chrona_clock android log)
+target_link_libraries(chrona_clock aaudio android log)
