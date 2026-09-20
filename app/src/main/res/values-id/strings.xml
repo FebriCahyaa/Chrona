@@ -272,36 +272,5 @@
     <string name="legal_license_title">Lisensi</string>
     <string name="legal_license_description">Atribusi sumber terbuka dan pihak ketiga</string>
     <string name="legal_back">Kembali</string>
-
-    <string name="world_location_notice_searching">Mencari lokasi Anda…</string>
-    <string name="world_location_notice_unavailable">Lokasi tidak tersedia</string>
-    <string name="world_location_notice_denied">Akses lokasi ditolak</string>
-    <string name="world_location_notice_settings">Buka Pengaturan</string>
-    <string name="world_map_active_region">Wilayah aktif: %1$s</string>
-    <string name="world_map_location_unavailable">Aktifkan lokasi untuk menampilkan posisi perangkat.</string>
-    <string name="world_map_location_outside_catalog">Posisi perangkat berada di luar geometri peta yang tersedia.</string>
-    <string name="world_back_to_clock">Kembali ke jam</string>
-    <string name="settings_seconds_display_title">Tampilan detik</string>
-    <string name="settings_seconds_display_subtitle">Pilih cara detik ditampilkan pada jam digital.</string>
-    <string name="settings_seconds_mode_stacked">Bertumpuk</string>
-    <string name="settings_seconds_mode_inline">Satu baris</string>
-    <string name="settings_seconds_mode_fading">Memudar</string>
-    <string name="settings_seconds_mode_minimal">Minimal</string>
-    <string name="settings_seconds_mode_circular">Lingkaran</string>
-    <string name="shortcut_new_alarm_short">Alarm baru</string>
-    <string name="shortcut_new_alarm_long">Buka Alarm Chrona</string>
-    <string name="shortcut_world_clock_short">Jam dunia</string>
-    <string name="shortcut_world_clock_long">Buka Jam Dunia Chrona</string>
-    <string name="shortcut_stopwatch_short">Stopwatch</string>
-    <string name="shortcut_stopwatch_long">Buka Stopwatch Chrona</string>
-
-
-    <string name="world_map_active_country">Wilayah aktif: %1$s</string>
-
-    <string name="world_12_hour">12 jam</string>
-    <string name="world_24_hour">24 jam</string>
-
-    <string name="settings_theme_glass">Kaca</string>
-    <string name="timer_finished_title">Timer selesai</string>
-    <string name="timer_finished_stop">Stop</string>
+    <!-- Final World Clock / Android system integration -->
 </resources>
