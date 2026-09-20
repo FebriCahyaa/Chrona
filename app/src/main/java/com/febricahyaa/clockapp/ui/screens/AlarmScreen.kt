@@ -33,7 +33,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Alarm
-import androidx.compose.material.icons.filled.Backspace
+import androidx.compose.material.icons.automirrored.filled.Backspace
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Edit
@@ -844,7 +844,7 @@ private fun AlarmTimeKeypad(
                 onClick = { onDigit(0) },
             )
             AlarmKeypadButton(
-                icon = Icons.Filled.Backspace,
+                icon = Icons.AutoMirrored.Filled.Backspace,
                 contentDescription = stringResource(R.string.timer_delete_digit),
                 enabled = enabled,
                 modifier = Modifier.weight(1f),

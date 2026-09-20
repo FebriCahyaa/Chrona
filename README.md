@@ -126,7 +126,7 @@ Circular mode maps `00..59` to a determinate progress value and uses `ProgressIn
 Chrona keeps OS-owned behavior in OS-facing components:
 
 - `AlarmManager.setAlarmClock()` for alarm-clock scheduling.
-- `USE_EXACT_ALARM` / exact-alarm compatibility handling.
+- `SCHEDULE_EXACT_ALARM` for user-controlled exact-alarm access.
 - Foreground services for ringing/completion experiences that remain active outside the main UI.
 - Broadcast receivers for boot, timezone and time-change reconciliation.
 - `appwidget-provider` metadata under `res/xml/` for the launcher widget.

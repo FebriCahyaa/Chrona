@@ -52,6 +52,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Qualifier
 import javax.inject.Singleton
+import kotlin.jvm.JvmSuppressWildcards
 
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
@@ -88,7 +89,7 @@ object ChronaProvidersModule {
     @Singleton
     fun provideDatabase(@dagger.hilt.android.qualifiers.ApplicationContext context: Context): ChronaDatabase =
         Room.databaseBuilder(context, ChronaDatabase::class.java, "chrona.db")
-            .fallbackToDestructiveMigrationOnDowngrade()
+            .fallbackToDestructiveMigrationOnDowngrade(dropAllTables = true)
             .build()
 
     @Provides
@@ -106,7 +107,7 @@ object ChronaProvidersModule {
     @Provides
     @Singleton
     fun provideAdaptiveLocationProvider(
-        providers: List<CurrentLocationProvider>,
+        providers: List<@JvmSuppressWildcards CurrentLocationProvider>,
     ): AdaptiveCurrentLocationProvider = AdaptiveCurrentLocationProvider(providers)
 
     @Provides
