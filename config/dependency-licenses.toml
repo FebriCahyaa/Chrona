@@ -146,6 +146,16 @@ license = "Apache-2.0"
 upstream = "https://developer.android.com/training/testing"
 scope = "direct"
 
+[licenses."com.google.android.gms:play-services-location"]
+license = "Apache-2.0"
+upstream = "https://developers.google.com/android/guides/setup"
+scope = "direct"
+
+[licenses."androidx.core.locationbutton:locationbutton-compose"]
+license = "Apache-2.0"
+upstream = "https://developer.android.com/guide/topics/permissions/private-alternatives/location-button"
+scope = "direct"
+
 [licenses."org.bitbucket.b_c:jose4j"]
 license = "Apache-2.0"
 upstream = "https://bitbucket.org/b_c/jose4j"

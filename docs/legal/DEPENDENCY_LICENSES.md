@@ -15,6 +15,8 @@ Chrona's AndroidX, Jetpack Compose, Material 3, Navigation, Retrofit, desugaring
 | Retrofit / converter-gson | Apache-2.0 | github.com/square/retrofit |
 | desugar_jdk_libs | Apache-2.0 | github.com/google/desugar_jdk_libs |
 | androidx.test.ext:junit | Apache-2.0 | developer.android.com |
+| Google Play services Location | Apache-2.0 | developers.google.com |
+| AndroidX Location Button Compose | Apache-2.0 | developer.android.com |
 | JUnit 4 | EPL-1.0 | junit.org |
 
 ## Pinned transitive artifacts
