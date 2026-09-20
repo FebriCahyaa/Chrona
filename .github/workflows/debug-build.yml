@@ -67,25 +67,95 @@ jobs:
             echo 'WARNING: /dev/kvm is unavailable; emulator will use software acceleration.'
           fi
 
+      - name: Install instrumentation emulator packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          sdkmanager --sdk_root="${ANDROID_SDK_ROOT}" \
+            'platforms;android-37.0' \
+            'platform-tools' \
+            'emulator' \
+            'system-images;android-37.0;google_apis;x86_64'
+
+      - name: Create instrumentation AVD
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo no | avdmanager create avd \
+            --force \
+            --name chrona-test \
+            --package 'system-images;android-37.0;google_apis;x86_64' \
+            --device 'pixel_2'
+          cat >> "${ANDROID_AVD_HOME:-$HOME/.android/avd}/chrona-test.avd/config.ini" <<'EOF'
+          hw.cpu.ncore=4
+          hw.ramSize=4096M
+          hw.heapSize=512M
+          hw.keyboard=yes
+          EOF
+
       - name: Run Android instrumentation tests
-        uses: reactivecircus/android-emulator-runner@v2.38.0
-        with:
-          # The runner action installs its platform from `api-level`.
-          # Use the Android 17 base platform for the emulator; the app itself
-          # compiles against the separate 37.1 minor SDK in setup-android.
-          api-level: '37.0'
-          system-image-api-level: '37.0'
-          target: google_apis
-          arch: x86_64
-          profile: pixel_2
-          cores: 4
-          ram-size: 4096M
-          heap-size: 512M
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none -camera-front none -no-metrics
-          disable-animations: true
-          emulator-boot-timeout: 900
-          disable-linux-hw-accel: auto
-          script: ./gradlew --no-daemon --stacktrace connectedOssDebugAndroidTest
+        shell: bash
+        env:
+          ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL: '10'
+        run: |
+          set -euo pipefail
+
+          AVD_NAME='chrona-test'
+          EMULATOR_PORT='5554'
+          ADB="${ANDROID_SDK_ROOT}/platform-tools/adb"
+          EMULATOR="${ANDROID_SDK_ROOT}/emulator/emulator"
+
+          cleanup() {
+            set +e
+            "$ADB" -s "emulator-${EMULATOR_PORT}" emu kill >/dev/null 2>&1 || true
+            pkill -f "${EMULATOR}.*-avd ${AVD_NAME}" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          "$ADB" start-server
+
+          "$EMULATOR" \
+            -port "${EMULATOR_PORT}" \
+            -avd "${AVD_NAME}" \
+            -no-window \
+            -gpu swiftshader_indirect \
+            -no-snapshot \
+            -noaudio \
+            -no-boot-anim \
+            -camera-back none \
+            -camera-front none \
+            -no-metrics \
+            -accel on \
+            > "${RUNNER_TEMP}/chrona-emulator.log" 2>&1 &
+          EMULATOR_PID=$!
+
+          for _ in $(seq 1 180); do
+            STATE=$("$ADB" -s "emulator-${EMULATOR_PORT}" get-state 2>/dev/null || true)
+            if [[ "$STATE" == 'device' ]]; then
+              BOOT=$("$ADB" -s "emulator-${EMULATOR_PORT}" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+              if [[ "$BOOT" == '1' ]]; then
+                break
+              fi
+            fi
+            if ! kill -0 "$EMULATOR_PID" 2>/dev/null; then
+              echo 'ERROR: Android emulator exited before boot completion.'
+              cat "${RUNNER_TEMP}/chrona-emulator.log" || true
+              exit 1
+            fi
+            sleep 2
+          done
+
+          if [[ "$("$ADB" -s "emulator-${EMULATOR_PORT}" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)" != '1' ]]; then
+            echo 'ERROR: Android emulator boot timed out.'
+            cat "${RUNNER_TEMP}/chrona-emulator.log" || true
+            exit 1
+          fi
+
+          "$ADB" -s "emulator-${EMULATOR_PORT}" shell settings put global window_animation_scale 0.0 || true
+          "$ADB" -s "emulator-${EMULATOR_PORT}" shell settings put global transition_animation_scale 0.0 || true
+          "$ADB" -s "emulator-${EMULATOR_PORT}" shell settings put global animator_duration_scale 0.0 || true
+
+          ./gradlew --no-daemon --stacktrace connectedOssDebugAndroidTest
 
   apk:
     name: Debug / ${{ matrix.abi }}
