@@ -6,7 +6,9 @@
 package com.febricahyaa.clockapp.timer
 
 import android.app.Activity
+import android.os.Build
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -27,8 +29,7 @@ import com.febricahyaa.clockapp.ui.theme.ChronaTheme
 class TimerRingActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setShowWhenLocked(true)
-        setTurnScreenOn(true)
+        setUpLockScreenVisibility()
         setContent {
             ChronaTheme(ClockSettings()) {
                 Column(
@@ -54,4 +55,19 @@ class TimerRingActivity : ComponentActivity() {
             }
         }
     }
+    private fun setUpLockScreenVisibility() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(true)
+            setTurnScreenOn(true)
+        } else {
+            @Suppress("DEPRECATION")
+            window.addFlags(
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
+                    WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
+                    WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD,
+            )
+        }
+    }
+
 }

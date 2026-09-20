@@ -5,6 +5,7 @@
 
 package com.febricahyaa.clockapp.data.location
 
+import android.annotation.SuppressLint
 import android.Manifest
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -47,6 +48,7 @@ class AndroidFusedLocationProvider @Inject constructor(
             .isGooglePlayServicesAvailable(appContext) == ConnectionResult.SUCCESS &&
             LocationManagerCompat.isLocationEnabled(locationManager)
 
+    @SuppressLint("MissingPermission")
     override suspend fun getFreshLocation(): Location? {
         if (!isAvailable || !hasLocationPermission()) return null
 
@@ -95,6 +97,7 @@ class AndroidFusedLocationProvider @Inject constructor(
         }.getOrNull()
     }
 
+    @SuppressLint("MissingPermission")
     override suspend fun getLastKnownLocation(): Location? {
         if (!isAvailable || !hasLocationPermission()) return null
 

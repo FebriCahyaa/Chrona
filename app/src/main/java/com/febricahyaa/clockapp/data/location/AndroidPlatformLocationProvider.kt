@@ -5,6 +5,7 @@
 
 package com.febricahyaa.clockapp.data.location
 
+import android.annotation.SuppressLint
 import android.Manifest
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -48,6 +49,7 @@ class AndroidPlatformLocationProvider @Inject constructor(
         }
     }
 
+    @SuppressLint("MissingPermission")
     override suspend fun getLastKnownLocation(): Location? {
         if (!hasLocationPermission()) return null
 
@@ -68,6 +70,7 @@ class AndroidPlatformLocationProvider @Inject constructor(
     }
 
     @RequiresApi(Build.VERSION_CODES.R)
+    @SuppressLint("MissingPermission")
     private suspend fun requestCurrentLocation(provider: String): Location? {
         if (!hasLocationPermission()) return null
 
@@ -101,6 +104,7 @@ class AndroidPlatformLocationProvider @Inject constructor(
     }
 
     @Suppress("DEPRECATION")
+    @SuppressLint("MissingPermission")
     private suspend fun requestLegacySingleUpdate(provider: String): Location? {
         if (!hasLocationPermission()) return null
 
