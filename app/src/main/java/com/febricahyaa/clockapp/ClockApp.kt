@@ -204,6 +204,12 @@ fun ClockApp() {
                                 ),
                             )
                         },
+                        onLocationPermissionResult = { granted ->
+                            onboardingViewModel.markLocationPermissionPrompted()
+                            if (granted) {
+                                currentLocationViewModel.refresh()
+                            }
+                        },
                         onOpenLocationSettings = {
                             openAppLocationSettings(context)
                         },
@@ -238,6 +244,7 @@ private fun ChronaDestinationContent(
     locationPermissionGranted: Boolean,
     preciseLocationGranted: Boolean,
     onRequestLocationPermission: () -> Unit,
+    onLocationPermissionResult: (Boolean) -> Unit,
     onOpenLocationSettings: () -> Unit,
     onRefreshLocation: () -> Unit,
     timerState: com.febricahyaa.clockapp.ui.viewmodel.TimerUiState,
@@ -280,12 +287,7 @@ private fun ChronaDestinationContent(
                     locationPermissionGranted = locationPermissionGranted,
                     preciseLocationGranted = preciseLocationGranted,
                     onRequestLocationPermission = onRequestLocationPermission,
-                    onLocationPermissionResult = { granted ->
-                        onboardingViewModel.markLocationPermissionPrompted()
-                        if (granted) {
-                            currentLocationViewModel.refresh()
-                        }
-                    },
+                    onLocationPermissionResult = onLocationPermissionResult,
                     onOpenLocationSettings = onOpenLocationSettings,
                     onRefreshLocation = onRefreshLocation,
                     glass = glassSurfaces,
