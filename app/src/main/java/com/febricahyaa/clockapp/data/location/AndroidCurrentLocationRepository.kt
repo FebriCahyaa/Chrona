@@ -16,6 +16,7 @@ import android.location.LocationManager
 import android.os.Build
 import android.os.CancellationSignal
 import android.os.Looper
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -64,6 +65,7 @@ class AndroidCurrentLocationRepository(
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.R)
     private suspend fun requestCurrentLocation(provider: String): Location? =
         suspendCancellableCoroutine { continuation ->
             val cancellationSignal = CancellationSignal()
@@ -145,9 +147,11 @@ class AndroidCurrentLocationRepository(
             LocationManager.GPS_PROVIDER,
             LocationManager.NETWORK_PROVIDER,
         ).mapNotNull { provider ->
-            runCatching {
+            try {
                 locationManager.getLastKnownLocation(provider)
-            }.getOrNull()
+            } catch (_: SecurityException) {
+                null
+            }
         }
 
         return candidates
