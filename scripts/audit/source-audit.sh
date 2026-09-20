@@ -63,15 +63,6 @@ if [[ -f app/src/main/cpp/chrona_time.cpp && -f app/src/main/cpp/chrona_clock.cp
     else
       echo 'ℹ️ AAudio native syntax     SKIPPED (Android NDK AAudio toolchain unavailable)'
     fi
-    fi
-    if [[ -n "$AAudioInclude" ]]; then
-      clang++ -std=c++20 -Wall -Wextra -Werror=return-type -fsyntax-only \
-        -I"$AAudioInclude" \
-        app/src/main/cpp/chrona_audio.cpp
-      echo '✅ AAudio native syntax     PASS'
-    else
-      echo 'ℹ️ AAudio native syntax     SKIPPED (Android NDK AAudio headers unavailable)'
-    fi
   else
     echo 'ℹ️ C++ syntax              SKIPPED (clang++ unavailable)'
 fi
