@@ -87,6 +87,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -148,7 +149,7 @@ fun WorldClockScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val epochMillis by rememberEpochMillisNowState()
     var permissionNoticeCounter by rememberSaveable { mutableLongStateOf(0L) }
-    val locale = Locale.getDefault()
+    val locale = LocalLocale.current.platformLocale
     val deviceZone = remember { ZoneId.systemDefault() }
 
     val selectedZoneId = rememberSaveable {
@@ -363,6 +364,7 @@ fun WorldClockScreen(
                             .padding(horizontal = 0.dp),
                         city = heroCity,
                         country = heroCountry,
+                        locale = locale,
                         zoned = heroZoned,
                         use24HourFormat = use24HourFormat,
                         showSeconds = showSeconds,
@@ -425,6 +427,7 @@ fun WorldClockScreen(
                                 SavedCityCard(
                                     item = item,
                                     modifier = Modifier.weight(1f),
+                                    locale = locale,
                                     epochMillis = epochMillis,
                                     use24HourFormat = use24HourFormat,
                                     showSeconds = showSeconds,
@@ -455,6 +458,7 @@ fun WorldClockScreen(
                     SavedCityCard(
                         item = item,
                         modifier = Modifier.fillMaxWidth(),
+                        locale = locale,
                         epochMillis = epochMillis,
                         use24HourFormat = use24HourFormat,
                         showSeconds = showSeconds,
@@ -525,6 +529,7 @@ private fun WorldClockHero(
     modifier: Modifier,
     city: String,
     country: String,
+    locale: Locale,
     zoned: ZonedDateTime,
     use24HourFormat: Boolean,
     showSeconds: Boolean,
@@ -564,11 +569,11 @@ private fun WorldClockHero(
             ) {
                 Column {
                     Text(
-                        zoned.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()),
+                        zoned.dayOfWeek.getDisplayName(TextStyle.SHORT, locale),
                         style = MaterialTheme.typography.titleMedium,
                     )
                     Text(
-                        zoned.format(DateTimeFormatter.ofPattern("dd MMM", Locale.getDefault())),
+                        zoned.format(DateTimeFormatter.ofPattern("dd MMM", locale)),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -576,7 +581,7 @@ private fun WorldClockHero(
                 HourFormatToggle(use24HourFormat, onFormatChange)
             }
 
-            val hour = zoned.format(DateTimeFormatter.ofPattern(if (use24HourFormat) "HH" else "hh", Locale.getDefault()))
+            val hour = zoned.format(DateTimeFormatter.ofPattern(if (use24HourFormat) "HH" else "hh", locale))
             val minute = "%02d".format(zoned.minute)
 
             if (clockDisplayMode == ClockDisplayMode.DIGITAL) {
@@ -793,6 +798,7 @@ private fun LocationResolvedRow(
 private fun SavedCityCard(
     item: WorldClockItem,
     modifier: Modifier,
+    locale: Locale,
     epochMillis: Long,
     use24HourFormat: Boolean,
     showSeconds: Boolean,
@@ -807,7 +813,7 @@ private fun SavedCityCard(
     val zone = remember(item.zoneId) { runCatching { ZoneId.of(item.zoneId) }.getOrNull() }
     val zoned = zone?.let { Instant.ofEpochMilli(epochMillis).atZone(it) }
     val country = remember(item.zoneId) {
-        TimeZoneCatalog.find(item.zoneId)?.countryName(Locale.getDefault()) ?: item.zoneId
+        TimeZoneCatalog.find(item.zoneId)?.countryName(locale) ?: item.zoneId
     }
 
     ElevatedCard(
@@ -861,7 +867,7 @@ private fun SavedCityCard(
 
             if (zoned != null) {
                 Text(
-                    formatCityTime(zoned, use24HourFormat, showSeconds),
+                    formatCityTime(zoned, use24HourFormat, showSeconds, locale),
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Light,
                 )
@@ -987,6 +993,7 @@ private fun formatCityTime(
     zoned: ZonedDateTime,
     use24HourFormat: Boolean,
     showSeconds: Boolean,
+    locale: Locale,
 ): String {
     val pattern = when {
         use24HourFormat && showSeconds -> "HH:mm:ss"
@@ -994,7 +1001,7 @@ private fun formatCityTime(
         showSeconds -> "hh:mm:ss a"
         else -> "hh:mm a"
     }
-    return zoned.format(DateTimeFormatter.ofPattern(pattern, Locale.getDefault()))
+    return zoned.format(DateTimeFormatter.ofPattern(pattern, locale))
 }
 
 internal data class CityVisual(
