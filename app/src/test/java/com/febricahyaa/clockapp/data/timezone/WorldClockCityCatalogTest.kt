@@ -43,6 +43,20 @@ class WorldClockCityCatalogTest {
     }
 
     @Test
+    fun curatedCatalogUsesUniqueZoneIds() {
+        val zoneIds = WorldClockCityCatalog.entries.map { it.zoneId }
+
+        assertEquals(zoneIds.size, zoneIds.distinct().size)
+
+        assertTrue(
+            TimeZoneCatalog.search("San Francisco").any { it.zoneId == "America/Los_Angeles" },
+        )
+        assertTrue(
+            TimeZoneCatalog.search("Mumbai").any { it.zoneId == "Asia/Kolkata" },
+        )
+    }
+
+    @Test
     fun unrelatedCitiesAreNotAliasesOfEachOther() {
         val beijing = WorldClockCityCatalog.entries.first { it.cityName == "Beijing" }
         val istanbul = WorldClockCityCatalog.entries.first { it.cityName == "Istanbul" }

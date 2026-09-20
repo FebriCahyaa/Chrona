@@ -76,7 +76,7 @@ android {
         targetSdk = 37
         versionCode = 34
         versionName = "0.5.0"
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.febricahyaa.clockapp.ChronaTestRunner"
         manifestPlaceholders["chronaAppLinkHost"] = providers.gradleProperty("chronaAppLinkHost")
             .orElse("chrona.example.invalid")
             .get()

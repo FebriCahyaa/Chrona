@@ -85,7 +85,7 @@ jobs:
             --force \
             --name chrona-test \
             --package 'system-images;android-37.0;google_apis;x86_64' \
-            --device 'pixel_2'
+            --device 'pixel_10a'
           cat >> "${ANDROID_AVD_HOME:-$HOME/.android/avd}/chrona-test.avd/config.ini" <<'EOF'
           hw.cpu.ncore=4
           hw.ramSize=4096M

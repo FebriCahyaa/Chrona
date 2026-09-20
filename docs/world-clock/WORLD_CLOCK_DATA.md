@@ -16,7 +16,7 @@ Chrona does not ship a second frozen timezone database or calculate DST from a h
 
 ## 2. City labels
 
-`WorldClockCityCatalog` provides human-friendly labels/aliases for common locations. `TimeZoneCatalog` merges those curated labels with the complete user-facing timezone ID set exposed by the device.
+`WorldClockCityCatalog` provides human-friendly labels/aliases for common locations. `TimeZoneCatalog` merges those curated labels with the complete user-facing timezone ID set exposed by the device. The curated layer keeps one entry per stable `zoneId`; cities that share the same canonical timezone are represented as search aliases instead of duplicate entries.
 
 A city name is presentation metadata. The stable saved key is the IANA `zoneId`.
 
