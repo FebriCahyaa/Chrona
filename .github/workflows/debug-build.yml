@@ -71,11 +71,29 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Keep instrumentation on the same Android 17 minor level as the
+          # repository toolchain and use the 16 KB page-size image intended
+          # for current Pixel-class Android 17 testing.
           sdkmanager --sdk_root="${ANDROID_SDK_ROOT}" \
-            'platforms;android-37.0' \
+            'platforms;android-37.1' \
             'platform-tools' \
             'emulator' \
-            'system-images;android-37.0;google_apis;x86_64'
+            'system-images;android-37.1;google_apis_ps16k;x86_64'
+
+      - name: Verify Pixel 10a AVD profile
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'Installed Android Emulator:'
+          emulator -version | head -n 3
+          echo 'Available Pixel device profiles:'
+          if ! avdmanager list device | grep -qE '(^id: pixel_10a$|^[[:space:]]*Name: Pixel 10a$)'; then
+            echo 'ERROR: Pixel 10a hardware profile is not available in the installed command-line tools.'
+            echo 'Available Pixel profiles:'
+            avdmanager list device | grep -E '^id: pixel_10' || true
+            exit 1
+          fi
+          echo 'Pixel 10a profile: available'
 
       - name: Create instrumentation AVD
         shell: bash
@@ -84,7 +102,7 @@ jobs:
           echo no | avdmanager create avd \
             --force \
             --name chrona-test \
-            --package 'system-images;android-37.0;google_apis;x86_64' \
+            --package 'system-images;android-37.1;google_apis_ps16k;x86_64' \
             --device 'pixel_10a'
           cat >> "${ANDROID_AVD_HOME:-$HOME/.android/avd}/chrona-test.avd/config.ini" <<'EOF'
           hw.cpu.ncore=4
