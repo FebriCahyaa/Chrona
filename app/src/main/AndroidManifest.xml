@@ -4,7 +4,7 @@
   ~ SPDX-License-Identifier: MIT
   -->
 
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Network access for optional online clock features (for example weather / sync). -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -41,6 +41,18 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:theme="@style/Theme.ClockApp">
+
+        <!-- WorkManager uses ClockApplication's Configuration.Provider for on-demand initialization. -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
 
         <activity
             android:name=".MainActivity"
