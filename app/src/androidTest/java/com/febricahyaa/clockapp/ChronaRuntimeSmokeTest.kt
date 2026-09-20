@@ -5,7 +5,6 @@
 
 package com.febricahyaa.clockapp
 
-import androidx.compose.ui.test.assertExists
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.test.espresso.Espresso.onView

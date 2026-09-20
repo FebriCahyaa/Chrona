@@ -10,9 +10,9 @@ import android.os.SystemClock
 import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.febricahyaa.clockapp.core.config.AppDefaults
 import com.febricahyaa.clockapp.data.local.ChronaDatabase
 import com.febricahyaa.clockapp.data.local.RoomWorldClockRepository
+import com.febricahyaa.clockapp.model.WorldClockItem
 import com.febricahyaa.clockapp.ui.viewmodel.WorldClockViewModel
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -47,7 +47,7 @@ class WorldClockFavoritePersistenceTest {
     @Test
     fun zoneIdFavoritesSurviveRepositoryRecreation() = runBlocking {
         val first = repository()
-        val expectedItems = AppDefaults.defaultWorldClocks()
+        val expectedItems = testWorldClocks()
         first.save(expectedItems)
         val expected = setOf("America/New_York", "Asia/Tokyo", "Pacific/Auckland")
         first.saveFavorites(expected)
@@ -58,7 +58,7 @@ class WorldClockFavoritePersistenceTest {
 
     @Test
     fun favoriteTogglePersistsAcrossViewModelRecreationAndDeletion() {
-        runBlocking { repository().save(AppDefaults.defaultWorldClocks()) }
+        runBlocking { repository().save(testWorldClocks()) }
         val firstViewModel = WorldClockViewModel(repository())
 
         waitUntil("Default World Clock seed should load") {
@@ -106,7 +106,7 @@ class WorldClockFavoritePersistenceTest {
     @Test
     fun legacyCityNameFavoriteIsMigratedToStableZoneId() = runBlocking {
         val first = repository()
-        first.save(AppDefaults.defaultWorldClocks())
+        first.save(testWorldClocks())
         first.saveFavorites(setOf("Asia/Tokyo"))
 
         val viewModel = WorldClockViewModel(repository())
@@ -115,6 +115,12 @@ class WorldClockFavoritePersistenceTest {
         }
         assertTrue("Canonical city favorite should remain a zone ID", "Asia/Tokyo" in viewModel.state.value.favorites)
     }
+
+    private fun testWorldClocks(): List<WorldClockItem> = listOf(
+        WorldClockItem(1L, "New York", "America/New_York"),
+        WorldClockItem(2L, "Tokyo", "Asia/Tokyo"),
+        WorldClockItem(3L, "Auckland", "Pacific/Auckland"),
+    )
 
     private fun waitUntil(description: String, timeoutMs: Long = 5_000L, condition: () -> Boolean) {
         val deadline = SystemClock.uptimeMillis() + timeoutMs
