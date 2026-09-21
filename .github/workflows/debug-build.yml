@@ -46,6 +46,8 @@ jobs:
     needs: validation
     runs-on: ubuntu-24.04
     timeout-minutes: 35
+    env:
+      ANDROID_AVD_HOME: ${{ runner.temp }}/chrona-avd
     steps:
       - uses: actions/checkout@v7.0.1
 
@@ -71,9 +73,25 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
+          SDKMANAGER="$(command -v sdkmanager || true)"
+          if [[ -z "${SDKMANAGER}" || ! -x "${SDKMANAGER}" ]]; then
+            echo 'ERROR: sdkmanager is not available on PATH.'
+            exit 1
+          fi
+
+          SDKMANAGER_VERSION="$(${SDKMANAGER} --version | head -n 1)"
+          VERSION_OK="$(printf '%s\n' '20.0' "${SDKMANAGER_VERSION}" | sort -V | head -n 1)"
+          if [[ "${VERSION_OK}" != '20.0' ]]; then
+            echo "ERROR: sdkmanager ${SDKMANAGER_VERSION} is too old for Android 37 minor-version metadata."
+            echo "Resolved sdkmanager: ${SDKMANAGER}"
+            exit 1
+          fi
+
+          echo "Using sdkmanager ${SDKMANAGER_VERSION}: ${SDKMANAGER}"
           # Keep the repository compile/target platform at Android 17.1 while using
           # the Android 17.0 16 KB page-size system image proven in CI.
-          sdkmanager --sdk_root="${ANDROID_SDK_ROOT}" \
+          "${SDKMANAGER}" --sdk_root="${ANDROID_SDK_ROOT}" \
             'platforms;android-37.1' \
             'platform-tools' \
             'emulator' \
@@ -89,58 +107,40 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libpulse0
 
-      - name: Prepare Android 17 system-image metadata
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          IMAGE_DIR="${ANDROID_SDK_ROOT}/system-images/android-37.0/google_apis_ps16k/x86_64"
-          DEVICE_XML="${IMAGE_DIR}/devices.xml"
-
-          # Some Android 17 system-image packages omit the optional devices.xml
-          # file. avdmanager versions used by CI may still try to parse it while
-          # building the aggregate device list, so provide a valid empty catalog.
-          if [[ ! -s "${DEVICE_XML}" ]]; then
-            echo 'Creating missing Android 17 system-image devices.xml metadata.'
-            mkdir -p "${IMAGE_DIR}"
-            cat > "${DEVICE_XML}" <<'EOF'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <d:devices
-              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-              xmlns:d="http://schemas.android.com/sdk/devices/7">
-          </d:devices>
-          EOF
-            python3 - "${DEVICE_XML}" <<'PY'
-          import sys
-          import xml.etree.ElementTree as ET
-          ET.parse(sys.argv[1])
-          PY
-          fi
-
       - name: Verify Pixel 6 AVD profile
         shell: bash
         run: |
           set -euo pipefail
 
           EMULATOR="${ANDROID_SDK_ROOT}/emulator/emulator"
-          AVDMANAGER="${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/avdmanager"
+          AVDMANAGER="$(command -v avdmanager || true)"
 
           if [[ ! -x "${EMULATOR}" ]]; then
             echo "ERROR: Android Emulator binary was not installed at ${EMULATOR}"
             ls -la "${ANDROID_SDK_ROOT}/emulator" || true
             exit 1
           fi
-          if [[ ! -x "${AVDMANAGER}" ]]; then
-            AVDMANAGER="$(command -v avdmanager || true)"
-          fi
           if [[ -z "${AVDMANAGER}" || ! -x "${AVDMANAGER}" ]]; then
-            echo 'ERROR: avdmanager is not available.'
+            echo 'ERROR: avdmanager is not available on PATH.'
             command -v avdmanager || true
+            exit 1
+          fi
+
+          AVDMANAGER_VERSION="$(${AVDMANAGER} --version | head -n 1)"
+          VERSION_OK="$(printf '%s\n' '20.0' "${AVDMANAGER_VERSION}" | sort -V | head -n 1)"
+          if [[ "${VERSION_OK}" != '20.0' ]]; then
+            echo "ERROR: avdmanager ${AVDMANAGER_VERSION} is too old for Android 37 minor-version system images."
+            echo "Resolved avdmanager: ${AVDMANAGER}"
+            echo 'PATH entries containing cmdline-tools:'
+            tr ':' '\n' <<< "${PATH}" | grep 'cmdline-tools' || true
             exit 1
           fi
 
           echo 'Installed Android Emulator:'
           "${EMULATOR}" -version | sed -n '1,3p'
+          echo "Using avdmanager ${AVDMANAGER_VERSION}: ${AVDMANAGER}"
+          echo 'Resolved Android command-line tools:'
+          type -a sdkmanager avdmanager || true
 
           echo 'Available Pixel device profiles:'
           set +e
@@ -169,8 +169,28 @@ jobs:
         run: |
           set -euo pipefail
 
-          AVDMANAGER="${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/avdmanager"
-          [[ -x "${AVDMANAGER}" ]] || AVDMANAGER="$(command -v avdmanager)"
+          AVDMANAGER="$(command -v avdmanager || true)"
+          if [[ -z "${AVDMANAGER}" || ! -x "${AVDMANAGER}" ]]; then
+            echo 'ERROR: avdmanager is not available on PATH.'
+            exit 1
+          fi
+
+          AVD_ROOT="${ANDROID_AVD_HOME:-$HOME/.android/avd}"
+          mkdir -p "${AVD_ROOT}"
+
+          AVDMANAGER_VERSION="$(${AVDMANAGER} --version | head -n 1)"
+          VERSION_OK="$(printf '%s\n' '20.0' "${AVDMANAGER_VERSION}" | sort -V | head -n 1)"
+          if [[ "${VERSION_OK}" != '20.0' ]]; then
+            echo "ERROR: avdmanager ${AVDMANAGER_VERSION} is too old for Android 37 minor-version system images."
+            echo "Resolved avdmanager: ${AVDMANAGER}"
+            exit 1
+          fi
+
+          SYSTEM_IMAGE="${ANDROID_SDK_ROOT}/system-images/android-37.0/google_apis_ps16k/x86_64"
+          if [[ ! -d "${SYSTEM_IMAGE}" ]]; then
+            echo "ERROR: Android 37.0 system image is missing at ${SYSTEM_IMAGE}"
+            exit 1
+          fi
 
           echo no | "${AVDMANAGER}" create avd \
             --force \
@@ -178,7 +198,15 @@ jobs:
             --package 'system-images;android-37.0;google_apis_ps16k;x86_64' \
             --device 'pixel_6'
 
-          cat >> "${ANDROID_AVD_HOME:-$HOME/.android/avd}/chrona-test.avd/config.ini" <<'EOF'
+          AVD_DIR="${AVD_ROOT}/chrona-test.avd"
+          if [[ ! -f "${AVD_DIR}/config.ini" ]]; then
+            echo "ERROR: AVD config was not created at ${AVD_DIR}/config.ini"
+            echo 'Current AVD root contents:'
+            find "${AVD_ROOT}" -maxdepth 2 -type f -print | sort || true
+            exit 1
+          fi
+
+          cat >> "${AVD_DIR}/config.ini" <<'EOF'
           hw.cpu.ncore=4
           hw.ramSize=4096M
           hw.heapSize=512M
