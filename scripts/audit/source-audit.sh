@@ -23,7 +23,17 @@ check_command grep
 check_command find
 
 if [[ -f app/src/main/cpp/chrona_time.cpp && -f app/src/main/cpp/chrona_clock.cpp ]]; then
-  if command -v clang++ >/dev/null 2>&1; then
+  CXX_COMPILER=""
+  for candidate in clang++ g++; do
+    if command -v "$candidate" >/dev/null 2>&1; then
+      if echo '#include <chrono>' | "$candidate" -std=c++20 -fsyntax-only -x c++ - >/dev/null 2>&1; then
+        CXX_COMPILER="$candidate"
+        break
+      fi
+    fi
+  done
+
+  if [[ -n "$CXX_COMPILER" ]]; then
     JAVA_INCLUDE=""
     if [[ -n "${JAVA_HOME:-}" && -d "${JAVA_HOME}/include" ]]; then
       JAVA_INCLUDE="${JAVA_HOME}/include"
@@ -34,7 +44,7 @@ if [[ -f app/src/main/cpp/chrona_time.cpp && -f app/src/main/cpp/chrona_clock.cp
     fi
 
     if [[ -d "$JAVA_INCLUDE" ]]; then
-      clang++ -std=c++20 -Wall -Wextra -Werror=return-type -fsyntax-only \
+      "$CXX_COMPILER" -std=c++20 -Wall -Wextra -Werror=return-type -fsyntax-only \
         -I"$JAVA_INCLUDE" -I"$JAVA_INCLUDE/linux" \
         app/src/main/cpp/chrona_time.cpp \
         app/src/main/cpp/chrona_clock.cpp
@@ -42,30 +52,31 @@ if [[ -f app/src/main/cpp/chrona_time.cpp && -f app/src/main/cpp/chrona_clock.cp
     else
       echo 'ℹ️ C++ JNI syntax          SKIPPED (JNI headers unavailable)'
     fi
-
-    AAudioInclude=""
-    NDK_CLANG=""
-    if [[ -n "${ANDROID_NDK_ROOT:-}" ]]; then
-      candidate="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++"
-      candidate_sysroot="${ANDROID_NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
-      if [[ -x "$candidate" && -f "$candidate_sysroot/usr/include/aaudio/AAudio.h" ]]; then
-        NDK_CLANG="$candidate"
-        AAudioInclude="$candidate_sysroot"
-      fi
-    fi
-    if [[ -n "$NDK_CLANG" ]]; then
-      "$NDK_CLANG" \
-        --target=aarch64-linux-android26 \
-        --sysroot="$AAudioInclude" \
-        -std=c++20 -Wall -Wextra -Werror=return-type -fsyntax-only \
-        app/src/main/cpp/chrona_audio.cpp
-      echo '✅ AAudio native syntax     PASS'
-    else
-      echo 'ℹ️ AAudio native syntax     SKIPPED (Android NDK AAudio toolchain unavailable)'
-    fi
   else
-    echo 'ℹ️ C++ syntax              SKIPPED (clang++ unavailable)'
-fi
+    echo 'ℹ️ C++ syntax              SKIPPED (functional C++ compiler unavailable)'
+  fi
+
+  NDK_ROOT="${ANDROID_NDK_ROOT:-${ANDROID_HOME:-/opt/android-sdk}/ndk/28.2.13676358}"
+  AAudioInclude=""
+  NDK_CLANG=""
+  if [[ -d "$NDK_ROOT" ]]; then
+    candidate="${NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++"
+    candidate_sysroot="${NDK_ROOT}/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
+    if [[ -x "$candidate" && -f "$candidate_sysroot/usr/include/aaudio/AAudio.h" ]]; then
+      NDK_CLANG="$candidate"
+      AAudioInclude="$candidate_sysroot"
+    fi
+  fi
+  if [[ -n "$NDK_CLANG" ]]; then
+    "$NDK_CLANG" \
+      --target=aarch64-linux-android26 \
+      --sysroot="$AAudioInclude" \
+      -std=c++20 -Wall -Wextra -Werror=return-type -fsyntax-only \
+      app/src/main/cpp/chrona_audio.cpp
+    echo '✅ AAudio native syntax     PASS'
+  else
+    echo 'ℹ️ AAudio native syntax     SKIPPED (Android NDK AAudio toolchain unavailable)'
+  fi
 else
   echo 'ℹ️ C++ syntax              SKIPPED (native source unavailable)'
 fi
