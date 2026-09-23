@@ -20,6 +20,8 @@ jobs:
     name: Telegram CI Start
     runs-on: ubuntu-24.04
     steps:
+      - name: Checkout
+        uses: actions/checkout@v7
       - name: Notify
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.CHRONABOT_CI_TOKEN }}
@@ -35,10 +37,10 @@ jobs:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_WORKFLOW: ${{ github.workflow }}
         run: python3 scripts/telegram/notify.py
+        continue-on-error: true
 
   quality:
     name: Quality
-    needs: notify-start
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
@@ -90,7 +92,6 @@ jobs:
 
   build:
     name: Debug APK
-    needs: notify-start
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
@@ -198,3 +199,4 @@ jobs:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_WORKFLOW: ${{ github.workflow }}
         run: python3 scripts/telegram/notify.py
+        continue-on-error: true

@@ -34,6 +34,13 @@ jobs:
         with:
           languages: java-kotlin
           config-file: ./.github/codeql/codeql-config.yml
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: |
+            platform-tools
+            platforms;android-36
+            build-tools;36.0.0
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
         with:
@@ -69,6 +76,13 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: |
+            platform-tools
+            platforms;android-36
+            build-tools;36.0.0
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
         with:
@@ -85,6 +99,8 @@ jobs:
     if: always() && (github.event_name != 'pull_request' || github.actor != 'dependabot[bot]')
     runs-on: ubuntu-24.04
     steps:
+      - name: Checkout
+        uses: actions/checkout@v7
       - name: Send security report
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.CHRONABOT_CI_TOKEN }}
@@ -102,3 +118,4 @@ jobs:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_WORKFLOW: ${{ github.workflow }}
         run: python3 scripts/telegram/notify.py
+        continue-on-error: true

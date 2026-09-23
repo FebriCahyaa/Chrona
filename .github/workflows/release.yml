@@ -33,6 +33,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          ref: ${{ inputs.tag || github.ref_name }}
       - name: Resolve version
         id: meta
         shell: bash
@@ -67,6 +68,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          ref: ${{ inputs.tag || github.ref_name }}
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
@@ -217,3 +219,4 @@ jobs:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_WORKFLOW: ${{ github.workflow }}
         run: python3 scripts/telegram/notify.py
+        continue-on-error: true
