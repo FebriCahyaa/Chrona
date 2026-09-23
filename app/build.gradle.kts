@@ -1,0 +1,122 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+}
+
+val keystoreFile = providers.environmentVariable("ANDROID_KEYSTORE_FILE").orNull
+val keystorePassword = providers.environmentVariable("ANDROID_KEYSTORE_PASSWORD").orNull
+val keyAlias = providers.environmentVariable("ANDROID_KEY_ALIAS").orNull
+val keyPassword = providers.environmentVariable("ANDROID_KEY_PASSWORD").orNull
+
+android {
+    namespace = "com.android.deskclock"
+    compileSdk = 36
+
+    defaultConfig {
+        applicationId = "com.android.deskclock"
+        minSdk = 23
+        targetSdk = 36
+        versionCode = 1
+        versionName = "1.0.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+        }
+        release {
+            isMinifyEnabled = false
+            isShrinkResources = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            if (keystoreFile != null && keystorePassword != null && keyAlias != null && keyPassword != null) {
+                signingConfig = signingConfigs.create("release") {
+                    storeFile = file(keystoreFile)
+                    storePassword = keystorePassword
+                    this.keyAlias = keyAlias
+                    this.keyPassword = keyPassword
+                    storeType = "PKCS12"
+                }
+            }
+        }
+    }
+
+    sourceSets {
+        getByName("main") {
+            manifest.srcFile("../AndroidManifest.xml")
+            java.srcDirs("../src")
+            res.srcDirs("../res")
+            assets.srcDirs("../assets")
+        }
+        getByName("androidTest") {
+            java.srcDirs("../tests")
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    buildFeatures {
+        buildConfig = true
+    }
+
+    lint {
+        abortOnError = true
+        warningsAsErrors = false
+        lintConfig = rootProject.file("lint.xml")
+        htmlReport = true
+        xmlReport = true
+        sarifReport = true
+        checkReleaseBuilds = true
+    }
+
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
+}
+
+kotlin {
+    jvmToolchain(17)
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
+    }
+}
+
+dependencies {
+    implementation(libs.androidx.annotation)
+    implementation(libs.androidx.collection)
+    implementation(libs.androidx.arch.core.common)
+    implementation(libs.androidx.lifecycle.common)
+    implementation(libs.androidx.lifecycle.runtime)
+    implementation(libs.androidx.core)
+    implementation(libs.androidx.coordinatorlayout)
+    implementation(libs.androidx.interpolator)
+    implementation(libs.androidx.loader)
+    implementation(libs.androidx.vectordrawable)
+    implementation(libs.androidx.percentlayout)
+    implementation(libs.androidx.transition)
+    implementation(libs.androidx.legacy.core.ui)
+    implementation(libs.androidx.media)
+    implementation(libs.androidx.legacy.v13)
+    implementation(libs.androidx.preference)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.gridlayout)
+    implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.viewpager)
+    implementation(libs.material)
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.espresso.core)
+}
+

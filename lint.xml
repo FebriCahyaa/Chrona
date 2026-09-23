@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <issue id="NewApi" severity="error" />
+    <issue id="UnsafeImplicitIntent" severity="error" />
+    <issue id="PendingIntentMutability" severity="error" />
+    <issue id="ExportedReceiver" severity="error" />
+    <issue id="HardcodedText" severity="warning" />
+    <issue id="MissingTranslation" severity="warning" />
+    <issue id="GradleDependency" severity="warning" />
+</lint>

@@ -6,3 +6,11 @@
 .DS_Store
 /build
 /captures
+# Chrona Gradle and local release material
+.gradle/
+.generated/
+build/
+app/build/
+/chrona-release.keystore
+/chrona-release.p12
+/release-key.properties
