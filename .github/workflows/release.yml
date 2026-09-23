@@ -83,8 +83,8 @@ jobs:
         with:
           packages: |
             platform-tools
-            platforms;android-36
-            build-tools;36.0.0
+            platforms;android-37
+            build-tools;37.0.0
       - name: Fetch Google assets
         run: python3 scripts/assets/fetch_google_assets.py
       - name: Set up Gradle
@@ -117,14 +117,21 @@ jobs:
           set -e
           python3 scripts/ci/extract_build_errors.py release-build.log release-build-errors.log
           exit "$status"
+      - name: Verify release ABI outputs
+        run: python3 scripts/ci/verify_abi_outputs.py app/build/outputs/apk/release release
       - name: Prepare release files
         shell: bash
         run: |
+          set -euo pipefail
           mkdir -p release
-          apk=$(find app/build/outputs/apk/release -maxdepth 1 -type f -name '*.apk' | head -n 1)
-          [[ -n "$apk" ]] || { printf 'Release APK was not produced.\n' >&2; exit 1; }
-          cp "$apk" "release/Chrona-${{ needs.prepare.outputs.tag }}.apk"
-          sha256sum "release/Chrona-${{ needs.prepare.outputs.tag }}.apk" > release/SHA256SUMS.txt
+          shopt -s nullglob
+          apks=(app/build/outputs/apk/release/*.apk)
+          (( ${#apks[@]} == 4 )) || { printf 'Expected 4 release APKs, found %s.\n' "${#apks[@]}" >&2; exit 1; }
+          for apk in "${apks[@]}"; do
+            base=$(basename "$apk")
+            cp "$apk" "release/Chrona-${{ needs.prepare.outputs.tag }}-${base}"
+          done
+          sha256sum release/*.apk > release/SHA256SUMS.txt
       - name: Upload release files
         if: always()
         uses: actions/upload-artifact@v7
@@ -137,11 +144,11 @@ jobs:
             release-build-errors.log
           if-no-files-found: ignore
           retention-days: 90
-      - name: Attest release APK
+      - name: Attest release APKs
         if: success()
         uses: actions/attest@v4
         with:
-          subject-path: release/Chrona-${{ needs.prepare.outputs.tag }}.apk
+          subject-path: release/*.apk
 
   publish:
     name: Publish GitHub Release
@@ -175,7 +182,7 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --title "Chrona $TAG" \
             --notes-file changelog/release-notes.md \
-            release/Chrona-${TAG}.apk \
+            release/*.apk \
             release/SHA256SUMS.txt
 
   telegram:
