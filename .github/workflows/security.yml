@@ -76,3 +76,29 @@ jobs:
       - name: Submit dependency graph
         uses: gradle/actions/dependency-submission@v6
 
+  telegram:
+    name: Telegram Security
+    needs:
+      - codeql
+      - dependency-review
+      - dependency-submission
+    if: always() && (github.event_name != 'pull_request' || github.actor != 'dependabot[bot]')
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Send security report
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.CHRONABOT_CI_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.CHRONABOT_CI_CHAT_ID }}
+          TELEGRAM_EVENT: security
+          CODEQL_RESULT: ${{ needs.codeql.result }}
+          DEPENDENCY_REVIEW_RESULT: ${{ needs.dependency-review.result }}
+          DEPENDENCY_SUBMISSION_RESULT: ${{ needs.dependency-submission.result }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_WORKFLOW: ${{ github.workflow }}
+        run: python3 scripts/telegram/notify.py

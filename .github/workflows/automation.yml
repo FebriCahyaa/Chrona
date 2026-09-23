@@ -3,6 +3,8 @@ name: Chrona Automation
 on:
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review, closed]
+  issues:
+    types: [opened, closed, reopened]
   schedule:
     - cron: '20 3 * * 1'
   workflow_dispatch:
@@ -22,6 +24,72 @@ permissions:
   issues: read
 
 jobs:
+  pr-notify:
+    name: PR Telegram
+    if: github.event_name == 'pull_request_target' && github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Send PR notification
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.CHRONABOT_PR_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.CHRONABOT_PR_CHAT_ID }}
+          TELEGRAM_EVENT: pull-request
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_WORKFLOW: ${{ github.workflow }}
+        run: python3 scripts/telegram/notify.py
+
+  dependabot-notify:
+    name: Dependabot Telegram
+    if: github.event_name == 'pull_request_target' && github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Send Dependabot notification
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.CHRONABOT_DEPENDABOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.CHRONABOT_DEPENDABOT_CHAT_ID }}
+          TELEGRAM_EVENT: dependabot
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_WORKFLOW: ${{ github.workflow }}
+        run: python3 scripts/telegram/notify.py
+
+  issue-notify:
+    name: Issue Tracker Telegram
+    if: github.event_name == 'issues'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Send issue notification
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.CHRONABOT_PR_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.CHRONABOT_PR_CHAT_ID }}
+          TELEGRAM_EVENT: issue
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_WORKFLOW: ${{ github.workflow }}
+        run: python3 scripts/telegram/notify.py
+
   labels:
     name: Apply PR Labels
     if: github.event_name == 'pull_request_target' && github.event.action != 'closed'
@@ -84,6 +152,20 @@ jobs:
           create_pull_request: true
           localization_branch_name: crowdin-sync
           commit_message: 'chore(i18n): synchronize Crowdin translations'
+      - name: Notify localization sync
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.CHRONABOT_PR_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.CHRONABOT_PR_CHAT_ID }}
+          TELEGRAM_EVENT: crowdin
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_WORKFLOW: ${{ github.workflow }}
+        run: python3 scripts/telegram/notify.py
+
   bootstrap-labels:
     name: Bootstrap Labels
     if: github.event_name == 'workflow_dispatch' && inputs.action == 'labels'

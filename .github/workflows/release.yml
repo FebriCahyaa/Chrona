@@ -176,3 +176,44 @@ jobs:
             release/Chrona-${TAG}.apk \
             release/SHA256SUMS.txt
 
+  telegram:
+    name: Telegram Release
+    needs:
+      - prepare
+      - build
+      - publish
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Download release files
+        uses: actions/download-artifact@v8
+        with:
+          name: chrona-release-${{ needs.prepare.outputs.tag }}
+          path: telegram/release
+        continue-on-error: true
+      - name: Download changelog
+        uses: actions/download-artifact@v8
+        with:
+          name: chrona-changelog-${{ needs.prepare.outputs.tag }}
+          path: telegram/changelog
+        continue-on-error: true
+      - name: Send Telegram release report
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.CHRONABOT_RELEASE_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.CHRONABOT_RELEASE_CHAT_ID }}
+          TELEGRAM_EVENT: release-report
+          TELEGRAM_ARTIFACT_DIR: telegram
+          PREPARE_RESULT: ${{ needs.prepare.result }}
+          BUILD_RESULT: ${{ needs.build.result }}
+          PUBLISH_RESULT: ${{ needs.publish.result }}
+          RELEASE_VERSION: ${{ needs.prepare.outputs.tag }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_WORKFLOW: ${{ github.workflow }}
+        run: python3 scripts/telegram/notify.py
