@@ -126,7 +126,7 @@ jobs:
           mkdir -p release
           shopt -s nullglob
           apks=(app/build/outputs/apk/release/*.apk)
-          (( ${#apks[@]} == 4 )) || { printf 'Expected 4 release APKs, found %s.\n' "${#apks[@]}" >&2; exit 1; }
+          (( ${#apks[@]} == 5 )) || { printf 'Expected 5 release APKs (4 ABI + universal), found %s.\n' "${#apks[@]}" >&2; exit 1; }
           for apk in "${apks[@]}"; do
             base=$(basename "$apk")
             cp "$apk" "release/Chrona-${{ needs.prepare.outputs.tag }}-${base}"
