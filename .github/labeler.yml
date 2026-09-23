@@ -1,0 +1,30 @@
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/workflows/**"
+          - "scripts/ci/**"
+          - "scripts/telegram/**"
+build-system:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "*.gradle.kts"
+          - "gradle/**"
+          - "gradle.properties"
+          - "gradlew"
+          - "gradlew.bat"
+android:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "src/**"
+          - "res/**"
+          - "AndroidManifest.xml"
+automation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - ".github/**"
+translations:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "crowdin.yml"
+          - "res/values-*/**"
+          - "res/values-b+sr+Latn/**"

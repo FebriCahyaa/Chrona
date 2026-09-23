@@ -1,0 +1,30 @@
+name: Build or CI failure
+description: Report a build, Gradle, Soong, test, lint, or Actions failure.
+title: "[CI] "
+labels:
+  - ci
+  - build-system
+body:
+  - type: input
+    id: workflow
+    attributes:
+      label: Workflow or command
+      placeholder: ci.yml / ./gradlew lint
+    validations:
+      required: true
+  - type: input
+    id: run
+    attributes:
+      label: GitHub Actions run URL
+  - type: textarea
+    id: failure
+    attributes:
+      label: Failure output
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Runner, JDK, Android SDK, Gradle, AGP, and relevant device information.

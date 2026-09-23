@@ -1,0 +1,108 @@
+name: Chrona Automation
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review, closed]
+  schedule:
+    - cron: '20 3 * * 1'
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Automation task
+        required: true
+        type: choice
+        options:
+          - labels
+          - changelog
+          - crowdin
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+
+jobs:
+  labels:
+    name: Apply PR Labels
+    if: github.event_name == 'pull_request_target' && github.event.action != 'closed'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Apply labels
+        uses: actions/labeler@v7
+        with:
+          repo-token: ${{ github.token }}
+          sync-labels: false
+
+  changelog:
+    name: Generate Changelog
+    if: github.event_name == 'workflow_dispatch' && inputs.action == 'changelog'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Generate changelog
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/release/generate_changelog.py "${{ github.ref_name }}" > CHANGELOG.generated.md
+      - name: Upload changelog
+        uses: actions/upload-artifact@v7
+        with:
+          name: chrona-generated-changelog-${{ github.run_id }}
+          archive: false
+          path: CHANGELOG.generated.md
+          if-no-files-found: error
+
+  crowdin:
+    name: Crowdin Sync
+    if: (github.event_name == 'schedule') || (github.event_name == 'workflow_dispatch' && inputs.action == 'crowdin')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Resolve Crowdin project
+        env:
+          CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID || vars.CROWDIN_PROJECT_ID }}
+        run: |
+          [[ -n "$CROWDIN_PROJECT_ID" ]] || { printf 'CROWDIN_PROJECT_ID is required.\n' >&2; exit 1; }
+          sed -i "s/^project_id: .*/project_id: $CROWDIN_PROJECT_ID/" crowdin.yml
+      - name: Sync translations
+        uses: crowdin/github-action@v3
+        env:
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
+        with:
+          upload_sources: true
+          upload_translations: false
+          download_translations: true
+          create_pull_request: true
+          localization_branch_name: crowdin-sync
+          commit_message: 'chore(i18n): synchronize Crowdin translations'
+  bootstrap-labels:
+    name: Bootstrap Labels
+    if: github.event_name == 'workflow_dispatch' && inputs.action == 'labels'
+    runs-on: ubuntu-24.04
+    permissions:
+      issues: write
+    steps:
+      - name: Create labels
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          gh label create 'bug' --color 'd73a4a' --description 'Confirmed or reproducible defect' --force
+          gh label create 'enhancement' --color 'a2eeef' --description 'Feature or improvement' --force
+          gh label create 'ci' --color '5319e7' --description 'Continuous integration and automation' --force
+          gh label create 'build-system' --color '1d76db' --description 'Gradle, Soong, Android build configuration' --force
+          gh label create 'security' --color 'b60205' --description 'Security-related change' --force
+          gh label create 'dependencies' --color '0366d6' --description 'Dependency or toolchain update' --force
+          gh label create 'translations' --color '7057ff' --description 'Localization and translation' --force
+          gh label create 'documentation' --color '0075ca' --description 'Documentation' --force
+          gh label create 'breaking' --color 'b60205' --description 'Behavior or API compatibility impact' --force

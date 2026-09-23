@@ -1,0 +1,132 @@
+name: Chrona CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: chrona-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: |
+            platform-tools
+            platforms;android-36
+            build-tools;36.0.0
+      - name: Fetch Google assets
+        run: python3 scripts/assets/fetch_google_assets.py
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: wrapper
+      - name: Format check
+        run: ./gradlew --no-daemon spotlessCheck
+      - name: Lint
+        run: ./gradlew --no-daemon lintDebug
+      - name: Unit tests
+        run: ./gradlew --no-daemon testDebugUnitTest
+      - name: Upload quality reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: chrona-quality-${{ github.run_id }}
+          archive: true
+          path: |
+            app/build/reports/lint-results-debug.html
+            app/build/reports/lint-results-debug.xml
+            app/build/reports/lint-results-debug.sarif
+            app/build/test-results/testDebugUnitTest/**
+          if-no-files-found: ignore
+          retention-days: 14
+
+  build:
+    name: Debug APK
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: |
+            platform-tools
+            platforms;android-36
+            build-tools;36.0.0
+      - name: Fetch Google assets
+        run: python3 scripts/assets/fetch_google_assets.py
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: wrapper
+      - name: Build debug APK
+        id: build
+        shell: bash
+        run: |
+          set -o pipefail
+          set +e
+          ./gradlew --no-daemon assembleDebug 2>&1 | tee build.log
+          status=${PIPESTATUS[0]}
+          set -e
+          python3 scripts/ci/extract_build_errors.py build.log build-errors.log
+          exit "$status"
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: chrona-build-logs-${{ github.run_id }}
+          archive: true
+          path: |
+            build.log
+            build-errors.log
+          if-no-files-found: ignore
+          retention-days: 30
+      - name: Upload debug APK
+        if: success()
+        uses: actions/upload-artifact@v7
+        with:
+          name: chrona-debug-apk-${{ github.run_id }}
+          archive: false
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 30
+
