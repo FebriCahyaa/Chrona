@@ -16,3 +16,8 @@ app/build/
 /chrona-release.jks
 /chrona-release.p12.base64.txt
 /release-key.properties
+/chronabot-gpg-private.asc
+/chronabot-gpg-private.base64.txt
+/chronabot-gpg-public.asc
+/chronabot-gpg-fingerprint.txt
+/.generated/gpg/

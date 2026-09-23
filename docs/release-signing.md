@@ -38,3 +38,15 @@ Before `assembleRelease`, the workflow decodes the Base64 value, opens the resul
 ## 4. Important
 
 Do not regenerate the release key after publishing an application unless you intentionally want to change the signing identity. Existing signed builds must continue using the same release key.
+
+## Signed Git commits
+
+Android release signing and Git commit signing are separate credentials. Do not reuse the Android keystore password or Android keystore as the Git signing key.
+
+Generate the Git signing key with:
+
+```sh
+./scripts/release/generate_github_bot_gpg.sh
+```
+
+Then follow `docs/github-bot-signing.md` for GitHub GPG registration and Actions secrets.
