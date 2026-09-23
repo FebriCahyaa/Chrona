@@ -7,8 +7,6 @@ plugins {
 
 val keystoreFile = providers.environmentVariable("ANDROID_KEYSTORE_FILE").orNull
 val keystorePassword = providers.environmentVariable("ANDROID_KEYSTORE_PASSWORD").orNull
-val keyAlias = providers.environmentVariable("ANDROID_KEY_ALIAS").orNull
-val keyPassword = providers.environmentVariable("ANDROID_KEY_PASSWORD").orNull
 
 android {
     namespace = "com.android.deskclock"
@@ -45,12 +43,12 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            if (keystoreFile != null && keystorePassword != null && keyAlias != null && keyPassword != null) {
+            if (keystoreFile != null && keystorePassword != null) {
                 signingConfig = signingConfigs.create("release") {
                     storeFile = file(keystoreFile)
                     storePassword = keystorePassword
-                    this.keyAlias = keyAlias
-                    this.keyPassword = keyPassword
+                    keyAlias = "chrona-release"
+                    keyPassword = keystorePassword
                     storeType = "PKCS12"
                 }
             }

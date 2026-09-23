@@ -13,4 +13,6 @@ build/
 app/build/
 /chrona-release.keystore
 /chrona-release.p12
+/chrona-release.jks
+/chrona-release.p12.base64.txt
 /release-key.properties

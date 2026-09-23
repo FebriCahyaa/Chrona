@@ -94,22 +94,29 @@ jobs:
       - name: Materialize release keystore
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
         shell: bash
         run: |
           [[ -n "$ANDROID_KEYSTORE_BASE64" ]] || { printf 'ANDROID_KEYSTORE_BASE64 is required.\n' >&2; exit 1; }
-          keystore="$RUNNER_TEMP/chrona-release.keystore"
+          [[ -n "$ANDROID_KEYSTORE_PASSWORD" ]] || { printf 'ANDROID_KEYSTORE_PASSWORD is required.\n' >&2; exit 1; }
+          keystore="$RUNNER_TEMP/chrona-release.jks"
           printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$keystore"
           chmod 600 "$keystore"
+          keytool -list \
+            -storetype JKS \
+            -keystore "$keystore" \
+            -storepass "$ANDROID_KEYSTORE_PASSWORD" \
+            -alias chrona-release \
+            >/dev/null || { printf 'Release keystore validation failed. Check ANDROID_KEYSTORE_BASE64 and ANDROID_KEYSTORE_PASSWORD.\n' >&2; exit 1; }
           printf 'ANDROID_KEYSTORE_FILE=%s\n' "$keystore" >> "$GITHUB_ENV"
       - name: Build release
         id: build
         env:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         shell: bash
         run: |
-          [[ -n "$ANDROID_KEYSTORE_PASSWORD" && -n "$ANDROID_KEY_ALIAS" && -n "$ANDROID_KEY_PASSWORD" ]] || { printf 'Release signing secrets are incomplete.\n' >&2; exit 1; }
+          [[ -n "$ANDROID_KEYSTORE_PASSWORD" ]] || { printf 'ANDROID_KEYSTORE_PASSWORD is required.\n' >&2; exit 1; }
+          [[ -f "$ANDROID_KEYSTORE_FILE" ]] || { printf 'Materialized release keystore was not found.\n' >&2; exit 1; }
           set -o pipefail
           set +e
           ./gradlew --no-daemon assembleRelease 2>&1 | tee release-build.log
