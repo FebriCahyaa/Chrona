@@ -83,8 +83,11 @@ jobs:
         with:
           packages: |
             platform-tools
-            platforms;android-37
-            build-tools;37.0.0
+            platforms;android-37.2
+            build-tools;37.1.0
+
+      - name: Verify Android SDK platform and build tools
+        run: python3 scripts/ci/verify_android_sdk.py
       - name: Fetch Google assets
         run: python3 scripts/assets/fetch_google_assets.py
       - name: Set up Gradle

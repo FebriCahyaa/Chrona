@@ -10,8 +10,12 @@ val keystorePassword = providers.environmentVariable("ANDROID_KEYSTORE_PASSWORD"
 
 android {
     namespace = "com.android.deskclock"
-    compileSdk = 37
-    buildToolsVersion = "37.0.0"
+    compileSdk {
+        version = release(37) {
+            minorApiLevel = 2
+        }
+    }
+    buildToolsVersion = "37.1.0"
 
     defaultConfig {
         applicationId = "com.android.deskclock"
