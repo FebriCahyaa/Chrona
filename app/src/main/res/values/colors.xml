@@ -52,4 +52,6 @@
     <color name="chrona_m3_on_tertiary">#3E2E04</color>
     <color name="chrona_m3_tertiary_container">#574419</color>
     <color name="chrona_m3_on_tertiary_container">#FCDFA6</color>
+    <!-- Launcher icon background behind the cookie clock face. -->
+    <color name="ic_launcher_background">#FF3D5AFE</color>
 </resources>
