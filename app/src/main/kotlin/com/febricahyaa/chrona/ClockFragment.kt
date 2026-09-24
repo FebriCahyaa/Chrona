@@ -33,6 +33,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextClock
 import android.widget.TextView
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
@@ -42,6 +43,8 @@ import com.febricahyaa.chrona.data.DataModel
 import com.febricahyaa.chrona.events.Events
 import com.febricahyaa.chrona.uidata.UiDataModel
 import com.febricahyaa.chrona.worldclock.CitySelectionActivity
+
+import com.google.android.material.snackbar.Snackbar
 
 import java.util.Calendar
 import java.util.TimeZone
@@ -90,6 +93,7 @@ class ClockFragment : DeskClockFragment(UiDataModel.Tab.CLOCKS) {
         mCityList.setAdapter(mCityAdapter)
         mCityList.setItemAnimator(null)
         DataModel.dataModel.addCityListener(mCityAdapter)
+        ItemTouchHelper(CitySwipeCallback()).attachToRecyclerView(mCityList)
 
         val scrollPositionWatcher = ScrollPositionWatcher()
         mCityList.addOnScrollListener(scrollPositionWatcher)
@@ -241,6 +245,41 @@ class ClockFragment : DeskClockFragment(UiDataModel.Tab.CLOCKS) {
         }
     }
 
+    /** Swiping a selected city's card removes it from the world clock, with undo. */
+    private inner class CitySwipeCallback :
+        ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.START or ItemTouchHelper.END) {
+        override fun getSwipeDirs(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder
+        ): Int {
+            val position = viewHolder.bindingAdapterPosition
+            return if (position != RecyclerView.NO_POSITION &&
+                    mCityAdapter.selectedCityAt(position) != null) {
+                super.getSwipeDirs(recyclerView, viewHolder)
+            } else {
+                0
+            }
+        }
+
+        override fun onMove(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+            target: RecyclerView.ViewHolder
+        ): Boolean = false
+
+        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+            val city = mCityAdapter.selectedCityAt(viewHolder.bindingAdapterPosition) ?: return
+            val before = DataModel.dataModel.selectedCities.toList()
+            DataModel.dataModel.selectedCities = before - city
+            Snackbar.make(mCityList, getString(R.string.city_removed, city.name),
+                    Snackbar.LENGTH_LONG)
+                    .setAction(R.string.alarm_undo) {
+                        DataModel.dataModel.selectedCities = before
+                    }
+                    .show()
+        }
+    }
+
     /**
      * Updates the vertical scroll state of this tab in the [UiDataModel] as the user scrolls
      * the recyclerview or when the size/position of elements within the recyclerview changes.
@@ -326,6 +365,15 @@ class ClockFragment : DeskClockFragment(UiDataModel.Tab.CLOCKS) {
 
         private val homeCity: City
             get() = DataModel.dataModel.homeCity
+
+        /** @return the user-selected city shown at [position], or `null` for other rows */
+        fun selectedCityAt(position: Int): City? {
+            if (getItemViewType(position) != WORLD_CLOCK) {
+                return null
+            }
+            val index = position - (if (mIsPortrait) 1 else 0) - (if (mShowHomeClock) 1 else 0)
+            return cities.getOrNull(index)
+        }
 
         private val cities: List<City>
             get() = DataModel.dataModel.selectedCities as List<City>

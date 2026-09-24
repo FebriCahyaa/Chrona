@@ -482,6 +482,12 @@
     <!-- Describes the purpose of the button which provides a list of cities for the world clock settings -->
     <string name="button_cities">Cities</string>
     <!-- Menu item on most screens to get to more settings -->
+    <string name="city_removed"><xliff:g id="city_name">%s</xliff:g> removed</string>
+    <string name="search_city_hint">Search city</string>
+    <string name="search_city_no_results">No matching cities</string>
+    <string name="search_city_clear">Clear</string>
+    <string name="search_city_back">Back</string>
+    <string name="world_clock_locations">Locations</string>
     <string name="menu_item_settings">Settings</string>
     <!-- Menu item on most screens to get to the help information -->
     <string name="menu_item_help">Help</string>

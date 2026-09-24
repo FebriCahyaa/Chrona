@@ -198,6 +198,12 @@
     <string name="menu_stopwatch" msgid="3396117705293574701">"Stopwatch"</string>
     <string name="button_alarms" msgid="3907838219512538763">"Tambahkan alarm"</string>
     <string name="button_cities" msgid="4555761857494501363">"Kota"</string>
+    <string name="city_removed"><xliff:g id="city_name">%s</xliff:g> dihapus</string>
+    <string name="search_city_hint">Telusuri kota</string>
+    <string name="search_city_no_results">Kota tidak ditemukan</string>
+    <string name="search_city_clear">Hapus</string>
+    <string name="search_city_back">Kembali</string>
+    <string name="world_clock_locations">Lokasi</string>
     <string name="menu_item_settings" msgid="1413723516369078665">"Setelan"</string>
     <string name="menu_item_help" msgid="4570953476186849841">"Bantuan"</string>
     <string name="menu_item_night_mode" msgid="2930695838866189483">"Screensaver"</string>

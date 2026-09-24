@@ -63,12 +63,17 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp" />
 
-        <View
+        <!-- Section label above the world clocks. -->
+        <TextView
             android:id="@+id/hairline"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/hairline_height"
+            android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:background="@color/hairline" />
+            android:paddingBottom="4dp"
+            android:paddingHorizontal="4dp"
+            android:text="@string/world_clock_locations"
+            android:textAppearance="?attr/textAppearanceLabelLarge"
+            android:textColor="?attr/colorOnSurfaceVariant" />
     </LinearLayout>
 
     <!-- Right gutter. -->

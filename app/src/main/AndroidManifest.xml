@@ -71,7 +71,8 @@
             android:label="@string/cities_activity_title"
             android:parentActivityName=".DeskClock"
             android:taskAffinity=""
-            android:theme="@style/Theme.DeskClock.CitySelection" />
+            android:theme="@style/Theme.DeskClock.CitySelection"
+            android:windowSoftInputMode="stateVisible|adjustResize" />
 
         <activity
             android:name=".settings.SettingsActivity"

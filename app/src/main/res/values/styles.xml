@@ -102,11 +102,6 @@
         <item name="displayOptions">showTitle|homeAsUp</item>
     </style>
 
-    <style name="Widget.ActionBar.NoTitle">
-        <!-- Attributes from androidx.appcompat.appcompat -->
-        <item name="displayOptions">homeAsUp</item>
-    </style>
-
     <style name="Widget.Button.TimerSetupDigit" parent="Widget.AppCompat.Button.Borderless">
         <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
         <item name="android:fontFamily">sans-serif</item>
