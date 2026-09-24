@@ -506,7 +506,7 @@ class AlarmStateManager : BroadcastReceiver() {
             AlarmService.stopAlarm(context, instance)
 
             // Calculate the new snooze alarm time
-            val snoozeMinutes = DataModel.dataModel.snoozeLength
+            val snoozeMinutes = DataModel.dataModel.getSnoozeLength(instance.mAlarmId)
             val newAlarmTime = Calendar.getInstance()
             newAlarmTime.add(Calendar.MINUTE, snoozeMinutes)
 

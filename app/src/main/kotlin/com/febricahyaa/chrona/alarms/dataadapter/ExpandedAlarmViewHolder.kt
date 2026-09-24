@@ -44,6 +44,7 @@ import com.febricahyaa.chrona.data.DataModel
 import com.febricahyaa.chrona.events.Events
 import com.febricahyaa.chrona.provider.Alarm
 import com.febricahyaa.chrona.uidata.UiDataModel
+import com.febricahyaa.chrona.widget.showOptionsMenu
 
 /**
  * A ViewHolder containing views for an alarm item in expanded state.
@@ -59,6 +60,7 @@ class ExpandedAlarmViewHolder private constructor(itemView: View, private val mH
     val ringtone: TextView = itemView.findViewById(R.id.choose_ringtone) as TextView
     private val ringtoneIcon: ImageView = itemView.findViewById(R.id.choose_ringtone_icon)
     private val status: TextView = itemView.findViewById(R.id.alarm_status)
+    private val snoozeValue: TextView = itemView.findViewById(R.id.snooze_value)
     val delete: TextView = itemView.findViewById(R.id.delete) as TextView
     private val hairLine: View = itemView.findViewById(R.id.hairline)
 
@@ -99,6 +101,18 @@ class ExpandedAlarmViewHolder private constructor(itemView: View, private val mH
         }
         itemView.findViewById<View>(R.id.edit_time).setOnClickListener { _ ->
             alarmTimeClickHandler.onClockClicked(itemHolder!!.item)
+        }
+        // Snooze length for this alarm
+        itemView.findViewById<View>(R.id.snooze_row).setOnClickListener { _ ->
+            val alarm = itemHolder?.item ?: return@setOnClickListener
+            val res = context.resources
+            val labels = res.getStringArray(R.array.snooze_duration_entries)
+            val values = res.getStringArray(R.array.snooze_duration_values)
+            val current = DataModel.dataModel.getSnoozeLength(alarm.id).toString()
+            showOptionsMenu(snoozeValue, labels, values.indexOf(current)) { position ->
+                DataModel.dataModel.setAlarmSnoozeLength(alarm.id, values[position].toInt())
+                bindSnooze(context, alarm)
+            }
         }
         // Edit label handler
         itemView.findViewById<View>(R.id.edit_label_row).setOnClickListener { _ ->
@@ -147,11 +161,18 @@ class ExpandedAlarmViewHolder private constructor(itemView: View, private val mH
         bindEditLabel(context, alarm)
         bindDaysOfWeekButtons(alarm, context)
         bindVibrator(alarm)
+        bindSnooze(context, alarm)
         bindRingtone(context, alarm)
         bindPreemptiveDismissButton(context, alarm, alarmInstance)
         status.setText(if (alarm.enabled) R.string.alarm_status_on else R.string.alarm_status_off)
         // Neutral card: the expanded row's controls use light-on-dark colors.
         bindCardBackground(com.google.android.material.R.attr.colorSurfaceContainerHigh)
+    }
+
+    private fun bindSnooze(context: Context, alarm: Alarm) {
+        val minutes = DataModel.dataModel.getSnoozeLength(alarm.id)
+        snoozeValue.text = context.resources.getQuantityString(
+                R.plurals.minutes, minutes, minutes.toString())
     }
 
     private fun bindRingtone(context: Context, alarm: Alarm) {

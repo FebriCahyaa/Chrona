@@ -470,7 +470,7 @@ class AlarmActivity : BaseActivity(), View.OnClickListener, View.OnTouchListener
         val colorAccent = ThemeUtils.resolveColor(this, android.R.attr.colorAccent)
         setAnimatedFractions(1.0f /* snoozeFraction */, 0.0f /* dismissFraction */)
 
-        val snoozeMinutes = DataModel.dataModel.snoozeLength
+        val snoozeMinutes = DataModel.dataModel.getSnoozeLength(mAlarmInstance?.mAlarmId)
         val infoText: String = getResources().getQuantityString(
                 R.plurals.alarm_alert_snooze_duration, snoozeMinutes, snoozeMinutes)
         val accessibilityText: String = getResources().getQuantityString(

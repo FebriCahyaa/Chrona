@@ -113,6 +113,12 @@ internal class SettingsModel(
     val snoozeLength: Int
         get() = SettingsDAO.getSnoozeLength(mPrefs)
 
+    fun getAlarmSnoozeLength(alarmId: Long): Int? = SettingsDAO.getAlarmSnoozeLength(mPrefs, alarmId)
+
+    fun setAlarmSnoozeLength(alarmId: Long, minutes: Int?) {
+        SettingsDAO.setAlarmSnoozeLength(mPrefs, alarmId, minutes)
+    }
+
     var defaultAlarmRingtoneUri: Uri
         get() = SettingsDAO.getDefaultAlarmRingtoneUri(mPrefs)
         set(uri) {

@@ -17,23 +17,12 @@
 package com.febricahyaa.chrona.settings
 
 import android.content.Context
-import android.content.res.ColorStateList
 import android.util.AttributeSet
-import android.view.Gravity
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.TextView
-import androidx.appcompat.widget.ListPopupWindow
 import androidx.preference.ListPreference
 import androidx.preference.PreferenceViewHolder
 
-import com.febricahyaa.chrona.R
-import com.febricahyaa.chrona.ThemeUtils
-
-import com.google.android.material.shape.MaterialShapeDrawable
-import com.google.android.material.shape.ShapeAppearanceModel
+import com.febricahyaa.chrona.widget.showOptionsMenu
 
 /**
  * A [ListPreference] that shows its choices in a Material 3 menu anchored to the row, as the
@@ -66,39 +55,11 @@ class MenuListPreference @JvmOverloads constructor(
         val values = entryValues ?: return
         val selected = findIndexOfValue(value)
 
-        val popup = ListPopupWindow(context, null, androidx.appcompat.R.attr.listPopupWindowStyle)
-        popup.anchorView = anchor
-        // A rounded M3 menu surface; the default popup background has square corners.
-        val res = context.resources
-        popup.setBackgroundDrawable(MaterialShapeDrawable(ShapeAppearanceModel.builder()
-                .setAllCornerSizes(res.getDimension(R.dimen.preference_menu_corner_radius))
-                .build()).apply {
-            fillColor = ColorStateList.valueOf(ThemeUtils.resolveColor(context,
-                    com.google.android.material.R.attr.colorSurfaceContainer))
-            initializeElevationOverlay(context)
-            elevation = res.getDimension(R.dimen.preference_menu_elevation)
-        })
-        popup.isModal = true
-        popup.setDropDownGravity(Gravity.START)
-        popup.setAdapter(object : ArrayAdapter<CharSequence>(
-                context, R.layout.preference_menu_item, labels) {
-            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                val view = (convertView ?: LayoutInflater.from(context)
-                        .inflate(R.layout.preference_menu_item, parent, false)) as TextView
-                view.text = labels[position]
-                view.isActivated = position == selected
-                return view
-            }
-        })
-        popup.setContentWidth(res.getDimensionPixelSize(R.dimen.preference_menu_width))
-        popup.verticalOffset = -anchor.height
-        popup.setOnItemClickListener { _, _, position, _ ->
-            popup.dismiss()
+        showOptionsMenu(anchor, labels, selected) { position ->
             val newValue = values[position].toString()
             if (newValue != value && callChangeListener(newValue)) {
                 value = newValue
             }
         }
-        popup.show()
     }
 }

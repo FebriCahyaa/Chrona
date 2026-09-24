@@ -732,6 +732,22 @@ class DataModel private constructor() {
     val snoozeLength: Int
         get() = mAlarmModel!!.snoozeLength
 
+    /**
+     * @return the minutes the alarm with [alarmId] snoozes for: its own choice, else the
+     * snooze length from the settings
+     */
+    fun getSnoozeLength(alarmId: Long?): Int {
+        return alarmId?.let { mSettingsModel!!.getAlarmSnoozeLength(it) } ?: snoozeLength
+    }
+
+    /** @return the snooze length chosen for this alarm only, or `null` if it follows settings */
+    fun getAlarmSnoozeLength(alarmId: Long): Int? = mSettingsModel!!.getAlarmSnoozeLength(alarmId)
+
+    /** Sets the snooze length of one alarm; `null` makes it follow the settings again. */
+    fun setAlarmSnoozeLength(alarmId: Long, minutes: Int?) {
+        mSettingsModel!!.setAlarmSnoozeLength(alarmId, minutes)
+    }
+
     //
     // Stopwatch
     //

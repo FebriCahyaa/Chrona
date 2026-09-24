@@ -44,6 +44,9 @@ import kotlin.math.abs
  * This class encapsulates the storage of application preferences in [SharedPreferences].
  */
 internal object SettingsDAO {
+    /** Per-alarm snooze length, followed by the alarm id.  */
+    private const val KEY_ALARM_SNOOZE_PREFIX = "alarm_snooze_"
+
     /** Key to a preference that stores the preferred sort order of world cities.  */
     private const val KEY_SORT_PREFERENCE = "sort_preference"
 
@@ -298,6 +301,25 @@ internal object SettingsDAO {
         // Default value must match the one in res/xml/settings.xml
         val string: String = prefs.getString(SettingsActivity.KEY_ALARM_SNOOZE, "10")!!
         return string.toInt()
+    }
+
+    /**
+     * @return the snooze length chosen for the alarm with [alarmId], or `null` if it follows the
+     * snooze length from the settings
+     */
+    fun getAlarmSnoozeLength(prefs: SharedPreferences, alarmId: Long): Int? {
+        val key = KEY_ALARM_SNOOZE_PREFIX + alarmId
+        return if (prefs.contains(key)) prefs.getInt(key, 10) else null
+    }
+
+    /** Stores the snooze length for one alarm; `null` makes it follow the settings again. */
+    fun setAlarmSnoozeLength(prefs: SharedPreferences, alarmId: Long, minutes: Int?) {
+        val key = KEY_ALARM_SNOOZE_PREFIX + alarmId
+        if (minutes == null) {
+            prefs.edit().remove(key).apply()
+        } else {
+            prefs.edit().putInt(key, minutes).apply()
+        }
     }
 
     /**

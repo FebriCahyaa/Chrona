@@ -109,6 +109,28 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
+    <!-- Snooze length for this alarm, on its own rounded row as in the M3 Expressive clock. -->
+    <LinearLayout
+        android:id="@+id/snooze_row"
+        style="@style/AlarmOptionRow"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/alarm_option_group_background"
+        android:foreground="?attr/selectableItemBackground">
+
+        <ImageView
+            style="@style/AlarmOptionIcon"
+            android:src="@drawable/ic_snooze_24dp" />
+
+        <TextView
+            style="@style/AlarmOptionTitle"
+            android:text="@string/alarm_snooze_row" />
+
+        <TextView
+            android:id="@+id/snooze_value"
+            style="@style/AlarmOptionValue" />
+
+    </LinearLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
