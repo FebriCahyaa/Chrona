@@ -18,7 +18,6 @@ package com.android.deskclock.timer
 
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
@@ -69,11 +68,16 @@ class TimerCircleView @JvmOverloads constructor(
         mStrokeSize = resources.getDimension(R.dimen.circletimer_circle_size)
         mRadiusOffset = Utils.calculateRadiusOffset(mStrokeSize, dotDiameter, 0f)
 
-        mRemainderColor = Color.WHITE
-        mCompletedColor = ThemeUtils.resolveColor(context, android.R.attr.colorAccent)
+        // Match Material 3 progress indicators: dynamic primary indicator on a
+        // secondary-container track, with rounded ends.
+        mRemainderColor = ThemeUtils.resolveColor(context,
+                com.google.android.material.R.attr.colorSecondaryContainer)
+        mCompletedColor = ThemeUtils.resolveColor(context,
+                com.google.android.material.R.attr.colorPrimary)
 
         mPaint.isAntiAlias = true
         mPaint.style = Paint.Style.STROKE
+        mPaint.strokeCap = Paint.Cap.ROUND
 
         mFill.isAntiAlias = true
         mFill.color = mCompletedColor

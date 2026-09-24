@@ -26,10 +26,12 @@
             android:title="@string/clock_style" />
 
         <SwitchPreferenceCompat
+            android:widgetLayout="@layout/preference_widget_material_switch"
             android:key="display_clock_seconds"
             android:title="@string/display_clock_seconds_pref" />
 
         <SwitchPreferenceCompat
+            android:widgetLayout="@layout/preference_widget_material_switch"
             android:defaultValue="true"
             android:key="automatic_home_clock"
             android:summary="@string/automatic_home_clock_summary"
@@ -110,6 +112,7 @@
 
 
         <SwitchPreferenceCompat
+            android:widgetLayout="@layout/preference_widget_material_switch"
             android:defaultValue="false"
             android:key="timer_vibrate"
             android:title="@string/timer_vibrate_title" />

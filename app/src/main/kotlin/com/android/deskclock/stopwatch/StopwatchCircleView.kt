@@ -19,7 +19,6 @@ package com.android.deskclock.stopwatch
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
@@ -79,11 +78,16 @@ class StopwatchCircleView(context: Context, attrs: AttributeSet?) : View(context
         mMarkerStrokeSize = resources.getDimension(R.dimen.circletimer_marker_size)
         mRadiusOffset = Utils.calculateRadiusOffset(mStrokeSize, dotDiameter, mMarkerStrokeSize)
 
-        mRemainderColor = Color.WHITE
-        mCompletedColor = ThemeUtils.resolveColor(context, android.R.attr.colorAccent)
+        // Match Material 3 progress indicators: dynamic primary indicator on a
+        // secondary-container track, with rounded ends.
+        mRemainderColor = ThemeUtils.resolveColor(context,
+                com.google.android.material.R.attr.colorSecondaryContainer)
+        mCompletedColor = ThemeUtils.resolveColor(context,
+                com.google.android.material.R.attr.colorPrimary)
 
         mPaint.setAntiAlias(true)
         mPaint.setStyle(Paint.Style.STROKE)
+        mPaint.strokeCap = Paint.Cap.ROUND
 
         mFill.setAntiAlias(true)
         mFill.setColor(mCompletedColor)

@@ -27,16 +27,16 @@ import android.provider.Settings
 import android.util.AttributeSet
 import android.view.View
 import android.widget.ImageView
-import android.widget.SeekBar
 import androidx.preference.Preference
 import androidx.preference.PreferenceViewHolder
+import com.google.android.material.slider.Slider
 
 import com.android.deskclock.R
 import com.android.deskclock.RingtonePreviewKlaxon
 import com.android.deskclock.data.DataModel
 
 class AlarmVolumePreference(context: Context?, attrs: AttributeSet?) : Preference(context!!, attrs) {
-    private lateinit var mSeekbar: SeekBar
+    private lateinit var mSlider: Slider
 
     private var mPreviewPlaying = false
 
@@ -49,23 +49,23 @@ class AlarmVolumePreference(context: Context?, attrs: AttributeSet?) : Preferenc
         holder.itemView.setClickable(false)
         // Minimum volume for alarm is not 0, calculate it.
         val maxVolume = audioManager.getStreamMaxVolume(STREAM_ALARM) - getMinVolume(audioManager)
-        mSeekbar = holder.findViewById(R.id.alarm_volume_slider) as SeekBar
-        mSeekbar.setMax(maxVolume)
-        mSeekbar.setProgress(audioManager.getStreamVolume(STREAM_ALARM) -
-                getMinVolume(audioManager))
+        mSlider = holder.findViewById(R.id.alarm_volume_slider) as Slider
+        mSlider.valueFrom = 0f
+        // Slider requires valueTo > valueFrom.
+        mSlider.valueTo = maxOf(maxVolume, 1).toFloat()
+        mSlider.value = currentVolume(audioManager)
         (holder.findViewById(R.id.alarm_icon) as ImageView)
                 .setImageResource(R.drawable.ic_alarm_small)
-        onSeekbarChanged()
+        onSliderChanged()
 
-        val volumeObserver: ContentObserver = object : ContentObserver(mSeekbar.getHandler()) {
+        val volumeObserver: ContentObserver = object : ContentObserver(mSlider.getHandler()) {
             override fun onChange(selfChange: Boolean) {
                 // Volume was changed elsewhere, update our slider.
-                mSeekbar.setProgress(audioManager.getStreamVolume(STREAM_ALARM) -
-                        getMinVolume(audioManager))
+                mSlider.value = currentVolume(audioManager)
             }
         }
 
-        mSeekbar.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+        mSlider.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
             override fun onViewAttachedToWindow(v: View) {
                 context.getContentResolver().registerContentObserver(Settings.System.CONTENT_URI,
                         true, volumeObserver)
@@ -76,25 +76,27 @@ class AlarmVolumePreference(context: Context?, attrs: AttributeSet?) : Preferenc
             }
         })
 
-        mSeekbar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                if (fromUser) {
-                    val newVolume = progress + getMinVolume(audioManager)
-                    audioManager.setStreamVolume(STREAM_ALARM, newVolume, 0)
-                }
-                onSeekbarChanged()
+        mSlider.clearOnChangeListeners()
+        mSlider.addOnChangeListener { _, value, fromUser ->
+            if (fromUser) {
+                val newVolume = value.toInt() + getMinVolume(audioManager)
+                audioManager.setStreamVolume(STREAM_ALARM, newVolume, 0)
+            }
+            onSliderChanged()
+        }
+
+        mSlider.clearOnSliderTouchListeners()
+        mSlider.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
+            override fun onStartTrackingTouch(slider: Slider) {
             }
 
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {
-            }
-
-            override fun onStopTrackingTouch(seekBar: SeekBar) {
+            override fun onStopTrackingTouch(slider: Slider) {
                 if (!mPreviewPlaying) {
                     // If we are not currently playing, start.
                     RingtonePreviewKlaxon
                             .start(context, DataModel.dataModel.defaultAlarmRingtoneUri)
                     mPreviewPlaying = true
-                    seekBar.postDelayed(Runnable {
+                    slider.postDelayed({
                         RingtonePreviewKlaxon.stop(context)
                         mPreviewPlaying = false
                     }, ALARM_PREVIEW_DURATION_MS)
@@ -103,8 +105,14 @@ class AlarmVolumePreference(context: Context?, attrs: AttributeSet?) : Preferenc
         })
     }
 
-    private fun onSeekbarChanged() {
-        mSeekbar.setEnabled(doesDoNotDisturbAllowAlarmPlayback())
+    /** The alarm volume as a slider value, clamped to the slider's range. */
+    private fun currentVolume(audioManager: AudioManager): Float {
+        val volume = audioManager.getStreamVolume(STREAM_ALARM) - getMinVolume(audioManager)
+        return volume.toFloat().coerceIn(mSlider.valueFrom, mSlider.valueTo)
+    }
+
+    private fun onSliderChanged() {
+        mSlider.setEnabled(doesDoNotDisturbAllowAlarmPlayback())
     }
 
     private fun doesDoNotDisturbAllowAlarmPlayback(): Boolean {
