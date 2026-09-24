@@ -16,10 +16,11 @@
 package com.android.deskclock
 
 import android.app.Activity
-import android.app.ListActivity
-import android.os.AsyncTask
+import android.content.Intent
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.View
+import android.widget.AdapterView
 import android.widget.Button
 import android.widget.ListView
 
@@ -29,7 +30,7 @@ import com.android.deskclock.widget.selector.AlarmSelectionAdapter
 
 import java.util.Locale
 
-class AlarmSelectionActivity : ListActivity() {
+class AlarmSelectionActivity : Activity() {
     private val mSelections: MutableList<AlarmSelection> = ArrayList()
     private var mAction = 0
 
@@ -48,7 +49,7 @@ class AlarmSelectionActivity : ListActivity() {
         cancelButton.setOnClickListener { finish() }
 
         val intent = intent
-        val alarmsFromIntent = intent.getParcelableArrayExtra(EXTRA_ALARMS)
+        val alarmsFromIntent = getAlarmsFromIntent(intent)
         mAction = intent.getIntExtra(EXTRA_ACTION, ACTION_INVALID)
 
         // reading alarms from intent
@@ -62,32 +63,35 @@ class AlarmSelectionActivity : ListActivity() {
             mSelections.add(AlarmSelection(label, alarm))
         }
 
-        listAdapter = AlarmSelectionAdapter(this, R.layout.alarm_row, mSelections)
+        val listView = findViewById<ListView>(android.R.id.list)
+        listView.adapter = AlarmSelectionAdapter(this, R.layout.alarm_row, mSelections)
+        listView.onItemClickListener =
+                AdapterView.OnItemClickListener { _, _, position, _ ->
+                    val selection = mSelections[position]
+                    ProcessAlarmActionThread(selection.alarm, this, mAction).start()
+                    finish()
+                }
     }
 
-    public override fun onListItemClick(l: ListView, v: View, position: Int, id: Long) {
-        super.onListItemClick(l, v, position, id)
-        // id corresponds to mSelections id because the view adapter used mSelections
-        val selection = mSelections[id.toInt()]
-        val alarm: Alarm? = selection.alarm
-        alarm?.let {
-            ProcessAlarmActionAsync(it, this, mAction).execute()
-        }
-        finish()
-    }
-
-    // TODO(b/165664115) Replace deprecated AsyncTask calls
-    private class ProcessAlarmActionAsync(
-        private val mAlarm: Alarm,
-        private val mActivity: Activity,
-        private val mAction: Int
-    ) : AsyncTask<Void?, Void?, Void?>() {
-        override fun doInBackground(vararg parameters: Void?): Void? {
-            when (mAction) {
-                ACTION_DISMISS -> HandleApiCalls.dismissAlarm(mAlarm, mActivity)
+    private class ProcessAlarmActionThread(
+        private val alarm: Alarm,
+        private val activity: Activity,
+        private val action: Int
+    ) : Thread() {
+        override fun run() {
+            when (action) {
+                ACTION_DISMISS -> HandleApiCalls.dismissAlarm(alarm, activity)
                 ACTION_INVALID -> LogUtils.i("Invalid action")
             }
-            return null
+        }
+    }
+
+    private fun getAlarmsFromIntent(intent: Intent): Array<out Parcelable>? {
+        return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableArrayExtra(EXTRA_ALARMS, Alarm::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getParcelableArrayExtra(EXTRA_ALARMS)
         }
     }
 

@@ -45,6 +45,7 @@ object AlarmAlertWakeLock {
     }
 
     @JvmStatic
+    @Suppress("DEPRECATION")
     fun acquireScreenCpuWakeLock(context: Context) {
         if (sCpuWakeLock != null) {
             return

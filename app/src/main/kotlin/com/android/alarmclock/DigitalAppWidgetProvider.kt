@@ -38,7 +38,6 @@ import android.content.Intent.ACTION_TIMEZONE_CHANGED
 import android.content.Intent.ACTION_TIME_CHANGED
 import android.content.res.Resources
 import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Bundle
 import android.text.TextUtils
 import android.text.format.DateFormat
@@ -52,6 +51,7 @@ import android.view.View.VISIBLE
 import android.widget.RemoteViews
 import android.widget.TextClock
 import android.widget.TextView
+import androidx.core.widget.RemoteViewsCompat
 
 import com.android.deskclock.DeskClock
 import com.android.deskclock.LogUtils
@@ -313,7 +313,6 @@ class DigitalAppWidgetProvider : AppWidgetProvider() {
             val landscape: RemoteViews = relayoutWidget(context, wm, widgetId, options, false)
             val widget = RemoteViews(landscape, portrait)
             wm.updateAppWidget(widgetId, widget)
-            wm.notifyAppWidgetViewDataChanged(widgetId, R.id.world_city_list)
         }
 
         /**
@@ -388,11 +387,14 @@ class DigitalAppWidgetProvider : AppWidgetProvider() {
                 // Insufficient space; hide the world city list.
                 rv.setViewVisibility(R.id.world_city_list, GONE)
             } else {
-                // Set an adapter on the world city list. That adapter connects to a Service via intent.
-                val intent = Intent(context, DigitalAppWidgetCityService::class.java)
-                intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
-                intent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)))
-                rv.setRemoteAdapter(R.id.world_city_list, intent)
+                val collectionItems = buildWorldCityCollectionItems(context, widgetId)
+                RemoteViewsCompat.setRemoteAdapter(
+                    context,
+                    rv,
+                    widgetId,
+                    R.id.world_city_list,
+                    collectionItems
+                )
                 rv.setViewVisibility(R.id.world_city_list, VISIBLE)
 
                 // Tapping on the widget opens the city selection activity (if not on the lock screen).
@@ -405,6 +407,26 @@ class DigitalAppWidgetProvider : AppWidgetProvider() {
             }
 
             return rv
+        }
+
+        private fun buildWorldCityCollectionItems(
+            context: Context,
+            widgetId: Int
+        ): RemoteViewsCompat.RemoteCollectionItems {
+            val intent = Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
+            val factory = DigitalAppWidgetCityViewsFactory(context, intent)
+            factory.onCreate()
+            factory.onDataSetChanged()
+
+            return RemoteViewsCompat.RemoteCollectionItems.Builder()
+                .setHasStableIds(factory.hasStableIds())
+                .setViewTypeCount(factory.viewTypeCount)
+                .also { builder ->
+                    repeat(factory.count) { position ->
+                        builder.addItem(position.toLong(), factory.getViewAt(position))
+                    }
+                }
+                .build()
         }
 
         /**

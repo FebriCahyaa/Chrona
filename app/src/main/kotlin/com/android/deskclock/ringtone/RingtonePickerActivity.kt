@@ -443,7 +443,7 @@ class RingtonePickerActivity : BaseActivity(), LoaderCallbacks<List<ItemHolder<U
                     }
                 }
                 RingtoneViewHolder.CLICK_LONG_PRESS -> {
-                    mIndexOfRingtoneToRemove = viewHolder.getAdapterPosition()
+                    mIndexOfRingtoneToRemove = viewHolder.bindingAdapterPosition
                 }
                 RingtoneViewHolder.CLICK_NO_PERMISSIONS -> {
                     ConfirmRemoveCustomRingtoneDialogFragment.show(supportFragmentManager,

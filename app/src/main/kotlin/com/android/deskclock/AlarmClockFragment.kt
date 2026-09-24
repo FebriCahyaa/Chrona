@@ -28,6 +28,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.loader.app.LoaderManager
 import androidx.loader.app.LoaderManager.LoaderCallbacks
 import androidx.loader.content.Loader
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -80,7 +81,7 @@ class AlarmClockFragment : DeskClockFragment(UiDataModel.Tab.ALARMS),
 
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
-        mCursorLoader = loaderManager.initLoader(0, Bundle.EMPTY, this)
+        mCursorLoader = LoaderManager.getInstance(this).initLoader(0, Bundle.EMPTY, this)
         savedState?.let {
             mExpandedAlarmId = it.getLong(KEY_EXPANDED_ID, Alarm.INVALID_ID)
         }
@@ -97,11 +98,18 @@ class AlarmClockFragment : DeskClockFragment(UiDataModel.Tab.ALARMS),
 
         mRecyclerView = v.findViewById<View>(R.id.alarms_recycler_view) as RecyclerView
         mLayoutManager = object : LinearLayoutManager(context) {
-            override fun getExtraLayoutSpace(state: RecyclerView.State): Int {
-                val extraSpace: Int = super.getExtraLayoutSpace(state)
-                return if (state.willRunPredictiveAnimations()) {
-                    max(getHeight(), extraSpace)
-                } else extraSpace
+            override fun calculateExtraLayoutSpace(
+                state: RecyclerView.State,
+                extraLayoutSpace: IntArray
+            ) {
+                super.calculateExtraLayoutSpace(state, extraLayoutSpace)
+                if (state.willRunPredictiveAnimations()) {
+                    if (extraLayoutSpace[0] > 0) {
+                        extraLayoutSpace[0] = max(getHeight(), extraLayoutSpace[0])
+                    } else {
+                        extraLayoutSpace[1] = max(getHeight(), extraLayoutSpace[1])
+                    }
+                }
             }
         }
         mRecyclerView.setLayoutManager(mLayoutManager)
@@ -120,27 +128,27 @@ class AlarmClockFragment : DeskClockFragment(UiDataModel.Tab.ALARMS),
         mItemAdapter.withViewTypes(ExpandedAlarmViewHolder.Factory(context),
                 null, ExpandedAlarmViewHolder.VIEW_TYPE)
         mItemAdapter.setOnItemChangedListener(object : OnItemChangedListener {
-            override fun onItemChanged(holder: ItemHolder<*>) {
-                if ((holder as AlarmItemHolder).isExpanded) {
-                    if (mExpandedAlarmId != holder.itemId) {
+            override fun onItemChanged(itemHolder: ItemHolder<*>) {
+                if ((itemHolder as AlarmItemHolder).isExpanded) {
+                    if (mExpandedAlarmId != itemHolder.itemId) {
                         // Collapse the prior expanded alarm.
                         val aih = mItemAdapter.findItemById(mExpandedAlarmId)
                         aih?.collapse()
                         // Record the freshly expanded alarm.
-                        mExpandedAlarmId = holder.itemId
+                        mExpandedAlarmId = itemHolder.itemId
                         val viewHolder: RecyclerView.ViewHolder? =
                                 mRecyclerView.findViewHolderForItemId(mExpandedAlarmId)
                         viewHolder?.let {
-                            smoothScrollTo(viewHolder.getAdapterPosition())
+                            smoothScrollTo(viewHolder.bindingAdapterPosition)
                         }
                     }
-                } else if (mExpandedAlarmId == holder.itemId) {
+                } else if (mExpandedAlarmId == itemHolder.itemId) {
                     // The expanded alarm is now collapsed so update the tracking id.
                     mExpandedAlarmId = Alarm.INVALID_ID
                 }
             }
 
-            override fun onItemChanged(holder: ItemHolder<*>, payload: Any) {
+            override fun onItemChanged(itemHolder: ItemHolder<*>, payload: Any) {
                 /* No additional work to do */
             }
         })

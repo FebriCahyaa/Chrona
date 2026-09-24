@@ -135,6 +135,7 @@ dependencies {
   implementation(libs.androidx.lifecycle.common)
   implementation(libs.androidx.lifecycle.runtime)
   implementation(libs.androidx.core)
+  implementation(libs.androidx.core.remoteviews)
   implementation(libs.androidx.coordinatorlayout)
   implementation(libs.androidx.interpolator)
   implementation(libs.androidx.loader)
