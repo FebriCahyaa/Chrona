@@ -14,6 +14,10 @@ integration. Both build systems read the same sources under `app/src/main`.
 | minSdk / targetSdk | 29 / 37 |
 | compileSdk / Build Tools | resolved per SDK channel (see below) |
 
+SDK levels are defined once in `gradle/libs.versions.toml` (`androidCompileSdk`,
+`androidTargetSdk`, `androidMinSdk`); CI can override compileSdk per channel with
+`CHRONA_COMPILE_SDK`.
+
 ## Build types and SDK channels
 
 Each build type compiles against a different `sdkmanager` channel. CI runs

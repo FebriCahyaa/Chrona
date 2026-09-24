@@ -5,12 +5,12 @@ plugins { id("com.android.application") }
 fun env(name: String): String? =
     providers.environmentVariable(name).orNull?.trim()?.takeIf { it.isNotEmpty() }
 
-// Toolchain selection. CI resolves these from the Android SDK channel that
-// matches the build (see scripts/ci/android_sdk.py); local builds fall back to
-// the stable defaults below.
+// SDK levels live in gradle/libs.versions.toml (androidCompileSdk / androidTargetSdk /
+// androidMinSdk). CI may override the toolchain per Android SDK channel (see
+// scripts/ci/android_sdk.py):
 //   CHRONA_COMPILE_SDK  "37.2" (API 37, minor 2), "37", or a preview codename
 //   CHRONA_BUILD_TOOLS  e.g. "37.0.0"; unset lets AGP pick its default
-val compileSdkSpec = env("CHRONA_COMPILE_SDK") ?: "37.2"
+val compileSdkSpec = env("CHRONA_COMPILE_SDK") ?: libs.versions.androidCompileSdk.get()
 val buildToolsOverride = env("CHRONA_BUILD_TOOLS")
 
 // Versioning. CI injects a monotonically increasing code and a channel label.
@@ -40,8 +40,8 @@ android {
 
   defaultConfig {
     applicationId = "com.android.deskclock"
-    minSdk = 29
-    targetSdk = 37
+    minSdk = libs.versions.androidMinSdk.get().toInt()
+    targetSdk = libs.versions.androidTargetSdk.get().toInt()
     versionCode = chronaVersionCode
     versionName = chronaVersionName
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
