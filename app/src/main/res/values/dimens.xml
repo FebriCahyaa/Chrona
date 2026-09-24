@@ -154,4 +154,6 @@
     <dimen name="timer_card_time_width">200dp</dimen>
     <dimen name="timer_card_button_height">56dp</dimen>
     <dimen name="timer_card_corner_radius">28dp</dimen>
+    <dimen name="timer_grid_gap">6dp</dimen>
+    <dimen name="timer_grid_padding">10dp</dimen>
 </resources>

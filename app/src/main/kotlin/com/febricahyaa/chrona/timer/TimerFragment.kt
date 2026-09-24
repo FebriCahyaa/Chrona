@@ -35,7 +35,8 @@ import android.widget.Button
 import android.widget.ImageView
 import androidx.annotation.VisibleForTesting
 import androidx.core.os.BundleCompat
-import androidx.viewpager.widget.ViewPager
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
 import com.febricahyaa.chrona.data.DataModel
 import com.febricahyaa.chrona.data.Timer
@@ -51,27 +52,22 @@ import com.febricahyaa.chrona.Utils
 
 import java.io.Serializable
 import kotlin.math.max
-import kotlin.math.min
 
 /**
- * Displays a vertical list of timers in all states.
+ * Displays all timers, one full-width card or a two-column grid, in all states.
  */
 class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
-    /** Notified when the user swipes vertically to change the visible timer.  */
-    private val mTimerPageChangeListener = TimerPageChangeListener()
-
     /** Scheduled to update the timers while at least one is running.  */
     private val mTimeUpdateRunnable: Runnable = TimeUpdateRunnable()
 
-    /** Updates the [.mPageIndicators] in response to timers being added or removed.  */
+    /** Updates the fab in response to timers being added or removed.  */
     private val mTimerWatcher: TimerListener = TimerWatcher()
 
     private lateinit var mCreateTimerView: TimerSetupView
-    private lateinit var mViewPager: ViewPager
-    private lateinit var mAdapter: TimerPagerAdapter
+    private lateinit var mTimerList: RecyclerView
+    private lateinit var mAdapter: TimerAdapter
     private var mTimersView: View? = null
     private var mCurrentView: View? = null
-    private lateinit var mPageIndicators: Array<ImageView>
 
     private var mTimerSetupState: Serializable? = null
 
@@ -85,21 +81,17 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
     ): View? {
         val view = inflater.inflate(R.layout.timer_fragment, container, false)
 
-        mAdapter = TimerPagerAdapter(parentFragmentManager)
-        mViewPager = view.findViewById<View>(R.id.vertical_view_pager) as ViewPager
-        mViewPager.setAdapter(mAdapter)
-        mViewPager.addOnPageChangeListener(mTimerPageChangeListener)
+        mAdapter = TimerAdapter({ parentFragmentManager }) { timer, v -> deleteTimer(timer, v) }
+        mTimerList = view.findViewById(R.id.timer_list)
+        mTimerList.layoutManager = GridLayoutManager(context, TimerAdapter.SPAN_COUNT).apply {
+            spanSizeLookup = mAdapter.spanSizeLookup
+        }
+        mTimerList.adapter = mAdapter
 
-        mTimersView = view.findViewById(R.id.timer_view)
+        mTimersView = mTimerList
         mCreateTimerView = view.findViewById<View>(R.id.timer_setup) as TimerSetupView
         mCreateTimerView.setFabContainer(this)
         mCreateTimerView.setOnStartListener { startTimerFromSetup() }
-        mPageIndicators = arrayOf(
-                view.findViewById<View>(R.id.page_indicator0) as ImageView,
-                view.findViewById<View>(R.id.page_indicator1) as ImageView,
-                view.findViewById<View>(R.id.page_indicator2) as ImageView,
-                view.findViewById<View>(R.id.page_indicator3) as ImageView
-        )
 
         DataModel.dataModel.addTimerListener(mAdapter)
         DataModel.dataModel.addTimerListener(mTimerWatcher)
@@ -116,8 +108,6 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
     override fun onStart() {
         super.onStart()
 
-        // Initialize the page indicators.
-        updatePageIndicators()
         var createTimer = false
         var showTimerId = -1
 
@@ -160,8 +150,7 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
         if (showTimerId != -1) {
             val timer: Timer? = DataModel.dataModel.getTimer(showTimerId)
             timer?.let {
-                val index: Int = DataModel.dataModel.timers.indexOf(it)
-                mViewPager.setCurrentItem(index)
+                mTimerList.scrollToPosition(DataModel.dataModel.timers.indexOf(it))
             }
         }
     }
@@ -179,8 +168,7 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
             val timer: Timer? = DataModel.dataModel.getTimer(showTimerId)
             timer?.let {
                 // A specific timer must be shown; show the list of timers.
-                val index: Int = DataModel.dataModel.timers.indexOf(it)
-                mViewPager.setCurrentItem(index)
+                mTimerList.scrollToPosition(DataModel.dataModel.timers.indexOf(it))
 
                 animateToView(mTimersView, null, false)
             }
@@ -276,7 +264,7 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
             Events.sendTimerEvent(R.string.action_start, R.string.label_deskclock)
 
             // Display the freshly created timer view.
-            mViewPager.setCurrentItem(0)
+            mTimerList.scrollToPosition(0)
         } finally {
             mCreatingTimer = false
         }
@@ -286,9 +274,7 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
     }
 
     override fun onLeftButtonClick(left: Button) {
-        if (mCurrentView === mTimersView) {
-            timer?.let { deleteTimer(it, left) }
-        } else if (mCurrentView === mCreateTimerView) {
+        if (mCurrentView === mCreateTimerView) {
             // Clicking the "cancel" button on the timer creation page returns to the timers list.
             mCreateTimerView.reset()
 
@@ -303,7 +289,7 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
         if (mCurrentView !== mTimersView) {
             return
         }
-        if (mAdapter.getCount() > 1) {
+        if (mAdapter.itemCount > 1) {
             animateTimerRemove(timer)
         } else {
             animateToView(mCreateTimerView, timer, false)
@@ -323,28 +309,6 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
         return if (mCurrentView === mCreateTimerView) {
             mCreateTimerView.onKeyDown(keyCode, event)
         } else super.onKeyDown(keyCode, event)
-    }
-
-    /**
-     * Updates the state of the page indicators so they reflect the selected page in the context of
-     * all pages.
-     */
-    private fun updatePageIndicators() {
-        val page: Int = mViewPager.getCurrentItem()
-        val pageIndicatorCount = mPageIndicators.size
-        val pageCount = mAdapter.getCount()
-
-        val states = computePageIndicatorStates(page, pageIndicatorCount, pageCount)
-        for (i in states.indices) {
-            val state = states[i]
-            val pageIndicator = mPageIndicators[i]
-            if (state == 0) {
-                pageIndicator.visibility = View.GONE
-            } else {
-                pageIndicator.visibility = View.VISIBLE
-                pageIndicator.setImageResource(state)
-            }
-        }
     }
 
     /**
@@ -392,7 +356,7 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
     private fun animateTimerRemove(timerToRemove: Timer) {
         val duration = UiDataModel.uiDataModel.shortAnimationDuration
 
-        val fadeOut: Animator = ObjectAnimator.ofFloat(mViewPager, View.ALPHA, 1f, 0f)
+        val fadeOut: Animator = ObjectAnimator.ofFloat(mTimerList, View.ALPHA, 1f, 0f)
         fadeOut.duration = duration
         fadeOut.interpolator = DecelerateInterpolator()
         fadeOut.addListener(object : AnimatorListenerAdapter() {
@@ -402,7 +366,7 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
             }
         })
 
-        val fadeIn: Animator = ObjectAnimator.ofFloat(mViewPager, View.ALPHA, 0f, 1f)
+        val fadeIn: Animator = ObjectAnimator.ofFloat(mTimerList, View.ALPHA, 0f, 1f)
         fadeIn.duration = duration
         fadeIn.interpolator = AccelerateInterpolator()
 
@@ -515,30 +479,17 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
     }
 
     private fun hasTimers(): Boolean {
-        return mAdapter.getCount() > 0
+        return mAdapter.itemCount > 0
     }
-
-    private val timer: Timer?
-        get() {
-            if (!::mViewPager.isInitialized) {
-                return null
-            }
-
-            return if (mAdapter.getCount() == 0) {
-                null
-            } else {
-                mAdapter.getTimer(mViewPager.getCurrentItem())
-            }
-        }
 
     private fun startUpdatingTime() {
         // Ensure only one copy of the runnable is ever scheduled by first stopping updates.
         stopUpdatingTime()
-        mViewPager.post(mTimeUpdateRunnable)
+        mTimerList.post(mTimeUpdateRunnable)
     }
 
     private fun stopUpdatingTime() {
-        mViewPager.removeCallbacks(mTimeUpdateRunnable)
+        mTimerList.removeCallbacks(mTimeUpdateRunnable)
     }
 
     /**
@@ -560,32 +511,10 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
     }
 
     /**
-     * Update the page indicators and fab in response to a new timer becoming visible.
-     */
-    private inner class TimerPageChangeListener : ViewPager.SimpleOnPageChangeListener() {
-        override fun onPageSelected(position: Int) {
-            updatePageIndicators()
-            updateFab(FabContainer.FAB_AND_BUTTONS_IMMEDIATE)
-
-            // Showing a new timer page may introduce a timer requiring continuous updates.
-            startUpdatingTime()
-        }
-
-        override fun onPageScrollStateChanged(state: Int) {
-            // Teasing a neighboring timer may introduce a timer requiring continuous updates.
-            if (state == ViewPager.SCROLL_STATE_DRAGGING) {
-                startUpdatingTime()
-            }
-        }
-    }
-
-    /**
-     * Update the page indicators in response to timers being added or removed.
-     * Update the fab in response to the visible timer changing.
+     * Update the fab in response to timers being added or removed.
      */
     private inner class TimerWatcher : TimerListener {
         override fun timerAdded(timer: Timer) {
-            updatePageIndicators()
             // If the timer is being created via this fragment avoid adjusting the fab.
             // Timer setup view is about to be animated away in response to this timer creation.
             // Changes to the fab immediately preceding that animation are jarring.
@@ -600,26 +529,16 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
                 startUpdatingTime()
             }
 
-            // Fetch the index of the change.
-            val index: Int = DataModel.dataModel.timers.indexOf(after)
-
-            // If the timer just expired but is not displayed, display it now.
-            if (!before.isExpired && after.isExpired && index != mViewPager.getCurrentItem()) {
-                mViewPager.setCurrentItem(index, true)
-            } else if (mCurrentView === mTimersView && index == mViewPager.getCurrentItem()) {
-                // Morph the fab from its old state to new state if necessary.
-                if (before.state != after.state &&
-                        !(before.isPaused && after.isReset)) {
-                    updateFab(FabContainer.FAB_MORPH)
-                }
+            // If the timer just expired, make sure its card is on screen.
+            if (!before.isExpired && after.isExpired) {
+                mTimerList.smoothScrollToPosition(DataModel.dataModel.timers.indexOf(after))
             }
         }
 
         override fun timerRemoved(timer: Timer) {
-            updatePageIndicators()
             updateFab(FabContainer.FAB_AND_BUTTONS_IMMEDIATE)
 
-            if (mCurrentView === mTimersView && mAdapter.getCount() == 0) {
+            if (mCurrentView === mTimersView && mAdapter.itemCount == 0) {
                 animateToView(mCreateTimerView, null, false)
             }
         }
@@ -638,66 +557,6 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
         @JvmStatic
         fun createTimerSetupIntent(context: Context): Intent {
             return Intent(context, DeskClock::class.java).putExtra(EXTRA_TIMER_SETUP, true)
-        }
-
-        /**
-         * @param page the selected page; value between 0 and `pageCount`
-         * @param pageIndicatorCount the number of indicators displaying the `page` location
-         * @param pageCount the number of pages that exist
-         * @return an array of length `pageIndicatorCount` specifying which image to display for
-         * each page indicator or 0 if the page indicator should be hidden
-         */
-        @VisibleForTesting
-        @JvmStatic
-        fun computePageIndicatorStates(
-            page: Int,
-            pageIndicatorCount: Int,
-            pageCount: Int
-        ): IntArray {
-            // Compute the number of page indicators that will be visible.
-            val rangeSize = min(pageIndicatorCount, pageCount)
-
-            // Compute the inclusive range of pages to indicate centered around the selected page.
-            var rangeStart = page - rangeSize / 2
-            var rangeEnd = rangeStart + rangeSize - 1
-
-            // Clamp the range of pages if they extend beyond the last page.
-            if (rangeEnd >= pageCount) {
-                rangeEnd = pageCount - 1
-                rangeStart = rangeEnd - rangeSize + 1
-            }
-
-            // Clamp the range of pages if they extend beyond the first page.
-            if (rangeStart < 0) {
-                rangeStart = 0
-                rangeEnd = rangeSize - 1
-            }
-
-            // Build the result with all page indicators initially hidden.
-            val states = IntArray(pageIndicatorCount)
-            states.fill(0)
-
-            // If 0 or 1 total pages exist, all page indicators must remain hidden.
-            if (rangeSize < 2) {
-                return states
-            }
-
-            // Initialize the visible page indicators to be dark.
-            states.fill(R.drawable.ic_swipe_circle_dark, 0, rangeSize)
-
-            // If more pages exist before the first page indicator, make it a fade-in gradient.
-            if (rangeStart > 0) {
-                states[0] = R.drawable.ic_swipe_circle_top
-            }
-
-            // If more pages exist after the last page indicator, make it a fade-out gradient.
-            if (rangeEnd < pageCount - 1) {
-                states[rangeSize - 1] = R.drawable.ic_swipe_circle_bottom
-            }
-
-            // Set the indicator of the selected page to be light.
-            states[page - rangeStart] = R.drawable.ic_swipe_circle_light
-            return states
         }
     }
 }

@@ -22,6 +22,7 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
+import androidx.core.graphics.ColorUtils
 
 import com.febricahyaa.chrona.R
 import com.febricahyaa.chrona.ThemeUtils
@@ -54,6 +55,9 @@ class TimerCircleView @JvmOverloads constructor(
     /** The size of the stroke that paints the timer circle.  */
     private val mStrokeSize: Float
 
+    /** Fills the ring once the timer expires, a lighter tone of the expired card.  */
+    private val mExpiredFillColor: Int
+
     private val mPaint = Paint()
     private val mFill = Paint()
     private val mArcRect = RectF()
@@ -74,6 +78,9 @@ class TimerCircleView @JvmOverloads constructor(
                 com.google.android.material.R.attr.colorSecondaryContainer)
         mCompletedColor = ThemeUtils.resolveColor(context,
                 androidx.appcompat.R.attr.colorPrimary)
+
+        mExpiredFillColor = ColorUtils.setAlphaComponent(ThemeUtils.resolveColor(context,
+                com.google.android.material.R.attr.colorOnPrimaryContainer), 0x1F)
 
         mPaint.isAntiAlias = true
         mPaint.style = Paint.Style.STROKE
@@ -101,6 +108,14 @@ class TimerCircleView @JvmOverloads constructor(
         val yCenter = height / 2
         val radius = min(xCenter, yCenter) - mRadiusOffset
 
+        // An expired timer shows a filled disc instead of a ring.
+        if (mTimer!!.isExpired || mTimer!!.isMissed) {
+            mFill.color = mExpiredFillColor
+            canvas.drawCircle(xCenter.toFloat(), yCenter.toFloat(), radius + mStrokeSize / 2, mFill)
+            mFill.color = mCompletedColor
+            return
+        }
+
         // Reset old painting state.
         mPaint.color = mRemainderColor
         mPaint.strokeWidth = mStrokeSize
@@ -114,15 +129,6 @@ class TimerCircleView @JvmOverloads constructor(
 
                 // Red percent is 0 since no timer progress has been made.
                 redPercent = 0f
-            }
-            mTimer!!.isExpired -> {
-                mPaint.color = mCompletedColor
-
-                // Draw a complete white circle; no red arc required.
-                canvas.drawCircle(xCenter.toFloat(), yCenter.toFloat(), radius, mPaint)
-
-                // Red percent is 1 since the timer has expired.
-                redPercent = 1f
             }
             else -> {
                 // Draw a combination of red and white arcs to create a circle.

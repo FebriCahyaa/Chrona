@@ -21,11 +21,13 @@ import android.content.res.ColorStateList
 import android.os.SystemClock
 import android.text.TextUtils
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.ViewCompat
+import androidx.core.view.updateLayoutParams
 
 import com.febricahyaa.chrona.R
 import com.febricahyaa.chrona.ThemeUtils
@@ -33,13 +35,15 @@ import com.febricahyaa.chrona.TimerTextController
 import com.febricahyaa.chrona.Utils.ClickAccessibilityDelegate
 import com.febricahyaa.chrona.data.Timer
 
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.shape.MaterialShapeDrawable
 import com.google.android.material.shape.ShapeAppearanceModel
 
 /**
  * This view is a visual representation of a [Timer]: a Material 3 Expressive card with the
  * label and a delete button, a progress ring holding the time and a state icon, and +1:00 /
- * reset buttons. The card turns primary-container colored once the timer expires.
+ * reset buttons while running. The card turns primary-container colored once the timer expires.
+ * Several timers are laid out as a grid of [compact] cards.
  */
 class TimerItem @JvmOverloads constructor(
     context: Context?,
@@ -55,10 +59,12 @@ class TimerItem @JvmOverloads constructor(
     private lateinit var mCircleView: TimerCircleView
 
     /** Adds a minute to the timer.  */
-    private lateinit var mAddMinuteButton: View
+    private lateinit var mAddMinuteButton: MaterialButton
+    private var mAddMinuteTint: ColorStateList? = null
+    private var mAddMinuteTextColors: ColorStateList? = null
 
     /** Resets the timer.  */
-    private lateinit var mResetButton: View
+    private lateinit var mResetButton: MaterialButton
 
     /** Pause (running), play (paused/reset) or stop (expired) under the time.  */
     private lateinit var mStateIcon: ImageView
@@ -76,6 +82,22 @@ class TimerItem @JvmOverloads constructor(
     /** The last state of the timer that was rendered; used to avoid expensive operations.  */
     private var mLastState: Timer.State? = null
 
+    /** `false` where timers can only be dismissed, such as the expired-timers alert.  */
+    var showDeleteAndReset = true
+        set(value) {
+            field = value
+            mLastState = null
+        }
+
+    /** `true` to draw the smaller card used when several timers share a grid.  */
+    var compact = false
+        set(value) {
+            if (field != value) {
+                field = value
+                applySize()
+            }
+        }
+
     override fun onFinishInflate() {
         super.onFinishInflate()
         mLabelView = findViewById(R.id.timer_label)
@@ -92,7 +114,33 @@ class TimerItem @JvmOverloads constructor(
         mCardBackground = MaterialShapeDrawable(
                 ShapeAppearanceModel.builder().setAllCornerSizes(radius).build())
         mCard.background = mCardBackground
+        mAddMinuteTint = mAddMinuteButton.backgroundTintList
+        mAddMinuteTextColors = mAddMinuteButton.textColors
         applyCardColors(expired = false)
+    }
+
+    private fun applySize() {
+        val res = resources
+        val dp = res.displayMetrics.density
+        findViewById<View>(R.id.timer_ring).updateLayoutParams {
+            height = if (compact) (104 * dp).toInt()
+                    else res.getDimensionPixelSize(R.dimen.timer_card_ring_size)
+        }
+        mTimerText.updateLayoutParams {
+            width = if (compact) (84 * dp).toInt()
+                    else res.getDimensionPixelSize(R.dimen.timer_card_time_width)
+        }
+        mTimerText.setTextSize(TypedValue.COMPLEX_UNIT_SP, if (compact) 26f else 64f)
+        val buttonHeight = if (compact) (36 * dp).toInt()
+                else res.getDimensionPixelSize(R.dimen.timer_card_button_height)
+        mAddMinuteButton.updateLayoutParams { height = buttonHeight }
+        mAddMinuteButton.minWidth = ((if (compact) 64 else 120) * dp).toInt()
+        mAddMinuteButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, if (compact) 13f else 16f)
+        mResetButton.updateLayoutParams {
+            width = buttonHeight
+            height = buttonHeight
+        }
+        mLabelView.setTextSize(TypedValue.COMPLEX_UNIT_SP, if (compact) 12f else 16f)
     }
 
     private fun applyCardColors(expired: Boolean) {
@@ -114,6 +162,14 @@ class TimerItem @JvmOverloads constructor(
         val contentTint = ColorStateList.valueOf(content)
         mStateIcon.imageTintList = contentTint
         mDeleteButton.imageTintList = contentTint
+        if (expired) {
+            // A dark pill on the light expired card.
+            mAddMinuteButton.backgroundTintList = ColorStateList.valueOf(content)
+            mAddMinuteButton.setTextColor(ThemeUtils.resolveColor(c, fillAttr))
+        } else {
+            mAddMinuteButton.backgroundTintList = mAddMinuteTint
+            mAddMinuteTextColors?.let(mAddMinuteButton::setTextColor)
+        }
     }
 
     /**
@@ -129,14 +185,11 @@ class TimerItem @JvmOverloads constructor(
             mLabelView.text = label
         }
 
-        // Update visibility of things that may blink.
+        // Update the progress of the circle.
+        mCircleView.update(timer)
+
+        // A paused timer blinks its time.
         val blinkOff = SystemClock.elapsedRealtime() % 1000 < 500
-        val hideCircle = (timer.isExpired || timer.isMissed) && blinkOff
-        mCircleView.visibility = if (hideCircle) View.INVISIBLE else View.VISIBLE
-        if (!hideCircle) {
-            // Update the progress of the circle.
-            mCircleView.update(timer)
-        }
         if (!timer.isPaused || !blinkOff || mTimerText.isPressed) {
             mTimerText.alpha = 1f
         } else {
@@ -151,9 +204,10 @@ class TimerItem @JvmOverloads constructor(
                 Timer.State.RESET, Timer.State.PAUSED -> {
                     applyCardColors(expired = false)
                     mStateIcon.setImageResource(R.drawable.ic_start_24dp)
-                    mAddMinuteButton.visibility =
-                            if (timer.isPaused) View.VISIBLE else View.GONE
-                    mResetButton.visibility = if (timer.isPaused) View.VISIBLE else View.GONE
+                    // Only the play icon remains; tapping the ring resumes the timer.
+                    mAddMinuteButton.visibility = View.GONE
+                    mResetButton.visibility = View.GONE
+                    mDeleteButton.visibility = deleteVisibility
                     mTimerText.isClickable = true
                     mTimerText.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
                     ViewCompat.setAccessibilityDelegate(mTimerText, ClickAccessibilityDelegate(
@@ -163,7 +217,9 @@ class TimerItem @JvmOverloads constructor(
                     applyCardColors(expired = false)
                     mStateIcon.setImageResource(R.drawable.ic_pause_24dp)
                     mAddMinuteButton.visibility = View.VISIBLE
-                    mResetButton.visibility = View.VISIBLE
+                    mResetButton.visibility =
+                            if (showDeleteAndReset) View.VISIBLE else View.GONE
+                    mDeleteButton.visibility = deleteVisibility
                     mTimerText.isClickable = true
                     mTimerText.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
                     ViewCompat.setAccessibilityDelegate(mTimerText, ClickAccessibilityDelegate(
@@ -174,6 +230,9 @@ class TimerItem @JvmOverloads constructor(
                     mStateIcon.setImageResource(R.drawable.ic_stop_24dp)
                     mAddMinuteButton.visibility = View.VISIBLE
                     mResetButton.visibility = View.GONE
+                    // Stop (tap the ring) dismisses an expired timer; hide the ✕ meanwhile.
+                    mDeleteButton.visibility =
+                            if (showDeleteAndReset) View.INVISIBLE else View.GONE
                     mTimerText.isClickable = true
                     mTimerText.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
                     ViewCompat.setAccessibilityDelegate(mTimerText, ClickAccessibilityDelegate(
@@ -183,4 +242,7 @@ class TimerItem @JvmOverloads constructor(
             }
         }
     }
+
+    private val deleteVisibility: Int
+        get() = if (showDeleteAndReset) View.VISIBLE else View.GONE
 }
