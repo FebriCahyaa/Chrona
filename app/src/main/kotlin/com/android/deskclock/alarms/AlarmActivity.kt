@@ -166,15 +166,6 @@ class AlarmActivity : BaseActivity(), View.OnClickListener, View.OnTouchListener
             applyLegacyWindowFlags()
         }
 
-        @Suppress("DEPRECATION")
-    private fun applyLegacyWindowFlags() {
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
-                or WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-                or WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
-                or WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
-                or WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON)
-    }
-
     // Hide navigation bar to minimize accidental tap on Home key
         hideNavigationBar()
 
@@ -406,6 +397,17 @@ class AlarmActivity : BaseActivity(), View.OnClickListener, View.OnTouchListener
         }
 
         return true
+    }
+
+    @Suppress("DEPRECATION")
+    private fun applyLegacyWindowFlags() {
+        window.addFlags(
+            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+                or WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+                or WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+                or WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+                or WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON
+        )
     }
 
     private fun hideNavigationBar() {

@@ -188,6 +188,7 @@ class HandleApiCalls : Activity() {
         private val mContext: Context = mActivity.applicationContext
 
         @Suppress("OVERRIDE_DEPRECATION")
+        @Suppress("OVERRIDE_DEPRECATION")
         override fun doInBackground(vararg parameters: Void?): Void? {
             val cr = mContext.contentResolver
             val alarmInstances = AlarmInstance.getInstancesByState(
