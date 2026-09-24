@@ -32,10 +32,10 @@ import com.febricahyaa.chrona.ThemeUtils
  */
 fun MenuItem.withOverflowIcon(context: Context, @DrawableRes iconRes: Int): MenuItem {
     val icon = AppCompatResources.getDrawable(context, iconRes)?.mutate() ?: return this
-    val size = (20 * context.resources.displayMetrics.density).toInt()
+    val size = (22 * context.resources.displayMetrics.density).toInt()
     icon.setBounds(0, 0, size, size)
     icon.setTint(ThemeUtils.resolveColor(context,
-            com.google.android.material.R.attr.colorOnSurfaceVariant))
+            androidx.appcompat.R.attr.colorPrimary))
     val plainTitle = title
     val text = SpannableStringBuilder("   ").append(plainTitle)
     text.setSpan(ImageSpan(icon, ImageSpan.ALIGN_CENTER), 0, 1,

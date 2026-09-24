@@ -8,7 +8,7 @@
             android:insetRight="8dp"
             android:insetTop="2dp">
             <shape android:shape="rectangle">
-                <corners android:radius="20dp" />
+                <corners android:radius="24dp" />
                 <solid android:color="?attr/colorPrimaryContainer" />
             </shape>
         </inset>

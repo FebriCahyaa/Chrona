@@ -124,6 +124,22 @@
         <item name="waveSpeed">24dp</item>
     </style>
 
+    <!-- Rounded M3 Expressive menus (overflow menu, popup and list menus). -->
+    <style name="Widget.Chrona.PopupMenu" parent="Widget.Material3.PopupMenu">
+        <item name="android:popupBackground">@drawable/menu_popup_background</item>
+        <item name="android:popupElevation">3dp</item>
+    </style>
+
+    <style name="Widget.Chrona.PopupMenu.Overflow" parent="Widget.Material3.PopupMenu.Overflow">
+        <item name="android:popupBackground">@drawable/menu_popup_background</item>
+        <item name="android:popupElevation">3dp</item>
+    </style>
+
+    <style name="Widget.Chrona.ListPopupWindow" parent="Widget.Material3.PopupMenu.ListPopupWindow">
+        <item name="android:popupBackground">@drawable/menu_popup_background</item>
+        <item name="android:popupElevation">3dp</item>
+    </style>
+
     <!-- Snackbar as an M3 Expressive rounded tonal card, inset from the screen edges. -->
     <style name="Widget.Chrona.Snackbar" parent="Widget.Material3.Snackbar">
         <item name="android:layout_margin">12dp</item>

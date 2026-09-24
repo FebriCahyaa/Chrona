@@ -16,7 +16,6 @@
 
 package com.febricahyaa.chrona.widget
 
-import android.content.res.ColorStateList
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -26,10 +25,6 @@ import android.widget.TextView
 import androidx.appcompat.widget.ListPopupWindow
 
 import com.febricahyaa.chrona.R
-import com.febricahyaa.chrona.ThemeUtils
-
-import com.google.android.material.shape.MaterialShapeDrawable
-import com.google.android.material.shape.ShapeAppearanceModel
 
 /**
  * Shows [labels] in a rounded Material 3 menu anchored over [anchor], with the entry at
@@ -45,15 +40,7 @@ fun showOptionsMenu(
     val res = context.resources
     val popup = ListPopupWindow(context, null, androidx.appcompat.R.attr.listPopupWindowStyle)
     popup.anchorView = anchor
-    // A rounded M3 menu surface; the default popup background has square corners.
-    popup.setBackgroundDrawable(MaterialShapeDrawable(ShapeAppearanceModel.builder()
-            .setAllCornerSizes(res.getDimension(R.dimen.preference_menu_corner_radius))
-            .build()).apply {
-        fillColor = ColorStateList.valueOf(ThemeUtils.resolveColor(context,
-                com.google.android.material.R.attr.colorSurfaceContainer))
-        initializeElevationOverlay(context)
-        elevation = res.getDimension(R.dimen.preference_menu_elevation)
-    })
+    // The rounded surface comes from the theme's listPopupWindowStyle (menu_popup_background).
     popup.isModal = true
     popup.setDropDownGravity(Gravity.START)
     popup.setAdapter(object : ArrayAdapter<CharSequence>(

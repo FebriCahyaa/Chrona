@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Rounded M3 Expressive menu surface for overflow and popup menus. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="@dimen/preference_menu_corner_radius" />
+    <solid android:color="?attr/colorSurfaceContainerHigh" />
+    <padding
+        android:bottom="8dp"
+        android:top="8dp" />
+</shape>

@@ -48,6 +48,9 @@
         <item name="colorPrimaryDark">#66000000</item>
         <item name="imageButtonStyle">@style/Widget.ImageButton</item>
         <item name="popupTheme">@style/ThemeOverlay.Popup</item>
+        <item name="popupMenuStyle">@style/Widget.Chrona.PopupMenu</item>
+        <item name="actionOverflowMenuStyle">@style/Widget.Chrona.PopupMenu.Overflow</item>
+        <item name="listPopupWindowStyle">@style/Widget.Chrona.ListPopupWindow</item>
         <!-- M3 Expressive snackbars: rounded tonal cards. -->
         <item name="snackbarStyle">@style/Widget.Chrona.Snackbar</item>
         <item name="snackbarTextViewStyle">@style/Widget.Chrona.Snackbar.TextView</item>
@@ -91,8 +94,12 @@
         <item name="colorControlActivated">?attr/colorAccent</item>
     </style>
 
-    <style name="ThemeOverlay.Popup" parent="ThemeOverlay.Material3.Dark">
-        <item name="android:colorBackground">?attr/colorBackgroundFloating</item>
+    <!-- Toolbar popups keep the app's (dynamic) colors; the M3 dark overlay used to reset them
+         to the baseline navy palette. Menus are rounded M3 Expressive surfaces. -->
+    <style name="ThemeOverlay.Popup" parent="">
+        <item name="popupMenuStyle">@style/Widget.Chrona.PopupMenu</item>
+        <item name="actionOverflowMenuStyle">@style/Widget.Chrona.PopupMenu.Overflow</item>
+        <item name="listPopupWindowStyle">@style/Widget.Chrona.ListPopupWindow</item>
     </style>
 
     <!-- Pure-black surfaces for the AMOLED dark theme setting; applied on top of the app theme
