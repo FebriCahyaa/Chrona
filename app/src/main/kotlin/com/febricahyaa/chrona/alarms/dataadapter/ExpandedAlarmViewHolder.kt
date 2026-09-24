@@ -22,15 +22,14 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
 import android.content.Context
-import android.graphics.Color
 import android.graphics.Rect
-import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.TRANSLATION_Y
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.CompoundButton
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
@@ -55,8 +54,11 @@ class ExpandedAlarmViewHolder private constructor(itemView: View, private val mH
     private val editLabel: TextView = itemView.findViewById(R.id.edit_label) as TextView
     val repeatDays: LinearLayout = itemView.findViewById(R.id.repeat_days) as LinearLayout
     private val dayButtons: Array<CompoundButton?> = arrayOfNulls<CompoundButton>(7)
-    val vibrate: CheckBox = itemView.findViewById(R.id.vibrate_onoff) as CheckBox
+    val vibrate: CompoundButton = itemView.findViewById(R.id.vibrate_onoff) as CompoundButton
+    private val vibrateRow: View = itemView.findViewById(R.id.vibrate_row)
     val ringtone: TextView = itemView.findViewById(R.id.choose_ringtone) as TextView
+    private val ringtoneIcon: ImageView = itemView.findViewById(R.id.choose_ringtone_icon)
+    private val status: TextView = itemView.findViewById(R.id.alarm_status)
     val delete: TextView = itemView.findViewById(R.id.delete) as TextView
     private val hairLine: View = itemView.findViewById(R.id.hairline)
 
@@ -77,12 +79,6 @@ class ExpandedAlarmViewHolder private constructor(itemView: View, private val mH
             dayButtons[i] = dayButton
         }
 
-        // Cannot set in xml since we need compat functionality for API < 21
-        val labelIcon: Drawable? = Utils.getVectorDrawable(context, R.drawable.ic_label)
-        editLabel.setCompoundDrawablesRelativeWithIntrinsicBounds(labelIcon, null, null, null)
-        val deleteIcon: Drawable? = Utils.getVectorDrawable(context, R.drawable.ic_delete_small)
-        delete.setCompoundDrawablesRelativeWithIntrinsicBounds(deleteIcon, null, null, null)
-
         // Collapse handler
         itemView.setOnClickListener { _ ->
             Events.sendAlarmEvent(R.string.action_collapse_implied, R.string.label_deskclock)
@@ -92,21 +88,33 @@ class ExpandedAlarmViewHolder private constructor(itemView: View, private val mH
             Events.sendAlarmEvent(R.string.action_collapse, R.string.label_deskclock)
             itemHolder?.collapse()
         }
-        // Edit time handler
+        // Save simply closes the editor; every change is applied as it is made.
+        itemView.findViewById<View>(R.id.save).setOnClickListener { _ ->
+            Events.sendAlarmEvent(R.string.action_collapse, R.string.label_deskclock)
+            itemHolder?.collapse()
+        }
+        // Edit time handlers
         clock.setOnClickListener { _ ->
             alarmTimeClickHandler.onClockClicked(itemHolder!!.item)
         }
+        itemView.findViewById<View>(R.id.edit_time).setOnClickListener { _ ->
+            alarmTimeClickHandler.onClockClicked(itemHolder!!.item)
+        }
         // Edit label handler
-        editLabel.setOnClickListener { _ ->
+        itemView.findViewById<View>(R.id.edit_label_row).setOnClickListener { _ ->
             alarmTimeClickHandler.onEditLabelClicked(itemHolder!!.item)
         }
-        // Vibrator checkbox handler
+        // Vibrate switch handlers
         vibrate.setOnClickListener { view ->
             alarmTimeClickHandler.setAlarmVibrationEnabled(itemHolder!!.item,
-                    (view as CheckBox).isChecked)
+                    (view as CompoundButton).isChecked)
+        }
+        vibrateRow.setOnClickListener { _ ->
+            vibrate.toggle()
+            alarmTimeClickHandler.setAlarmVibrationEnabled(itemHolder!!.item, vibrate.isChecked)
         }
         // Ringtone editor handler
-        ringtone.setOnClickListener { _ ->
+        itemView.findViewById<View>(R.id.choose_ringtone_row).setOnClickListener { _ ->
             alarmTimeClickHandler.onRingtoneClicked(context, itemHolder!!.item)
         }
         // Delete alarm handler
@@ -141,6 +149,7 @@ class ExpandedAlarmViewHolder private constructor(itemView: View, private val mH
         bindVibrator(alarm)
         bindRingtone(context, alarm)
         bindPreemptiveDismissButton(context, alarm, alarmInstance)
+        status.setText(if (alarm.enabled) R.string.alarm_status_on else R.string.alarm_status_off)
         // Neutral card: the expanded row's controls use light-on-dark colors.
         bindCardBackground(com.google.android.material.R.attr.colorSurfaceContainerHigh)
     }
@@ -153,9 +162,8 @@ class ExpandedAlarmViewHolder private constructor(itemView: View, private val mH
         ringtone.setContentDescription("$description $title")
 
         val silent: Boolean = Utils.RINGTONE_SILENT == alarm.alert
-        val icon: Drawable? = Utils.getVectorDrawable(context,
+        ringtoneIcon.setImageResource(
                 if (silent) R.drawable.ic_ringtone_silent else R.drawable.ic_ringtone)
-        ringtone.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, null, null, null)
     }
 
     private fun bindDaysOfWeekButtons(alarm: Alarm, context: Context) {
@@ -166,20 +174,17 @@ class ExpandedAlarmViewHolder private constructor(itemView: View, private val mH
                 if (alarm.daysOfWeek.isBitOn(weekdays[i])) {
                     dayButton.isChecked = true
                     dayButton.setTextColor(ThemeUtils.resolveColor(context,
-                            android.R.attr.windowBackground))
+                            com.google.android.material.R.attr.colorOnPrimary))
                 } else {
                     dayButton.isChecked = false
-                    dayButton.setTextColor(Color.WHITE)
+                    dayButton.setTextColor(ThemeUtils.resolveColor(context,
+                            com.google.android.material.R.attr.colorOnSurface))
                 }
             }
         }
-        if (alarm.daysOfWeek.isRepeating) {
-            repeat.isChecked = true
-            repeatDays.visibility = View.VISIBLE
-        } else {
-            repeat.isChecked = false
-            repeatDays.visibility = View.GONE
-        }
+        // The weekday chips are always shown; no day selected means a one-time alarm.
+        repeat.isChecked = alarm.daysOfWeek.isRepeating
+        repeatDays.visibility = View.VISIBLE
     }
 
     private fun bindEditLabel(context: Context, alarm: Alarm) {
@@ -193,9 +198,9 @@ class ExpandedAlarmViewHolder private constructor(itemView: View, private val mH
 
     private fun bindVibrator(alarm: Alarm) {
         if (!mHasVibrator) {
-            vibrate.visibility = View.INVISIBLE
+            vibrateRow.visibility = View.GONE
         } else {
-            vibrate.visibility = View.VISIBLE
+            vibrateRow.visibility = View.VISIBLE
             vibrate.isChecked = alarm.vibrate
         }
     }

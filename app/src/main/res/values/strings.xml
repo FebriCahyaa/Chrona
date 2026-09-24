@@ -482,6 +482,12 @@
     <!-- Describes the purpose of the button which provides a list of cities for the world clock settings -->
     <string name="button_cities">Cities</string>
     <!-- Menu item on most screens to get to more settings -->
+    <string name="alarm_edit_time">Edit</string>
+    <string name="alarm_status_on">Alarm on</string>
+    <string name="alarm_status_off">Alarm off</string>
+    <string name="alarm_name">Alarm name</string>
+    <string name="alarm_sound">Sound</string>
+    <string name="alarm_save">Save</string>
     <string name="city_removed"><xliff:g id="city_name">%s</xliff:g> removed</string>
     <string name="search_city_hint">Search city</string>
     <string name="search_city_no_results">No matching cities</string>

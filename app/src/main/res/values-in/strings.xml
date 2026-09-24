@@ -198,6 +198,12 @@
     <string name="menu_stopwatch" msgid="3396117705293574701">"Stopwatch"</string>
     <string name="button_alarms" msgid="3907838219512538763">"Tambahkan alarm"</string>
     <string name="button_cities" msgid="4555761857494501363">"Kota"</string>
+    <string name="alarm_edit_time">Edit</string>
+    <string name="alarm_status_on">Alarm aktif</string>
+    <string name="alarm_status_off">Alarm nonaktif</string>
+    <string name="alarm_name">Nama alarm</string>
+    <string name="alarm_sound">Suara</string>
+    <string name="alarm_save">Simpan</string>
     <string name="city_removed"><xliff:g id="city_name">%s</xliff:g> dihapus</string>
     <string name="search_city_hint">Telusuri kota</string>
     <string name="search_city_no_results">Kota tidak ditemukan</string>
