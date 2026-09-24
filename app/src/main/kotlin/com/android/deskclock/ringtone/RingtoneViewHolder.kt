@@ -107,8 +107,9 @@ internal class RingtoneViewHolder private constructor(itemView: View)
     }
 
     companion object {
-        const val VIEW_TYPE_SYSTEM_SOUND = R.layout.ringtone_item_sound
-        const val VIEW_TYPE_CUSTOM_SOUND = -R.layout.ringtone_item_sound
+        // Not `const`: see the comment on ClockFragment's MAIN_CLOCK/WORLD_CLOCK.
+        val VIEW_TYPE_SYSTEM_SOUND = R.layout.ringtone_item_sound
+        val VIEW_TYPE_CUSTOM_SOUND = -R.layout.ringtone_item_sound
         const val CLICK_NORMAL = 0
         const val CLICK_LONG_PRESS = -1
         const val CLICK_NO_PERMISSIONS = -2

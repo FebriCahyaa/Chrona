@@ -41,6 +41,7 @@ internal class HeaderViewHolder private constructor(itemView: View)
     }
 
     companion object {
-        const val VIEW_TYPE_ITEM_HEADER = R.layout.ringtone_item_header
+        // Not `const`: see the comment on ClockFragment's MAIN_CLOCK/WORLD_CLOCK.
+        val VIEW_TYPE_ITEM_HEADER = R.layout.ringtone_item_header
     }
 }

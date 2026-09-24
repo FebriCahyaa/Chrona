@@ -479,8 +479,12 @@ class ClockFragment : DeskClockFragment(UiDataModel.Tab.CLOCKS) {
         }
 
         companion object {
-            private const val MAIN_CLOCK = R.layout.main_clock_frame
-            private const val WORLD_CLOCK = R.layout.world_clock_item
+            // Not `const`: AAPT2 does not guarantee resource IDs stay identical across
+            // incremental/cached builds, so inlining one as a compile-time constant risks
+            // baking in a stale value that no longer matches the packaged resources.arsc
+            // (surfaces as Resources.NotFoundException: Resource ID #0x0 at runtime).
+            private val MAIN_CLOCK = R.layout.main_clock_frame
+            private val WORLD_CLOCK = R.layout.world_clock_item
         }
     }
 }
