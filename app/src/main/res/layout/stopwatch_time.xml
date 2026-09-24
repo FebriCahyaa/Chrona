@@ -24,7 +24,7 @@
     android:layoutDirection="ltr"
     android:orientation="horizontal">
 
-    <com.android.deskclock.widget.AutoSizingTextView
+    <com.febricahyaa.chrona.widget.AutoSizingTextView
         android:id="@+id/stopwatch_time_text"
         style="@style/display_time"
         android:layout_width="0dp"
@@ -33,8 +33,8 @@
         android:duplicateParentState="true"
         android:includeFontPadding="false"
         android:paddingEnd="3dp"
-        android:paddingStart="30dp"
-        android:textSize="70sp" />
+        android:paddingStart="8dp"
+        android:textSize="88sp" />
 
     <TextView
         android:id="@+id/stopwatch_hundredths_text"
@@ -44,8 +44,8 @@
         android:duplicateParentState="true"
         android:fontFamily="sans-serif"
         android:includeFontPadding="false"
-        android:paddingEnd="30dp"
+        android:paddingEnd="8dp"
         android:paddingStart="3dp"
-        android:textSize="30sp" />
+        android:textSize="56sp" />
 
 </LinearLayout>

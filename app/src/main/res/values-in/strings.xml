@@ -198,6 +198,31 @@
     <string name="menu_stopwatch" msgid="3396117705293574701">"Stopwatch"</string>
     <string name="button_alarms" msgid="3907838219512538763">"Tambahkan alarm"</string>
     <string name="button_cities" msgid="4555761857494501363">"Kota"</string>
+    <string name="alarm_edit_time">Edit</string>
+    <string name="alarm_status_on">Alarm aktif</string>
+    <string name="alarm_status_off">Alarm nonaktif</string>
+    <string name="alarm_name">Nama alarm</string>
+    <string name="alarm_sound_row">Suara</string>
+    <string name="alarm_save">Simpan</string>
+    <string name="menu_item_feedback">Kirim masukan</string>
+    <string name="timer_default_label">Timer %s</string>
+    <string name="timer_length_hours_short">%dj</string>
+    <string name="timer_length_minutes_short">%dm</string>
+    <string name="timer_length_seconds_short">%dd</string>
+    <string name="alarm_missed_channel">Alarm yang terlewat</string>
+    <string name="alarm_snooze_channel">Alarm yang ditunda</string>
+    <string name="alarm_upcoming_channel">Alarm mendatang</string>
+    <string name="firing_alarms_timers_channel">Alarm &amp; timer yang aktif</string>
+    <string name="stopwatch_channel">Stopwatch</string>
+    <string name="timer_channel">Timer</string>
+    <string name="full_screen_alerts_off">Notifikasi layar penuh nonaktif, alarm yang berbunyi mungkin tidak tampil di layar kunci</string>
+    <string name="full_screen_alerts_allow">Izinkan</string>
+    <string name="city_removed"><xliff:g id="city_name">%s</xliff:g> dihapus</string>
+    <string name="search_city_hint">Telusuri kota</string>
+    <string name="search_city_no_results">Kota tidak ditemukan</string>
+    <string name="search_city_clear">Hapus</string>
+    <string name="search_city_back">Kembali</string>
+    <string name="world_clock_locations">Lokasi</string>
     <string name="menu_item_settings" msgid="1413723516369078665">"Setelan"</string>
     <string name="menu_item_help" msgid="4570953476186849841">"Bantuan"</string>
     <string name="menu_item_night_mode" msgid="2930695838866189483">"Screensaver"</string>
@@ -210,6 +235,8 @@
     <string name="sw_pause_button" msgid="2422084453454138042">"Jeda"</string>
     <string name="sw_lap_button" msgid="6992264696039004233">"Putaran"</string>
     <string name="sw_share_button" msgid="4478648110382859382">"Bagikan"</string>
+    <string name="laps_previous">"Putaran sebelumnya"</string>
+    <string name="laps_next">"Putaran berikutnya"</string>
     <string name="hours_label" msgid="3393478155635368097">"j"</string>
     <string name="minutes_label" msgid="3568098128251438588">"m"</string>
     <string name="seconds_label" msgid="124655952824003246">"d"</string>
@@ -222,6 +249,13 @@
     <string name="timer_add_timer" msgid="862733633862574752">"Tambahkan Timer"</string>
     <string name="timer_start" msgid="6158486445614356442">"Mulai"</string>
     <string name="timer_delete" msgid="8699122001991909302">"Hapus"</string>
+    <string name="timer_setup_hours_label">"Jam"</string>
+    <string name="timer_setup_minutes_label">"Menit"</string>
+    <string name="timer_setup_seconds_label">"Detik"</string>
+    <string name="timer_setup_preset_1">"1 m"</string>
+    <string name="timer_setup_preset_5">"5 m"</string>
+    <string name="timer_setup_preset_10">"10 m"</string>
+    <string name="timer_setup_preset_15">"15 m"</string>
     <string name="timer_descriptive_delete" msgid="8794915342760383536">"Hapus <xliff:g id="NUMBER_STRING">%s</xliff:g>"</string>
     <string name="timer_plus_one" msgid="6631211310420106116">"Tambah 1 menit"</string>
     <string name="timer_add_minute" msgid="207816824783281446">"+ 1.00"</string>
@@ -260,6 +294,8 @@
     <string name="clock_settings" msgid="8317286807280600391">"Jam"</string>
     <string name="clock_style" msgid="2265011060429742344">"Gaya"</string>
     <string name="display_clock_seconds_pref" msgid="691506643469501643">"Tampilkan waktu dengan detik"</string>
+    <string name="amoled_theme_title">"Tema gelap AMOLED"</string>
+    <string name="amoled_theme_summary">"Latar hitam pekat, lebih hemat baterai di layar OLED"</string>
     <string name="open_date_settings" msgid="7712226973337806152">"Ubah tanggal &amp; waktu"</string>
   <string-array name="clock_style_entries">
     <item msgid="917900462224167608">"Analog"</item>

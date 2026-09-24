@@ -55,6 +55,14 @@ runs:
           --platform "$SDK_PLATFORM" \
           --build-tools "$SDK_BUILD_TOOLS"
 
+    - name: Fetch Google assets
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        python3 scripts/assets/fetch_google_assets.py
+        python3 scripts/assets/fetch_material_symbols_icons.py
+
     - name: Set up Gradle
       uses: gradle/actions/setup-gradle@v6
       with:

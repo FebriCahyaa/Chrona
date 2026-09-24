@@ -482,6 +482,25 @@
     <!-- Describes the purpose of the button which provides a list of cities for the world clock settings -->
     <string name="button_cities">Cities</string>
     <!-- Menu item on most screens to get to more settings -->
+    <string name="alarm_edit_time">Edit</string>
+    <string name="alarm_status_on">Alarm on</string>
+    <string name="alarm_status_off">Alarm off</string>
+    <string name="alarm_name">Alarm name</string>
+    <string name="alarm_sound_row">Sound</string>
+    <string name="alarm_save">Save</string>
+    <string name="menu_item_feedback">Send feedback</string>
+    <string name="timer_default_label">Timer %s</string>
+    <string name="timer_length_hours_short">%dh</string>
+    <string name="timer_length_minutes_short">%dm</string>
+    <string name="timer_length_seconds_short">%ds</string>
+    <string name="full_screen_alerts_off">Full screen alerts are off, so ringing alarms may not show over the lock screen</string>
+    <string name="full_screen_alerts_allow">Allow</string>
+    <string name="city_removed"><xliff:g id="city_name">%s</xliff:g> removed</string>
+    <string name="search_city_hint">Search city</string>
+    <string name="search_city_no_results">No matching cities</string>
+    <string name="search_city_clear">Clear</string>
+    <string name="search_city_back">Back</string>
+    <string name="world_clock_locations">Locations</string>
     <string name="menu_item_settings">Settings</string>
     <!-- Menu item on most screens to get to the help information -->
     <string name="menu_item_help">Help</string>
@@ -516,6 +535,9 @@
     <!-- Describes the purpose of the button to share the stopwatch value.
          Also used as title for chooser when sharing stopwatch results. -->
     <string name="sw_share_button">Share</string>
+    <!-- Accessibility labels for the arrows that scroll the stopwatch lap cards. [CHAR LIMIT=40] -->
+    <string name="laps_previous">Previous laps</string>
+    <string name="laps_next">Next laps</string>
 
     <!-- Abbreviation for temporal hours [CHAR LIMIT=1] -->
     <string name="hours_label">h</string>
@@ -547,6 +569,18 @@
     <string name="timer_start">Start</string>
     <!-- Describes the purpose of the button to delete a timer. -->
     <string name="timer_delete">Delete</string>
+
+    <!-- Labels under the hours / minutes / seconds values when setting up a timer. [CHAR LIMIT=12] -->
+    <string name="timer_setup_hours_label">Hours</string>
+    <string name="timer_setup_minutes_label">Minutes</string>
+    <string name="timer_setup_seconds_label">Seconds</string>
+    <!-- Keypad key that enters two zeros at once. [CHAR LIMIT=3] -->
+    <string name="timer_setup_double_zero" translatable="false">00</string>
+    <!-- Quick timer presets, in minutes. [CHAR LIMIT=6] -->
+    <string name="timer_setup_preset_1">1 m</string>
+    <string name="timer_setup_preset_5">5 m</string>
+    <string name="timer_setup_preset_10">10 m</string>
+    <string name="timer_setup_preset_15">15 m</string>
     <!-- Talkback description for deleting a number. -->
     <string name="timer_descriptive_delete">Delete <xliff:g id="number_string">%s</xliff:g></string>
     <!-- Describes the purpose of the button increase the remaining time on a timer by one minute. -->
@@ -618,6 +652,11 @@
     <string name="clock_style">Style</string>
     <!-- Header for a setting referring to showing seconds on the main clock -->
     <string name="display_clock_seconds_pref">Display time with seconds</string>
+
+    <!-- Title of the setting that switches the dark theme to pure black surfaces. [CHAR LIMIT=40] -->
+    <string name="amoled_theme_title">AMOLED dark theme</string>
+    <!-- Summary of the AMOLED dark theme setting. [CHAR LIMIT=NONE] -->
+    <string name="amoled_theme_summary">Pure black background; saves battery on OLED screens</string>
 
     <!-- Title for preference to change date & time -->
     <string name="open_date_settings">Change date \u0026 time</string>

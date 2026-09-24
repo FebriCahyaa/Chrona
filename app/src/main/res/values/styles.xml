@@ -95,11 +95,6 @@
 
     <style name="SecondaryLabelTextAppearance" parent="SecondaryLabelTextParentAppearance" />
 
-    <style name="TextAppearance.Tab" parent="TextAppearance.Design.Tab">
-        <item name="android:fontFamily">sans-serif-medium</item>
-        <item name="android:textSize">12sp</item>
-    </style>
-
     <style name="Widget.ActionBar" parent="Widget.AppCompat.ActionBar">
         <item name="android:background">@null</item>
 
@@ -107,17 +102,87 @@
         <item name="displayOptions">showTitle|homeAsUp</item>
     </style>
 
-    <style name="Widget.ActionBar.NoTitle">
-        <!-- Attributes from androidx.appcompat.appcompat -->
-        <item name="displayOptions">homeAsUp</item>
+    <!-- Timer ring: M3 Expressive wavy determinate circular progress indicator. -->
+    <style name="Widget.Chrona.TimerProgress" parent="Widget.Material3.CircularProgressIndicator">
+        <item name="indicatorColor">?attr/colorPrimary</item>
+        <item name="trackColor">?attr/colorSecondaryContainer</item>
+        <item name="trackThickness">@dimen/timer_progress_thickness</item>
+        <item name="trackCornerRadius">@dimen/timer_progress_thickness</item>
+        <item name="indicatorTrackGapSize">6dp</item>
+        <item name="wavelength">36dp</item>
+        <item name="waveAmplitude">3dp</item>
+        <item name="waveSpeed">24dp</item>
+    </style>
+
+    <!-- Snackbar as an M3 Expressive rounded tonal card, inset from the screen edges. -->
+    <style name="Widget.Chrona.Snackbar" parent="Widget.Material3.Snackbar">
+        <item name="android:layout_margin">12dp</item>
+        <item name="backgroundTint">?attr/colorSurfaceContainerHighest</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Chrona.Snackbar</item>
+        <item name="elevation">6dp</item>
+    </style>
+
+    <style name="ShapeAppearance.Chrona.Snackbar" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">20dp</item>
+    </style>
+
+    <style name="Widget.Chrona.Snackbar.TextView" parent="Widget.Material3.Snackbar.TextView">
+        <item name="android:textAppearance">?attr/textAppearanceBodyLarge</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="Widget.Chrona.Snackbar.Button" parent="Widget.Material3.Button.TextButton.Snackbar">
+        <item name="android:textColor">?attr/colorPrimary</item>
+        <item name="android:textAppearance">?attr/textAppearanceLabelLarge</item>
+    </style>
+
+    <!-- Rows of options in an expanded alarm card. -->
+    <style name="AlarmOptionRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:minHeight">52dp</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+    </style>
+
+    <style name="AlarmOptionIcon">
+        <item name="android:layout_width">24dp</item>
+        <item name="android:layout_height">24dp</item>
+        <item name="android:layout_marginEnd">16dp</item>
+        <item name="android:importantForAccessibility">no</item>
+        <item name="tint">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+    <style name="AlarmOptionTitle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textAppearance">?attr/textAppearanceBodyLarge</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="AlarmOptionValue">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_marginStart">16dp</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:gravity">end</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textAlignment">viewEnd</item>
+        <item name="android:textAppearance">?attr/textAppearanceBodyMedium</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
     </style>
 
     <style name="Widget.Button.TimerSetupDigit" parent="Widget.AppCompat.Button.Borderless">
         <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
-        <item name="android:fontFamily">sans-serif-light</item>
+        <item name="android:fontFamily">sans-serif</item>
         <item name="android:gravity">center</item>
         <item name="android:includeFontPadding">false</item>
-        <item name="android:textColor">?android:attr/textColorPrimary</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
         <item name="android:textSize">36sp</item>
     </style>
 
@@ -125,12 +190,5 @@
         <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
     </style>
 
-    <style name="Widget.TimePicker" parent="android:Widget.Material.TimePicker"
-        tools:targetApi="21">
-        <item name="android:headerBackground">@android:color/transparent</item>
-        <item name="android:numbersBackgroundColor">@android:color/transparent</item>
-        <item name="android:numbersSelectorColor">?attr/colorAccent</item>
-        <item name="android:numbersTextColor">?android:attr/textColorPrimary</item>
-    </style>
 
 </resources>

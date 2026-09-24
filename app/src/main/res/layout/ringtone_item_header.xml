@@ -21,10 +21,10 @@
     android:layout_height="wrap_content"
     android:layout_gravity="center"
     android:gravity="start"
-    android:paddingBottom="16dp"
-    android:paddingEnd="15dp"
-    android:paddingStart="15dp"
-    android:paddingTop="16dp"
+    android:paddingBottom="8dp"
+    android:paddingEnd="24dp"
+    android:paddingStart="24dp"
+    android:paddingTop="20dp"
     android:textAlignment="viewStart"
-    android:textColor="?attr/colorAccent"
-    android:textSize="15sp" />
+    android:textAppearance="?attr/textAppearanceLabelLarge"
+    android:textColor="?attr/colorOnSurfaceVariant" />

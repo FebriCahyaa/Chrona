@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Copyright (C) 2016 The Android Open Source Project
+  Copyright (C) 2026 The Chrona Authors
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,22 +14,100 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   -->
-
-<FrameLayout
+<!-- City search: a search field toolbar, then either an empty state or the matching cities with
+     their local time. Tapping a city adds it to the world clock. -->
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
 
-    <include layout="@layout/drop_shadow" />
-
-    <ListView
-        android:id="@+id/cities_list"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:divider="@null"
-        android:scrollbarStyle="insideInset"
-        android:theme="@style/ThemeOverlay.Control.Accent" />
+        android:layout_height="64dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="4dp">
 
-</FrameLayout>
+        <ImageButton
+            android:id="@+id/city_search_back"
+            android:layout_width="@dimen/touch_target_min_size"
+            android:layout_height="@dimen/touch_target_min_size"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/search_city_back"
+            android:src="@drawable/ic_arrow_back_24dp" />
+
+        <EditText
+            android:id="@+id/city_search"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:autofillHints=""
+            android:background="@null"
+            android:hint="@string/search_city_hint"
+            android:imeOptions="actionSearch|flagNoExtractUi"
+            android:inputType="textCapWords|textNoSuggestions"
+            android:maxLines="1"
+            android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+        <ImageButton
+            android:id="@+id/city_search_clear"
+            android:layout_width="@dimen/touch_target_min_size"
+            android:layout_height="@dimen/touch_target_min_size"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/search_city_clear"
+            android:src="@drawable/ic_close_24dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?attr/colorOutlineVariant" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/cities_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingVertical="8dp" />
+
+        <LinearLayout
+            android:id="@+id/city_search_empty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="80dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_search_24dp"
+                app:tint="?attr/colorOnSurfaceVariant" />
+
+            <TextView
+                android:id="@+id/city_search_empty_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/search_city_hint"
+                android:textAppearance="?attr/textAppearanceBodyLarge"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+</LinearLayout>

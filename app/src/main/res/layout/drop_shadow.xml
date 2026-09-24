@@ -23,4 +23,5 @@
     android:layout_gravity="top|fill_horizontal"
     android:alpha="0"
     android:importantForAccessibility="no"
-    android:src="@drawable/action_bar_shadow" />
+    android:src="@drawable/action_bar_shadow"
+    android:visibility="gone" />

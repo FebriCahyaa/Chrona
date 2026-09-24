@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Copyright (C) 2016 The Android Open Source Project
+  Copyright (C) 2026 The Chrona Authors
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -15,37 +15,92 @@
   limitations under the License.
   -->
 
+<!-- Large hours / minutes / seconds values, each above its label. -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/timer_setup_time"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="center"
+    android:focusable="true"
     android:layoutDirection="ltr"
     android:orientation="horizontal">
 
-    <TextView
-        android:id="@+id/timer_setup_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ellipsize="none"
-        android:fontFamily="sans-serif"
-        android:fontFeatureSettings="tnum"
-        android:includeFontPadding="false"
-        android:singleLine="true"
-        android:textColor="?android:attr/textColorPrimary"
-        android:textSize="@dimen/timer_setup_digit_font_size"
-        tools:targetApi="21" />
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
 
-    <ImageButton
-        android:id="@+id/timer_setup_delete"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/timer_setup_delete_margin"
-        android:contentDescription="@string/timer_delete"
-        android:padding="12dp"
-        android:scaleType="center"
-        app:srcCompat="@drawable/ic_backspace" />
+            <TextView
+                android:id="@+id/timer_setup_hours"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFeatureSettings="tnum"
+                android:includeFontPadding="false"
+                android:singleLine="true"
+                android:textSize="@dimen/timer_setup_value_font_size" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/timer_setup_hours_label"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/timer_setup_minutes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFeatureSettings="tnum"
+                android:includeFontPadding="false"
+                android:singleLine="true"
+                android:textSize="@dimen/timer_setup_value_font_size" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/timer_setup_minutes_label"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/timer_setup_seconds"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFeatureSettings="tnum"
+                android:includeFontPadding="false"
+                android:singleLine="true"
+                android:textSize="@dimen/timer_setup_value_font_size" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/timer_setup_seconds_label"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+        </LinearLayout>
 
 </LinearLayout>

@@ -38,17 +38,13 @@
             android:layout_height="0dp"
             android:layout_weight="1">
 
-            <com.android.deskclock.AnalogClock
+            <com.febricahyaa.chrona.AnalogClock
                 android:id="@+id/analog_clock"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="@dimen/analog_clock_margin"
-                android:layout_marginLeft="@dimen/analog_clock_margin"
-                android:layout_marginRight="@dimen/analog_clock_margin"
-                android:layout_marginStart="@dimen/analog_clock_margin"
                 android:layout_marginTop="@dimen/circle_margin_top" />
 
-            <com.android.deskclock.widget.AutoSizingTextClock
+            <com.febricahyaa.chrona.widget.AutoSizingTextClock
                 android:id="@+id/digital_clock"
                 style="@style/display_time"
                 android:layout_width="wrap_content"
@@ -61,14 +57,23 @@
 
         </FrameLayout>
 
-        <include layout="@layout/date_and_next_alarm_time" />
+        <include
+            layout="@layout/main_clock_date_and_next_alarm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp" />
 
-        <View
+        <!-- Section label above the world clocks. -->
+        <TextView
             android:id="@+id/hairline"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/hairline_height"
+            android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:background="@color/hairline" />
+            android:paddingBottom="4dp"
+            android:paddingHorizontal="4dp"
+            android:text="@string/world_clock_locations"
+            android:textAppearance="?attr/textAppearanceLabelLarge"
+            android:textColor="?attr/colorOnSurfaceVariant" />
     </LinearLayout>
 
     <!-- Right gutter. -->

@@ -34,7 +34,7 @@
 
     <dimen name="alarm_text_font_size">16sp</dimen>
     <dimen name="circletimer_dot_size">12dp</dimen>
-    <dimen name="circletimer_circle_size">4dp</dimen>
+    <dimen name="circletimer_circle_size">8dp</dimen>
     <dimen name="circletimer_marker_size">16dp</dimen>
     <dimen name="max_timer_circle_size">360dp</dimen>
 
@@ -86,7 +86,7 @@
     <dimen name="analog_clock_size">294dp</dimen>
 
     <!-- Size of time zone analog clocks in world clock. -->
-    <dimen name="world_clock_analog_size">100dp</dimen>
+    <dimen name="world_clock_analog_size">80dp</dimen>
 
     <dimen name="min_analog_widget_size">110dp</dimen>
 
@@ -133,4 +133,31 @@
 
     <!-- KitKat floating action button container height; see -v21 folder for newer platforms. -->
     <dimen name="fab_height">96dp</dimen>
+    <!-- Material 3 Expressive alarm cards. -->
+    <dimen name="alarm_card_corner_radius">28dp</dimen>
+    <dimen name="alarm_card_margin_horizontal">16dp</dimen>
+    <dimen name="alarm_card_margin_vertical">4dp</dimen>
+    <!-- Material 3 Expressive stopwatch. -->
+    <dimen name="stopwatch_primary_button_height">80dp</dimen>
+    <dimen name="stopwatch_secondary_button_height">56dp</dimen>
+    <dimen name="lap_card_min_width">88dp</dimen>
+    <!-- Material 3 Expressive timer setup. -->
+    <dimen name="timer_setup_value_font_size">72sp</dimen>
+    <dimen name="timer_setup_preset_height">56dp</dimen>
+    <dimen name="timer_setup_start_height">80dp</dimen>
+    <!-- Size of the cookie analog clock when its layout asks for wrap_content. -->
+    <dimen name="analog_clock_default_size">240dp</dimen>
+    <!-- Material 3 Expressive world clock cards. -->
+    <dimen name="world_clock_card_corner_radius">28dp</dimen>
+    <!-- Material 3 Expressive timer card. -->
+    <dimen name="timer_card_ring_size">248dp</dimen>
+    <dimen name="timer_card_time_width">200dp</dimen>
+    <dimen name="timer_card_button_height">56dp</dimen>
+    <dimen name="timer_card_corner_radius">28dp</dimen>
+    <dimen name="preference_menu_width">168dp</dimen>
+    <dimen name="preference_menu_corner_radius">16dp</dimen>
+    <dimen name="preference_menu_elevation">3dp</dimen>
+    <dimen name="timer_progress_thickness">8dp</dimen>
+    <dimen name="timer_grid_gap">6dp</dimen>
+    <dimen name="timer_grid_padding">10dp</dimen>
 </resources>

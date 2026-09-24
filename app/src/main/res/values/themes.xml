@@ -17,24 +17,41 @@
 
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="Theme.DeskClock" parent="Theme.AppCompat.NoActionBar">
+    <style name="Theme.DeskClock" parent="Theme.Material3Expressive.Dark.NoActionBar">
         <item name="android:colorBackgroundFloating" tools:targetApi="23">
             ?attr/colorBackgroundFloating
         </item>
         <item name="android:navigationBarColor" tools:targetApi="21">?attr/colorPrimaryDark</item>
         <item name="android:popupTheme" tools:targetApi="21">?attr/popupTheme</item>
-        <item name="android:timePickerStyle" tools:targetApi="21">@style/Widget.TimePicker</item>
-        <item name="android:windowBackground">@color/default_background</item>
+        <item name="android:windowBackground">?attr/colorSurface</item>
         <item name="android:windowContentOverlay">@null</item>
 
-        <!-- Attributes from androidx.appcompat.appcompat -->
-        <item name="colorAccent">#DA4336</item>
-        <item name="colorBackgroundFloating">#303030</item>
+        <!-- Material 3 color roles. Dynamic color (Android 12+) overrides these at runtime;
+             this red palette is the fallback on older devices. -->
+        <item name="colorPrimary">@color/chrona_m3_primary</item>
+        <item name="colorOnPrimary">@color/chrona_m3_on_primary</item>
+        <item name="colorPrimaryContainer">@color/chrona_m3_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/chrona_m3_on_primary_container</item>
+        <item name="colorSecondary">@color/chrona_m3_secondary</item>
+        <item name="colorOnSecondary">@color/chrona_m3_on_secondary</item>
+        <item name="colorSecondaryContainer">@color/chrona_m3_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/chrona_m3_on_secondary_container</item>
+        <item name="colorTertiary">@color/chrona_m3_tertiary</item>
+        <item name="colorOnTertiary">@color/chrona_m3_on_tertiary</item>
+        <item name="colorTertiaryContainer">@color/chrona_m3_tertiary_container</item>
+        <item name="colorOnTertiaryContainer">@color/chrona_m3_on_tertiary_container</item>
+        <!-- Legacy AppCompat attributes still read by layouts and code; follow M3 roles. -->
+        <item name="colorAccent">?attr/colorPrimary</item>
+        <item name="colorBackgroundFloating">?attr/colorSurfaceContainerHigh</item>
         <item name="colorControlActivated">@android:color/white</item>
         <item name="colorControlNormal">?android:attr/textColorPrimary</item>
         <item name="colorPrimaryDark">#66000000</item>
         <item name="imageButtonStyle">@style/Widget.ImageButton</item>
         <item name="popupTheme">@style/ThemeOverlay.Popup</item>
+        <!-- M3 Expressive snackbars: rounded tonal cards. -->
+        <item name="snackbarStyle">@style/Widget.Chrona.Snackbar</item>
+        <item name="snackbarTextViewStyle">@style/Widget.Chrona.Snackbar.TextView</item>
+        <item name="snackbarButtonStyle">@style/Widget.Chrona.Snackbar.Button</item>
     </style>
 
     <style name="Theme.DeskClock.Settings">
@@ -48,27 +65,46 @@
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
     </style>
 
+    <!-- Settings with its own collapsing MaterialToolbar instead of the window action bar. -->
+    <style name="Theme.DeskClock.Settings.Collapsing">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <!-- The ringtone picker draws its own large collapsing top app bar. -->
     <style name="Theme.DeskClock.RingtonePicker">
-        <!-- Attributes from androidx.appcompat.appcompat -->
-        <item name="actionBarStyle">@style/Widget.ActionBar</item>
-        <item name="windowActionBar">true</item>
-        <item name="windowNoTitle">false</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
     </style>
 
+    <!-- The city search draws its own search-field toolbar. -->
     <style name="Theme.DeskClock.CitySelection">
-        <!-- Attributes from androidx.appcompat.appcompat -->
-        <item name="actionBarStyle">@style/Widget.ActionBar.NoTitle</item>
-        <item name="windowActionBar">true</item>
-        <item name="windowNoTitle">false</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="ThemeOverlay.Control.Accent" parent="ThemeOverlay.AppCompat">
+    <style name="ThemeOverlay.Control.Accent" parent="ThemeOverlay.Material3">
         <!-- Attributes from androidx.appcompat.appcompat -->
         <item name="colorControlActivated">?attr/colorAccent</item>
     </style>
 
-    <style name="ThemeOverlay.Popup" parent="ThemeOverlay.AppCompat">
+    <style name="ThemeOverlay.Popup" parent="ThemeOverlay.Material3.Dark">
         <item name="android:colorBackground">?attr/colorBackgroundFloating</item>
+    </style>
+
+    <!-- Pure-black surfaces for the AMOLED dark theme setting; applied on top of the app theme
+         (and dynamic color) before each activity is created. -->
+    <style name="ThemeOverlay.Chrona.Amoled" parent="">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:colorBackground">@android:color/black</item>
+        <item name="colorSurface">@android:color/black</item>
+        <item name="colorSurfaceDim">@android:color/black</item>
+        <item name="colorSurfaceContainerLowest">@android:color/black</item>
+        <item name="colorSurfaceContainerLow">#FF0A0A0A</item>
+        <item name="colorSurfaceContainer">#FF111111</item>
+        <item name="colorSurfaceContainerHigh">#FF171717</item>
+        <item name="colorSurfaceContainerHighest">#FF1E1E1E</item>
+        <item name="android:navigationBarColor">@android:color/black</item>
     </style>
 
 </resources>

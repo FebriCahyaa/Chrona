@@ -11,8 +11,12 @@ integration. Both build systems read the same sources under `app/src/main`.
 | Android Gradle Plugin | 9.4.1 (built-in Kotlin) |
 | Kotlin | 2.4.10 (below 2.4.20 for CodeQL compatibility) |
 | JDK | 17 |
-| minSdk / targetSdk | 26 / 37 |
+| minSdk / targetSdk | 29 / 37 |
 | compileSdk / Build Tools | resolved per SDK channel (see below) |
+
+SDK levels are defined once in `gradle/libs.versions.toml` (`androidCompileSdk`,
+`androidTargetSdk`, `androidMinSdk`); CI can override compileSdk per channel with
+`CHRONA_COMPILE_SDK`.
 
 ## Build types and SDK channels
 
@@ -23,10 +27,10 @@ available there, and exports them to Gradle.
 
 | Build type | Branch | SDK channel | Application ID |
 | --- | --- | --- | --- |
-| `release` | `stable`, `v*` tags | `0` stable | `com.android.deskclock` |
-| `debug` | `main`, pull requests | `1` beta | `com.android.deskclock.debug` |
-| `dev` | `dev` | `2` dev | `com.android.deskclock.dev` |
-| `canary` | `canary` | `3` canary | `com.android.deskclock.canary` |
+| `release` | `stable`, `v*` tags | `0` stable | `com.febricahyaa.chrona` |
+| `debug` | `main`, pull requests | `1` beta | `com.febricahyaa.chrona.debug` |
+| `dev` | `dev` | `2` dev | `com.febricahyaa.chrona.dev` |
+| `canary` | `canary` | `3` canary | `com.febricahyaa.chrona.canary` |
 
 A channel also contains every more stable channel's packages, so when a
 channel has no preview package the build uses the newest stable one. The four

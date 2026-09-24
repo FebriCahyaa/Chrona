@@ -118,7 +118,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
       - name: CI script tests
-        run: python3 -m unittest discover -s scripts/ci -v
+        run: |
+          python3 -m unittest discover -s scripts/ci -v
+          python3 -m unittest discover -s scripts/assets -v
       - name: Android toolchain
         id: toolchain
         uses: ./.github/actions/android-toolchain
@@ -134,7 +136,24 @@ jobs:
       - name: Format check
         run: ./gradlew --no-daemon --stacktrace spotlessCheck
       - name: Lint
+        id: lint
         run: ./gradlew --no-daemon --stacktrace "lint${{ steps.tasks.outputs.suffix }}"
+      - name: Print full lint report
+        # The console only prints the first lint failure; the rest is only
+        # in the report files, which aren't visible without downloading the
+        # "Upload quality reports" artifact. Print all of it here instead.
+        if: failure() && steps.lint.outcome == 'failure'
+        run: |
+          mapfile -t reports < <(find app/build -name 'lint-results-*.txt' 2>/dev/null)
+          if (( ${#reports[@]} == 0 )); then
+            printf 'No lint text report was generated.\n' >&2
+            exit 0
+          fi
+          for report in "${reports[@]}"; do
+            printf '::group::%s\n' "$report"
+            cat "$report"
+            printf '::endgroup::\n'
+          done
       - name: Unit tests
         run: ./gradlew --no-daemon --stacktrace "test${{ steps.tasks.outputs.suffix }}UnitTest"
       - name: Upload quality reports
@@ -192,6 +211,9 @@ jobs:
           fi
           exit "$status"
         shell: bash
+      - name: Print all Kotlin compiler warnings
+        if: always()
+        run: python3 scripts/ci/print_compiler_warnings.py build/reports/problems/problems-report.html
       - name: Upload build logs
         if: always()
         uses: actions/upload-artifact@v7

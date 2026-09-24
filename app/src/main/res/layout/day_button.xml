@@ -21,8 +21,9 @@
              android:layout_weight="1">
     <CheckBox
         android:id="@+id/day_button_box"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center"
         android:background="@drawable/toggle_circle"
         android:button="@null"
         android:gravity="center"

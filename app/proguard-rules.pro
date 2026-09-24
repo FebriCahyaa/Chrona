@@ -1,1 +1,1 @@
--keep class com.android.deskclock.** { *; }
+-keep class com.febricahyaa.chrona.** { *; }
