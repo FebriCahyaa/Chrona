@@ -29,6 +29,9 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import androidx.annotation.StringRes
+import androidx.core.graphics.Insets
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
@@ -135,6 +138,19 @@ class DeskClock : BaseActivity(), FabContainer, AlarmLabelDialogHandler {
 
         setContentView(R.layout.desk_clock)
         mSnackbarAnchor = findViewById(R.id.content)
+
+        // Pad for the status bar and side insets here, but hand the bottom inset on to the
+        // navigation bar so it extends behind the gesture area instead of floating above it.
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.desk_clock_root)) { v, insets ->
+            val bars = insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
+            v.setPadding(bars.left, bars.top, bars.right, 0)
+            WindowInsetsCompat.Builder(insets)
+                    .setInsets(WindowInsetsCompat.Type.systemBars(),
+                            Insets.of(0, 0, 0, bars.bottom))
+                    .setInsets(WindowInsetsCompat.Type.displayCutout(), Insets.NONE)
+                    .build()
+        }
 
         // Configure the toolbar.
         val toolbar: Toolbar = findViewById(R.id.toolbar) as Toolbar
