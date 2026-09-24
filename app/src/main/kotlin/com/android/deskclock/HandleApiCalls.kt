@@ -100,6 +100,8 @@ class HandleApiCalls : Activity() {
         private val mIntent: Intent,
         private val mActivity: Activity
     ) : AsyncTask<Void?, Void?, Void?>() {
+        @Suppress("OVERRIDE_DEPRECATION")
+        @Suppress("OVERRIDE_DEPRECATION")
         override fun doInBackground(vararg parameters: Void?): Void? {
             val cr = mContext.contentResolver
             val alarms = getEnabledAlarms(mContext)
@@ -185,6 +187,7 @@ class HandleApiCalls : Activity() {
     ) : AsyncTask<Void?, Void?, Void?>() {
         private val mContext: Context = mActivity.applicationContext
 
+        @Suppress("OVERRIDE_DEPRECATION")
         override fun doInBackground(vararg parameters: Void?): Void? {
             val cr = mContext.contentResolver
             val alarmInstances = AlarmInstance.getInstancesByState(

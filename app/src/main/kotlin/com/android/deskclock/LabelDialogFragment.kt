@@ -33,6 +33,7 @@ import android.widget.TextView
 import android.widget.TextView.OnEditorActionListener
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatEditText
+import androidx.core.os.BundleCompat
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
@@ -60,7 +61,7 @@ class LabelDialogFragment : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val args = arguments ?: Bundle.EMPTY
-        mAlarm = args.getParcelable(ARG_ALARM)
+        mAlarm = BundleCompat.getParcelable(args, ARG_ALARM, Alarm::class.java)
         mTimerId = args.getInt(ARG_TIMER_ID, -1)
         mTag = args.getString(ARG_TAG)
 

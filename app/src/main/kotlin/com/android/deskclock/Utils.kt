@@ -53,7 +53,6 @@ import android.widget.TextView
 import androidx.annotation.AnyRes
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.core.os.BuildCompat
 import androidx.core.view.AccessibilityDelegateCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
@@ -145,13 +144,13 @@ object Utils {
      * @return `true` if the device is [Build.VERSION_CODES.N] or later
      */
     val isNOrLater: Boolean
-        get() = BuildCompat.isAtLeastN()
+        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
 
     /**
      * @return `true` if the device is [Build.VERSION_CODES.N_MR1] or later
      */
     val isNMR1OrLater: Boolean
-        get() = BuildCompat.isAtLeastNMR1()
+        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1
 
     /**
      * @return `true` if the device is [Build.VERSION_CODES.O] or later

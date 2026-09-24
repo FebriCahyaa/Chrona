@@ -239,6 +239,7 @@ class ItemAdapter<T : ItemHolder<*>> : RecyclerView.Adapter<ItemViewHolder<T>>()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder<T> {
         val factory = mFactoriesByViewType[viewType]
         if (factory != null) {
+            @Suppress("UNCHECKED_CAST")
             return factory.createViewHolder(parent, viewType) as ItemViewHolder<T>
         }
         throw IllegalArgumentException("Unsupported view type: $viewType")

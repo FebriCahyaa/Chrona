@@ -45,7 +45,7 @@ internal object AlarmKlaxon {
             LogUtils.v("AlarmKlaxon.stop()")
             sStarted = false
             getAsyncRingtonePlayer(context)!!.stop()
-            (context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).cancel()
+            getVibrator(context).cancel()
         }
     }
 
@@ -81,7 +81,7 @@ internal object AlarmKlaxon {
     }
 
     private fun getVibrator(context: Context): Vibrator {
-        return context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        return context.getSystemService(Vibrator::class.java)
     }
 
     @Synchronized

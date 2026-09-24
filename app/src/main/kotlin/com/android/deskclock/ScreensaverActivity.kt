@@ -145,8 +145,9 @@ class ScreensaverActivity : BaseActivity() {
      */
     private fun updateWakeLock(pluggedIn: Boolean) {
         val win: Window = getWindow()
+        WindowCompat.getInsetsController(win, win.decorView)
+                .hide(WindowInsetsCompat.Type.statusBars())
         val winParams = win.attributes
-        winParams.flags = winParams.flags or WindowManager.LayoutParams.FLAG_FULLSCREEN
         if (pluggedIn) {
             winParams.flags = winParams.flags or WINDOW_FLAGS
         } else {
@@ -196,6 +197,7 @@ class ScreensaverActivity : BaseActivity() {
         private val LOGGER = LogUtils.Logger("ScreensaverActivity")
 
         /** These flags keep the screen on if the device is plugged in.  */
+        @Suppress("DEPRECATION")
         private const val WINDOW_FLAGS = (WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
                 or WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
                 or WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON

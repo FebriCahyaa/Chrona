@@ -122,7 +122,7 @@ class ItemAnimator : SimpleItemAnimator() {
             moveAnimator = ObjectAnimator.ofPropertyValuesHolder(holder.itemView, moveY)
         }
 
-        moveAnimator?.duration = moveDuration
+        moveAnimator.duration = moveDuration
         moveAnimator.interpolator = AnimatorUtils.INTERPOLATOR_FAST_OUT_SLOW_IN
         moveAnimator.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationStart(animator: Animator) {
@@ -130,7 +130,7 @@ class ItemAnimator : SimpleItemAnimator() {
             }
 
             override fun onAnimationEnd(animator: Animator) {
-                animator?.removeAllListeners()
+                animator.removeAllListeners()
                 mAnimators.remove(holder)
                 view.translationX = prevTranslationX
                 view.translationY = prevTranslationY
