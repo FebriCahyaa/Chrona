@@ -1,0 +1,89 @@
+name: Build Canary
+
+# canary branch -> Canary build type, Android SDK canary channel (3).
+# Each successful push is published as a GitHub pre-release; only the newest
+# few canary pre-releases are kept.
+
+on:
+  push:
+    branches:
+      - canary
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Optional platform pin, e.g. android-37.2 (default newest on canary)
+        required: false
+        default: ''
+      build-tools:
+        description: Optional build-tools pin, e.g. 37.0.0 (default newest on canary)
+        required: false
+        default: ''
+      publish:
+        description: Publish a canary pre-release
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-canary-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CANARY_KEEP: 5
+
+jobs:
+  canary:
+    name: Canary · SDK canary
+    uses: ./.github/workflows/android-build.yml
+    with:
+      variant: canary
+      sdk-channel: 3
+      platform: ${{ inputs.platform || '' }}
+      build-tools: ${{ inputs.build-tools || '' }}
+    secrets: inherit
+
+  publish:
+    name: Publish canary pre-release
+    needs: canary
+    if: github.event_name == 'push' || inputs.publish
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Download APKs
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ needs.canary.outputs.artifact }}
+          path: dist
+      - name: Publish pre-release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: canary-r${{ github.run_number }}
+          name: Chrona Canary ${{ needs.canary.outputs.version-name }} (r${{ github.run_number }})
+          target_commitish: ${{ github.sha }}
+          prerelease: true
+          make_latest: false
+          generate_release_notes: true
+          body: |
+            Automated canary build from `${{ github.ref_name }}` at ${{ github.sha }}.
+            Built against the Android SDK **canary** channel. Not for production use.
+          files: |
+            dist/*.apk
+            dist/SHA256SUMS.txt
+          fail_on_unmatched_files: true
+      - name: Prune old canary pre-releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release list --limit 100 --json tagName,isPrerelease,createdAt \
+            --jq '[.[] | select(.isPrerelease and (.tagName | startswith("canary-r")))]
+                  | sort_by(.createdAt) | reverse | .[(env.CANARY_KEEP | tonumber):] | .[].tagName' |
+            while read -r tag; do
+              printf 'Deleting old canary release %s\n' "$tag"
+              gh release delete "$tag" --yes --cleanup-tag
+            done

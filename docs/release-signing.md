@@ -49,4 +49,4 @@ Generate the Git signing key with:
 ./scripts/release/generate_github_bot_gpg.sh
 ```
 
-Then follow `docs/github-bot-signing.md` for GitHub GPG registration and Actions secrets.
+Then follow [github-bot-signing.md](github-bot-signing.md) for GitHub GPG registration and Actions secrets.

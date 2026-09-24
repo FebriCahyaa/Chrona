@@ -1,7 +1,7 @@
 name: Chrona CodeQL
 paths-ignore:
-  - gen
-  - res
-  - assets
+  - aosp
+  - app/src/main/res
+  - app/src/main/assets
   - build
   - app/build

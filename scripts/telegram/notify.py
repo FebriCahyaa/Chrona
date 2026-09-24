@@ -178,15 +178,31 @@ def result_icon(result: str) -> str:
     return {"success": "✅", "failure": "❌", "cancelled": "⏹️", "skipped": "⏭️"}.get(result, "🟡")
 
 
+def build_line() -> tuple[str, str]:
+    """Return (title suffix, SDK details) for the build line that is running."""
+    variant = value("BUILD_VARIANT")
+    title = f" · {html.escape(variant.capitalize())}" if variant else ""
+    channel = value("SDK_CHANNEL_NAME")
+    if not channel:
+        return title, ""
+    details = f"<b>SDK:</b> <code>{html.escape(channel)}</code>"
+    if value("COMPILE_SDK"):
+        details += f" · API <code>{html.escape(value('COMPILE_SDK'))}</code>"
+    if value("BUILD_TOOLS"):
+        details += f" · Build Tools <code>{html.escape(value('BUILD_TOOLS'))}</code>"
+    return title, details + "\n"
+
+
 def ci_start() -> None:
     _, repo_url, run_url = repo_context()
     ref, commit = ref_commit()
+    title, _ = build_line()
     text = (
-        "🛠️ <b>Chrona CI Started</b>\n\n"
+        f"🛠️ <b>Chrona CI{title} Started</b>\n\n"
         f"<b>Ref:</b> <code>{ref}</code>\n"
         f"<b>Commit:</b> <code>{commit}</code>\n"
         f"<b>Actor:</b> <code>{html.escape(value('GITHUB_ACTOR') or 'unknown')}</code>\n\n"
-        "Quality checks and debug build are now running."
+        "Quality checks and the APK build are now running."
     )
     send_message(text, buttons(repo_url, run_url))
 
@@ -198,10 +214,12 @@ def ci_report() -> None:
     build = value("BUILD_RESULT") or "unknown"
     success = quality == "success" and build == "success"
     state = "Completed" if success else "Failed"
+    title, sdk = build_line()
     text = (
-        f"{result_icon('success' if success else 'failure')} <b>Chrona CI {state}</b>\n\n"
+        f"{result_icon('success' if success else 'failure')} <b>Chrona CI{title} {state}</b>\n\n"
         f"<b>Ref:</b> <code>{ref}</code>\n"
         f"<b>Commit:</b> <code>{commit}</code>\n"
+        f"{sdk}"
         f"<b>Quality:</b> {result_icon(quality)} <code>{html.escape(quality)}</code>\n"
         f"<b>Build:</b> {result_icon(build)} <code>{html.escape(build)}</code>"
     )
@@ -212,7 +230,9 @@ def ci_report() -> None:
     send_message(text, buttons(repo_url, run_url))
     for item in artifact_files():
         lower = item.name.lower()
-        if item.suffix.lower() == ".apk" or "error" in lower or lower.endswith(".sarif"):
+        # Only the universal APK: every build line uploading five ABI splits floods the chat.
+        is_apk = item.suffix.lower() == ".apk"
+        if (is_apk and "universal" in lower) or (not is_apk and ("error" in lower or lower.endswith(".sarif"))):
             send_document(item, f"📎 <b>Chrona CI Artifact</b>\n<code>{html.escape(item.name)}</code>", buttons(repo_url, run_url))
 
 
@@ -263,8 +283,11 @@ def release_report() -> None:
     build = value("BUILD_RESULT") or "unknown"
     publish = value("PUBLISH_RESULT") or "unknown"
     success = publish == "success"
+    # Pushes to the stable branch build and verify signed APKs without publishing.
+    verified = publish == "skipped" and build == "success"
+    state = "Published" if success else "Build Verified" if verified else "Failed"
     text = (
-        f"{'🚀' if success else '❌'} <b>Chrona Release {'Published' if success else 'Failed'}</b>\n\n"
+        f"{'🚀' if success else '✅' if verified else '❌'} <b>Chrona Release {state}</b>\n\n"
         f"<b>Version:</b> <code>{version}</code>\n"
         f"<b>Prepare:</b> {result_icon(prepare)} <code>{html.escape(prepare)}</code>\n"
         f"<b>Build:</b> {result_icon(build)} <code>{html.escape(build)}</code>\n"
@@ -283,6 +306,7 @@ def security_report() -> None:
     _, repo_url, run_url = repo_context()
     entries = [
         ("CodeQL", value("CODEQL_RESULT") or "unknown"),
+        ("TruffleHog", value("TRUFFLEHOG_RESULT") or "unknown"),
         ("Dependency Review", value("DEPENDENCY_REVIEW_RESULT") or "unknown"),
         ("Dependency Graph", value("DEPENDENCY_SUBMISSION_RESULT") or "unknown"),
     ]

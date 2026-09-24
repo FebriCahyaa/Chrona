@@ -1,0 +1,62 @@
+name: Chrona Android Toolchain
+description: >-
+  Set up JDK 17, the Android SDK for one sdkmanager channel and Gradle.
+  Exports CHRONA_COMPILE_SDK and CHRONA_BUILD_TOOLS for app/build.gradle.kts.
+
+inputs:
+  sdk-channel:
+    description: 'sdkmanager channel: 0 stable, 1 beta, 2 dev, 3 canary'
+    required: true
+  platform:
+    description: Pin a platform such as android-37.2 instead of the newest on the channel.
+    required: false
+    default: ''
+  build-tools:
+    description: Pin a build-tools version such as 37.0.0 instead of the newest on the channel.
+    required: false
+    default: ''
+
+outputs:
+  compile-sdk:
+    description: Resolved compileSdk value
+    value: ${{ steps.sdk.outputs.chrona-compile-sdk }}
+  build-tools:
+    description: Resolved build-tools version
+    value: ${{ steps.sdk.outputs.chrona-build-tools }}
+  channel-name:
+    description: stable, beta, dev or canary
+    value: ${{ steps.sdk.outputs.chrona-sdk-channel-name }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Java
+      uses: actions/setup-java@v6
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Set up Android command-line tools
+      uses: android-actions/setup-android@v4
+      with:
+        packages: ''
+        log-accepted-android-sdk-licenses: 'false'
+
+    - name: Install Android SDK (channel ${{ inputs.sdk-channel }})
+      id: sdk
+      shell: bash
+      env:
+        SDK_CHANNEL: ${{ inputs.sdk-channel }}
+        SDK_PLATFORM: ${{ inputs.platform }}
+        SDK_BUILD_TOOLS: ${{ inputs.build-tools }}
+      run: |
+        python3 scripts/ci/android_sdk.py \
+          --channel "$SDK_CHANNEL" \
+          --platform "$SDK_PLATFORM" \
+          --build-tools "$SDK_BUILD_TOOLS"
+
+    - name: Set up Gradle
+      uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-provider: basic
+        validate-wrappers: true

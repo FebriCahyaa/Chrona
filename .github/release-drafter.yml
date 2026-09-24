@@ -1,0 +1,81 @@
+# Release Drafter: keeps a draft of the next stable release up to date.
+# Publishing the draft creates the vX.Y.Z tag, which triggers release.yml to
+# build, sign and attach the APKs.
+name-template: 'Chrona v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+commitish: stable
+categories:
+  - title: '💥 Breaking changes'
+    labels:
+      - breaking
+  - title: '✨ Features'
+    labels:
+      - enhancement
+  - title: '🐛 Fixes'
+    labels:
+      - bug
+  - title: '🔒 Security'
+    labels:
+      - security
+  - title: '🌐 Translations'
+    labels:
+      - translations
+  - title: '🧰 Build, CI & automation'
+    labels:
+      - build-system
+      - ci
+      - automation
+  - title: '📦 Dependencies'
+    collapse-after: 5
+    labels:
+      - dependencies
+  - title: '📝 Documentation'
+    labels:
+      - documentation
+exclude-labels:
+  - skip-changelog
+change-template: '- $TITLE (#$NUMBER) @$AUTHOR'
+change-title-escapes: '\<*_&'
+version-resolver:
+  major:
+    labels:
+      - breaking
+  minor:
+    labels:
+      - enhancement
+  patch:
+    labels:
+      - bug
+      - security
+      - dependencies
+  default: patch
+autolabeler:
+  - label: breaking
+    title:
+      - '/^\w+(\(.+\))?!:/'
+  - label: enhancement
+    title:
+      - '/^feat/i'
+  - label: bug
+    title:
+      - '/^fix/i'
+  - label: documentation
+    title:
+      - '/^docs/i'
+    files:
+      - '*.md'
+      - 'docs/**'
+  - label: ci
+    title:
+      - '/^ci/i'
+  - label: build-system
+    title:
+      - '/^build/i'
+template: |
+  ## What's changed
+
+  $CHANGES
+
+  Built from the `stable` branch against the Android SDK **stable** channel.
+
+  **Full changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION

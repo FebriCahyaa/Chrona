@@ -1,0 +1,49 @@
+name: Branch Promotion
+
+# Opens (or reuses) a pull request that promotes one release line into the
+# next: main -> dev -> canary -> stable. Requires "Allow GitHub Actions to
+# create and approve pull requests" in Settings -> Actions -> General.
+
+on:
+  workflow_dispatch:
+    inputs:
+      promotion:
+        description: Promotion path
+        required: true
+        type: choice
+        options:
+          - main -> dev
+          - dev -> canary
+          - canary -> stable
+
+permissions:
+  contents: read
+
+jobs:
+  promote:
+    name: Open promotion pull request
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Open pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PROMOTION: ${{ inputs.promotion }}
+        run: |
+          head="${PROMOTION%% -> *}"
+          base="${PROMOTION##* -> }"
+          existing="$(gh pr list --head "$head" --base "$base" --state open --json url --jq '.[0].url')"
+          if [[ -n "$existing" ]]; then
+            printf 'Promotion pull request already open: %s\n' "$existing"
+            exit 0
+          fi
+          gh pr create \
+            --head "$head" \
+            --base "$base" \
+            --title "chore(release): promote ${head} to ${base}" \
+            --body "Promotes \`${head}\` into \`${base}\`. Merge with a merge commit so the branches keep a shared history." \
+            --label skip-changelog

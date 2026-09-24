@@ -1,0 +1,37 @@
+name: Build Debug
+
+# main branch + pull requests -> Debug build type, Android SDK beta channel (1).
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Optional platform pin, e.g. android-37.2 (default newest on beta)
+        required: false
+        default: ''
+      build-tools:
+        description: Optional build-tools pin, e.g. 37.0.0 (default newest on beta)
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-debug-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  debug:
+    name: Debug · SDK beta
+    uses: ./.github/workflows/android-build.yml
+    with:
+      variant: debug
+      sdk-channel: 1
+      platform: ${{ inputs.platform || '' }}
+      build-tools: ${{ inputs.build-tools || '' }}
+    secrets: inherit

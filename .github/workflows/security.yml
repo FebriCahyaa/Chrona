@@ -5,6 +5,9 @@ on:
   push:
     branches:
       - main
+      - dev
+      - canary
+      - stable
   schedule:
     - cron: '40 2 * * 1'
   workflow_dispatch:
@@ -24,39 +27,35 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - name: Set up Java
-        uses: actions/setup-java@v6
-        with:
-          distribution: temurin
-          java-version: '17'
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
           languages: java-kotlin
           config-file: ./.github/codeql/codeql-config.yml
-      - name: Set up Android SDK tools
-        uses: android-actions/setup-android@v4
+      - name: Android toolchain
+        uses: ./.github/actions/android-toolchain
         with:
-          packages: 'platform-tools'
-
-      - name: Install Android 17 SDK 37.2 and Build Tools 37.1.0
-        shell: bash
-        run: |
-          set -euo pipefail
-          sdkmanager --install \
-            'platforms;android-37.2' \
-            'build-tools;37.1.0'
-
-      - name: Verify Android SDK platform and build tools
-        run: python3 scripts/ci/verify_android_sdk.py
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
-        with:
-          gradle-version: wrapper
+          sdk-channel: 0
       - name: Build
-        run: ./gradlew --no-daemon assembleDebug
+        run: ./gradlew --no-daemon --stacktrace assembleDebug
       - name: Analyze
         uses: github/codeql-action/analyze@v4
+
+  trufflehog:
+    name: TruffleHog secret scan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Scan for verified secrets
+        uses: trufflesecurity/trufflehog@v3.97.8
+        with:
+          # On push/PR TruffleHog scans only the new commits; scheduled and
+          # manual runs scan the full history.
+          extra_args: --results=verified,unknown
 
   dependency-review:
     name: Dependency Review
@@ -73,36 +72,18 @@ jobs:
 
   dependency-submission:
     name: Dependency Graph
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     permissions:
       contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-      - name: Set up Java
-        uses: actions/setup-java@v6
+      - name: Android toolchain
+        uses: ./.github/actions/android-toolchain
         with:
-          distribution: temurin
-          java-version: '17'
-      - name: Set up Android SDK tools
-        uses: android-actions/setup-android@v4
-        with:
-          packages: 'platform-tools'
-
-      - name: Install Android 17 SDK 37.2 and Build Tools 37.1.0
-        shell: bash
-        run: |
-          set -euo pipefail
-          sdkmanager --install \
-            'platforms;android-37.2' \
-            'build-tools;37.1.0'
-
-      - name: Verify Android SDK platform and build tools
-        run: python3 scripts/ci/verify_android_sdk.py
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
-        with:
-          gradle-version: wrapper
+          sdk-channel: 0
       - name: Submit dependency graph
         uses: gradle/actions/dependency-submission@v6
 
@@ -110,6 +91,7 @@ jobs:
     name: Telegram Security
     needs:
       - codeql
+      - trufflehog
       - dependency-review
       - dependency-submission
     if: always() && (github.event_name != 'pull_request' || github.actor != 'dependabot[bot]')
@@ -123,15 +105,8 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.CHRONABOT_CI_CHAT_ID }}
           TELEGRAM_EVENT: security
           CODEQL_RESULT: ${{ needs.codeql.result }}
+          TRUFFLEHOG_RESULT: ${{ needs.trufflehog.result }}
           DEPENDENCY_REVIEW_RESULT: ${{ needs.dependency-review.result }}
           DEPENDENCY_SUBMISSION_RESULT: ${{ needs.dependency-submission.result }}
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_SERVER_URL: ${{ github.server_url }}
-          GITHUB_RUN_ID: ${{ github.run_id }}
-          GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
-          GITHUB_SHA: ${{ github.sha }}
-          GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_WORKFLOW: ${{ github.workflow }}
         run: python3 scripts/telegram/notify.py
         continue-on-error: true

@@ -36,16 +36,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.CHRONABOT_PR_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.CHRONABOT_PR_CHAT_ID }}
           TELEGRAM_EVENT: pull-request
-          GITHUB_EVENT_PATH: ${{ github.event_path }}
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
           GITHUB_TOKEN: ${{ github.token }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_SERVER_URL: ${{ github.server_url }}
-          GITHUB_RUN_ID: ${{ github.run_id }}
-          GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
-          GITHUB_SHA: ${{ github.sha }}
-          GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_WORKFLOW: ${{ github.workflow }}
         run: python3 scripts/telegram/notify.py
         continue-on-error: true
 
@@ -61,16 +52,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.CHRONABOT_DEPENDABOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.CHRONABOT_DEPENDABOT_CHAT_ID }}
           TELEGRAM_EVENT: dependabot
-          GITHUB_EVENT_PATH: ${{ github.event_path }}
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
           GITHUB_TOKEN: ${{ github.token }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_SERVER_URL: ${{ github.server_url }}
-          GITHUB_RUN_ID: ${{ github.run_id }}
-          GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
-          GITHUB_SHA: ${{ github.sha }}
-          GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_WORKFLOW: ${{ github.workflow }}
         run: python3 scripts/telegram/notify.py
         continue-on-error: true
 
@@ -86,16 +68,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.CHRONABOT_PR_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.CHRONABOT_PR_CHAT_ID }}
           TELEGRAM_EVENT: issue
-          GITHUB_EVENT_PATH: ${{ github.event_path }}
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
           GITHUB_TOKEN: ${{ github.token }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_SERVER_URL: ${{ github.server_url }}
-          GITHUB_RUN_ID: ${{ github.run_id }}
-          GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
-          GITHUB_SHA: ${{ github.sha }}
-          GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_WORKFLOW: ${{ github.workflow }}
         run: python3 scripts/telegram/notify.py
         continue-on-error: true
 
@@ -211,13 +184,6 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.CHRONABOT_PR_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.CHRONABOT_PR_CHAT_ID }}
           TELEGRAM_EVENT: crowdin
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_SERVER_URL: ${{ github.server_url }}
-          GITHUB_RUN_ID: ${{ github.run_id }}
-          GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
-          GITHUB_SHA: ${{ github.sha }}
-          GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_WORKFLOW: ${{ github.workflow }}
         run: python3 scripts/telegram/notify.py
         continue-on-error: true
 
@@ -243,3 +209,6 @@ jobs:
           gh label create 'translations' --color '7057ff' --description 'Localization and translation' --force
           gh label create 'documentation' --color '0075ca' --description 'Documentation' --force
           gh label create 'breaking' --color 'b60205' --description 'Behavior or API compatibility impact' --force
+          gh label create 'android' --color '3ddc84' --description 'Application source, resources or manifest' --force
+          gh label create 'automation' --color 'c5def5' --description 'GitHub configuration and automation' --force
+          gh label create 'skip-changelog' --color 'eeeeee' --description 'Excluded from Release Drafter notes' --force

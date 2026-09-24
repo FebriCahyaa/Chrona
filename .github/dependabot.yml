@@ -7,7 +7,7 @@ updates:
       day: monday
     open-pull-requests-limit: 12
     groups:
-      androidx: 
+      androidx:
         patterns:
           - "androidx.*"
       tooling:
@@ -16,12 +16,14 @@ updates:
           - "org.jetbrains.kotlin.android"
           - "com.diffplug.spotless"
   - package-ecosystem: github-actions
-    directory: /
+    directories:
+      - /
+      - /.github/actions/*
     schedule:
       interval: weekly
       day: monday
     open-pull-requests-limit: 12
     groups:
-      actions: 
+      actions:
         patterns:
           - "*"

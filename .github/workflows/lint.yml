@@ -1,0 +1,49 @@
+name: Lint
+
+# Super-Linter on changed files: workflows (actionlint), YAML, Markdown,
+# shell scripts (ShellCheck) and Python (Ruff). Kotlin/Android sources are
+# covered by Gradle lint and Spotless in the build workflows.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - dev
+      - canary
+      - stable
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lint-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  super-linter:
+    name: Super-Linter
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: read
+      statuses: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Super-Linter
+        uses: super-linter/super-linter/slim@v8
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DEFAULT_BRANCH: main
+          VALIDATE_ALL_CODEBASE: ${{ github.event_name == 'workflow_dispatch' }}
+          VALIDATE_GITHUB_ACTIONS: true
+          VALIDATE_YAML: true
+          VALIDATE_MARKDOWN: true
+          VALIDATE_BASH: true
+          VALIDATE_PYTHON_RUFF: true
+          FILTER_REGEX_EXCLUDE: (^|/)(app/src/main/res|aosp)/

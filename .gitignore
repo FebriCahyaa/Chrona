@@ -21,3 +21,8 @@ app/build/
 /chronabot-gpg-public.asc
 /chronabot-gpg-fingerprint.txt
 /.generated/gpg/
+# CI packaging output
+/dist/
+/release/
+__pycache__/
+.ruff_cache/
