@@ -263,6 +263,12 @@ class DataModel private constructor() {
     // Application
     //
 
+    /** Re-checks the settings that silence alarms, e.g. after a permission was granted.  */
+    fun refreshSilentSettings() {
+        Utils.enforceMainLooper()
+        mSilentSettingsModel!!.updateSilentState()
+    }
+
     var isApplicationInForeground: Boolean
         /**
          * @return `true` when the application is open in the foreground; `false` otherwise

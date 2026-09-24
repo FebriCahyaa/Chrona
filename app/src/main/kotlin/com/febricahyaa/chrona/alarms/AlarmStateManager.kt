@@ -124,8 +124,9 @@ class AlarmStateManager : BroadcastReceiver() {
                 // Ensure the alarm fires even if the device is dozing.
                 am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent)
             } catch (e: SecurityException) {
-                // The user has revoked permission to schedule exact alarms.
+                // Exact alarms are not allowed; fire as close to the time as Android permits.
                 LogUtils.e("Unable to schedule exact alarm for instance: " + instance.mId, e)
+                am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent)
             }
         }
 

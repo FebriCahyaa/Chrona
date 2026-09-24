@@ -822,8 +822,9 @@ internal class TimerModel(
                 // Ensure the timer fires even if the device is dozing.
                 am.setExactAndAllowWhileIdle(ELAPSED_REALTIME_WAKEUP, triggerTime, pi)
             } catch (e: SecurityException) {
-                // The user has revoked permission to schedule exact alarms.
+                // Exact alarms are not allowed; fire as close to the time as Android permits.
                 LogUtils.e("Unable to schedule exact timer callback", e)
+                am.setAndAllowWhileIdle(ELAPSED_REALTIME_WAKEUP, triggerTime, pi)
             }
         }
     }

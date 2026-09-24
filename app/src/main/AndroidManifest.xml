@@ -29,7 +29,14 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <!-- Alarms and timers must fire at the exact time. Clock apps get USE_EXACT_ALARM granted
+         on Android 13+; SCHEDULE_EXACT_ALARM (denied by default on Android 14+) only covers
+         Android 12. Without it alarms and timers silently never fire, and the status bar shows
+         no alarm icon. -->
+    <uses-permission
+        android:name="android.permission.SCHEDULE_EXACT_ALARM"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- "Live updates" (Android 16+): running timers, the stopwatch and ringing alarms. -->
@@ -41,7 +48,8 @@
         android:backupAgent="DeskClockBackupAgent"
         android:fullBackupContent="@xml/backup_scheme"
         android:fullBackupOnly="true"
-        android:icon="@mipmap/ic_launcher_alarmclock"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/app_label"
         android:requiredForAllUsers="true"
         android:supportsRtl="true"

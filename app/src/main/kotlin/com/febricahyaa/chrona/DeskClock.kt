@@ -86,6 +86,8 @@ class DeskClock : BaseActivity(), FabContainer, AlarmLabelDialogHandler {
     /** Asks for the notification permission alarms, timers and the stopwatch rely on.  */
     private val mNotificationPermissionRequest =
             registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+                // Drop a stale "notifications are blocked" message once they are allowed.
+                DataModel.dataModel.refreshSilentSettings()
                 promptForFullScreenAlertsIfNeeded()
             }
 
@@ -308,6 +310,9 @@ class DeskClock : BaseActivity(), FabContainer, AlarmLabelDialogHandler {
 
         // ViewPager does not save state; this honors the selected tab in the user interface.
         updateCurrentTab()
+
+        // Permissions may have changed in the system settings while the app was paused.
+        DataModel.dataModel.refreshSilentSettings()
     }
 
     override fun onPostResume() {
