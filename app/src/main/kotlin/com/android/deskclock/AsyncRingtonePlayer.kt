@@ -388,6 +388,7 @@ class AsyncRingtonePlayer(private val mContext: Context) {
     private inner class RingtonePlaybackDelegate : PlaybackDelegate {
         /** The audio focus manager. Only used by the ringtone thread.  */
         private var mAudioManager: AudioManager? = null
+        private var mAudioFocusRequest: AudioFocusRequest? = null
 
         /** The current ringtone. Only used by the ringtone thread.  */
         private var mRingtone: Ringtone? = null
