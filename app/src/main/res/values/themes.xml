@@ -84,4 +84,19 @@
         <item name="android:colorBackground">?attr/colorBackgroundFloating</item>
     </style>
 
+    <!-- Pure-black surfaces for the AMOLED dark theme setting; applied on top of the app theme
+         (and dynamic color) before each activity is created. -->
+    <style name="ThemeOverlay.Chrona.Amoled" parent="">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:colorBackground">@android:color/black</item>
+        <item name="colorSurface">@android:color/black</item>
+        <item name="colorSurfaceDim">@android:color/black</item>
+        <item name="colorSurfaceContainerLowest">@android:color/black</item>
+        <item name="colorSurfaceContainerLow">#FF0A0A0A</item>
+        <item name="colorSurfaceContainer">#FF111111</item>
+        <item name="colorSurfaceContainerHigh">#FF171717</item>
+        <item name="colorSurfaceContainerHighest">#FF1E1E1E</item>
+        <item name="android:navigationBarColor">@android:color/black</item>
+    </style>
+
 </resources>

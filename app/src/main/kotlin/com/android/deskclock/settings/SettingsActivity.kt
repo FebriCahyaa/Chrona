@@ -152,6 +152,13 @@ class SettingsActivity : BaseActivity() {
                     DataModel.dataModel.timerVibrate = timerVibratePref.isChecked()
                 }
                 KEY_TIMER_RINGTONE -> pref.setSummary(DataModel.dataModel.timerRingtoneTitle)
+                KEY_AMOLED_THEME -> {
+                    // The theme overlay is applied when an activity is created; recreate this
+                    // one after the new value is saved (DeskClock recreates on RESULT_OK).
+                    getActivity()?.let { activity ->
+                        activity.window.decorView.post { activity.recreate() }
+                    }
+                }
             }
 
             // Set result so DeskClock knows to refresh itself
@@ -239,6 +246,8 @@ class SettingsActivity : BaseActivity() {
             val clockSecondsPref: Preference? = findPreference(KEY_CLOCK_DISPLAY_SECONDS)
             clockSecondsPref?.setOnPreferenceChangeListener(this)
 
+            findPreference<Preference>(KEY_AMOLED_THEME)?.setOnPreferenceChangeListener(this)
+
             val autoHomeClockPref: Preference? = findPreference(KEY_AUTO_HOME_CLOCK)
             val autoHomeClockEnabled: Boolean =
                     (autoHomeClockPref as TwoStatePreference).isChecked()
@@ -304,6 +313,7 @@ class SettingsActivity : BaseActivity() {
         const val KEY_DATE_TIME = "date_time"
         const val KEY_VOLUME_BUTTONS = "volume_button_setting"
         const val KEY_WEEK_START = "week_start"
+        const val KEY_AMOLED_THEME = "amoled_dark_theme"
         const val DEFAULT_VOLUME_BEHAVIOR = "0"
         const val VOLUME_BEHAVIOR_SNOOZE = "1"
         const val VOLUME_BEHAVIOR_DISMISS = "2"

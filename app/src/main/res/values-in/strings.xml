@@ -260,6 +260,8 @@
     <string name="clock_settings" msgid="8317286807280600391">"Jam"</string>
     <string name="clock_style" msgid="2265011060429742344">"Gaya"</string>
     <string name="display_clock_seconds_pref" msgid="691506643469501643">"Tampilkan waktu dengan detik"</string>
+    <string name="amoled_theme_title">"Tema gelap AMOLED"</string>
+    <string name="amoled_theme_summary">"Latar hitam pekat, lebih hemat baterai di layar OLED"</string>
     <string name="open_date_settings" msgid="7712226973337806152">"Ubah tanggal &amp; waktu"</string>
   <string-array name="clock_style_entries">
     <item msgid="917900462224167608">"Analog"</item>

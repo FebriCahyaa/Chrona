@@ -32,6 +32,13 @@
 
         <SwitchPreferenceCompat
             android:widgetLayout="@layout/preference_widget_material_switch"
+            android:defaultValue="false"
+            android:key="amoled_dark_theme"
+            android:summary="@string/amoled_theme_summary"
+            android:title="@string/amoled_theme_title" />
+
+        <SwitchPreferenceCompat
+            android:widgetLayout="@layout/preference_widget_material_switch"
             android:defaultValue="true"
             android:key="automatic_home_clock"
             android:summary="@string/automatic_home_clock_summary"

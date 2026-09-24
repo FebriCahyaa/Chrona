@@ -16,9 +16,13 @@
 
 package com.android.deskclock
 
+import android.app.Activity
 import android.app.Application
+import android.app.WallpaperManager
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.color.DynamicColorsOptions
@@ -26,26 +30,64 @@ import com.google.android.material.color.DynamicColorsOptions
 import com.android.deskclock.controller.Controller
 import com.android.deskclock.data.DataModel
 import com.android.deskclock.events.LogEventTracker
+import com.android.deskclock.settings.SettingsActivity
 import com.android.deskclock.uidata.UiDataModel
 
 class DeskClockApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        // The UI is dark-only for now, so always take the dark dynamic scheme; the default
-        // DayNight overlay would apply light-mode colors whenever the system is in light mode.
-        DynamicColors.applyToActivitiesIfAvailable(this, DynamicColorsOptions.Builder()
-                .setThemeOverlay(
-                        com.google.android.material.R.style.ThemeOverlay_Material3_DynamicColors_Dark)
-                .build())
-
         val applicationContext = applicationContext
         val prefs = getDefaultSharedPreferences(applicationContext)
+
+        // The UI is dark-only for now, so always take the dark dynamic scheme; the default
+        // DayNight overlay would apply light-mode colors whenever the system is in light mode.
+        // Seeding from the wallpaper's main color uses Material's content-based scheme, which
+        // keeps the color's full chroma (more vibrant than the system's tonal-spot palette).
+        val dynamicColors = DynamicColorsOptions.Builder()
+                .setThemeOverlay(
+                        com.google.android.material.R.style.ThemeOverlay_Material3_DynamicColors_Dark)
+        wallpaperSeedColor()?.let { dynamicColors.setContentBasedSource(it) }
+        DynamicColors.applyToActivitiesIfAvailable(this, dynamicColors.build())
+
+        // Registered after DynamicColors so the black surfaces win over the dynamic ones.
+        registerActivityLifecycleCallbacks(AmoledThemeApplier(prefs))
 
         DataModel.dataModel.init(applicationContext, prefs)
         UiDataModel.uiDataModel.init(applicationContext, prefs)
         Controller.getController().setContext(applicationContext)
         Controller.getController().addEventTracker(LogEventTracker(applicationContext))
+    }
+
+    /** @return the wallpaper's primary color, or null if it is unavailable */
+    private fun wallpaperSeedColor(): Int? = try {
+        WallpaperManager.getInstance(this)
+                .getWallpaperColors(WallpaperManager.FLAG_SYSTEM)
+                ?.primaryColor
+                ?.toArgb()
+    } catch (e: RuntimeException) {
+        LogUtils.w("Unable to read wallpaper colors: $e")
+        null
+    }
+
+    /** Applies the pure-black AMOLED overlay to app activities when that setting is on. */
+    private class AmoledThemeApplier(
+        private val prefs: SharedPreferences
+    ) : ActivityLifecycleCallbacks {
+        override fun onActivityPreCreated(activity: Activity, savedInstanceState: Bundle?) {
+            if (activity is AppCompatActivity &&
+                    prefs.getBoolean(SettingsActivity.KEY_AMOLED_THEME, false)) {
+                activity.theme.applyStyle(R.style.ThemeOverlay_Chrona_Amoled, true)
+            }
+        }
+
+        override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
+        override fun onActivityStarted(activity: Activity) {}
+        override fun onActivityResumed(activity: Activity) {}
+        override fun onActivityPaused(activity: Activity) {}
+        override fun onActivityStopped(activity: Activity) {}
+        override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+        override fun onActivityDestroyed(activity: Activity) {}
     }
 
     companion object {
