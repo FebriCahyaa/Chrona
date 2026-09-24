@@ -40,7 +40,6 @@ import androidx.viewpager.widget.ViewPager
 import com.android.deskclock.data.DataModel
 import com.android.deskclock.data.Timer
 import com.android.deskclock.data.TimerListener
-import com.android.deskclock.data.TimerStringFormatter
 import com.android.deskclock.events.Events
 import com.android.deskclock.uidata.UiDataModel
 import com.android.deskclock.AnimatorUtils
@@ -214,43 +213,11 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
 
     private fun updateFab(fab: ImageView, animate: Boolean) {
         if (mCurrentView === mTimersView) {
-            val timer = timer
-            if (timer == null) {
-                fab.visibility = View.INVISIBLE
-                return
-            }
-
+            // Each timer card has its own play/pause, reset and delete controls; the fab adds a
+            // new timer, as in the M3 Expressive clock.
+            fab.setImageResource(R.drawable.ic_add_white_24dp)
+            fab.contentDescription = fab.resources.getString(R.string.timer_add_timer)
             fab.visibility = View.VISIBLE
-            when (timer.state) {
-                Timer.State.RUNNING -> {
-                    if (animate) {
-                        fab.setImageResource(R.drawable.ic_play_pause_animation)
-                    } else {
-                        fab.setImageResource(R.drawable.ic_play_pause)
-                    }
-                    fab.contentDescription = fab.resources.getString(R.string.timer_stop)
-                }
-                Timer.State.RESET -> {
-                    if (animate) {
-                        fab.setImageResource(R.drawable.ic_stop_play_animation)
-                    } else {
-                        fab.setImageResource(R.drawable.ic_pause_play)
-                    }
-                    fab.contentDescription = fab.resources.getString(R.string.timer_start)
-                }
-                Timer.State.PAUSED -> {
-                    if (animate) {
-                        fab.setImageResource(R.drawable.ic_pause_play_animation)
-                    } else {
-                        fab.setImageResource(R.drawable.ic_pause_play)
-                    }
-                    fab.contentDescription = fab.resources.getString(R.string.timer_start)
-                }
-                Timer.State.MISSED, Timer.State.EXPIRED -> {
-                    fab.setImageResource(R.drawable.ic_stop_white_24dp)
-                    fab.contentDescription = fab.resources.getString(R.string.timer_stop)
-                }
-            }
         } else if (mCurrentView === mCreateTimerView) {
             // The setup view's own wide start button replaces the fab.
             fab.contentDescription = null
@@ -271,15 +238,8 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
 
     override fun onUpdateFabButtons(left: Button, right: Button) {
         if (mCurrentView === mTimersView) {
-            left.isClickable = true
-            left.setText(R.string.timer_delete)
-            left.contentDescription = left.resources.getString(R.string.timer_delete)
-            left.visibility = View.VISIBLE
-
-            right.isClickable = true
-            right.setText(R.string.timer_add_timer)
-            right.contentDescription = right.resources.getString(R.string.timer_add_timer)
-            right.visibility = View.VISIBLE
+            left.visibility = View.INVISIBLE
+            right.visibility = View.INVISIBLE
         } else if (mCurrentView === mCreateTimerView) {
             left.isClickable = true
             left.setText(R.string.timer_cancel)
@@ -293,33 +253,7 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
 
     override fun onFabClick(fab: ImageView) {
         if (mCurrentView === mTimersView) {
-            // If no timer is currently showing a fab action is meaningless.
-            val timer = timer ?: return
-
-            val context = fab.context
-            val currentTime: Long = timer.remainingTime
-
-            when (timer.state) {
-                Timer.State.RUNNING -> {
-                    DataModel.dataModel.pauseTimer(timer)
-                    Events.sendTimerEvent(R.string.action_stop, R.string.label_deskclock)
-                    if (currentTime > 0) {
-                        Utils.announceForAccessibilityCompat(mTimersView, TimerStringFormatter.formatString(
-                                context, R.string.timer_accessibility_stopped, currentTime, true))
-                    }
-                }
-                Timer.State.PAUSED, Timer.State.RESET -> {
-                    DataModel.dataModel.startTimer(timer)
-                    Events.sendTimerEvent(R.string.action_start, R.string.label_deskclock)
-                    if (currentTime > 0) {
-                        Utils.announceForAccessibilityCompat(mTimersView, TimerStringFormatter.formatString(
-                                context, R.string.timer_accessibility_started, currentTime, true))
-                    }
-                }
-                Timer.State.MISSED, Timer.State.EXPIRED -> {
-                    DataModel.dataModel.resetOrDeleteTimer(timer, R.string.label_deskclock)
-                }
-            }
+            animateToView(mCreateTimerView, null, true)
         } else if (mCurrentView === mCreateTimerView) {
             startTimerFromSetup()
         }
@@ -353,16 +287,7 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
 
     override fun onLeftButtonClick(left: Button) {
         if (mCurrentView === mTimersView) {
-            // Clicking the "delete" button.
-            val timer = timer ?: return
-
-            if (mAdapter.getCount() > 1) {
-                animateTimerRemove(timer)
-            } else {
-                animateToView(mCreateTimerView, timer, false)
-            }
-
-            Utils.announceForAccessibilityCompat(left, requireActivity().getString(R.string.timer_deleted))
+            timer?.let { deleteTimer(it, left) }
         } else if (mCurrentView === mCreateTimerView) {
             // Clicking the "cancel" button on the timer creation page returns to the timers list.
             mCreateTimerView.reset()
@@ -371,6 +296,21 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
 
             Utils.announceForAccessibilityCompat(left, requireActivity().getString(R.string.timer_canceled))
         }
+    }
+
+    /** Deletes [timer] (the ✕ on its card), animating to the next timer or to setup. */
+    fun deleteTimer(timer: Timer, source: View) {
+        if (mCurrentView !== mTimersView) {
+            return
+        }
+        if (mAdapter.getCount() > 1) {
+            animateTimerRemove(timer)
+        } else {
+            animateToView(mCreateTimerView, timer, false)
+        }
+
+        Utils.announceForAccessibilityCompat(source,
+                requireActivity().getString(R.string.timer_deleted))
     }
 
     override fun onRightButtonClick(right: Button) {

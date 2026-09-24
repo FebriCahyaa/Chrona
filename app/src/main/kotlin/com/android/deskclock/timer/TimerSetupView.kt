@@ -18,6 +18,7 @@ package com.android.deskclock.timer
 
 import android.content.Context
 import android.content.res.ColorStateList
+import android.graphics.Color
 import android.graphics.PorterDuff
 import android.text.format.DateUtils
 import android.util.AttributeSet
@@ -34,6 +35,9 @@ import com.android.deskclock.FabContainer
 import com.android.deskclock.R
 import com.android.deskclock.ThemeUtils
 import com.android.deskclock.uidata.UiDataModel
+
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.color.MaterialColors
 
 import java.io.Serializable
 
@@ -221,6 +225,7 @@ class TimerSetupView @JvmOverloads constructor(
         mDeleteView.isEnabled = enabled
         mDividerView.isActivated = enabled
         mStartView.isEnabled = enabled
+        updateStartColors(enabled)
     }
 
     private fun updateFab() {
@@ -294,6 +299,24 @@ class TimerSetupView @JvmOverloads constructor(
         }
     }
 
+    /** Grey while empty; green once there is something to start, as in the reference. */
+    private fun updateStartColors(enabled: Boolean) {
+        val start = mStartView as? MaterialButton ?: return
+        val fill: Int
+        val text: Int
+        if (enabled) {
+            fill = MaterialColors.harmonizeWithPrimary(context, START_GREEN)
+            text = Color.WHITE
+        } else {
+            fill = ThemeUtils.resolveColor(context,
+                    com.google.android.material.R.attr.colorSurfaceContainerHighest)
+            text = ThemeUtils.resolveColor(context,
+                    com.google.android.material.R.attr.colorOnSurfaceVariant)
+        }
+        start.backgroundTintList = ColorStateList.valueOf(fill)
+        start.setTextColor(text)
+    }
+
     /** Replaces the input with [minutes] (a quick preset). */
     private fun setPresetMinutes(minutes: Int) {
         mInput.fill(0)
@@ -347,6 +370,9 @@ class TimerSetupView @JvmOverloads constructor(
         }
 
     companion object {
+        /** Start button fill once there is input (harmonized with the dynamic palette). */
+        private const val START_GREEN = 0xFF1B6B36.toInt()
+
         /** Preset buttons and the minutes each one sets. */
         private val PRESETS = listOf(
                 R.id.timer_setup_preset_1 to 1,

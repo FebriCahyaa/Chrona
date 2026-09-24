@@ -157,6 +157,10 @@ class ExpiredTimersActivity : BaseActivity() {
         labelView.hint = null
         labelView.visibility = if (TextUtils.isEmpty(timer.label)) View.GONE else View.VISIBLE
 
+        // This screen only offers +1:00 (and the stop fab); hide the card's other controls.
+        timerItem.findViewById<View>(R.id.timer_delete).visibility = View.GONE
+        timerItem.findViewById<View>(R.id.timer_reset).visibility = View.GONE
+
         // Add logic to the "Add 1 Minute" button.
         val addMinuteButton = timerItem.findViewById<View>(R.id.reset_add)
         addMinuteButton.setOnClickListener {

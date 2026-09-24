@@ -34,7 +34,7 @@
 
     <dimen name="alarm_text_font_size">16sp</dimen>
     <dimen name="circletimer_dot_size">12dp</dimen>
-    <dimen name="circletimer_circle_size">4dp</dimen>
+    <dimen name="circletimer_circle_size">8dp</dimen>
     <dimen name="circletimer_marker_size">16dp</dimen>
     <dimen name="max_timer_circle_size">360dp</dimen>
 
@@ -149,4 +149,9 @@
     <dimen name="analog_clock_default_size">240dp</dimen>
     <!-- Material 3 Expressive world clock cards. -->
     <dimen name="world_clock_card_corner_radius">28dp</dimen>
+    <!-- Material 3 Expressive timer card. -->
+    <dimen name="timer_card_ring_size">248dp</dimen>
+    <dimen name="timer_card_time_width">200dp</dimen>
+    <dimen name="timer_card_button_height">56dp</dimen>
+    <dimen name="timer_card_corner_radius">28dp</dimen>
 </resources>

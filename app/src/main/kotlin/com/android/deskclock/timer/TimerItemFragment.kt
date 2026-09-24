@@ -51,8 +51,21 @@ class TimerItemFragment : Fragment() {
 
         val view = inflater.inflate(R.layout.timer_item, container, false) as TimerItem
         view.findViewById<View>(R.id.reset_add).setOnClickListener(ResetAddListener())
+        view.findViewById<View>(R.id.timer_reset).setOnClickListener {
+            this.timer?.let {
+                DataModel.dataModel.resetOrDeleteTimer(it, R.string.label_deskclock)
+            }
+        }
+        view.findViewById<View>(R.id.timer_delete).setOnClickListener {
+            val current = this.timer ?: return@setOnClickListener
+            // Timer pages share the activity's FragmentManager with TimerFragment.
+            parentFragmentManager.fragments.filterIsInstance<TimerFragment>().firstOrNull()
+                    ?.deleteTimer(current, it)
+        }
         view.findViewById<View>(R.id.timer_label).setOnClickListener(EditLabelListener())
-        view.findViewById<View>(R.id.timer_time_text).setOnClickListener(TimeTextListener())
+        val timeTextListener = TimeTextListener()
+        view.findViewById<View>(R.id.timer_time_text).setOnClickListener(timeTextListener)
+        view.findViewById<View>(R.id.timer_ring).setOnClickListener(timeTextListener)
         view.update(timer)
 
         return view
@@ -78,9 +91,7 @@ class TimerItemFragment : Fragment() {
     private inner class ResetAddListener : View.OnClickListener {
         override fun onClick(v: View) {
             val timer = timer!!
-            if (timer.isPaused) {
-                DataModel.dataModel.resetOrDeleteTimer(timer, R.string.label_deskclock)
-            } else if (timer.isRunning || timer.isExpired || timer.isMissed) {
+            if (timer.isPaused || timer.isRunning || timer.isExpired || timer.isMissed) {
                 DataModel.dataModel.addTimerMinute(timer)
                 Events.sendTimerEvent(R.string.action_add_minute, R.string.label_deskclock)
 
@@ -110,6 +121,9 @@ class TimerItemFragment : Fragment() {
                 DataModel.dataModel.startTimer(clickedTimer)
             } else if (clickedTimer.isRunning) {
                 DataModel.dataModel.pauseTimer(clickedTimer)
+            } else if (clickedTimer.isExpired || clickedTimer.isMissed) {
+                // The stop icon on an expired card.
+                DataModel.dataModel.resetOrDeleteTimer(clickedTimer, R.string.label_deskclock)
             }
         }
     }
