@@ -124,4 +124,30 @@
         app:layout_column="1"
         app:layout_columnWeight="1" />
 
+
+    <Button
+        android:id="@+id/timer_setup_digit_00"
+        style="@style/Widget.Button.TimerSetupDigit"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:text="@string/timer_setup_double_zero"
+        app:layout_row="3"
+        app:layout_rowWeight="1"
+        app:layout_column="0"
+        app:layout_columnWeight="1" />
+
+    <ImageButton
+        android:id="@+id/timer_setup_delete"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/timer_delete"
+        android:scaleType="center"
+        app:layout_row="3"
+        app:layout_rowWeight="1"
+        app:layout_column="2"
+        app:layout_columnWeight="1"
+        app:srcCompat="@drawable/ic_backspace"
+        app:tint="?attr/colorOnSurface" />
+
 </androidx.gridlayout.widget.GridLayout>

@@ -94,6 +94,7 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
         mTimersView = view.findViewById(R.id.timer_view)
         mCreateTimerView = view.findViewById<View>(R.id.timer_setup) as TimerSetupView
         mCreateTimerView.setFabContainer(this)
+        mCreateTimerView.setOnStartListener { startTimerFromSetup() }
         mPageIndicators = arrayOf(
                 view.findViewById<View>(R.id.page_indicator0) as ImageView,
                 view.findViewById<View>(R.id.page_indicator1) as ImageView,
@@ -251,14 +252,9 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
                 }
             }
         } else if (mCurrentView === mCreateTimerView) {
-            if (mCreateTimerView.hasValidInput()) {
-                fab.setImageResource(R.drawable.ic_start_white_24dp)
-                fab.contentDescription = fab.resources.getString(R.string.timer_start)
-                fab.visibility = View.VISIBLE
-            } else {
-                fab.contentDescription = null
-                fab.visibility = View.INVISIBLE
-            }
+            // The setup view's own wide start button replaces the fab.
+            fab.contentDescription = null
+            fab.visibility = View.INVISIBLE
         }
     }
 
@@ -325,26 +321,34 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
                 }
             }
         } else if (mCurrentView === mCreateTimerView) {
-            mCreatingTimer = true
-            try {
-                // Create the new timer.
-                val timerLength: Long = mCreateTimerView.timeInMillis
-                val timer: Timer = DataModel.dataModel.addTimer(timerLength, "", false)
-                Events.sendTimerEvent(R.string.action_create, R.string.label_deskclock)
-
-                // Start the new timer.
-                DataModel.dataModel.startTimer(timer)
-                Events.sendTimerEvent(R.string.action_start, R.string.label_deskclock)
-
-                // Display the freshly created timer view.
-                mViewPager.setCurrentItem(0)
-            } finally {
-                mCreatingTimer = false
-            }
-
-            // Return to the list of timers.
-            animateToView(mTimersView, null, true)
+            startTimerFromSetup()
         }
+    }
+
+    /** Creates a timer from the setup input, starts it and shows the list of timers. */
+    private fun startTimerFromSetup() {
+        if (mCurrentView !== mCreateTimerView || !mCreateTimerView.hasValidInput()) {
+            return
+        }
+        mCreatingTimer = true
+        try {
+            // Create the new timer.
+            val timerLength: Long = mCreateTimerView.timeInMillis
+            val timer: Timer = DataModel.dataModel.addTimer(timerLength, "", false)
+            Events.sendTimerEvent(R.string.action_create, R.string.label_deskclock)
+
+            // Start the new timer.
+            DataModel.dataModel.startTimer(timer)
+            Events.sendTimerEvent(R.string.action_start, R.string.label_deskclock)
+
+            // Display the freshly created timer view.
+            mViewPager.setCurrentItem(0)
+        } finally {
+            mCreatingTimer = false
+        }
+
+        // Return to the list of timers.
+        animateToView(mTimersView, null, true)
     }
 
     override fun onLeftButtonClick(left: Button) {

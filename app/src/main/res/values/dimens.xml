@@ -141,4 +141,8 @@
     <dimen name="stopwatch_primary_button_height">80dp</dimen>
     <dimen name="stopwatch_secondary_button_height">56dp</dimen>
     <dimen name="lap_card_min_width">88dp</dimen>
+    <!-- Material 3 Expressive timer setup. -->
+    <dimen name="timer_setup_value_font_size">72sp</dimen>
+    <dimen name="timer_setup_preset_height">56dp</dimen>
+    <dimen name="timer_setup_start_height">80dp</dimen>
 </resources>

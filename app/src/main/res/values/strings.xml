@@ -547,6 +547,18 @@
     <string name="timer_start">Start</string>
     <!-- Describes the purpose of the button to delete a timer. -->
     <string name="timer_delete">Delete</string>
+
+    <!-- Labels under the hours / minutes / seconds values when setting up a timer. [CHAR LIMIT=12] -->
+    <string name="timer_setup_hours_label">Hours</string>
+    <string name="timer_setup_minutes_label">Minutes</string>
+    <string name="timer_setup_seconds_label">Seconds</string>
+    <!-- Keypad key that enters two zeros at once. [CHAR LIMIT=3] -->
+    <string name="timer_setup_double_zero" translatable="false">00</string>
+    <!-- Quick timer presets, in minutes. [CHAR LIMIT=6] -->
+    <string name="timer_setup_preset_1">1 m</string>
+    <string name="timer_setup_preset_5">5 m</string>
+    <string name="timer_setup_preset_10">10 m</string>
+    <string name="timer_setup_preset_15">15 m</string>
     <!-- Talkback description for deleting a number. -->
     <string name="timer_descriptive_delete">Delete <xliff:g id="number_string">%s</xliff:g></string>
     <!-- Describes the purpose of the button increase the remaining time on a timer by one minute. -->

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Copyright (C) 2016 The Android Open Source Project
+  Copyright (C) 2026 The Chrona Authors
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    android:paddingBottom="@dimen/fab_height"
+    android:paddingBottom="8dp"
     android:paddingTop="@dimen/timer_setup_top_margin">
 
     <include layout="@layout/timer_setup_time" />
@@ -29,9 +29,16 @@
     <include layout="@layout/timer_setup_divider" />
 
     <include
+        layout="@layout/timer_setup_presets"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp" />
+
+    <include
         layout="@layout/timer_setup_digits"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginTop="16dp"
         android:layout_weight="1" />
 
 </LinearLayout>

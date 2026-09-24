@@ -19,10 +19,7 @@ package com.android.deskclock.timer
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.PorterDuff
-import android.text.BidiFormatter
-import android.text.TextUtils
 import android.text.format.DateUtils
-import android.text.style.RelativeSizeSpan
 import android.util.AttributeSet
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -34,7 +31,6 @@ import androidx.annotation.IdRes
 import androidx.core.view.ViewCompat
 
 import com.android.deskclock.FabContainer
-import com.android.deskclock.FormattedTextUtils
 import com.android.deskclock.R
 import com.android.deskclock.ThemeUtils
 import com.android.deskclock.uidata.UiDataModel
@@ -48,38 +44,37 @@ class TimerSetupView @JvmOverloads constructor(
     private val mInput = intArrayOf(0, 0, 0, 0, 0, 0)
 
     private var mInputPointer = -1
-    private val mTimeTemplate: CharSequence
 
-    private lateinit var mTimeView: TextView
+    /** Container of the hours/minutes/seconds values; carries the spoken description. */
+    private lateinit var mTimeView: View
+    private lateinit var mHoursView: TextView
+    private lateinit var mMinutesView: TextView
+    private lateinit var mSecondsView: TextView
     private lateinit var mDeleteView: View
     private lateinit var mDividerView: View
     private lateinit var mDigitViews: Array<TextView>
+    private lateinit var mDoubleZeroView: View
+    private lateinit var mStartView: View
+
+    /** Invoked when the start button is tapped with valid input. */
+    private var mOnStartListener: (() -> Unit)? = null
 
     /** Updates to the fab are requested via this container.  */
     private lateinit var mFabContainer: FabContainer
 
     init {
-        val bf = BidiFormatter.getInstance(false /* rtlContext */)
-        val hoursLabel = bf.unicodeWrap(context.getString(R.string.hours_label))
-        val minutesLabel = bf.unicodeWrap(context.getString(R.string.minutes_label))
-        val secondsLabel = bf.unicodeWrap(context.getString(R.string.seconds_label))
-
-        // Create a formatted template for "00h 00m 00s".
-        mTimeTemplate = TextUtils.expandTemplate("^1^4 ^2^5 ^3^6",
-                bf.unicodeWrap("^1"),
-                bf.unicodeWrap("^2"),
-                bf.unicodeWrap("^3"),
-                FormattedTextUtils.formatText(hoursLabel, RelativeSizeSpan(0.5f)),
-                FormattedTextUtils.formatText(minutesLabel, RelativeSizeSpan(0.5f)),
-                FormattedTextUtils.formatText(secondsLabel, RelativeSizeSpan(0.5f)))
-
         LayoutInflater.from(context).inflate(R.layout.timer_setup_container, this)
     }
 
     override fun onFinishInflate() {
         super.onFinishInflate()
 
-        mTimeView = findViewById<View>(R.id.timer_setup_time) as TextView
+        mTimeView = findViewById(R.id.timer_setup_time)
+        mHoursView = findViewById(R.id.timer_setup_hours)
+        mMinutesView = findViewById(R.id.timer_setup_minutes)
+        mSecondsView = findViewById(R.id.timer_setup_seconds)
+        mDoubleZeroView = findViewById(R.id.timer_setup_digit_00)
+        mStartView = findViewById(R.id.timer_setup_start)
         mDeleteView = findViewById(R.id.timer_setup_delete)
         mDividerView = findViewById(R.id.timer_setup_divider)
         mDigitViews = arrayOf(
@@ -117,6 +112,15 @@ class TimerSetupView @JvmOverloads constructor(
 
         mDeleteView.setOnClickListener(this)
         mDeleteView.setOnLongClickListener(this)
+        mDoubleZeroView.setOnClickListener(this)
+        mStartView.setOnClickListener {
+            if (hasValidInput()) {
+                mOnStartListener?.invoke()
+            }
+        }
+        for ((id, minutes) in PRESETS) {
+            findViewById<View>(id).setOnClickListener { setPresetMinutes(minutes) }
+        }
 
         updateTime()
         updateDeleteAndDivider()
@@ -124,6 +128,11 @@ class TimerSetupView @JvmOverloads constructor(
 
     fun setFabContainer(fabContainer: FabContainer) {
         mFabContainer = fabContainer
+    }
+
+    /** Sets what the start button does (create and start a timer from the input). */
+    fun setOnStartListener(listener: () -> Unit) {
+        mOnStartListener = listener
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
@@ -137,7 +146,7 @@ class TimerSetupView @JvmOverloads constructor(
         if (view != null) {
             val result = view.performClick()
             if (result && hasValidInput()) {
-                mFabContainer.updateFab(FabContainer.FAB_REQUEST_FOCUS)
+                mStartView.requestFocus()
             }
             return result
         }
@@ -148,6 +157,9 @@ class TimerSetupView @JvmOverloads constructor(
     override fun onClick(view: View) {
         if (view === mDeleteView) {
             delete()
+        } else if (view === mDoubleZeroView) {
+            append(0)
+            append(0)
         } else {
             append(getDigitForId(view.id))
         }
@@ -182,10 +194,20 @@ class TimerSetupView @JvmOverloads constructor(
         val hours = mInput[5] * 10 + mInput[4]
 
         val uidm = UiDataModel.uiDataModel
-        mTimeView.text = TextUtils.expandTemplate(mTimeTemplate,
-                uidm.getFormattedNumber(hours, 2),
-                uidm.getFormattedNumber(minutes, 2),
-                uidm.getFormattedNumber(seconds, 2))
+        mHoursView.text = uidm.getFormattedNumber(hours, 2)
+        mMinutesView.text = uidm.getFormattedNumber(minutes, 2)
+        mSecondsView.text = uidm.getFormattedNumber(seconds, 2)
+
+        // Dim the values until something has been entered, as in the M3 Expressive clock.
+        val colorAttr = if (hasValidInput()) {
+            com.google.android.material.R.attr.colorOnSurface
+        } else {
+            com.google.android.material.R.attr.colorOutline
+        }
+        val color = ThemeUtils.resolveColor(context, colorAttr)
+        mHoursView.setTextColor(color)
+        mMinutesView.setTextColor(color)
+        mSecondsView.setTextColor(color)
 
         val r = resources
         mTimeView.contentDescription = r.getString(R.string.timer_setup_description,
@@ -198,6 +220,7 @@ class TimerSetupView @JvmOverloads constructor(
         val enabled = hasValidInput()
         mDeleteView.isEnabled = enabled
         mDividerView.isActivated = enabled
+        mStartView.isEnabled = enabled
     }
 
     private fun updateFab() {
@@ -271,6 +294,21 @@ class TimerSetupView @JvmOverloads constructor(
         }
     }
 
+    /** Replaces the input with [minutes] (a quick preset). */
+    private fun setPresetMinutes(minutes: Int) {
+        mInput.fill(0)
+        val hours = minutes / 60
+        val mins = minutes % 60
+        mInput[2] = mins % 10
+        mInput[3] = mins / 10
+        mInput[4] = hours % 10
+        mInput[5] = hours / 10
+        mInputPointer = mInput.indexOfLast { it != 0 }
+        updateTime()
+        updateDeleteAndDivider()
+        updateFab()
+    }
+
     fun hasValidInput(): Boolean {
         return mInputPointer != -1
     }
@@ -296,6 +334,7 @@ class TimerSetupView @JvmOverloads constructor(
         set(state) {
             val input = state as IntArray?
             if (input != null && mInput.size == input.size) {
+                mInputPointer = -1
                 for (i in mInput.indices) {
                     mInput[i] = input[i]
                     if (mInput[i] != 0) {
@@ -306,4 +345,13 @@ class TimerSetupView @JvmOverloads constructor(
                 updateDeleteAndDivider()
             }
         }
+
+    companion object {
+        /** Preset buttons and the minutes each one sets. */
+        private val PRESETS = listOf(
+                R.id.timer_setup_preset_1 to 1,
+                R.id.timer_setup_preset_5 to 5,
+                R.id.timer_setup_preset_10 to 10,
+                R.id.timer_setup_preset_15 to 15)
+    }
 }

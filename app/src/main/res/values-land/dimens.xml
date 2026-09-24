@@ -29,4 +29,7 @@
 
     <dimen name="circle_margin_top">0dp</dimen>
     <dimen name="bottom_text_spacing_analog">5dp</dimen>
+    <dimen name="timer_setup_value_font_size">48sp</dimen>
+    <dimen name="timer_setup_preset_height">44dp</dimen>
+    <dimen name="timer_setup_start_height">56dp</dimen>
 </resources>
