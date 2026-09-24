@@ -83,6 +83,7 @@ class HandleApiCalls : Activity() {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun handleDismissAlarm(intent: Intent) {
         // Change to the alarms tab.
         UiDataModel.uiDataModel.selectedTab = UiDataModel.Tab.ALARMS
@@ -93,6 +94,7 @@ class HandleApiCalls : Activity() {
         DismissAlarmAsync(mAppContext, intent, this).execute()
     }
 
+    @Suppress("DEPRECATION")
     private class DismissAlarmAsync(
         private val mContext: Context,
         private val mIntent: Intent,
@@ -171,10 +173,12 @@ class HandleApiCalls : Activity() {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun handleSnoozeAlarm(intent: Intent) {
         SnoozeAlarmAsync(intent, this).execute()
     }
 
+    @Suppress("DEPRECATION")
     private class SnoozeAlarmAsync(
         private val mIntent: Intent,
         private val mActivity: Activity

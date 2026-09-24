@@ -110,13 +110,21 @@ object TimerStringFormatter {
             formatStringId = R.string.timer_notifications_less_min
         }
 
-        return when (formatStringId) {
-            -1 -> null
-            // This string has no format specifiers; it needs no substitution.
-            R.string.timer_notifications_less_min -> context.getString(formatStringId)
-            else -> String.format(context.getString(formatStringId), hourSeq, minSeq,
-                    remainingSuffix, secSeq)
+        if (formatStringId == -1) {
+            return null
         }
+
+        if (formatStringId == R.string.timer_notifications_less_min) {
+            return context.getString(R.string.timer_notifications_less_min)
+        }
+
+        return context.getString(
+                formatStringId,
+                hourSeq,
+                minSeq,
+                remainingSuffix,
+                secSeq
+        )
     }
 
     @JvmStatic

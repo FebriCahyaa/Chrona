@@ -76,7 +76,8 @@ internal class FragmentTabPagerAdapter(private val mDeskClock: DeskClock) : Page
 
         // Otherwise, build the fragment from scratch.
         val fragmentClassName: String = tab.fragmentClassName
-        fragment = Fragment.instantiate(mDeskClock, fragmentClassName) as DeskClockFragment
+        fragment = mFragmentManager.fragmentFactory.instantiate(
+                mDeskClock.classLoader, fragmentClassName) as DeskClockFragment
         fragment.setFabContainer(mDeskClock)
         mFragmentCache[tab] = fragment
         return fragment
@@ -103,7 +104,6 @@ internal class FragmentTabPagerAdapter(private val mDeskClock: DeskClock) : Page
 
         if (fragment !== mCurrentPrimaryItem) {
             fragment.setMenuVisibility(false)
-            fragment.setUserVisibleHint(false)
         }
 
         return fragment
@@ -123,10 +123,8 @@ internal class FragmentTabPagerAdapter(private val mDeskClock: DeskClock) : Page
         if (fragment !== mCurrentPrimaryItem) {
             mCurrentPrimaryItem?.let {
                 it.setMenuVisibility(false)
-                it.setUserVisibleHint(false)
             }
             fragment.setMenuVisibility(true)
-            fragment.setUserVisibleHint(true)
             mCurrentPrimaryItem = fragment
         }
     }

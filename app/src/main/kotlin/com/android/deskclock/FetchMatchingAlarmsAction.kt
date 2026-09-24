@@ -63,7 +63,11 @@ internal class FetchMatchingAlarmsAction(
                 val hour = mIntent.getIntExtra(AlarmClock.EXTRA_HOUR, -1)
                 // if minutes weren't specified default to 0
                 val minutes = mIntent.getIntExtra(AlarmClock.EXTRA_MINUTES, 0)
-                val isPm = mIntent.extras!![AlarmClock.EXTRA_IS_PM] as Boolean?
+                val isPm = if (mIntent.hasExtra(AlarmClock.EXTRA_IS_PM)) {
+                    mIntent.getBooleanExtra(AlarmClock.EXTRA_IS_PM, false)
+                } else {
+                    null
+                }
                 var badInput = isPm != null && hour > 12 && isPm
                 badInput = badInput or (hour < 0 || hour > 23)
                 badInput = badInput or (minutes < 0 || minutes > 59)

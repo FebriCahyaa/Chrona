@@ -367,28 +367,28 @@ class DeskClock : BaseActivity(), FabContainer, AlarmLabelDialogHandler {
                 super.onKeyDown(keyCode, event))
     }
 
-    override fun updateFab(@UpdateFabFlag updateType: Int) {
+    override fun updateFab(@UpdateFabFlag updateTypes: Int) {
         val f = selectedDeskClockFragment
 
-        when (updateType and FabContainer.FAB_ANIMATION_MASK) {
+        when (updateTypes and FabContainer.FAB_ANIMATION_MASK) {
             FabContainer.FAB_SHRINK_AND_EXPAND -> mUpdateFabOnlyAnimation.start()
             FabContainer.FAB_IMMEDIATE -> f.onUpdateFab(mFab)
             FabContainer.FAB_MORPH -> f.onMorphFab(mFab)
         }
-        when (updateType and FabContainer.FAB_REQUEST_FOCUS_MASK) {
+        when (updateTypes and FabContainer.FAB_REQUEST_FOCUS_MASK) {
             FabContainer.FAB_REQUEST_FOCUS -> mFab.requestFocus()
         }
-        when (updateType and FabContainer.BUTTONS_ANIMATION_MASK) {
+        when (updateTypes and FabContainer.BUTTONS_ANIMATION_MASK) {
             FabContainer.BUTTONS_IMMEDIATE -> f.onUpdateFabButtons(mLeftButton, mRightButton)
             FabContainer.BUTTONS_SHRINK_AND_EXPAND -> mUpdateButtonsOnlyAnimation.start()
         }
-        when (updateType and FabContainer.BUTTONS_DISABLE_MASK) {
+        when (updateTypes and FabContainer.BUTTONS_DISABLE_MASK) {
             FabContainer.BUTTONS_DISABLE -> {
                 mLeftButton.isClickable = false
                 mRightButton.isClickable = false
             }
         }
-        when (updateType and FabContainer.FAB_AND_BUTTONS_SHRINK_EXPAND_MASK) {
+        when (updateTypes and FabContainer.FAB_AND_BUTTONS_SHRINK_EXPAND_MASK) {
             FabContainer.FAB_AND_BUTTONS_SHRINK -> mHideAnimation.start()
             FabContainer.FAB_AND_BUTTONS_EXPAND -> mShowAnimation.start()
         }
