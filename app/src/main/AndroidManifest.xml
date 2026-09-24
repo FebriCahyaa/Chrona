@@ -17,36 +17,44 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Permissions for minSdk 32 (Android 12L) through targetSdk 37 (Android 17). -->
+
+    <!-- Rescheduling alarms after a reboot, and waking the device while they ring. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+
+    <!-- Exact alarms: alarms and timers must fire on time, the status bar shows the alarm icon
+         (setAlarmClock), and on Android 17 the exact-alarm permission is what lets USAGE_ALARM
+         audio play from the background. USE_EXACT_ALARM is granted to clock apps on Android
+         13+; SCHEDULE_EXACT_ALARM covers Android 12L. -->
+    <uses-permission
+        android:name="android.permission.SCHEDULE_EXACT_ALARM"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+
+    <!-- Ringing alarms and timers play from a mediaPlayback foreground service. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+
+    <!-- Notifications (runtime permission on Android 13+), full screen alarms over the lock
+         screen (user-controllable on Android 14+) and Live Updates (Android 16+). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
+
     <!-- "Music and audio": custom alarm sounds stored on the device. -->
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
-    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
-    <!-- Alarms and timers must fire at the exact time. Clock apps get USE_EXACT_ALARM granted
-         on Android 13+; SCHEDULE_EXACT_ALARM (denied by default on Android 14+) only covers
-         Android 12. Without it alarms and timers silently never fire, and the status bar shows
-         no alarm icon. -->
-    <uses-permission
-        android:name="android.permission.SCHEDULE_EXACT_ALARM"
-        android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
-    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <!-- "Live updates" (Android 16+): running timers, the stopwatch and ringing alarms. -->
-    <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
 
     <application
         android:name=".DeskClockApplication"
         android:allowBackup="false"
         android:backupAgent="DeskClockBackupAgent"
-        android:fullBackupContent="@xml/backup_scheme"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupOnly="true"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -151,7 +159,6 @@
             android:name=".alarms.AlarmActivity"
             android:directBootAware="true"
             android:excludeFromRecents="true"
-            android:resizeableActivity="false"
             android:showOnLockScreen="true"
 	    android:showWhenLocked="true"
             android:taskAffinity=""
@@ -201,7 +208,6 @@
             android:directBootAware="true"
             android:excludeFromRecents="true"
             android:launchMode="singleInstance"
-            android:resizeableActivity="false"
             android:showOnLockScreen="true"
             android:taskAffinity="" />
 
@@ -237,7 +243,6 @@
         <activity
             android:name=".ScreensaverActivity"
             android:excludeFromRecents="true"
-            android:resizeableActivity="false"
             android:taskAffinity="" />
 
         <activity

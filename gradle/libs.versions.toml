@@ -3,7 +3,7 @@
 # codename; CI may override it per SDK channel with CHRONA_COMPILE_SDK.
 androidCompileSdk = "37.2"
 androidTargetSdk = "37"
-androidMinSdk = "29"
+androidMinSdk = "32"
 agp = "9.4.1"
 kotlin = "2.4.20"
 material = "1.14.0"

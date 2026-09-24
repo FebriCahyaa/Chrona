@@ -25,12 +25,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Binder
-import android.os.Build
 import android.os.IBinder
-import android.telephony.PhoneStateListener
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
-import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 
 import com.febricahyaa.chrona.AlarmAlertWakeLock
@@ -58,8 +55,8 @@ class AlarmService : Service() {
     /** Call state when the alarm started ringing; -1 until the first callback reports it. */
     private var mPhoneCallState = -1
 
-    /** TelephonyCallback (S+) or PhoneStateListener (Q/R) while listening, else null. */
-    private var mCallStateListener: Any? = null
+    /** Registered while listening for call state changes, else null. */
+    private var mCallStateListener: TelephonyCallback? = null
 
     /** Whether the receiver is currently registered  */
     private var mIsRegistered = false
@@ -219,20 +216,13 @@ class AlarmService : Service() {
     private fun startListeningForCallState() {
         mPhoneCallState = -1
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
-                        != PackageManager.PERMISSION_GRANTED) {
-                    return
-                }
-                val callback = CallStateCallback()
-                mTelephonyManager.registerTelephonyCallback(mainExecutor, callback)
-                mCallStateListener = callback
-            } else {
-                val listener = LegacyCallStateListener()
-                @Suppress("DEPRECATION")
-                mTelephonyManager.listen(listener, PhoneStateListener.LISTEN_CALL_STATE)
-                mCallStateListener = listener
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                return
             }
+            val callback = CallStateCallback()
+            mTelephonyManager.registerTelephonyCallback(mainExecutor, callback)
+            mCallStateListener = callback
         } catch (e: SecurityException) {
             LogUtils.w("Unable to listen for call state changes: $e")
         }
@@ -241,12 +231,7 @@ class AlarmService : Service() {
     private fun stopListeningForCallState() {
         val listener = mCallStateListener ?: return
         mCallStateListener = null
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && listener is TelephonyCallback) {
-            mTelephonyManager.unregisterTelephonyCallback(listener)
-        } else if (listener is LegacyCallStateListener) {
-            @Suppress("DEPRECATION")
-            mTelephonyManager.listen(listener, PhoneStateListener.LISTEN_NONE)
-        }
+        mTelephonyManager.unregisterTelephonyCallback(listener)
     }
 
     private fun onCallStateChanged(state: Int) {
@@ -261,17 +246,8 @@ class AlarmService : Service() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.S)
     private inner class CallStateCallback : TelephonyCallback(), TelephonyCallback.CallStateListener {
         override fun onCallStateChanged(state: Int) {
-            this@AlarmService.onCallStateChanged(state)
-        }
-    }
-
-    /** Pre-S (API 29/30) path; TelephonyCallback does not exist there. */
-    @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
-    private inner class LegacyCallStateListener : PhoneStateListener() {
-        override fun onCallStateChanged(state: Int, ignored: String?) {
             this@AlarmService.onCallStateChanged(state)
         }
     }

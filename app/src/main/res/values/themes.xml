@@ -15,14 +15,14 @@
   limitations under the License.
   -->
 
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
 
     <style name="Theme.DeskClock" parent="Theme.Material3Expressive.Dark.NoActionBar">
-        <item name="android:colorBackgroundFloating" tools:targetApi="23">
+        <item name="android:colorBackgroundFloating">
             ?attr/colorBackgroundFloating
         </item>
-        <item name="android:navigationBarColor" tools:targetApi="21">?attr/colorPrimaryDark</item>
-        <item name="android:popupTheme" tools:targetApi="21">?attr/popupTheme</item>
+        <item name="android:navigationBarColor">?attr/colorPrimaryDark</item>
+        <item name="android:popupTheme">?attr/popupTheme</item>
         <item name="android:windowBackground">?attr/colorSurface</item>
         <item name="android:windowContentOverlay">@null</item>
 
