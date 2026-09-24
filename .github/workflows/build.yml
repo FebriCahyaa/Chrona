@@ -136,7 +136,24 @@ jobs:
       - name: Format check
         run: ./gradlew --no-daemon --stacktrace spotlessCheck
       - name: Lint
+        id: lint
         run: ./gradlew --no-daemon --stacktrace "lint${{ steps.tasks.outputs.suffix }}"
+      - name: Print full lint report
+        # The console only prints the first lint failure; the rest is only
+        # in the report files, which aren't visible without downloading the
+        # "Upload quality reports" artifact. Print all of it here instead.
+        if: failure() && steps.lint.outcome == 'failure'
+        run: |
+          mapfile -t reports < <(find app/build -name 'lint-results-*.txt' 2>/dev/null)
+          if (( ${#reports[@]} == 0 )); then
+            printf 'No lint text report was generated.\n' >&2
+            exit 0
+          fi
+          for report in "${reports[@]}"; do
+            printf '::group::%s\n' "$report"
+            cat "$report"
+            printf '::endgroup::\n'
+          done
       - name: Unit tests
         run: ./gradlew --no-daemon --stacktrace "test${{ steps.tasks.outputs.suffix }}UnitTest"
       - name: Upload quality reports
