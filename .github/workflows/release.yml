@@ -10,6 +10,8 @@ on:
       - stable
     tags:
       - 'v*.*.*'
+  pull_request_target:
+    types: [opened, reopened, synchronize, edited]
   workflow_dispatch:
     inputs:
       tag:
@@ -26,8 +28,35 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  autolabel:
+    name: Autolabel pull request
+    if: github.event_name == 'pull_request_target'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Label from conventional title
+        uses: release-drafter/release-drafter/autolabeler@v7
+
+  draft:
+    name: Update release draft
+    if: github.event_name == 'push' && github.ref == 'refs/heads/stable'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - name: Draft next stable release
+        uses: release-drafter/release-drafter@v7
+        with:
+          commitish: stable
+
   prepare:
     name: Prepare
+    if: github.event_name != 'pull_request_target'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     outputs:
@@ -70,6 +99,7 @@ jobs:
   build:
     name: Signed Release APK · SDK stable
     needs: prepare
+    if: github.event_name != 'pull_request_target'
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     environment: release
@@ -185,7 +215,7 @@ jobs:
       - prepare
       - build
       - publish
-    if: always()
+    if: always() && github.event_name != 'pull_request_target'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:

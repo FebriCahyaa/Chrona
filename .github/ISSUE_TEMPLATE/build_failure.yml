@@ -9,7 +9,7 @@ body:
     id: workflow
     attributes:
       label: Workflow or command
-      placeholder: build-debug.yml / ./gradlew lintDebug
+      placeholder: build.yml / ./gradlew lintDebug
     validations:
       required: true
   - type: input

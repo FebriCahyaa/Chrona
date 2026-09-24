@@ -1,11 +1,8 @@
 # Chrona
 
-[![Build Debug](https://github.com/FebriCahyaa/Chrona/actions/workflows/build-debug.yml/badge.svg?branch=main)](https://github.com/FebriCahyaa/Chrona/actions/workflows/build-debug.yml)
-[![Build Dev](https://github.com/FebriCahyaa/Chrona/actions/workflows/build-dev.yml/badge.svg?branch=dev)](https://github.com/FebriCahyaa/Chrona/actions/workflows/build-dev.yml)
-[![Build Canary](https://github.com/FebriCahyaa/Chrona/actions/workflows/build-canary.yml/badge.svg?branch=canary)](https://github.com/FebriCahyaa/Chrona/actions/workflows/build-canary.yml)
+[![Build](https://github.com/FebriCahyaa/Chrona/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/FebriCahyaa/Chrona/actions/workflows/build.yml)
 [![Release](https://github.com/FebriCahyaa/Chrona/actions/workflows/release.yml/badge.svg)](https://github.com/FebriCahyaa/Chrona/actions/workflows/release.yml)
-[![Security](https://github.com/FebriCahyaa/Chrona/actions/workflows/security.yml/badge.svg?branch=main)](https://github.com/FebriCahyaa/Chrona/actions/workflows/security.yml)
-[![Lint](https://github.com/FebriCahyaa/Chrona/actions/workflows/lint.yml/badge.svg?branch=main)](https://github.com/FebriCahyaa/Chrona/actions/workflows/lint.yml)
+[![Checks](https://github.com/FebriCahyaa/Chrona/actions/workflows/checks.yml/badge.svg?branch=main)](https://github.com/FebriCahyaa/Chrona/actions/workflows/checks.yml)
 
 Chrona is an Android clock application derived from the AOSP DeskClock
 lineage and maintained as an independently engineered project by FebriCahyaa.

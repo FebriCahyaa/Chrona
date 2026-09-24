@@ -36,6 +36,12 @@ RELEASE_PLATFORM = re.compile(r"^platforms;android-(\d+)(?:\.(\d+))?$")
 PREVIEW_PLATFORM = re.compile(r"^platforms;android-([A-Za-z][A-Za-z0-9]*)$")
 BUILD_TOOLS = re.compile(r"^build-tools;(\d+)\.(\d+)\.(\d+)(?:[- ]?rc(\d+))?$")
 
+# Google publishes this literal placeholder on the canary channel before the
+# next Android version has a real preview codename. Its android.jar is a
+# stub (missing attrs such as colorAccent) and cannot compile a real app, so
+# it is never a usable compileSdk target even though sdkmanager lists it.
+PLACEHOLDER_PREVIEW_CODENAMES = {"CANARY"}
+
 
 @dataclass(frozen=True)
 class Selection:
@@ -78,7 +84,8 @@ def choose_platform(paths: list[str], channel: int) -> tuple[str, str]:
             compile_sdk = f"{major}.{match[2]}" if match[2] else str(major)
             releases.append(((major, minor), path, compile_sdk))
         elif match := PREVIEW_PLATFORM.match(path):
-            previews.append((path, match[1]))
+            if match[1].upper() not in PLACEHOLDER_PREVIEW_CODENAMES:
+                previews.append((path, match[1]))
     # Preview (codename) platforms only ship on pre-release channels and are
     # always newer than the latest numbered release.
     if channel > 0 and previews:

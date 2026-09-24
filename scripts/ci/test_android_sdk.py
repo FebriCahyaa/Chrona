@@ -52,6 +52,18 @@ class AndroidSdkTest(unittest.TestCase):
             ("platforms;android-CinnamonBun", "CinnamonBun"),
         )
 
+    def test_canary_placeholder_platform_is_never_selected(self) -> None:
+        # Google ships this stub before the next Android version has a real
+        # preview codename; its android.jar can't compile a real app.
+        paths = ["platforms;android-37.2", "platforms;android-CANARY"]
+        self.assertEqual(
+            android_sdk.choose_platform(paths, 3), ("platforms;android-37.2", "37.2")
+        )
+
+    def test_canary_placeholder_alone_falls_back_to_error(self) -> None:
+        with self.assertRaises(SystemExit):
+            android_sdk.choose_platform(["platforms;android-CANARY"], 3)
+
     def test_whole_api_level_platform(self) -> None:
         self.assertEqual(
             android_sdk.choose_platform(["platforms;android-37"], 0), ("platforms;android-37", "37")

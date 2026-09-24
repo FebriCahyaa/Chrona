@@ -305,6 +305,7 @@ def release_report() -> None:
 def security_report() -> None:
     _, repo_url, run_url = repo_context()
     entries = [
+        ("Lint", value("LINT_RESULT") or "unknown"),
         ("CodeQL", value("CODEQL_RESULT") or "unknown"),
         ("TruffleHog", value("TRUFFLEHOG_RESULT") or "unknown"),
         ("Dependency Review", value("DEPENDENCY_REVIEW_RESULT") or "unknown"),
