@@ -1,41 +1,54 @@
 # Chrona
 
-Chrona is an Android clock application derived from the AOSP DeskClock lineage and maintained as an independently engineered project under the FebriCahyaa repository.
+[![Build Debug](https://github.com/FebriCahyaa/Chrona/actions/workflows/build-debug.yml/badge.svg?branch=main)](https://github.com/FebriCahyaa/Chrona/actions/workflows/build-debug.yml)
+[![Build Dev](https://github.com/FebriCahyaa/Chrona/actions/workflows/build-dev.yml/badge.svg?branch=dev)](https://github.com/FebriCahyaa/Chrona/actions/workflows/build-dev.yml)
+[![Build Canary](https://github.com/FebriCahyaa/Chrona/actions/workflows/build-canary.yml/badge.svg?branch=canary)](https://github.com/FebriCahyaa/Chrona/actions/workflows/build-canary.yml)
+[![Release](https://github.com/FebriCahyaa/Chrona/actions/workflows/release.yml/badge.svg)](https://github.com/FebriCahyaa/Chrona/actions/workflows/release.yml)
+[![Security](https://github.com/FebriCahyaa/Chrona/actions/workflows/security.yml/badge.svg?branch=main)](https://github.com/FebriCahyaa/Chrona/actions/workflows/security.yml)
+[![Lint](https://github.com/FebriCahyaa/Chrona/actions/workflows/lint.yml/badge.svg?branch=main)](https://github.com/FebriCahyaa/Chrona/actions/workflows/lint.yml)
 
-## Build paths
+Chrona is an Android clock application derived from the AOSP DeskClock
+lineage and maintained as an independently engineered project by FebriCahyaa.
 
-Chrona preserves `Android.bp` for AOSP/Soong integration and adds a Gradle build for standalone Android builds and GitHub Actions.
+## Release lines
 
-```text
-Gradle 9.7.1
-Android Gradle Plugin 9.4.0
-Kotlin 2.4.20
-JDK 17
-Android API 36
+| Branch | Build | Android SDK channel | Download |
+| --- | --- | --- | --- |
+| `stable` | Release (signed) | stable (`0`) | [Latest release](https://github.com/FebriCahyaa/Chrona/releases/latest) |
+| `canary` | Canary | canary (`3`) | [Canary pre-releases](https://github.com/FebriCahyaa/Chrona/releases) |
+| `dev` | Dev | dev (`2`) | Actions artifacts |
+| `main` | Debug | beta (`1`) | Actions artifacts |
+
+`main` is the integration branch for all commits. Changes are promoted
+`main → dev → canary → stable`; see [CI and branching](docs/ci.md).
+
+## Build
+
+```sh
+./gradlew assembleDebug
+./gradlew lintDebug testDebugUnitTest
 ```
 
-Run `./gradlew assembleDebug`, `./gradlew lintDebug`, and `./gradlew testDebugUnitTest`. CI provisions Android API 36 and Build Tools 36.0.0 explicitly.
+Gradle 9.7.1, Android Gradle Plugin 9.4.1, Kotlin 2.4.10 and JDK 17. CI
+installs the newest Android platform and build-tools of each build line's SDK
+channel. Details: [docs/build.md](docs/build.md).
 
-## Automation
+`Android.bp` is kept for AOSP/Soong builds and reads the same sources.
 
-The repository includes separate workflows for CI, releases, security, changelog generation, Crowdin synchronization, label management, and Telegram event delivery. Build logs, error excerpts, APK artifacts, release checksums, provenance, and release status are published through the configured automation paths.
+## Repository metrics
 
-## Telegram
+![Chrona metrics](https://raw.githubusercontent.com/FebriCahyaa/Chrona/metrics/metrics.svg)
 
-Set `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` repository or environment secrets. The notifier uses Telegram Bot API inline URL buttons and can upload APKs, checksums, and compact build-error extracts.
+## Documentation
 
-## Crowdin
+- [Build, toolchain and layout](docs/build.md)
+- [CI, branching and releasing](docs/ci.md)
+- [Release signing](docs/release-signing.md)
+- [Telegram automation](docs/telegram-automation.md)
+- [Contributing](.github/CONTRIBUTING.md) · [Security policy](.github/SECURITY.md) · [Code of conduct](.github/CODE_OF_CONDUCT.md)
 
-Set `CROWDIN_PROJECT_ID` as a repository variable and `CROWDIN_PERSONAL_TOKEN` as a repository or organization secret. Translation synchronization creates a dedicated pull request.
+## License
 
-## Google assets
-
-`assets/fonts` contains the asset contract and a refresh script for Google Sans Flex and Material Symbols Rounded. Run `python3 scripts/assets/fetch_google_assets.py` on a network-enabled machine or CI runner to fetch the current upstream binaries.
-
-## Release signing
-
-Run `scripts/release/generate_release_key.sh` on a trusted local machine to generate `chrona-release.keystore` at the repository root. The generated key is ignored by Git. GitHub release builds use an ephemeral runner copy supplied through protected secrets.
-
-## Security and licensing
-
-Release signing material is private and must not be committed or uploaded. Copyright and attribution are documented in `COPYRIGHT.md`, `NOTICE`, `THIRD_PARTY_NOTICES.md`, and the original source headers.
+Chrona is distributed under the Apache License 2.0 (see [LICENSE](LICENSE)
+and [NOTICE](NOTICE)). Copyright and third-party attribution are recorded in
+[docs/legal](docs/legal/COPYRIGHT.md).

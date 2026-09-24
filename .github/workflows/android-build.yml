@@ -1,0 +1,193 @@
+name: Chrona Android Build
+
+# Reusable build line. Called by build-debug.yml (beta SDK), build-dev.yml
+# (dev SDK) and build-canary.yml (canary SDK). Release builds live in
+# release.yml because they need the protected `release` environment.
+
+on:
+  workflow_call:
+    inputs:
+      variant:
+        description: 'Gradle build type: debug, dev or canary'
+        required: true
+        type: string
+      sdk-channel:
+        description: 'sdkmanager channel: 0 stable, 1 beta, 2 dev, 3 canary'
+        required: true
+        type: number
+      platform:
+        description: Optional platform pin, e.g. android-37.2
+        required: false
+        type: string
+        default: ''
+      build-tools:
+        description: Optional build-tools pin, e.g. 37.0.0
+        required: false
+        type: string
+        default: ''
+    outputs:
+      version-name:
+        description: versionName without the build-type suffix
+        value: ${{ jobs.build.outputs.version-name }}
+      artifact:
+        description: Name of the uploaded APK artifact
+        value: ${{ jobs.build.outputs.artifact }}
+
+permissions:
+  contents: read
+
+jobs:
+  notify-start:
+    name: Telegram start
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Notify
+        continue-on-error: true
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.CHRONABOT_CI_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.CHRONABOT_CI_CHAT_ID }}
+          TELEGRAM_EVENT: ci-start
+          BUILD_VARIANT: ${{ inputs.variant }}
+        run: python3 scripts/telegram/notify.py
+
+  quality:
+    name: Quality (${{ inputs.variant }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    outputs:
+      compile-sdk: ${{ steps.toolchain.outputs.compile-sdk }}
+      build-tools: ${{ steps.toolchain.outputs.build-tools }}
+      channel-name: ${{ steps.toolchain.outputs.channel-name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: CI script tests
+        run: python3 -m unittest discover -s scripts/ci -v
+      - name: Android toolchain
+        id: toolchain
+        uses: ./.github/actions/android-toolchain
+        with:
+          sdk-channel: ${{ inputs.sdk-channel }}
+          platform: ${{ inputs.platform }}
+          build-tools: ${{ inputs.build-tools }}
+      - name: Resolve Gradle task names
+        id: tasks
+        env:
+          VARIANT: ${{ inputs.variant }}
+        run: printf 'suffix=%s\n' "${VARIANT^}" >> "$GITHUB_OUTPUT"
+      - name: Format check
+        run: ./gradlew --no-daemon --stacktrace spotlessCheck
+      - name: Lint
+        run: ./gradlew --no-daemon --stacktrace "lint${{ steps.tasks.outputs.suffix }}"
+      - name: Unit tests
+        run: ./gradlew --no-daemon --stacktrace "test${{ steps.tasks.outputs.suffix }}UnitTest"
+      - name: Upload quality reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: chrona-quality-${{ inputs.variant }}-${{ github.run_id }}
+          path: |
+            app/build/reports/lint-results-*.html
+            app/build/reports/lint-results-*.xml
+            app/build/reports/lint-results-*.sarif
+            app/build/test-results/**
+          if-no-files-found: ignore
+          retention-days: 14
+
+  build:
+    name: APK (${{ inputs.variant }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    outputs:
+      version-name: ${{ steps.version.outputs.name }}
+      artifact: ${{ steps.version.outputs.artifact }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Android toolchain
+        uses: ./.github/actions/android-toolchain
+        with:
+          sdk-channel: ${{ inputs.sdk-channel }}
+          platform: ${{ inputs.platform }}
+          build-tools: ${{ inputs.build-tools }}
+      - name: Resolve version
+        id: version
+        env:
+          VARIANT: ${{ inputs.variant }}
+        run: bash scripts/ci/resolve_version.sh "$VARIANT"
+      - name: Materialize signing key
+        if: inputs.variant == 'canary'
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: bash scripts/ci/materialize_keystore.sh --optional
+      - name: Build ${{ inputs.variant }} APK
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ inputs.variant == 'canary' && secrets.ANDROID_KEYSTORE_PASSWORD || '' }}
+        run: |
+          set -o pipefail
+          status=0
+          ./gradlew --no-daemon --stacktrace "assemble${VARIANT_TASK}" 2>&1 | tee build.log || status=$?
+          if (( status != 0 )); then
+            python3 scripts/ci/extract_build_errors.py build.log build-errors.log
+          fi
+          exit "$status"
+        shell: bash
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: chrona-build-logs-${{ inputs.variant }}-${{ github.run_id }}
+          path: |
+            build.log
+            build-errors.log
+          if-no-files-found: ignore
+          retention-days: 30
+      - name: Verify ABI outputs
+        run: python3 scripts/ci/verify_abi_outputs.py "app/build/outputs/apk/${{ inputs.variant }}" "${{ inputs.variant }}"
+      - name: Package APKs
+        run: bash scripts/ci/package_apks.sh "app/build/outputs/apk/${{ inputs.variant }}" dist "Chrona-${{ steps.version.outputs.name }}"
+      - name: Upload APKs
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.version.outputs.artifact }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 30
+
+  report:
+    name: Telegram report
+    needs:
+      - quality
+      - build
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Download reports and APKs
+        uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          pattern: chrona-*-${{ github.run_id }}
+          path: telegram
+      - name: Send Telegram report
+        continue-on-error: true
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.CHRONABOT_CI_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.CHRONABOT_CI_CHAT_ID }}
+          TELEGRAM_EVENT: ci-report
+          TELEGRAM_ARTIFACT_DIR: telegram
+          BUILD_VARIANT: ${{ inputs.variant }}
+          SDK_CHANNEL_NAME: ${{ needs.quality.outputs.channel-name }}
+          COMPILE_SDK: ${{ needs.quality.outputs.compile-sdk }}
+          BUILD_TOOLS: ${{ needs.quality.outputs.build-tools }}
+          QUALITY_RESULT: ${{ needs.quality.result }}
+          BUILD_RESULT: ${{ needs.build.result }}
+        run: python3 scripts/telegram/notify.py

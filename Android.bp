@@ -5,7 +5,10 @@ package {
 
 android_app {
     name: "DeskClock",
-    resource_dirs: ["res"],
+    // Sources follow the Gradle layout (app/src/main); Soong-only files live in aosp/.
+    manifest: "app/src/main/AndroidManifest.xml",
+    resource_dirs: ["app/src/main/res"],
+    asset_dirs: ["app/src/main/assets"],
     sdk_version: "current",
     min_sdk_version: "26",
     target_sdk_version: "37",
@@ -13,8 +16,8 @@ android_app {
         "AlarmClock",
     ],
     srcs: [
-        "src/**/*.kt",
-        "gen/**/*.java",
+        "app/src/main/kotlin/**/*.kt",
+        "aosp/gen/**/*.java",
     ],
     product_specific: true,
     static_libs: [
@@ -37,4 +40,23 @@ android_app {
     ],
 
     aaptflags: ["--legacy"],
+}
+
+android_test {
+    name: "DeskClockTests",
+    team: "trendy_team_aosp",
+    manifest: "aosp/tests/AndroidManifest.xml",
+    libs: [
+        "android.test.runner.stubs.system",
+        "android.test.base.stubs.system",
+    ],
+    static_libs: [
+        "junit",
+        "androidx.test.core",
+        "androidx.test.runner",
+        "androidx.test.rules",
+    ],
+    srcs: ["app/src/androidTest/java/**/*.java"],
+    platform_apis: true,
+    instrumentation_for: "DeskClock",
 }

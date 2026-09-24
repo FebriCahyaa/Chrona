@@ -1,0 +1,36 @@
+name: Build Dev
+
+# dev branch -> Dev build type, Android SDK dev channel (2).
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Optional platform pin, e.g. android-37.2 (default newest on dev)
+        required: false
+        default: ''
+      build-tools:
+        description: Optional build-tools pin, e.g. 37.0.0 (default newest on dev)
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-dev-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dev:
+    name: Dev · SDK dev
+    uses: ./.github/workflows/android-build.yml
+    with:
+      variant: dev
+      sdk-channel: 2
+      platform: ${{ inputs.platform || '' }}
+      build-tools: ${{ inputs.build-tools || '' }}
+    secrets: inherit

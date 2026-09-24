@@ -1,229 +1,204 @@
-name: Chrona Release
+name: Release
+
+# stable branch + vX.Y.Z tags -> signed Release build, Android SDK stable channel (0).
+# Pushes to `stable` build and verify the signed APKs; tags (or a manual run
+# with a tag) also publish the GitHub Release.
 
 on:
   push:
+    branches:
+      - stable
     tags:
       - 'v*.*.*'
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing version tag to release
-        required: true
+        description: Existing vX.Y.Z tag to (re)publish; leave empty to only build
+        required: false
         type: string
+        default: ''
 
 permissions:
-  contents: write
-  id-token: write
-  attestations: write
-  artifact-metadata: write
+  contents: read
 
 concurrency:
-  group: chrona-release-${{ inputs.tag || github.ref_name }}
+  group: release-${{ inputs.tag || github.ref }}
   cancel-in-progress: false
 
 jobs:
   prepare:
-    name: Prepare Release
+    name: Prepare
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     outputs:
+      ref: ${{ steps.meta.outputs.ref }}
       tag: ${{ steps.meta.outputs.tag }}
-      version: ${{ steps.meta.outputs.version }}
+      publish: ${{ steps.meta.outputs.publish }}
     steps:
+      - name: Resolve release
+        id: meta
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          tag="$INPUT_TAG"
+          if [[ -z "$tag" && "$REF_TYPE" == tag ]]; then tag="$REF_NAME"; fi
+          if [[ -n "$tag" ]]; then
+            [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { printf '::error::Invalid version tag: %s\n' "$tag"; exit 1; }
+            printf 'ref=%s\ntag=%s\npublish=true\n' "refs/tags/$tag" "$tag" >> "$GITHUB_OUTPUT"
+          else
+            printf 'ref=%s\ntag=\npublish=false\n' "$GITHUB_REF" >> "$GITHUB_OUTPUT"
+          fi
       - name: Checkout
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
-          ref: ${{ inputs.tag || github.ref_name }}
-      - name: Resolve version
-        id: meta
-        shell: bash
-        env:
-          INPUT_TAG: ${{ inputs.tag }}
-          REF_NAME: ${{ github.ref_name }}
-        run: |
-          tag="$INPUT_TAG"
-          if [[ -z "$tag" ]]; then tag="$REF_NAME"; fi
-          [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { printf 'Invalid version tag: %s\n' "$tag" >&2; exit 1; }
-          printf 'tag=%s\n' "$tag" >> "$GITHUB_OUTPUT"
-          printf 'version=%s\n' "${tag#v}" >> "$GITHUB_OUTPUT"
+          ref: ${{ steps.meta.outputs.ref }}
       - name: Generate changelog
-        run: python3 scripts/release/generate_changelog.py "${{ steps.meta.outputs.tag }}" > release-notes.md
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/release/generate_changelog.py "${{ steps.meta.outputs.tag || github.ref_name }}" > release-notes.md
       - name: Upload changelog
         uses: actions/upload-artifact@v7
         with:
-          name: chrona-changelog-${{ steps.meta.outputs.tag }}
-          archive: false
+          name: chrona-changelog-${{ github.run_id }}
           path: release-notes.md
           if-no-files-found: error
           retention-days: 90
 
   build:
-    name: Signed Release APK
+    name: Signed Release APK · SDK stable
     needs: prepare
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     environment: release
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+    outputs:
+      version-name: ${{ steps.version.outputs.name }}
+      compile-sdk: ${{ steps.toolchain.outputs.compile-sdk }}
+      build-tools: ${{ steps.toolchain.outputs.build-tools }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
-          ref: ${{ inputs.tag || github.ref_name }}
-      - name: Set up Python
-        uses: actions/setup-python@v7
+          ref: ${{ needs.prepare.outputs.ref }}
+      - name: Android toolchain
+        id: toolchain
+        uses: ./.github/actions/android-toolchain
         with:
-          python-version: '3.13'
-      - name: Set up Java
-        uses: actions/setup-java@v6
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Set up Android SDK tools
-        uses: android-actions/setup-android@v4
-        with:
-          packages: 'platform-tools'
-
-      - name: Install Android 17 SDK 37.2 and Build Tools 37.1.0
-        shell: bash
-        run: |
-          set -euo pipefail
-          sdkmanager --install \
-            'platforms;android-37.2' \
-            'build-tools;37.1.0'
-
-      - name: Verify Android SDK platform and build tools
-        run: python3 scripts/ci/verify_android_sdk.py
-      - name: Fetch Google assets
-        run: python3 scripts/assets/fetch_google_assets.py
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v6
-        with:
-          gradle-version: wrapper
+          sdk-channel: 0
+      - name: Resolve version
+        id: version
+        run: bash scripts/ci/resolve_version.sh release
       - name: Materialize release keystore
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-        shell: bash
-        run: |
-          [[ -n "$ANDROID_KEYSTORE_BASE64" ]] || { printf 'ANDROID_KEYSTORE_BASE64 is required.\n' >&2; exit 1; }
-          [[ -n "$ANDROID_KEYSTORE_PASSWORD" ]] || { printf 'ANDROID_KEYSTORE_PASSWORD is required.\n' >&2; exit 1; }
-          keystore="$RUNNER_TEMP/chrona-release.jks"
-          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$keystore"
-          chmod 600 "$keystore"
-          keytool -list \
-            -storetype JKS \
-            -keystore "$keystore" \
-            -storepass "$ANDROID_KEYSTORE_PASSWORD" \
-            -alias chrona-release \
-            >/dev/null || { printf 'Release keystore validation failed. Check ANDROID_KEYSTORE_BASE64 and ANDROID_KEYSTORE_PASSWORD.\n' >&2; exit 1; }
-          printf 'ANDROID_KEYSTORE_FILE=%s\n' "$keystore" >> "$GITHUB_ENV"
-      - name: Build release
-        id: build
+        run: bash scripts/ci/materialize_keystore.sh
+      - name: Build release APKs
         env:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-        shell: bash
         run: |
-          [[ -n "$ANDROID_KEYSTORE_PASSWORD" ]] || { printf 'ANDROID_KEYSTORE_PASSWORD is required.\n' >&2; exit 1; }
-          [[ -f "$ANDROID_KEYSTORE_FILE" ]] || { printf 'Materialized release keystore was not found.\n' >&2; exit 1; }
           set -o pipefail
-          set +e
-          ./gradlew --no-daemon assembleRelease 2>&1 | tee release-build.log
-          status=${PIPESTATUS[0]}
-          set -e
-          python3 scripts/ci/extract_build_errors.py release-build.log release-build-errors.log
+          status=0
+          ./gradlew --no-daemon --stacktrace assembleRelease 2>&1 | tee release-build.log || status=$?
+          if (( status != 0 )); then
+            python3 scripts/ci/extract_build_errors.py release-build.log release-build-errors.log
+          fi
           exit "$status"
-      - name: Verify release ABI outputs
+      - name: Verify ABI outputs
         run: python3 scripts/ci/verify_abi_outputs.py app/build/outputs/apk/release release
-      - name: Prepare release files
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p release
-          shopt -s nullglob
-          apks=(app/build/outputs/apk/release/*.apk)
-          (( ${#apks[@]} == 5 )) || { printf 'Expected 5 release APKs (4 ABI + universal), found %s.\n' "${#apks[@]}" >&2; exit 1; }
-          for apk in "${apks[@]}"; do
-            base=$(basename "$apk")
-            cp "$apk" "release/Chrona-${{ needs.prepare.outputs.tag }}-${base}"
-          done
-          sha256sum release/*.apk > release/SHA256SUMS.txt
+      - name: Package APKs
+        run: bash scripts/ci/package_apks.sh app/build/outputs/apk/release release "Chrona-v${{ steps.version.outputs.name }}"
+      - name: Attest release APKs
+        uses: actions/attest@v4
+        with:
+          subject-path: release/*.apk
       - name: Upload release files
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: chrona-release-${{ needs.prepare.outputs.tag }}
-          archive: true
+          name: chrona-release-${{ github.run_id }}
           path: |
             release/*
             release-build.log
             release-build-errors.log
           if-no-files-found: ignore
           retention-days: 90
-      - name: Attest release APKs
-        if: success()
-        uses: actions/attest@v4
-        with:
-          subject-path: release/*.apk
 
   publish:
     name: Publish GitHub Release
     needs:
       - prepare
       - build
-    if: needs.build.result == 'success'
+    if: needs.prepare.outputs.publish == 'true'
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
       - name: Download release files
         uses: actions/download-artifact@v8
         with:
-          name: chrona-release-${{ needs.prepare.outputs.tag }}
-          path: release
+          name: chrona-release-${{ github.run_id }}
+          path: dist
       - name: Download changelog
         uses: actions/download-artifact@v8
         with:
-          name: chrona-changelog-${{ needs.prepare.outputs.tag }}
+          name: chrona-changelog-${{ github.run_id }}
           path: changelog
-      - name: Publish release
+      - name: Check for a Release Drafter release
+        id: existing
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ needs.prepare.outputs.tag }}
-        shell: bash
         run: |
-          gh release create "$TAG" \
-            --repo "$GITHUB_REPOSITORY" \
-            --title "Chrona $TAG" \
-            --notes-file changelog/release-notes.md \
-            release/*.apk \
-            release/SHA256SUMS.txt
+          # Keep notes written by Release Drafter; only fill in notes for new releases.
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            printf 'body-path=\n' >> "$GITHUB_OUTPUT"
+          else
+            printf 'body-path=changelog/release-notes.md\n' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Publish release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ needs.prepare.outputs.tag }}
+          name: Chrona ${{ needs.prepare.outputs.tag }}
+          body_path: ${{ steps.existing.outputs.body-path }}
+          draft: false
+          prerelease: false
+          make_latest: true
+          files: |
+            dist/release/*.apk
+            dist/release/SHA256SUMS.txt
+          fail_on_unmatched_files: true
 
   telegram:
-    name: Telegram Release
+    name: Telegram release
     needs:
       - prepare
       - build
       - publish
     if: always()
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v7
       - name: Download release files
         uses: actions/download-artifact@v8
-        with:
-          name: chrona-release-${{ needs.prepare.outputs.tag }}
-          path: telegram/release
         continue-on-error: true
-      - name: Download changelog
-        uses: actions/download-artifact@v8
         with:
-          name: chrona-changelog-${{ needs.prepare.outputs.tag }}
-          path: telegram/changelog
-        continue-on-error: true
+          pattern: chrona-*-${{ github.run_id }}
+          path: telegram
       - name: Send Telegram release report
+        continue-on-error: true
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.CHRONABOT_RELEASE_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.CHRONABOT_RELEASE_CHAT_ID }}
@@ -232,13 +207,5 @@ jobs:
           PREPARE_RESULT: ${{ needs.prepare.result }}
           BUILD_RESULT: ${{ needs.build.result }}
           PUBLISH_RESULT: ${{ needs.publish.result }}
-          RELEASE_VERSION: ${{ needs.prepare.outputs.tag }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_SERVER_URL: ${{ github.server_url }}
-          GITHUB_RUN_ID: ${{ github.run_id }}
-          GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
-          GITHUB_SHA: ${{ github.sha }}
-          GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_WORKFLOW: ${{ github.workflow }}
+          RELEASE_VERSION: ${{ needs.prepare.outputs.tag || needs.build.outputs.version-name }}
         run: python3 scripts/telegram/notify.py
-        continue-on-error: true
