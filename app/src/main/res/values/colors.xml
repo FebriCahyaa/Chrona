@@ -36,4 +36,19 @@
 
     <!-- shadowColor for widget text -->
     <color name="widget_shadow_color">#67000000</color>
+
+    <!-- Material 3 dark-scheme fallback palette (red seed, close to the original #DA4336
+         accent). Only used where dynamic color is unavailable (below Android 12). -->
+    <color name="chrona_m3_primary">#FFB4AB</color>
+    <color name="chrona_m3_on_primary">#690005</color>
+    <color name="chrona_m3_primary_container">#93000A</color>
+    <color name="chrona_m3_on_primary_container">#FFDAD6</color>
+    <color name="chrona_m3_secondary">#E7BDB6</color>
+    <color name="chrona_m3_on_secondary">#442926</color>
+    <color name="chrona_m3_secondary_container">#5D3F3B</color>
+    <color name="chrona_m3_on_secondary_container">#FFDAD5</color>
+    <color name="chrona_m3_tertiary">#DFC38C</color>
+    <color name="chrona_m3_on_tertiary">#3E2E04</color>
+    <color name="chrona_m3_tertiary_container">#574419</color>
+    <color name="chrona_m3_on_tertiary_container">#FCDFA6</color>
 </resources>

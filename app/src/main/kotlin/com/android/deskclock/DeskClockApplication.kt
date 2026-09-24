@@ -20,6 +20,9 @@ import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 
+import com.google.android.material.color.DynamicColors
+import com.google.android.material.color.DynamicColorsOptions
+
 import com.android.deskclock.controller.Controller
 import com.android.deskclock.data.DataModel
 import com.android.deskclock.events.LogEventTracker
@@ -28,6 +31,13 @@ import com.android.deskclock.uidata.UiDataModel
 class DeskClockApplication : Application() {
     override fun onCreate() {
         super.onCreate()
+
+        // The UI is dark-only for now, so always take the dark dynamic scheme; the default
+        // DayNight overlay would apply light-mode colors whenever the system is in light mode.
+        DynamicColors.applyToActivitiesIfAvailable(this, DynamicColorsOptions.Builder()
+                .setThemeOverlay(
+                        com.google.android.material.R.style.ThemeOverlay_Material3_DynamicColors_Dark)
+                .build())
 
         val applicationContext = applicationContext
         val prefs = getDefaultSharedPreferences(applicationContext)

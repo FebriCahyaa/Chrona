@@ -17,7 +17,7 @@
 
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="Theme.DeskClock" parent="Theme.AppCompat.NoActionBar">
+    <style name="Theme.DeskClock" parent="Theme.Material3Expressive.Dark.NoActionBar">
         <item name="android:colorBackgroundFloating" tools:targetApi="23">
             ?attr/colorBackgroundFloating
         </item>
@@ -27,9 +27,23 @@
         <item name="android:windowBackground">@color/default_background</item>
         <item name="android:windowContentOverlay">@null</item>
 
-        <!-- Attributes from androidx.appcompat.appcompat -->
-        <item name="colorAccent">#DA4336</item>
-        <item name="colorBackgroundFloating">#303030</item>
+        <!-- Material 3 color roles. Dynamic color (Android 12+) overrides these at runtime;
+             this red palette is the fallback on older devices. -->
+        <item name="colorPrimary">@color/chrona_m3_primary</item>
+        <item name="colorOnPrimary">@color/chrona_m3_on_primary</item>
+        <item name="colorPrimaryContainer">@color/chrona_m3_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/chrona_m3_on_primary_container</item>
+        <item name="colorSecondary">@color/chrona_m3_secondary</item>
+        <item name="colorOnSecondary">@color/chrona_m3_on_secondary</item>
+        <item name="colorSecondaryContainer">@color/chrona_m3_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/chrona_m3_on_secondary_container</item>
+        <item name="colorTertiary">@color/chrona_m3_tertiary</item>
+        <item name="colorOnTertiary">@color/chrona_m3_on_tertiary</item>
+        <item name="colorTertiaryContainer">@color/chrona_m3_tertiary_container</item>
+        <item name="colorOnTertiaryContainer">@color/chrona_m3_on_tertiary_container</item>
+        <!-- Legacy AppCompat attributes still read by layouts and code; follow M3 roles. -->
+        <item name="colorAccent">?attr/colorPrimary</item>
+        <item name="colorBackgroundFloating">?attr/colorSurfaceContainerHigh</item>
         <item name="colorControlActivated">@android:color/white</item>
         <item name="colorControlNormal">?android:attr/textColorPrimary</item>
         <item name="colorPrimaryDark">#66000000</item>
@@ -62,12 +76,12 @@
         <item name="windowNoTitle">false</item>
     </style>
 
-    <style name="ThemeOverlay.Control.Accent" parent="ThemeOverlay.AppCompat">
+    <style name="ThemeOverlay.Control.Accent" parent="ThemeOverlay.Material3">
         <!-- Attributes from androidx.appcompat.appcompat -->
         <item name="colorControlActivated">?attr/colorAccent</item>
     </style>
 
-    <style name="ThemeOverlay.Popup" parent="ThemeOverlay.AppCompat">
+    <style name="ThemeOverlay.Popup" parent="ThemeOverlay.Material3.Dark">
         <item name="android:colorBackground">?attr/colorBackgroundFloating</item>
     </style>
 
