@@ -30,6 +30,7 @@ import android.os.IBinder
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyCallback
 import android.telephony.TelephonyManager
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 
 import com.android.deskclock.AlarmAlertWakeLock
@@ -260,6 +261,7 @@ class AlarmService : Service() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     private inner class CallStateCallback : TelephonyCallback(), TelephonyCallback.CallStateListener {
         override fun onCallStateChanged(state: Int) {
             this@AlarmService.onCallStateChanged(state)

@@ -27,6 +27,7 @@ import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
 import android.provider.BaseColumns
+import androidx.core.os.ParcelCompat
 import androidx.loader.content.CursorLoader
 
 import com.android.deskclock.R
@@ -119,7 +120,7 @@ class Alarm : Parcelable, AlarmsColumns {
         daysOfWeek = Weekdays.fromBits(p.readInt())
         vibrate = p.readInt() == 1
         label = p.readString()
-        alert = p.readParcelable(null)
+        alert = ParcelCompat.readParcelable(p, Uri::class.java.classLoader, Uri::class.java)
         deleteAfterUse = p.readInt() == 1
     }
 

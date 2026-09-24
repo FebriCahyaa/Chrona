@@ -153,13 +153,13 @@ class ClockProvider : ContentProvider() {
             ALARMS -> qb.setTables(ALARMS_TABLE_NAME)
             ALARMS_ID -> {
                 qb.setTables(ALARMS_TABLE_NAME)
-                qb.appendWhere(BaseColumns._ID.toString() + "=")
+                qb.appendWhere(BaseColumns._ID + "=")
                 qb.appendWhere(uri.getLastPathSegment()!!)
             }
             INSTANCES -> qb.setTables(INSTANCES_TABLE_NAME)
             INSTANCES_ID -> {
                 qb.setTables(INSTANCES_TABLE_NAME)
-                qb.appendWhere(BaseColumns._ID.toString() + "=")
+                qb.appendWhere(BaseColumns._ID + "=")
                 qb.appendWhere(uri.getLastPathSegment()!!)
             }
             ALARMS_WITH_INSTANCES -> {
@@ -203,13 +203,13 @@ class ClockProvider : ContentProvider() {
             ALARMS_ID -> {
                 alarmId = uri.getLastPathSegment()
                 count = db.update(ALARMS_TABLE_NAME, values,
-                        BaseColumns._ID.toString() + "=" + alarmId,
+                        BaseColumns._ID + "=" + alarmId,
                         null)
             }
             INSTANCES_ID -> {
                 alarmId = uri.getLastPathSegment()
                 count = db.update(INSTANCES_TABLE_NAME, values,
-                        BaseColumns._ID.toString() + "=" + alarmId,
+                        BaseColumns._ID + "=" + alarmId,
                         null)
             }
             else -> {
@@ -245,9 +245,9 @@ class ClockProvider : ContentProvider() {
             ALARMS_ID -> {
                 primaryKey = uri.getLastPathSegment()
                 whereString = if (TextUtils.isEmpty(whereString)) {
-                    BaseColumns._ID.toString() + "=" + primaryKey
+                    BaseColumns._ID + "=" + primaryKey
                 } else {
-                    BaseColumns._ID.toString() + "=" + primaryKey + " AND (" + whereString + ")"
+                    BaseColumns._ID + "=" + primaryKey + " AND (" + whereString + ")"
                 }
                 count = db.delete(ALARMS_TABLE_NAME, whereString, whereArgs)
             }
@@ -256,9 +256,9 @@ class ClockProvider : ContentProvider() {
             INSTANCES_ID -> {
                 primaryKey = uri.getLastPathSegment()
                 whereString = if (TextUtils.isEmpty(whereString)) {
-                    BaseColumns._ID.toString() + "=" + primaryKey
+                    BaseColumns._ID + "=" + primaryKey
                 } else {
-                    BaseColumns._ID.toString() + "=" + primaryKey + " AND (" + whereString + ")"
+                    BaseColumns._ID + "=" + primaryKey + " AND (" + whereString + ")"
                 }
                 count = db.delete(INSTANCES_TABLE_NAME, whereString, whereArgs)
             }

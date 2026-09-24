@@ -109,8 +109,8 @@ class CollapsedAlarmViewHolder private constructor(itemView: View) : AlarmItemVi
         if (!alarm.label.isNullOrEmpty()) {
             alarmLabel.text = alarm.label
             alarmLabel.visibility = View.VISIBLE
-            alarmLabel.setContentDescription(context.getString(R.string.label_description)
-                    .toString() + " " + alarm.label)
+            alarmLabel.setContentDescription(
+                    context.getString(R.string.label_description) + " " + alarm.label)
         } else {
             alarmLabel.visibility = View.GONE
         }

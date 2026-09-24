@@ -417,7 +417,7 @@ class AlarmInstance : InstancesColumns {
             state: Int
         ): List<AlarmInstance> {
             return getInstances(contentResolver,
-                    _ID.toString() + "=" + alarmInstanceId + " AND " +
+                    _ID + "=" + alarmInstanceId + " AND " +
                             InstancesColumns.ALARM_STATE + "=" + state)
         }
 

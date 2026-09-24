@@ -185,7 +185,7 @@ class ExpandedAlarmViewHolder private constructor(itemView: View, private val mH
     private fun bindEditLabel(context: Context, alarm: Alarm) {
         editLabel.text = alarm.label
         editLabel.contentDescription = if (!alarm.label.isNullOrEmpty()) {
-            context.getString(R.string.label_description).toString() + " " + alarm.label
+            context.getString(R.string.label_description) + " " + alarm.label
         } else {
             context.getString(R.string.no_label_specified)
         }

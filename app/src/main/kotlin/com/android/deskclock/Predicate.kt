@@ -44,5 +44,15 @@ interface Predicate<T> {
         val FALSE: Predicate<*> = object : Predicate<Any> {
             override fun apply(t: Any): Boolean = false
         }
+
+        /** A typed predicate that always returns true. */
+        fun <T> alwaysTrue(): Predicate<T> = object : Predicate<T> {
+            override fun apply(t: T): Boolean = true
+        }
+
+        /** A typed predicate that always returns false. */
+        fun <T> alwaysFalse(): Predicate<T> = object : Predicate<T> {
+            override fun apply(t: T): Boolean = false
+        }
     }
 }

@@ -41,6 +41,8 @@ import com.android.deskclock.Utils
 import com.android.deskclock.timer.TimerService
 
 import java.util.Calendar
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 import kotlin.Comparator
 import kotlin.math.roundToInt
@@ -75,11 +77,11 @@ class DataModel private constructor() {
 
         DO_NOT_DISTURB(R.string.alarms_blocked_by_dnd,
                 0,
-                Predicate.FALSE as Predicate<Context>,
+                Predicate.alwaysFalse(),
                 mActionListener = null),
         MUTED_VOLUME(R.string.alarm_volume_muted,
                 R.string.unmute_alarm_volume,
-                Predicate.TRUE as Predicate<Context>,
+                Predicate.alwaysTrue(),
                 UnmuteAlarmVolumeListener()),
         SILENT_RINGTONE(R.string.silent_default_alarm_ringtone,
                 R.string.change_setting_action,
@@ -87,7 +89,7 @@ class DataModel private constructor() {
                 ChangeSoundSettingsListener()),
         BLOCKED_NOTIFICATIONS(R.string.app_notifications_blocked,
                 R.string.change_setting_action,
-                Predicate.TRUE as Predicate<Context>,
+                Predicate.alwaysTrue(),
                 ChangeAppNotificationSettingsListener());
 
         val actionListener: View.OnClickListener?
@@ -117,9 +119,9 @@ class DataModel private constructor() {
         }
 
         private class ChangeSoundActionPredicate : Predicate<Context> {
-            override fun apply(context: Context): Boolean {
+            override fun apply(t: Context): Boolean {
                 val intent = Intent(ACTION_SOUND_SETTINGS)
-                return intent.resolveActivity(context.packageManager) != null
+                return intent.resolveActivity(t.packageManager) != null
             }
         }
 
@@ -242,11 +244,7 @@ class DataModel private constructor() {
         handler.post(er)
 
         // Wait for the data to arrive, if it has not.
-        synchronized(er) {
-            if (!er.isExecuted) {
-                er.wait(waitMillis)
-            }
-        }
+        er.await(waitMillis)
     }
 
     /**
@@ -1049,13 +1047,20 @@ class DataModel private constructor() {
     /**
      * Used to execute a delegate runnable and track its completion.
      */
-    private class ExecutedRunnable(private val mDelegate: Runnable) : Runnable, java.lang.Object() {
-        var isExecuted = false
+    private class ExecutedRunnable(private val mDelegate: Runnable) : Runnable {
+        private val mExecuted = CountDownLatch(1)
+
         override fun run() {
             mDelegate.run()
-            synchronized(this) {
-                isExecuted = true
-                notifyAll()
+            mExecuted.countDown()
+        }
+
+        /** Waits for [run] to finish; [waitMillis] 0 waits indefinitely, like Object.wait(0). */
+        fun await(waitMillis: Long) {
+            if (waitMillis == 0L) {
+                mExecuted.await()
+            } else {
+                mExecuted.await(waitMillis, TimeUnit.MILLISECONDS)
             }
         }
     }
