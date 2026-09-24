@@ -125,7 +125,7 @@ internal class TimerAdapter(
                 DataModel.dataModel.addTimerMinute(t)
                 Events.sendTimerEvent(R.string.action_add_minute, R.string.label_deskclock)
                 // Must re-retrieve timer because old timer is no longer accurate.
-                val remaining = timer?.remainingTime ?: 0
+                val remaining = timer?.remainingTime ?: 0L
                 if (remaining > 0) {
                     Utils.announceForAccessibilityCompat(v, TimerStringFormatter.formatString(
                             v.context, R.string.timer_accessibility_one_minute_added, remaining,

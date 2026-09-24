@@ -45,7 +45,7 @@ class MenuListPreference @JvmOverloads constructor(
 
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
         super.onBindViewHolder(holder)
-        mAnchor = holder.findViewById(android.R.id.summary)?.takeIf { it.isShown }
+        mAnchor = holder.findViewById(android.R.id.summary)?.takeIf { it.visibility == View.VISIBLE }
                 ?: holder.findViewById(android.R.id.title)
                 ?: holder.itemView
     }

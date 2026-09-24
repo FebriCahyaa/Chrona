@@ -65,7 +65,7 @@ class CitySelectionActivity : BaseActivity() {
         list.adapter = mAdapter
 
         findViewById<View>(R.id.city_search_back).setOnClickListener { finish() }
-        mClearButton.setOnClickListener { mSearchField.text = null }
+        mClearButton.setOnClickListener { mSearchField.setText("") }
         mSearchField.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
 

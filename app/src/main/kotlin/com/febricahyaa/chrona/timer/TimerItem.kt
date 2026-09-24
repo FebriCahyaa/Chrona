@@ -168,7 +168,7 @@ class TimerItem @JvmOverloads constructor(
             mAddMinuteButton.setTextColor(ThemeUtils.resolveColor(c, fillAttr))
         } else {
             mAddMinuteButton.backgroundTintList = mAddMinuteTint
-            mAddMinuteTextColors?.let(mAddMinuteButton::setTextColor)
+            mAddMinuteTextColors?.let { mAddMinuteButton.setTextColor(it) }
         }
     }
 
