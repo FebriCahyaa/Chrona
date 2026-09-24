@@ -66,7 +66,7 @@ internal class TimerNotificationBuilder {
             val channel = NotificationChannel(
                     TIMER_MODEL_NOTIFICATION_CHANNEL_ID,
                     context.getString(R.string.default_label),
-                    NotificationManagerCompat.IMPORTANCE_DEFAULT)
+                    NotificationManager.IMPORTANCE_DEFAULT)
             notificationManager.createNotificationChannel(channel)
         }
     }
@@ -162,7 +162,8 @@ internal class TimerNotificationBuilder {
 
         val pendingShowApp: PendingIntent =
                 PendingIntent.getService(context, REQUEST_CODE_UPCOMING, showApp,
-                PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_UPDATE_CURRENT)
+                PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_UPDATE_CURRENT or
+                        PendingIntent.FLAG_IMMUTABLE)
 
         val notification: Builder = Builder(
                 context, TIMER_MODEL_NOTIFICATION_CHANNEL_ID)
@@ -209,7 +210,8 @@ internal class TimerNotificationBuilder {
                 // Schedule a callback to update the time-sensitive information of the running timer
                 val pi: PendingIntent =
                         PendingIntent.getService(context, REQUEST_CODE_UPCOMING, updateNotification,
-                        PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_UPDATE_CURRENT)
+                        PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_UPDATE_CURRENT or
+                                PendingIntent.FLAG_IMMUTABLE)
 
                 val nextMinuteChange: Long = remainingTime % MINUTE_IN_MILLIS
                 val triggerTime: Long = SystemClock.elapsedRealtime() + nextMinuteChange
@@ -217,7 +219,8 @@ internal class TimerNotificationBuilder {
             } else {
                 // Cancel the update notification callback.
                 val pi: PendingIntent? = PendingIntent.getService(context, 0, updateNotification,
-                        PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_NO_CREATE)
+                        PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_NO_CREATE or
+                                PendingIntent.FLAG_IMMUTABLE)
                 if (pi != null) {
                     am.cancel(pi)
                     pi.cancel()
@@ -364,7 +367,8 @@ internal class TimerNotificationBuilder {
 
         val pendingShowApp: PendingIntent =
                 PendingIntent.getService(context, REQUEST_CODE_MISSING, showApp,
-                PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_UPDATE_CURRENT)
+                PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_UPDATE_CURRENT or
+                        PendingIntent.FLAG_IMMUTABLE)
 
         val notification: Builder = Builder(
                 context, TIMER_MODEL_NOTIFICATION_CHANNEL_ID)

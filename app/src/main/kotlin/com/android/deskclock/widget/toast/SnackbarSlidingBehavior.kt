@@ -39,7 +39,9 @@ class SnackbarSlidingBehavior(
         child: View,
         dependency: View
     ): Boolean {
-        return dependency is Snackbar.SnackbarLayout
+        // Snackbar.SnackbarLayout is @RestrictTo(LIBRARY_GROUP); it's still the only
+        // concrete class the Snackbar view uses, so match it by name instead.
+        return dependency.javaClass.simpleName == "SnackbarLayout"
     }
 
     override fun onDependentViewChanged(

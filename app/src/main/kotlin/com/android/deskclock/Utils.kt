@@ -155,6 +155,12 @@ object Utils {
         get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
 
     /**
+     * @return `true` if the device is [Build.VERSION_CODES.O_MR1] or later
+     */
+    val isOMR1OrLater: Boolean
+        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1
+
+    /**
      * @return {@code true} if the device is {@link Build.VERSION_CODES#P} or later
      */
     val isPOrLater: Boolean
@@ -268,7 +274,8 @@ object Utils {
      * @return a PendingIntent that will start a service
      */
     fun pendingServiceIntent(context: Context, intent: Intent): PendingIntent {
-        return PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        return PendingIntent.getService(context, 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     }
 
     /**
@@ -279,7 +286,8 @@ object Utils {
      * @return a PendingIntent that will start an activity
      */
     fun pendingActivityIntent(context: Context, intent: Intent): PendingIntent {
-        return PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        return PendingIntent.getActivity(context, 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     }
 
     /**
@@ -316,7 +324,12 @@ object Utils {
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     fun updateNextAlarm(am: AlarmManager, info: AlarmClockInfo, op: PendingIntent) {
-        am.setAlarmClock(info, op)
+        try {
+            am.setAlarmClock(info, op)
+        } catch (e: SecurityException) {
+            // The user has revoked permission to schedule exact alarms.
+            LogUtils.e("Unable to update next alarm clock info", e)
+        }
     }
 
     fun isAlarmWithin24Hours(alarmInstance: AlarmInstance): Boolean {

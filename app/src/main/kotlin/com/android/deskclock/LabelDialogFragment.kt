@@ -33,6 +33,7 @@ import android.widget.TextView
 import android.widget.TextView.OnEditorActionListener
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatEditText
+import androidx.core.view.ViewCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 
@@ -79,9 +80,11 @@ class LabelDialogFragment : DialogFragment() {
         val colorControlNormal = ThemeUtils.resolveColor(context, android.R.attr.colorControlNormal)
 
         mLabelBox = AppCompatEditText(context)
-        mLabelBox?.setSupportBackgroundTintList(ColorStateList(
-                arrayOf(intArrayOf(android.R.attr.state_activated), intArrayOf()),
-                intArrayOf(colorControlActivated, colorControlNormal)))
+        mLabelBox?.let {
+            ViewCompat.setBackgroundTintList(it, ColorStateList(
+                    arrayOf(intArrayOf(android.R.attr.state_activated), intArrayOf()),
+                    intArrayOf(colorControlActivated, colorControlNormal)))
+        }
         mLabelBox?.setOnEditorActionListener(ImeDoneListener())
         mLabelBox?.addTextChangedListener(TextChangeListener())
         mLabelBox?.setSingleLine()

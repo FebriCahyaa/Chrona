@@ -49,6 +49,7 @@ import android.view.accessibility.AccessibilityManager
 import android.widget.ImageView
 import android.widget.TextClock
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.core.graphics.ColorUtils
 import androidx.core.view.animation.PathInterpolatorCompat
 
@@ -129,6 +130,11 @@ class AlarmActivity : BaseActivity(), View.OnClickListener, View.OnTouchListener
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Don't allow back (including the back gesture) to dismiss the alarm.
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {}
+        })
+
         setVolumeControlStream(AudioManager.STREAM_ALARM)
         val instanceId = AlarmInstance.getId(getIntent().getData()!!)
         mAlarmInstance = AlarmInstance.getInstance(getContentResolver(), instanceId)
@@ -148,7 +154,7 @@ class AlarmActivity : BaseActivity(), View.OnClickListener, View.OnTouchListener
         // Get the volume/camera button behavior setting
         mVolumeBehavior = DataModel.dataModel.alarmVolumeButtonBehavior
 
-        if (Utils.isOOrLater) {
+        if (Utils.isOMR1OrLater) {
             setShowWhenLocked(true)
             setTurnScreenOn(true)
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
@@ -164,8 +170,14 @@ class AlarmActivity : BaseActivity(), View.OnClickListener, View.OnTouchListener
         // Hide navigation bar to minimize accidental tap on Home key
         hideNavigationBar()
 
-        // Close dialogs and window shade, so this is fully visible
-        sendBroadcast(Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS))
+        // Close dialogs and window shade, so this is fully visible. Only privileged/system
+        // apps may hold BROADCAST_CLOSE_SYSTEM_DIALOGS since Android 11; other apps get a
+        // SecurityException instead of the broadcast being silently dropped.
+        try {
+            sendBroadcast(Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS))
+        } catch (e: SecurityException) {
+            LOGGER.e("Unable to close system dialogs", e)
+        }
 
         // Honor rotation on tablets; fix the orientation on phones.
         if (!getResources().getBoolean(R.bool.rotateAlarmAlert)) {
@@ -288,10 +300,6 @@ class AlarmActivity : BaseActivity(), View.OnClickListener, View.OnTouchListener
             }
         }
         return super.dispatchKeyEvent(keyEvent)
-    }
-
-    override fun onBackPressed() {
-        // Don't allow back to dismiss.
     }
 
     override fun onClick(view: View) {

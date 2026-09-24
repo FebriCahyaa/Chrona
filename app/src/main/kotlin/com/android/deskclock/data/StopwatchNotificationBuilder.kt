@@ -18,6 +18,7 @@ package com.android.deskclock.data
 
 import android.app.Notification
 import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -48,7 +49,7 @@ internal class StopwatchNotificationBuilder {
             val channel = NotificationChannel(
                     STOPWATCH_NOTIFICATION_CHANNEL_ID,
                     context.getString(R.string.default_label),
-                    NotificationManagerCompat.IMPORTANCE_DEFAULT)
+                    NotificationManager.IMPORTANCE_DEFAULT)
             notificationManager.createNotificationChannel(channel)
         }
     }
@@ -62,7 +63,8 @@ internal class StopwatchNotificationBuilder {
                 .putExtra(Events.EXTRA_EVENT_LABEL, eventLabel)
 
         val pendingShowApp: PendingIntent = PendingIntent.getService(context, 0, showApp,
-                PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_UPDATE_CURRENT)
+                PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_UPDATE_CURRENT or
+                        PendingIntent.FLAG_IMMUTABLE)
 
         // Compute some values required below.
         val running = stopwatch!!.isRunning
@@ -140,7 +142,7 @@ internal class StopwatchNotificationBuilder {
                 .setCustomContentView(content)
                 .setContentIntent(pendingShowApp)
                 .setAutoCancel(stopwatch.isPaused)
-                .setPriority(NotificationManagerCompat.IMPORTANCE_HIGH)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setSmallIcon(R.drawable.stat_notify_stopwatch)
                 .setStyle(NotificationCompat.DecoratedCustomViewStyle())
                 .setColor(ContextCompat.getColor(context, R.color.default_background))

@@ -634,7 +634,8 @@ internal class TimerModel(
         if (nextExpiringTimer == null) {
             // Cancel the existing timer expiration callback.
             val pi: PendingIntent? = PendingIntent.getService(mContext,
-                    0, intent, PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_NO_CREATE)
+                    0, intent, PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_NO_CREATE or
+                            PendingIntent.FLAG_IMMUTABLE)
             if (pi != null) {
                 mAlarmManager.cancel(pi)
                 pi.cancel()
@@ -642,7 +643,8 @@ internal class TimerModel(
         } else {
             // Update the existing timer expiration callback.
             val pi: PendingIntent = PendingIntent.getService(mContext,
-                    0, intent, PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_UPDATE_CURRENT)
+                    0, intent, PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_UPDATE_CURRENT or
+                            PendingIntent.FLAG_IMMUTABLE)
             schedulePendingIntent(mAlarmManager, nextExpiringTimer.expirationTime, pi)
         }
     }
@@ -720,7 +722,11 @@ internal class TimerModel(
             return
         }
 
-        mNotificationManager.notify(notificationId, notification)
+        try {
+            mNotificationManager.notify(notificationId, notification)
+        } catch (e: SecurityException) {
+            LogUtils.e("Notifications are not permitted", e)
+        }
     }
 
     /**
@@ -745,7 +751,11 @@ internal class TimerModel(
                 mNotificationModel, missed)
         val notificationId = mNotificationModel.missedTimerNotificationId
         mNotificationBuilder.buildChannel(mContext, mNotificationManager)
-        mNotificationManager.notify(notificationId, notification)
+        try {
+            mNotificationManager.notify(notificationId, notification)
+        } catch (e: SecurityException) {
+            LogUtils.e("Notifications are not permitted", e)
+        }
     }
 
     /**
@@ -809,11 +819,16 @@ internal class TimerModel(
         private val MISSED_THRESHOLD: Long = -MINUTE_IN_MILLIS
 
         fun schedulePendingIntent(am: AlarmManager, triggerTime: Long, pi: PendingIntent) {
-            if (Utils.isMOrLater) {
-                // Ensure the timer fires even if the device is dozing.
-                am.setExactAndAllowWhileIdle(ELAPSED_REALTIME_WAKEUP, triggerTime, pi)
-            } else {
-                am.setExact(ELAPSED_REALTIME_WAKEUP, triggerTime, pi)
+            try {
+                if (Utils.isMOrLater) {
+                    // Ensure the timer fires even if the device is dozing.
+                    am.setExactAndAllowWhileIdle(ELAPSED_REALTIME_WAKEUP, triggerTime, pi)
+                } else {
+                    am.setExact(ELAPSED_REALTIME_WAKEUP, triggerTime, pi)
+                }
+            } catch (e: SecurityException) {
+                // The user has revoked permission to schedule exact alarms.
+                LogUtils.e("Unable to schedule exact timer callback", e)
             }
         }
     }

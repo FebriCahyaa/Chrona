@@ -32,6 +32,7 @@ import android.view.WindowManager
 import com.android.deskclock.BaseActivity
 import com.android.deskclock.LogUtils
 import com.android.deskclock.R
+import com.android.deskclock.Utils
 import com.android.deskclock.data.DataModel
 import com.android.deskclock.data.Timer
 import com.android.deskclock.data.TimerListener
@@ -79,11 +80,22 @@ class ExpiredTimersActivity : BaseActivity() {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                 or WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON)
 
-        setTurnScreenOn(true)
-        setShowWhenLocked(true)
+        if (Utils.isOMR1OrLater) {
+            setTurnScreenOn(true)
+            setShowWhenLocked(true)
+        } else {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+                    or WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
+        }
 
-        // Close dialogs and window shade, so this is fully visible
-        sendBroadcast(Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS))
+        // Close dialogs and window shade, so this is fully visible. Only privileged/system
+        // apps may hold BROADCAST_CLOSE_SYSTEM_DIALOGS since Android 11; other apps get a
+        // SecurityException instead of the broadcast being silently dropped.
+        try {
+            sendBroadcast(Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS))
+        } catch (e: SecurityException) {
+            LogUtils.e("Unable to close system dialogs", e)
+        }
 
         // Honor rotation on tablets; fix the orientation on phones.
         if (!getResources().getBoolean(R.bool.rotateAlarmAlert)) {

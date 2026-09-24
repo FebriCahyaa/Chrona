@@ -142,7 +142,7 @@ internal object AlarmNotifications {
                 InstancesColumns.HIDE_NOTIFICATION_STATE)
         val id = instance.hashCode()
         builder.setDeleteIntent(PendingIntent.getService(context, id,
-                hideIntent, PendingIntent.FLAG_UPDATE_CURRENT))
+                hideIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
 
         // Setup up dismiss action
         val dismissIntent: Intent = AlarmStateManager.createStateChangeIntent(context,
@@ -150,23 +150,27 @@ internal object AlarmNotifications {
         builder.addAction(R.drawable.ic_alarm_off_24dp,
                 context.getString(R.string.alarm_alert_dismiss_text),
                 PendingIntent.getService(context, id,
-                        dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT))
+                        dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
 
         // Setup content action if instance is owned by alarm
         val viewAlarmIntent: Intent = createViewAlarmIntent(context, instance)
         builder.setContentIntent(PendingIntent.getActivity(context, id,
-                viewAlarmIntent, PendingIntent.FLAG_UPDATE_CURRENT))
+                viewAlarmIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
 
         val nm: NotificationManagerCompat = NotificationManagerCompat.from(context)
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                     ALARM_LOW_PRIORITY_NOTIFICATION_CHANNEL_ID,
                     context.getString(R.string.default_label),
-                    NotificationManagerCompat.IMPORTANCE_DEFAULT)
+                    NotificationManager.IMPORTANCE_DEFAULT)
             nm.createNotificationChannel(channel)
         }
         val notification: Notification = builder.build()
-        nm.notify(id, notification)
+        try {
+            nm.notify(id, notification)
+        } catch (e: SecurityException) {
+            LogUtils.e("Notifications are not permitted", e)
+        }
         updateUpcomingAlarmGroupNotification(context, -1, notification)
     }
 
@@ -205,23 +209,27 @@ internal object AlarmNotifications {
         builder.addAction(R.drawable.ic_alarm_off_24dp,
                 context.getString(R.string.alarm_alert_dismiss_text),
                 PendingIntent.getService(context, id,
-                        dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT))
+                        dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
 
         // Setup content action if instance is owned by alarm
         val viewAlarmIntent: Intent = createViewAlarmIntent(context, instance)
         builder.setContentIntent(PendingIntent.getActivity(context, id,
-                viewAlarmIntent, PendingIntent.FLAG_UPDATE_CURRENT))
+                viewAlarmIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
 
         val nm: NotificationManagerCompat = NotificationManagerCompat.from(context)
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                     ALARM_HIGH_PRIORITY_NOTIFICATION_CHANNEL_ID,
                     context.getString(R.string.default_label),
-                    NotificationManagerCompat.IMPORTANCE_HIGH)
+                    NotificationManager.IMPORTANCE_HIGH)
             nm.createNotificationChannel(channel)
         }
         val notification: Notification = builder.build()
-        nm.notify(id, notification)
+        try {
+            nm.notify(id, notification)
+        } catch (e: SecurityException) {
+            LogUtils.e("Notifications are not permitted", e)
+        }
         updateUpcomingAlarmGroupNotification(context, -1, notification)
     }
 
@@ -295,7 +303,7 @@ internal object AlarmNotifications {
             val channel = NotificationChannel(
                     ALARM_NOTIFICATION_CHANNEL_ID,
                     context.getString(R.string.default_label),
-                    NotificationManagerCompat.IMPORTANCE_HIGH)
+                    NotificationManager.IMPORTANCE_HIGH)
             nm.createNotificationChannel(channel)
         }
 
@@ -321,7 +329,11 @@ internal object AlarmNotifications {
                     .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                     .setLocalOnly(true)
                     .build()
-            nm.notify(ALARM_GROUP_NOTIFICATION_ID, summary)
+            try {
+                nm.notify(ALARM_GROUP_NOTIFICATION_ID, summary)
+            } catch (e: SecurityException) {
+                LogUtils.e("Notifications are not permitted", e)
+            }
         }
     }
 
@@ -339,7 +351,7 @@ internal object AlarmNotifications {
             val channel = NotificationChannel(
                     ALARM_NOTIFICATION_CHANNEL_ID,
                     context.getString(R.string.default_label),
-                    NotificationManagerCompat.IMPORTANCE_HIGH)
+                    NotificationManager.IMPORTANCE_HIGH)
             nm.createNotificationChannel(channel)
         }
 
@@ -357,7 +369,7 @@ internal object AlarmNotifications {
                 val channel = NotificationChannel(
                         ALARM_MISSED_NOTIFICATION_CHANNEL_ID,
                         context.getString(R.string.default_label),
-                        NotificationManagerCompat.IMPORTANCE_HIGH)
+                        NotificationManager.IMPORTANCE_HIGH)
                 nm.createNotificationChannel(channel)
             }
             summary = NotificationCompat.Builder(context, ALARM_NOTIFICATION_CHANNEL_ID)
@@ -372,7 +384,11 @@ internal object AlarmNotifications {
                     .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                     .setLocalOnly(true)
                     .build()
-            nm.notify(ALARM_GROUP_MISSED_NOTIFICATION_ID, summary)
+            try {
+                nm.notify(ALARM_GROUP_MISSED_NOTIFICATION_ID, summary)
+            } catch (e: SecurityException) {
+                LogUtils.e("Notifications are not permitted", e)
+            }
         }
     }
 
@@ -410,23 +426,27 @@ internal object AlarmNotifications {
         builder.addAction(R.drawable.ic_alarm_off_24dp,
                 context.getString(R.string.alarm_alert_dismiss_text),
                 PendingIntent.getService(context, id,
-                        dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT))
+                        dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
 
         // Setup content action if instance is owned by alarm
         val viewAlarmIntent: Intent = createViewAlarmIntent(context, instance)
         builder.setContentIntent(PendingIntent.getActivity(context, id,
-                viewAlarmIntent, PendingIntent.FLAG_UPDATE_CURRENT))
+                viewAlarmIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
 
         val nm: NotificationManagerCompat = NotificationManagerCompat.from(context)
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                     ALARM_SNOOZE_NOTIFICATION_CHANNEL_ID,
                     context.getString(R.string.default_label),
-                    NotificationManagerCompat.IMPORTANCE_DEFAULT)
+                    NotificationManager.IMPORTANCE_DEFAULT)
             nm.createNotificationChannel(channel)
         }
         val notification: Notification = builder.build()
-        nm.notify(id, notification)
+        try {
+            nm.notify(id, notification)
+        } catch (e: SecurityException) {
+            LogUtils.e("Notifications are not permitted", e)
+        }
         updateUpcomingAlarmGroupNotification(context, -1, notification)
     }
 
@@ -467,7 +487,7 @@ internal object AlarmNotifications {
         val dismissIntent: Intent = AlarmStateManager.createStateChangeIntent(context,
                 AlarmStateManager.ALARM_DISMISS_TAG, instance, InstancesColumns.DISMISSED_STATE)
         builder.setDeleteIntent(PendingIntent.getService(context, id,
-                dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT))
+                dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
 
         // Setup content intent
         val showAndDismiss: Intent = AlarmInstance.createIntent(context,
@@ -475,18 +495,22 @@ internal object AlarmNotifications {
         showAndDismiss.putExtra(EXTRA_NOTIFICATION_ID, id)
         showAndDismiss.setAction(AlarmStateManager.SHOW_AND_DISMISS_ALARM_ACTION)
         builder.setContentIntent(PendingIntent.getBroadcast(context, id,
-                showAndDismiss, PendingIntent.FLAG_UPDATE_CURRENT))
+                showAndDismiss, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
 
         val nm: NotificationManagerCompat = NotificationManagerCompat.from(context)
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                     ALARM_MISSED_NOTIFICATION_CHANNEL_ID,
                     context.getString(R.string.default_label),
-                    NotificationManagerCompat.IMPORTANCE_DEFAULT)
+                    NotificationManager.IMPORTANCE_DEFAULT)
             nm.createNotificationChannel(channel)
         }
         val notification: Notification = builder.build()
-        nm.notify(id, notification)
+        try {
+            nm.notify(id, notification)
+        } catch (e: SecurityException) {
+            LogUtils.e("Notifications are not permitted", e)
+        }
         updateMissedAlarmGroupNotification(context, -1, notification)
     }
 
@@ -515,7 +539,7 @@ internal object AlarmNotifications {
                 AlarmStateManager.ALARM_SNOOZE_TAG, instance, InstancesColumns.SNOOZE_STATE)
         snoozeIntent.putExtra(AlarmStateManager.FROM_NOTIFICATION_EXTRA, true)
         val snoozePendingIntent: PendingIntent = PendingIntent.getService(service,
-                ALARM_FIRING_NOTIFICATION_ID, snoozeIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+                ALARM_FIRING_NOTIFICATION_ID, snoozeIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         notification.addAction(R.drawable.ic_snooze_24dp,
                 resources.getString(R.string.alarm_alert_snooze_text), snoozePendingIntent)
 
@@ -524,7 +548,7 @@ internal object AlarmNotifications {
                 AlarmStateManager.ALARM_DISMISS_TAG, instance, InstancesColumns.DISMISSED_STATE)
         dismissIntent.putExtra(AlarmStateManager.FROM_NOTIFICATION_EXTRA, true)
         val dismissPendingIntent: PendingIntent = PendingIntent.getService(service,
-                ALARM_FIRING_NOTIFICATION_ID, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+                ALARM_FIRING_NOTIFICATION_ID, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         notification.addAction(R.drawable.ic_alarm_off_24dp,
                 resources.getString(R.string.alarm_alert_dismiss_text),
                 dismissPendingIntent)
@@ -533,7 +557,7 @@ internal object AlarmNotifications {
         val contentIntent: Intent = AlarmInstance.createIntent(service, AlarmActivity::class.java,
                 instance.mId)
         notification.setContentIntent(PendingIntent.getActivity(service,
-                ALARM_FIRING_NOTIFICATION_ID, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT))
+                ALARM_FIRING_NOTIFICATION_ID, contentIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
 
         // Setup fullscreen intent
         val fullScreenIntent: Intent =
@@ -543,7 +567,7 @@ internal object AlarmNotifications {
         fullScreenIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or
                 Intent.FLAG_ACTIVITY_NO_USER_ACTION)
         notification.setFullScreenIntent(PendingIntent.getActivity(service,
-                ALARM_FIRING_NOTIFICATION_ID, fullScreenIntent, PendingIntent.FLAG_UPDATE_CURRENT),
+                ALARM_FIRING_NOTIFICATION_ID, fullScreenIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE),
                 true)
         notification.setPriority(NotificationCompat.PRIORITY_MAX)
 
