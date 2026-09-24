@@ -1,14 +1,21 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from urllib.request import Request, urlopen
 
 API_ROOT = "https://api.github.com/repos"
 HEADERS = {"Accept": "application/vnd.github+json", "User-Agent": "Chrona-Asset-Fetcher"}
 
+def api_headers() -> dict:
+    # Authenticated requests get a much higher api.github.com rate limit;
+    # CI passes GITHUB_TOKEN, local runs work fine without it.
+    token = os.environ.get("GITHUB_TOKEN", "").strip()
+    return {**HEADERS, "Authorization": f"Bearer {token}"} if token else HEADERS
+
 def get_json(url: str) -> dict:
-    with urlopen(Request(url, headers=HEADERS), timeout=30) as response:
+    with urlopen(Request(url, headers=api_headers()), timeout=30) as response:
         return json.load(response)
 
 def get_bytes(url: str) -> bytes:
