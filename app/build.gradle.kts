@@ -40,7 +40,7 @@ android {
 
   defaultConfig {
     applicationId = "com.android.deskclock"
-    minSdk = 26
+    minSdk = 29
     targetSdk = 37
     versionCode = chronaVersionCode
     versionName = chronaVersionName

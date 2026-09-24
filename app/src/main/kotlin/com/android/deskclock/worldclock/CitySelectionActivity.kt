@@ -395,7 +395,7 @@ class CitySelectionActivity : BaseActivity() {
                             DataModel.CitySort.NAME -> sections.add(city.indexString.orEmpty())
                             DataModel.CitySort.UTC_OFFSET -> {
                                 val timezone: TimeZone = city.timeZone
-                                sections.add(Utils.getGMTHourOffset(timezone, Utils.isPreL))
+                                sections.add(Utils.getGMTHourOffset(timezone, false))
                             }
                         }
                         positions.add(position)

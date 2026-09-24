@@ -45,13 +45,11 @@ import com.android.deskclock.stopwatch.StopwatchService
  */
 internal class StopwatchNotificationBuilder {
     fun buildChannel(context: Context, notificationManager: NotificationManagerCompat) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                    STOPWATCH_NOTIFICATION_CHANNEL_ID,
-                    context.getString(R.string.default_label),
-                    NotificationManager.IMPORTANCE_DEFAULT)
-            notificationManager.createNotificationChannel(channel)
-        }
+        val channel = NotificationChannel(
+                STOPWATCH_NOTIFICATION_CHANNEL_ID,
+                context.getString(R.string.default_label),
+                NotificationManager.IMPORTANCE_DEFAULT)
+        notificationManager.createNotificationChannel(channel)
     }
 
     fun build(context: Context, nm: NotificationModel, stopwatch: Stopwatch?): Notification {
@@ -147,9 +145,7 @@ internal class StopwatchNotificationBuilder {
                 .setStyle(NotificationCompat.DecoratedCustomViewStyle())
                 .setColor(ContextCompat.getColor(context, R.color.default_background))
 
-        if (Utils.isNOrLater) {
-            notification.setGroup(nm.stopwatchNotificationGroupKey)
-        }
+        notification.setGroup(nm.stopwatchNotificationGroupKey)
 
         for (action in actions) {
             notification.addAction(action)

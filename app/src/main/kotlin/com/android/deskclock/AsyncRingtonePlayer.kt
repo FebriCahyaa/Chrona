@@ -36,7 +36,6 @@ import android.os.Message
 import android.telephony.TelephonyManager
 import androidx.core.content.ContextCompat
 
-import java.io.IOException
 import java.lang.reflect.Method
 
 import kotlin.math.pow
@@ -70,7 +69,6 @@ class AsyncRingtonePlayer(private val mContext: Context) {
     /** Handler running on the ringtone thread.  */
     private var mHandler: Handler? = null
 
-    /** [MediaPlayerPlaybackDelegate] on pre M; [RingtonePlaybackDelegate] on M+  */
     private var mPlaybackDelegate: PlaybackDelegate? = null
 
     /** Plays the ringtone.  */
@@ -173,15 +171,7 @@ class AsyncRingtonePlayer(private val mContext: Context) {
         get() {
             checkAsyncRingtonePlayerThread()
             if (mPlaybackDelegate == null) {
-                mPlaybackDelegate = if (Utils.isMOrLater) {
-                    // Use the newer Ringtone-based playback delegate because it does not require
-                    // any permissions to read from the SD card. (M+)
-                    RingtonePlaybackDelegate()
-                } else {
-                    // Fall back to the older MediaPlayer-based playback delegate because it is the
-                    // only way to force the looping of the ringtone before M. (pre M)
-                    MediaPlayerPlaybackDelegate()
-                }
+                mPlaybackDelegate = RingtonePlaybackDelegate()
             }
             return mPlaybackDelegate!!
         }
@@ -205,181 +195,6 @@ class AsyncRingtonePlayer(private val mContext: Context) {
          * @return `true` iff another volume adjustment should be scheduled
          */
         fun adjustVolume(context: Context?): Boolean
-    }
-
-    /**
-     * Loops playback of a ringtone using [MediaPlayer].
-     */
-    private inner class MediaPlayerPlaybackDelegate : PlaybackDelegate {
-        /** The audio focus manager. Only used by the ringtone thread.  */
-        private var mAudioManager: AudioManager? = null
-        private var mAudioFocusRequest: AudioFocusRequest? = null
-
-        /** Non-`null` while playing a ringtone; `null` otherwise.  */
-        private var mMediaPlayer: MediaPlayer? = null
-
-        /** The duration over which to increase the volume.  */
-        private var mCrescendoDuration: Long = 0
-
-        /** The time at which the crescendo shall cease; 0 if no crescendo is present.  */
-        private var mCrescendoStopTime: Long = 0
-
-        /**
-         * Starts the actual playback of the ringtone. Executes on ringtone-thread.
-         */
-        override fun play(context: Context, ringtoneUri: Uri?, crescendoDuration: Long): Boolean {
-            checkAsyncRingtonePlayerThread()
-            mCrescendoDuration = crescendoDuration
-
-            LOGGER.i("Play ringtone via android.media.MediaPlayer.")
-
-            if (mAudioManager == null) {
-                mAudioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            }
-
-            val inTelephoneCall = isInTelephoneCall(context)
-            var alarmNoise = if (inTelephoneCall) getInCallRingtoneUri(context) else ringtoneUri
-            // Fall back to the system default alarm if the database does not have an alarm stored.
-            if (alarmNoise == null) {
-                alarmNoise = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-                LOGGER.v("Using default alarm: $alarmNoise")
-            }
-
-            mMediaPlayer = MediaPlayer()
-            mMediaPlayer!!.setOnErrorListener { _, _, _ ->
-                LOGGER.e("Error occurred while playing audio. Stopping AlarmKlaxon.")
-                stop(context)
-                true
-            }
-
-            try {
-                // If alarmNoise is a custom ringtone on the sd card the app must be granted
-                // android.permission.READ_EXTERNAL_STORAGE. Pre-M this is ensured at app
-                // installation time. M+, this permission can be revoked by the user any time.
-                mMediaPlayer!!.setDataSource(context, alarmNoise!!)
-
-                return startPlayback(inTelephoneCall)
-            } catch (t: Throwable) {
-                LOGGER.e("Using the fallback ringtone, could not play $alarmNoise", t)
-                // The alarmNoise may be on the sd card which could be busy right now.
-                // Use the fallback ringtone.
-                try {
-                    // Must reset the media player to clear the error state.
-                    mMediaPlayer!!.reset()
-                    mMediaPlayer!!.setDataSource(context, getFallbackRingtoneUri(context))
-                    return startPlayback(inTelephoneCall)
-                } catch (t2: Throwable) {
-                    // At this point we just don't play anything.
-                    LOGGER.e("Failed to play fallback ringtone", t2)
-                }
-            }
-
-            return false
-        }
-
-        /**
-         * Prepare the MediaPlayer for playback if the alarm stream is not muted, then start the
-         * playback.
-         *
-         * @param inTelephoneCall `true` if there is currently an active telephone call
-         * @return `true` if a crescendo has started and future volume adjustments are
-         * required to advance the crescendo effect
-         */
-        @Throws(IOException::class)
-        private fun startPlayback(inTelephoneCall: Boolean): Boolean {
-            // Do not play alarms if stream volume is 0 (typically because ringer mode is silent).
-            if (mAudioManager!!.getStreamVolume(AudioManager.STREAM_ALARM) == 0) {
-                return false
-            }
-
-            mMediaPlayer!!.setAudioAttributes(ALARM_AUDIO_ATTRIBUTES)
-
-            // Check if we are in a call. If we are, use the in-call alarm resource at a low volume
-            // to not disrupt the call.
-            var scheduleVolumeAdjustment = false
-            if (inTelephoneCall) {
-                LOGGER.v("Using the in-call alarm")
-                mMediaPlayer!!.setVolume(IN_CALL_VOLUME, IN_CALL_VOLUME)
-            } else if (mCrescendoDuration > 0) {
-                mMediaPlayer!!.setVolume(0f, 0f)
-
-                // Compute the time at which the crescendo will stop.
-                mCrescendoStopTime = Utils.now() + mCrescendoDuration
-                scheduleVolumeAdjustment = true
-            }
-
-            mMediaPlayer!!.isLooping = true
-            mMediaPlayer!!.prepare()
-            requestAudioFocus()
-            mMediaPlayer!!.start()
-
-            return scheduleVolumeAdjustment
-        }
-
-        /**
-         * Stops the playback of the ringtone. Executes on the ringtone-thread.
-         */
-        private fun requestAudioFocus() {
-            if (mAudioFocusRequest == null) {
-                mAudioFocusRequest = AudioFocusRequest.Builder(
-                        AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
-                        .setAudioAttributes(ALARM_AUDIO_ATTRIBUTES)
-                        .build()
-            }
-            mAudioManager!!.requestAudioFocus(mAudioFocusRequest!!)
-        }
-
-        override fun stop(context: Context?) {
-            checkAsyncRingtonePlayerThread()
-
-            LOGGER.i("Stop ringtone via android.media.MediaPlayer.")
-
-            mCrescendoDuration = 0
-            mCrescendoStopTime = 0
-
-            // Stop audio playing
-            if (mMediaPlayer != null) {
-                mMediaPlayer?.stop()
-                mMediaPlayer?.release()
-                mMediaPlayer = null
-            }
-
-            mAudioFocusRequest?.let { request ->
-                mAudioManager?.abandonAudioFocusRequest(request)
-                mAudioFocusRequest = null
-            }
-        }
-
-        /**
-         * Adjusts the volume of the ringtone being played to create a crescendo effect.
-         */
-        override fun adjustVolume(context: Context?): Boolean {
-            checkAsyncRingtonePlayerThread()
-
-            // If media player is absent or not playing, ignore volume adjustment.
-            if (mMediaPlayer == null || !mMediaPlayer!!.isPlaying) {
-                mCrescendoDuration = 0
-                mCrescendoStopTime = 0
-                return false
-            }
-
-            // If the crescendo is complete set the volume to the maximum; we're done.
-            val currentTime = Utils.now()
-            if (currentTime > mCrescendoStopTime) {
-                mCrescendoDuration = 0
-                mCrescendoStopTime = 0
-                mMediaPlayer!!.setVolume(1f, 1f)
-                return false
-            }
-
-            // The current volume of the crescendo is the percentage of the crescendo completed.
-            val volume = computeVolume(currentTime, mCrescendoStopTime, mCrescendoDuration)
-            mMediaPlayer!!.setVolume(volume, volume)
-            LOGGER.i("MediaPlayer volume set to $volume")
-
-            // Schedule the next volume bump in the crescendo.
-            return true
-        }
     }
 
     /**

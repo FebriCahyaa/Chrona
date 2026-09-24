@@ -16,17 +16,13 @@
 
 package com.android.deskclock.controller
 
-import android.annotation.TargetApi
 import android.app.Activity
 import android.app.VoiceInteractor
 import android.app.VoiceInteractor.AbortVoiceRequest
 import android.app.VoiceInteractor.CompleteVoiceRequest
 import android.app.VoiceInteractor.Prompt
-import android.os.Build
 
-import com.android.deskclock.Utils
 
-@TargetApi(Build.VERSION_CODES.M)
 internal class VoiceController {
     /**
      * If the `activity` is currently hosting a voice interaction session, indicate the voice
@@ -36,9 +32,6 @@ internal class VoiceController {
      * @param message to be spoken to the user to indicate success
      */
     fun notifyVoiceSuccess(activity: Activity, message: String) {
-        if (!Utils.isMOrLater) {
-            return
-        }
 
         val voiceInteractor: VoiceInteractor? = activity.getVoiceInteractor()
         voiceInteractor?.let {
@@ -55,9 +48,6 @@ internal class VoiceController {
      * @param message to be spoken to the user to indicate failure
      */
     fun notifyVoiceFailure(activity: Activity, message: String) {
-        if (!Utils.isMOrLater) {
-            return
-        }
 
         val voiceInteractor: VoiceInteractor? = activity.getVoiceInteractor()
         voiceInteractor?.let {

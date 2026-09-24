@@ -11,7 +11,7 @@ integration. Both build systems read the same sources under `app/src/main`.
 | Android Gradle Plugin | 9.4.1 (built-in Kotlin) |
 | Kotlin | 2.4.10 (below 2.4.20 for CodeQL compatibility) |
 | JDK | 17 |
-| minSdk / targetSdk | 26 / 37 |
+| minSdk / targetSdk | 29 / 37 |
 | compileSdk / Build Tools | resolved per SDK channel (see below) |
 
 ## Build types and SDK channels

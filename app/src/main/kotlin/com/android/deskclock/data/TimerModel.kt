@@ -36,7 +36,6 @@ import androidx.core.app.NotificationManagerCompat
 import com.android.deskclock.AlarmAlertWakeLock
 import com.android.deskclock.LogUtils
 import com.android.deskclock.R
-import com.android.deskclock.Utils
 import com.android.deskclock.events.Events
 import com.android.deskclock.settings.SettingsActivity
 import com.android.deskclock.timer.TimerKlaxon
@@ -820,12 +819,8 @@ internal class TimerModel(
 
         fun schedulePendingIntent(am: AlarmManager, triggerTime: Long, pi: PendingIntent) {
             try {
-                if (Utils.isMOrLater) {
-                    // Ensure the timer fires even if the device is dozing.
-                    am.setExactAndAllowWhileIdle(ELAPSED_REALTIME_WAKEUP, triggerTime, pi)
-                } else {
-                    am.setExact(ELAPSED_REALTIME_WAKEUP, triggerTime, pi)
-                }
+                // Ensure the timer fires even if the device is dozing.
+                am.setExactAndAllowWhileIdle(ELAPSED_REALTIME_WAKEUP, triggerTime, pi)
             } catch (e: SecurityException) {
                 // The user has revoked permission to schedule exact alarms.
                 LogUtils.e("Unable to schedule exact timer callback", e)

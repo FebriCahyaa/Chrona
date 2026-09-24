@@ -17,7 +17,6 @@
 package com.android.deskclock
 
 import android.annotation.SuppressLint
-import android.annotation.TargetApi
 import android.app.AlarmManager
 import android.app.AlarmManager.AlarmClockInfo
 import android.app.PendingIntent
@@ -41,7 +40,6 @@ import android.os.Looper
 import android.os.VibrationAttributes
 import android.os.VibrationEffect
 import android.os.Vibrator
-import android.provider.Settings
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.TextUtils
@@ -109,65 +107,6 @@ object Utils {
         return -1
     }
 
-    /**
-     * @return `true` if the device is prior to [Build.VERSION_CODES.LOLLIPOP]
-     */
-    val isPreL: Boolean
-        get() = Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP
-
-    /**
-     * @return `true` if the device is [Build.VERSION_CODES.LOLLIPOP] or
-     * [Build.VERSION_CODES.LOLLIPOP_MR1]
-     */
-    val isLOrLMR1: Boolean
-        get() {
-            val sdkInt = Build.VERSION.SDK_INT
-            return sdkInt == Build.VERSION_CODES.LOLLIPOP ||
-                    sdkInt == Build.VERSION_CODES.LOLLIPOP_MR1
-        }
-
-    /**
-     * @return `true` if the device is [Build.VERSION_CODES.LOLLIPOP] or later
-     */
-    val isLOrLater: Boolean
-        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-
-    /**
-     * @return `true` if the device is [Build.VERSION_CODES.LOLLIPOP_MR1] or later
-     */
-    val isLMR1OrLater: Boolean
-        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1
-
-    /**
-     * @return `true` if the device is [Build.VERSION_CODES.M] or later
-     */
-    val isMOrLater: Boolean
-        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-
-    /**
-     * @return `true` if the device is [Build.VERSION_CODES.N] or later
-     */
-    val isNOrLater: Boolean
-        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
-
-    /**
-     * @return `true` if the device is [Build.VERSION_CODES.N_MR1] or later
-     */
-    val isNMR1OrLater: Boolean
-        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1
-
-    /**
-     * @return `true` if the device is [Build.VERSION_CODES.O] or later
-     */
-    val isOOrLater: Boolean
-        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-
-    /**
-     * @return `true` if the device is [Build.VERSION_CODES.O_MR1] or later
-     */
-    val isOMR1OrLater: Boolean
-        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1
-
     @JvmStatic
     fun getVibrator(context: Context): Vibrator = context.getSystemService(Vibrator::class.java)
 
@@ -186,12 +125,6 @@ object Utils {
                     .build())
         }
     }
-
-    /**
-     * @return {@code true} if the device is {@link Build.VERSION_CODES#P} or later
-     */
-    val isPOrLater: Boolean
-        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
 
     /**
      * @param resourceId identifies an application resource
@@ -324,7 +257,6 @@ object Utils {
         return getNextAlarmLOrLater(context)
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private fun getNextAlarmLOrLater(context: Context): String? {
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val info = getNextAlarmClock(am)
@@ -338,12 +270,10 @@ object Utils {
         return null
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private fun getNextAlarmClock(am: AlarmManager): AlarmClockInfo? {
         return am.nextAlarmClock
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     fun updateNextAlarm(am: AlarmManager, info: AlarmClockInfo, op: PendingIntent) {
         try {
             am.setAlarmClock(info, op)

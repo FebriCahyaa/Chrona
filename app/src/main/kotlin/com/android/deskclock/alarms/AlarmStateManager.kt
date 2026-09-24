@@ -25,7 +25,6 @@ import android.content.Context
 import android.content.Context.ALARM_SERVICE
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Handler
 import android.os.PowerManager
 import android.text.format.DateFormat
@@ -122,12 +121,8 @@ class AlarmStateManager : BroadcastReceiver() {
 
             val am: AlarmManager = context.getSystemService(ALARM_SERVICE) as AlarmManager
             try {
-                if (Utils.isMOrLater) {
-                    // Ensure the alarm fires even if the device is dozing.
-                    am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent)
-                } else {
-                    am.setExact(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent)
-                }
+                // Ensure the alarm fires even if the device is dozing.
+                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent)
             } catch (e: SecurityException) {
                 // The user has revoked permission to schedule exact alarms.
                 LogUtils.e("Unable to schedule exact alarm for instance: " + instance.mId, e)

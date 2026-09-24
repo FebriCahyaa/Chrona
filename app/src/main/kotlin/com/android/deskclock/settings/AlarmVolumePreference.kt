@@ -16,7 +16,6 @@
 
 package com.android.deskclock.settings
 
-import android.annotation.TargetApi
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Context.AUDIO_SERVICE
@@ -24,7 +23,6 @@ import android.content.Context.NOTIFICATION_SERVICE
 import android.database.ContentObserver
 import android.media.AudioManager
 import android.media.AudioManager.STREAM_ALARM
-import android.os.Build
 import android.provider.Settings
 import android.util.AttributeSet
 import android.view.View
@@ -35,7 +33,6 @@ import androidx.preference.PreferenceViewHolder
 
 import com.android.deskclock.R
 import com.android.deskclock.RingtonePreviewKlaxon
-import com.android.deskclock.Utils
 import com.android.deskclock.data.DataModel
 
 class AlarmVolumePreference(context: Context?, attrs: AttributeSet?) : Preference(context!!, attrs) {
@@ -111,10 +108,9 @@ class AlarmVolumePreference(context: Context?, attrs: AttributeSet?) : Preferenc
     }
 
     private fun doesDoNotDisturbAllowAlarmPlayback(): Boolean {
-        return !Utils.isNOrLater || doesDoNotDisturbAllowAlarmPlaybackNPlus()
+        return doesDoNotDisturbAllowAlarmPlaybackNPlus()
     }
 
-    @TargetApi(Build.VERSION_CODES.N)
     private fun doesDoNotDisturbAllowAlarmPlaybackNPlus(): Boolean {
         val notificationManager =
                 getContext().getSystemService(NOTIFICATION_SERVICE) as NotificationManager
@@ -123,7 +119,7 @@ class AlarmVolumePreference(context: Context?, attrs: AttributeSet?) : Preferenc
     }
 
     private fun getMinVolume(audioManager: AudioManager): Int {
-        return if (Utils.isPOrLater) audioManager.getStreamMinVolume(STREAM_ALARM) else 0
+        return audioManager.getStreamMinVolume(STREAM_ALARM)
     }
 
     companion object {

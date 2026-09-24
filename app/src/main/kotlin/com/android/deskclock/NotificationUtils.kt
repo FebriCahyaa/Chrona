@@ -96,9 +96,6 @@ object NotificationUtils {
 
     @JvmStatic
     fun createChannel(context: Context, id: String) {
-        if (!Utils.isOOrLater) {
-            return
-        }
 
         if (!CHANNEL_PROPS.containsKey(id)) {
             Log.e(TAG, "Invalid channel requested: $id")
@@ -138,9 +135,6 @@ object NotificationUtils {
 
     @JvmStatic
     fun updateNotificationChannels(context: Context) {
-        if (!Utils.isOOrLater) {
-            return
-        }
 
         val nm: NotificationManagerCompat = NotificationManagerCompat.from(context)
 

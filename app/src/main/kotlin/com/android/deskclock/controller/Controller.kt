@@ -44,9 +44,7 @@ class Controller private constructor() {
             mContext = context.getApplicationContext()
             mEventController = EventController()
             mVoiceController = VoiceController()
-            if (Utils.isNMR1OrLater) {
-                mShortcutController = ShortcutController(mContext!!)
-            }
+            mShortcutController = ShortcutController(mContext!!)
         }
     }
 

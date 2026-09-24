@@ -14,7 +14,6 @@
 
 package com.android.deskclock.timer
 
-import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.os.SystemClock
@@ -32,7 +31,6 @@ import android.view.WindowManager
 import com.android.deskclock.BaseActivity
 import com.android.deskclock.LogUtils
 import com.android.deskclock.R
-import com.android.deskclock.Utils
 import com.android.deskclock.data.DataModel
 import com.android.deskclock.data.Timer
 import com.android.deskclock.data.TimerListener
@@ -77,14 +75,8 @@ class ExpiredTimersActivity : BaseActivity() {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                 or WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON)
 
-        if (Utils.isOMR1OrLater) {
-            setTurnScreenOn(true)
-            setShowWhenLocked(true)
-        } else {
-            @Suppress("DEPRECATION")
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
-                    or WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
-        }
+        setTurnScreenOn(true)
+        setShowWhenLocked(true)
 
         // Honor rotation on tablets; fix the orientation on phones.
         if (!getResources().getBoolean(R.bool.rotateAlarmAlert)) {
