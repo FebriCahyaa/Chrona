@@ -277,7 +277,7 @@ jobs:
           git push origin metrics
       - name: Render repository metrics
         if: steps.token.outputs.available == 'true'
-        uses: lowlighter/metrics@v3.34
+        uses: lowlighter/metrics@v4
         with:
           token: ${{ secrets.METRICS_TOKEN }}
           committer_token: ${{ github.token }}
