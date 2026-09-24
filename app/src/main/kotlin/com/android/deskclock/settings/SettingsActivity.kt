@@ -131,7 +131,7 @@ class SettingsActivity : BaseActivity() {
                     preference.setSummary(preference.getEntries().get(index))
                 }
                 KEY_CLOCK_STYLE, KEY_WEEK_START, KEY_VOLUME_BUTTONS -> {
-                    val simpleMenuPreference = pref as SimpleMenuPreference
+                    val simpleMenuPreference = pref as ListPreference
                     val i: Int = simpleMenuPreference.findIndexOfValue(newValue as String)
                     pref.setSummary(simpleMenuPreference.getEntries().get(i))
                 }
@@ -224,13 +224,13 @@ class SettingsActivity : BaseActivity() {
                 it.setOnPreferenceChangeListener(this)
             }
 
-            val clockStylePref: SimpleMenuPreference? = findPreference(KEY_CLOCK_STYLE)
+            val clockStylePref: ListPreference? = findPreference(KEY_CLOCK_STYLE)
             clockStylePref?.let {
                 it.setSummary(it.getEntry())
                 it.setOnPreferenceChangeListener(this)
             }
 
-            val volumeButtonsPref: SimpleMenuPreference? = findPreference(KEY_VOLUME_BUTTONS)
+            val volumeButtonsPref: ListPreference? = findPreference(KEY_VOLUME_BUTTONS)
             volumeButtonsPref?.let {
                 it.setSummary(volumeButtonsPref.getEntry())
                 it.setOnPreferenceChangeListener(this)
@@ -255,7 +255,7 @@ class SettingsActivity : BaseActivity() {
             val dateAndTimeSetting: Preference? = findPreference(KEY_DATE_TIME)
             dateAndTimeSetting?.setOnPreferenceClickListener(this)
 
-            val weekStartPref: SimpleMenuPreference? = findPreference(KEY_WEEK_START)
+            val weekStartPref: ListPreference? = findPreference(KEY_WEEK_START)
             // Set the default value programmatically
             val weekdayOrder = DataModel.dataModel.weekdayOrder
             val firstDay = weekdayOrder.calendarDays[0]
