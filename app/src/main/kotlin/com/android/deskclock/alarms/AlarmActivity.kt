@@ -170,15 +170,6 @@ class AlarmActivity : BaseActivity(), View.OnClickListener, View.OnTouchListener
         // Hide navigation bar to minimize accidental tap on Home key
         hideNavigationBar()
 
-        // Close dialogs and window shade, so this is fully visible. Only privileged/system
-        // apps may hold BROADCAST_CLOSE_SYSTEM_DIALOGS since Android 11; other apps get a
-        // SecurityException instead of the broadcast being silently dropped.
-        try {
-            sendBroadcast(Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS))
-        } catch (e: SecurityException) {
-            LOGGER.e("Unable to close system dialogs", e)
-        }
-
         // Honor rotation on tablets; fix the orientation on phones.
         if (!getResources().getBoolean(R.bool.rotateAlarmAlert)) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR)

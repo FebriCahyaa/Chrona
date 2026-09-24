@@ -114,9 +114,6 @@ android {
     abortOnError = true
     warningsAsErrors = false
     lintConfig = file("lint.xml")
-    htmlReport = true
-    xmlReport = true
-    sarifReport = true
     checkReleaseBuilds = true
   }
 

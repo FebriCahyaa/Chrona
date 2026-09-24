@@ -113,6 +113,7 @@ object AnimatorUtils {
     }
 
     @JvmField
+    @Suppress("UNCHECKED_CAST")
     val ARGB_EVALUATOR: TypeEvaluator<Int> = ArgbEvaluator() as TypeEvaluator<Int>
 
     private var sAnimateValue: Method? = null

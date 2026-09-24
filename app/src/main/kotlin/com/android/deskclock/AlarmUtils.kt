@@ -112,6 +112,5 @@ object AlarmUtils {
         val text = formatElapsedTimeUntilAlarm(
                 snackbarAnchor.context, alarmTimeDelta)
         SnackbarManager.show(Snackbar.make(snackbarAnchor, text, Snackbar.LENGTH_SHORT))
-        snackbarAnchor.announceForAccessibility(text)
     }
 }

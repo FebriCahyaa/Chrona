@@ -23,9 +23,9 @@ import android.animation.ValueAnimator
 import android.animation.ValueAnimator.AnimatorUpdateListener
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.view.View
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
 
 /**
  * Base activity class that changes the app window's color based on the current hour.
@@ -44,10 +44,7 @@ abstract class BaseActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         // Allow the content to layout behind the status and navigation bars.
-        getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        or View.SYSTEM_UI_FLAG_LAYOUT_STABLE)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         @ColorInt val color = ThemeUtils.resolveColor(this, R.attr.windowBackground)
         adjustAppColor(color, animate = false)

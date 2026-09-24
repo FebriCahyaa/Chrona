@@ -17,19 +17,24 @@
 package com.android.deskclock
 
 import android.annotation.SuppressLint
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.media.AudioAttributes
+import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.media.Ringtone
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Bundle
+import androidx.core.os.BundleCompat
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.os.Message
 import android.telephony.TelephonyManager
+import androidx.core.content.ContextCompat
 
 import java.io.IOException
 import java.lang.reflect.Method
@@ -135,7 +140,8 @@ class AsyncRingtonePlayer(private val mContext: Context) {
                     when (msg.what) {
                         EVENT_PLAY -> {
                             val data = msg.data
-                            val ringtoneUri = data.getParcelable<Uri>(RINGTONE_URI_KEY)
+                            val ringtoneUri = BundleCompat.getParcelable(
+                                    data, RINGTONE_URI_KEY, Uri::class.java)
                             val crescendoDuration = data.getLong(CRESCENDO_DURATION_KEY)
                             if (playbackDelegate.play(mContext, ringtoneUri, crescendoDuration)) {
                                 scheduleVolumeAdjustment()
@@ -207,6 +213,7 @@ class AsyncRingtonePlayer(private val mContext: Context) {
     private inner class MediaPlayerPlaybackDelegate : PlaybackDelegate {
         /** The audio focus manager. Only used by the ringtone thread.  */
         private var mAudioManager: AudioManager? = null
+        private var mAudioFocusRequest: AudioFocusRequest? = null
 
         /** Non-`null` while playing a ringtone; `null` otherwise.  */
         private var mMediaPlayer: MediaPlayer? = null
@@ -285,13 +292,7 @@ class AsyncRingtonePlayer(private val mContext: Context) {
                 return false
             }
 
-            // Indicate the ringtone should be played via the alarm stream.
-            if (Utils.isLOrLater) {
-                mMediaPlayer!!.setAudioAttributes(AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_ALARM)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                        .build())
-            }
+            mMediaPlayer!!.setAudioAttributes(ALARM_AUDIO_ATTRIBUTES)
 
             // Check if we are in a call. If we are, use the in-call alarm resource at a low volume
             // to not disrupt the call.
@@ -307,11 +308,9 @@ class AsyncRingtonePlayer(private val mContext: Context) {
                 scheduleVolumeAdjustment = true
             }
 
-            mMediaPlayer!!.setAudioStreamType(AudioManager.STREAM_ALARM)
             mMediaPlayer!!.isLooping = true
             mMediaPlayer!!.prepare()
-            mAudioManager!!.requestAudioFocus(null, AudioManager.STREAM_ALARM,
-                    AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
+            requestAudioFocus()
             mMediaPlayer!!.start()
 
             return scheduleVolumeAdjustment
@@ -320,6 +319,16 @@ class AsyncRingtonePlayer(private val mContext: Context) {
         /**
          * Stops the playback of the ringtone. Executes on the ringtone-thread.
          */
+        private fun requestAudioFocus() {
+            if (mAudioFocusRequest == null) {
+                mAudioFocusRequest = AudioFocusRequest.Builder(
+                        AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
+                        .setAudioAttributes(ALARM_AUDIO_ATTRIBUTES)
+                        .build()
+            }
+            mAudioManager!!.requestAudioFocus(mAudioFocusRequest!!)
+        }
+
         override fun stop(context: Context?) {
             checkAsyncRingtonePlayerThread()
 
@@ -335,8 +344,9 @@ class AsyncRingtonePlayer(private val mContext: Context) {
                 mMediaPlayer = null
             }
 
-            if (mAudioManager != null) {
-                mAudioManager?.abandonAudioFocus(null)
+            mAudioFocusRequest?.let { request ->
+                mAudioManager?.abandonAudioFocusRequest(request)
+                mAudioFocusRequest = null
             }
         }
 
@@ -480,13 +490,7 @@ class AsyncRingtonePlayer(private val mContext: Context) {
          * required to advance the crescendo effect
          */
         private fun startPlayback(inTelephoneCall: Boolean): Boolean {
-            // Indicate the ringtone should be played via the alarm stream.
-            if (Utils.isLOrLater) {
-                mRingtone!!.audioAttributes = AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_ALARM)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                        .build()
-            }
+            mRingtone!!.audioAttributes = ALARM_AUDIO_ATTRIBUTES
 
             // Attempt to adjust the ringtone volume if the user is in a telephone call.
             var scheduleVolumeAdjustment = false
@@ -501,12 +505,21 @@ class AsyncRingtonePlayer(private val mContext: Context) {
                 scheduleVolumeAdjustment = true
             }
 
-            mAudioManager!!.requestAudioFocus(null, AudioManager.STREAM_ALARM,
-                    AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
+            requestAudioFocus()
 
             mRingtone!!.play()
 
             return scheduleVolumeAdjustment
+        }
+
+        private fun requestAudioFocus() {
+            if (mAudioFocusRequest == null) {
+                mAudioFocusRequest = AudioFocusRequest.Builder(
+                        AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
+                        .setAudioAttributes(ALARM_AUDIO_ATTRIBUTES)
+                        .build()
+            }
+            mAudioManager!!.requestAudioFocus(mAudioFocusRequest!!)
         }
 
         /**
@@ -541,8 +554,9 @@ class AsyncRingtonePlayer(private val mContext: Context) {
 
             mRingtone = null
 
-            if (mAudioManager != null) {
-                mAudioManager!!.abandonAudioFocus(null)
+            mAudioFocusRequest?.let { request ->
+                mAudioManager?.abandonAudioFocusRequest(request)
+                mAudioFocusRequest = null
             }
         }
 
@@ -578,6 +592,10 @@ class AsyncRingtonePlayer(private val mContext: Context) {
 
     companion object {
         private val LOGGER = LogUtils.Logger("AsyncRingtonePlayer")
+        private val ALARM_AUDIO_ATTRIBUTES = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_ALARM)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
 
         // Volume suggested by media team for in-call alarms.
         private const val IN_CALL_VOLUME = 0.125f
@@ -592,7 +610,13 @@ class AsyncRingtonePlayer(private val mContext: Context) {
         /**
          * @return `true` iff the device is currently in a telephone call
          */
+        @Suppress("DEPRECATION")
         private fun isInTelephoneCall(context: Context): Boolean {
+            if (ContextCompat.checkSelfPermission(
+                            context, Manifest.permission.READ_PHONE_STATE) !=
+                    PackageManager.PERMISSION_GRANTED) {
+                return false
+            }
             val tm = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
             return tm.callState != TelephonyManager.CALL_STATE_IDLE
         }
