@@ -160,4 +160,5 @@
     <dimen name="timer_progress_thickness">8dp</dimen>
     <dimen name="timer_grid_gap">6dp</dimen>
     <dimen name="timer_grid_padding">10dp</dimen>
+    <dimen name="timer_progress_size">236dp</dimen>
 </resources>

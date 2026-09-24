@@ -104,6 +104,8 @@
 
     <!-- Timer ring: M3 Expressive wavy determinate circular progress indicator. -->
     <style name="Widget.Chrona.TimerProgress" parent="Widget.Material3.CircularProgressIndicator">
+        <item name="indicatorSize">@dimen/timer_progress_size</item>
+        <item name="indicatorInset">0dp</item>
         <item name="indicatorColor">?attr/colorPrimary</item>
         <item name="trackColor">?attr/colorSecondaryContainer</item>
         <item name="trackThickness">@dimen/timer_progress_thickness</item>

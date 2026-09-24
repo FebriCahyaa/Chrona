@@ -54,16 +54,6 @@ class TimerCircleView @JvmOverloads constructor(
         max = PROGRESS_MAX
     }
 
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        super.onSizeChanged(w, h, oldw, oldh)
-        // Grow the indicator to fill the view; it defaults to a small spinner size.
-        val size = min(w - paddingLeft - paddingRight, h - paddingTop - paddingBottom) -
-                2 * indicatorInset
-        if (size > 0 && size != indicatorSize) {
-            post { indicatorSize = size }
-        }
-    }
-
     fun update(timer: Timer) {
         val expired = timer.isExpired || timer.isMissed
         if (expired != mExpired) {

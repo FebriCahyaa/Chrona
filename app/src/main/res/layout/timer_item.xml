@@ -74,8 +74,9 @@
             <com.febricahyaa.chrona.timer.TimerCircleView
                 android:id="@+id/timer_time"
                 style="@style/Widget.Chrona.TimerProgress"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center" />
 
             <LinearLayout
                 android:layout_width="wrap_content"

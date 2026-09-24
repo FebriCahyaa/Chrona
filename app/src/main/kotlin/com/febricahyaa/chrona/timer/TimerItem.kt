@@ -127,6 +127,8 @@ class TimerItem @JvmOverloads constructor(
             height = if (compact) (124 * dp).toInt()
                     else res.getDimensionPixelSize(R.dimen.timer_card_ring_size)
         }
+        mCircleView.indicatorSize = if (compact) (116 * dp).toInt()
+                else res.getDimensionPixelSize(R.dimen.timer_progress_size)
         mTimerText.updateLayoutParams {
             width = if (compact) (88 * dp).toInt()
                     else res.getDimensionPixelSize(R.dimen.timer_card_time_width)
