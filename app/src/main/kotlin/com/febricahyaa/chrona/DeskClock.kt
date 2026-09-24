@@ -19,8 +19,15 @@ package com.febricahyaa.chrona
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
+import android.Manifest
+import android.app.NotificationManager
+import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.text.format.DateUtils
 import android.view.KeyEvent
 import android.view.Menu
@@ -29,7 +36,9 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -73,6 +82,12 @@ class DeskClock : BaseActivity(), FabContainer, AlarmLabelDialogHandler {
 
     /** Coordinates handling of context menu items.  */
     private val mOptionsMenuManager = OptionsMenuManager()
+
+    /** Asks for the notification permission alarms, timers and the stopwatch rely on.  */
+    private val mNotificationPermissionRequest =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+                promptForFullScreenAlertsIfNeeded()
+            }
 
     /** Shrinks the [.mFab], [.mLeftButton] and [.mRightButton] to nothing.  */
     private val mHideAnimation = AnimatorSet()
@@ -140,6 +155,10 @@ class DeskClock : BaseActivity(), FabContainer, AlarmLabelDialogHandler {
 
         setContentView(R.layout.desk_clock)
         mSnackbarAnchor = findViewById(R.id.content)
+
+        if (savedInstanceState == null) {
+            requestNotificationPermissionIfNeeded()
+        }
 
         // Pad for the status bar and side insets here, but hand the bottom inset on to the
         // navigation bar so it extends behind the gesture area instead of floating above it.
@@ -452,6 +471,44 @@ class DeskClock : BaseActivity(), FabContainer, AlarmLabelDialogHandler {
             val selectedTab: UiDataModel.Tab = UiDataModel.uiDataModel.selectedTab
             throw IllegalStateException("Unable to locate selected fragment ($selectedTab)")
         }
+
+    /**
+     * Notifications are off by default for new apps on Android 13+; ask for them once, as the
+     * alarm, timer and stopwatch notifications all depend on them.
+     */
+    private fun requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+                PackageManager.PERMISSION_GRANTED) {
+            mNotificationPermissionRequest.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            promptForFullScreenAlertsIfNeeded()
+        }
+    }
+
+    /**
+     * Ringing alarms and timers open full screen over the lock screen. Android 14+ can withhold
+     * that ability; offer a shortcut to the setting when it is off.
+     */
+    private fun promptForFullScreenAlertsIfNeeded() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            return
+        }
+        val nm = getSystemService(NotificationManager::class.java) ?: return
+        if (nm.canUseFullScreenIntent()) {
+            return
+        }
+        Snackbar.make(mSnackbarAnchor, R.string.full_screen_alerts_off, Snackbar.LENGTH_LONG)
+                .setAction(R.string.full_screen_alerts_allow) {
+                    try {
+                        startActivity(Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT,
+                                Uri.fromParts("package", packageName, null)))
+                    } catch (e: ActivityNotFoundException) {
+                        LogUtils.e("No screen to allow full screen alerts", e)
+                    }
+                }
+                .show()
+    }
 
     /**
      * @return a Snackbar that displays the message with the given id for 5 seconds

@@ -57,6 +57,9 @@ class DeskClockApplication : Application() {
         UiDataModel.uiDataModel.init(applicationContext, prefs)
         Controller.getController().setContext(applicationContext)
         Controller.getController().addEventTracker(LogEventTracker(applicationContext))
+
+        // Replace legacy channels and register all current ones with their localized names.
+        NotificationUtils.updateNotificationChannels(applicationContext)
     }
 
     /** @return the wallpaper's primary color, or null if it is unavailable */

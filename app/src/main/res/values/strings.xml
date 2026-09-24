@@ -493,6 +493,8 @@
     <string name="timer_length_hours_short">%dh</string>
     <string name="timer_length_minutes_short">%dm</string>
     <string name="timer_length_seconds_short">%ds</string>
+    <string name="full_screen_alerts_off">Full screen alerts are off, so ringing alarms may not show over the lock screen</string>
+    <string name="full_screen_alerts_allow">Allow</string>
     <string name="city_removed"><xliff:g id="city_name">%s</xliff:g> removed</string>
     <string name="search_city_hint">Search city</string>
     <string name="search_city_no_results">No matching cities</string>

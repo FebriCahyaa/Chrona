@@ -17,8 +17,6 @@
 package com.febricahyaa.chrona.data
 
 import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -35,6 +33,7 @@ import androidx.core.app.NotificationCompat.Builder
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 
+import com.febricahyaa.chrona.NotificationUtils
 import com.febricahyaa.chrona.R
 import com.febricahyaa.chrona.Utils
 import com.febricahyaa.chrona.events.Events
@@ -44,12 +43,9 @@ import com.febricahyaa.chrona.stopwatch.StopwatchService
  * Builds notification to reflect the latest state of the stopwatch and recorded laps.
  */
 internal class StopwatchNotificationBuilder {
+    @Suppress("UNUSED_PARAMETER")
     fun buildChannel(context: Context, notificationManager: NotificationManagerCompat) {
-        val channel = NotificationChannel(
-                STOPWATCH_NOTIFICATION_CHANNEL_ID,
-                context.getString(R.string.default_label),
-                NotificationManager.IMPORTANCE_DEFAULT)
-        notificationManager.createNotificationChannel(channel)
+        NotificationUtils.createChannel(context, STOPWATCH_NOTIFICATION_CHANNEL_ID)
     }
 
     fun build(context: Context, nm: NotificationModel, stopwatch: Stopwatch?): Notification {
@@ -151,13 +147,14 @@ internal class StopwatchNotificationBuilder {
             notification.addAction(action)
         }
 
-        return notification.build()
+        return NotificationUtils.requestPromotedOngoing(notification).build()
     }
 
     companion object {
         /**
          * Notification channel containing all stopwatch notifications.
          */
-        private const val STOPWATCH_NOTIFICATION_CHANNEL_ID = "StopwatchNotification"
+        private const val STOPWATCH_NOTIFICATION_CHANNEL_ID =
+                NotificationUtils.STOPWATCH_NOTIFICATION_CHANNEL_ID
     }
 }

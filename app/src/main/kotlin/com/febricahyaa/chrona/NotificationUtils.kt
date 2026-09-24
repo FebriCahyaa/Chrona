@@ -16,10 +16,12 @@
 
 package com.febricahyaa.chrona
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.content.Context
-import android.util.ArraySet
+import android.os.Bundle
 import android.util.Log
+import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.NotificationManagerCompat.IMPORTANCE_HIGH
 import androidx.core.app.NotificationManagerCompat.IMPORTANCE_LOW
@@ -125,14 +127,6 @@ object NotificationUtils {
         }
     }
 
-    private fun getAllExistingChannelIds(nm: NotificationManagerCompat): Set<String> {
-        val result: MutableSet<String> = ArraySet()
-        for (channel in nm.getNotificationChannels()) {
-            result.add(channel.id)
-        }
-        return result
-    }
-
     @JvmStatic
     fun updateNotificationChannels(context: Context) {
 
@@ -146,11 +140,21 @@ object NotificationUtils {
         deleteChannel(nm, "TimerModelNotification")
         deleteChannel(nm, "alarmSnoozeNotification")
 
-        // We recreate all existing channels so any language change or our name changes propagate
-        // to the actual channels
-        val existingChannelIds = getAllExistingChannelIds(nm)
-        for (id in existingChannelIds) {
+        // Create every channel up front, so all of them are listed in the system's notification
+        // settings, and so language or name changes propagate to the existing channels.
+        for (id in CHANNEL_PROPS.keys) {
             createChannel(context, id)
         }
+    }
+
+    /**
+     * Asks Android 16+ to show this ongoing notification as a Live Update (the "Live updates"
+     * app setting) in the status bar and on the lock screen. Older versions ignore the extra.
+     */
+    @JvmStatic
+    fun requestPromotedOngoing(builder: NotificationCompat.Builder): NotificationCompat.Builder {
+        return builder.addExtras(Bundle().apply {
+            putBoolean(Notification.EXTRA_REQUEST_PROMOTED_ONGOING, true)
+        })
     }
 }

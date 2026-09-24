@@ -17,7 +17,6 @@
 package com.febricahyaa.chrona.data
 
 import android.app.Notification
-import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
@@ -35,6 +34,7 @@ import androidx.core.app.NotificationCompat.Builder
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 
+import com.febricahyaa.chrona.NotificationUtils
 import com.febricahyaa.chrona.R
 import com.febricahyaa.chrona.Utils
 import com.febricahyaa.chrona.events.Events
@@ -50,12 +50,10 @@ internal class TimerNotificationBuilder {
         return notificationManager.getNotificationChannelCompat(TIMER_MODEL_NOTIFICATION_CHANNEL_ID) != null
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun buildChannel(context: Context, notificationManager: NotificationManagerCompat) {
-        val channel = NotificationChannel(
-                TIMER_MODEL_NOTIFICATION_CHANNEL_ID,
-                context.getString(R.string.default_label),
-                NotificationManager.IMPORTANCE_DEFAULT)
-        notificationManager.createNotificationChannel(channel)
+        NotificationUtils.createChannel(context, TIMER_MODEL_NOTIFICATION_CHANNEL_ID)
+        NotificationUtils.createChannel(context, NotificationUtils.FIRING_NOTIFICATION_CHANNEL_ID)
     }
 
     fun build(context: Context, nm: NotificationModel, unexpired: List<Timer>): Notification {
@@ -173,7 +171,7 @@ internal class TimerNotificationBuilder {
 
         notification.setCustomContentView(buildChronometer(pname, base, running, stateText))
                 .setGroup(nm.timerNotificationGroupKey)
-        return notification.build()
+        return NotificationUtils.requestPromotedOngoing(notification).build()
     }
 
     fun buildHeadsUp(context: Context, expired: List<Timer>): Notification {
@@ -228,7 +226,7 @@ internal class TimerNotificationBuilder {
         val pendingFullScreen: PendingIntent = Utils.pendingActivityIntent(context, fullScreen)
 
         val notification: Builder = Builder(
-                context, TIMER_MODEL_NOTIFICATION_CHANNEL_ID)
+                context, NotificationUtils.FIRING_NOTIFICATION_CHANNEL_ID)
                 .setOngoing(true)
                 .setLocalOnly(true)
                 .setShowWhen(false)
@@ -247,7 +245,7 @@ internal class TimerNotificationBuilder {
 
         notification.setCustomContentView(buildChronometer(pname, base, true, stateText))
 
-        return notification.build()
+        return NotificationUtils.requestPromotedOngoing(notification).build()
     }
 
     fun buildMissed(
@@ -345,7 +343,8 @@ internal class TimerNotificationBuilder {
         /**
          * Notification channel containing all TimerModel notifications.
          */
-        private const val TIMER_MODEL_NOTIFICATION_CHANNEL_ID = "TimerModelNotification"
+        private const val TIMER_MODEL_NOTIFICATION_CHANNEL_ID =
+                NotificationUtils.TIMER_MODEL_NOTIFICATION_CHANNEL_ID
 
         private const val REQUEST_CODE_UPCOMING = 0
         private const val REQUEST_CODE_MISSING = 1
