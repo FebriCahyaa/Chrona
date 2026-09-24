@@ -20,26 +20,35 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Path
 import android.text.format.DateFormat
 import android.text.format.DateUtils
 import android.util.AttributeSet
 import android.view.View
-import android.widget.FrameLayout
-import android.widget.ImageView
-import androidx.appcompat.widget.AppCompatImageView
+import androidx.core.graphics.ColorUtils
 
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.TimeZone
 
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.min
+import kotlin.math.sin
+
 /**
- * This widget display an analog clock with two hands for hours and minutes.
+ * Material 3 Expressive analog clock: a 12-lobed "cookie" face, a thick rounded minute hand,
+ * a shorter hour hand and the seconds shown as a dot circling the face. Colors come from the
+ * theme (dynamic color), so the clock follows the wallpaper palette.
  */
 class AnalogClock @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-) : FrameLayout(context, attrs, defStyleAttr) {
+) : View(context, attrs, defStyleAttr) {
+
     private val mIntentReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (mTimeZone == null && Intent.ACTION_TIMEZONE_CHANGED == intent.action) {
@@ -53,7 +62,6 @@ class AnalogClock @JvmOverloads constructor(
     private val mClockTick: Runnable = object : Runnable {
         override fun run() {
             onTimeChanged()
-
             if (mEnableSeconds) {
                 val now = System.currentTimeMillis()
                 val delay = DateUtils.SECOND_IN_MILLIS - now % DateUtils.SECOND_IN_MILLIS
@@ -62,38 +70,103 @@ class AnalogClock @JvmOverloads constructor(
         }
     }
 
-    private val mHourHand: ImageView
-    private val mMinuteHand: ImageView
-    private val mSecondHand: ImageView
-
     private var mTime = Calendar.getInstance()
     private val mDescFormat =
             (DateFormat.getTimeFormat(context) as SimpleDateFormat).toLocalizedPattern()
     private var mTimeZone: TimeZone? = null
     private var mEnableSeconds = true
 
+    private val mFacePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
+    private val mHandPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        strokeCap = Paint.Cap.ROUND
+    }
+    private val mDotPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
+    private val mFacePath = Path()
+
+    private val mMinuteHandColor: Int
+    private val mHourHandColor: Int
+
+    private val mDefaultSize: Int =
+            resources.getDimensionPixelSize(R.dimen.analog_clock_default_size)
+
     init {
-        // Must call mutate on these instances, otherwise the drawables will blur, because they're
-        // sharing their size characteristics with the (smaller) world cities analog clocks.
-        val dial: ImageView = AppCompatImageView(context)
-        dial.setImageResource(R.drawable.clock_analog_dial)
-        dial.drawable.mutate()
-        addView(dial)
+        mFacePaint.color = ThemeUtils.resolveColor(context,
+                com.google.android.material.R.attr.colorSecondaryContainer)
+        mMinuteHandColor = ThemeUtils.resolveColor(context,
+                com.google.android.material.R.attr.colorPrimaryContainer)
+        mHourHandColor = ColorUtils.setAlphaComponent(ThemeUtils.resolveColor(context,
+                com.google.android.material.R.attr.colorOnSecondaryContainer), 0x99)
+        mDotPaint.color = ThemeUtils.resolveColor(context,
+                com.google.android.material.R.attr.colorTertiary)
+    }
 
-        mHourHand = AppCompatImageView(context)
-        mHourHand.setImageResource(R.drawable.clock_analog_hour)
-        mHourHand.drawable.mutate()
-        addView(mHourHand)
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val width = resolveSize(mDefaultSize, widthMeasureSpec)
+        val height = resolveSize(mDefaultSize, heightMeasureSpec)
+        val size = min(width, height)
+        setMeasuredDimension(size, size)
+    }
 
-        mMinuteHand = AppCompatImageView(context)
-        mMinuteHand.setImageResource(R.drawable.clock_analog_minute)
-        mMinuteHand.drawable.mutate()
-        addView(mMinuteHand)
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        buildFacePath()
+    }
 
-        mSecondHand = AppCompatImageView(context)
-        mSecondHand.setImageResource(R.drawable.clock_analog_second)
-        mSecondHand.drawable.mutate()
-        addView(mSecondHand)
+    /** Scalloped "cookie" outline: 12 lobes around the center. */
+    private fun buildFacePath() {
+        mFacePath.reset()
+        val cx = (paddingLeft + width - paddingRight) / 2f
+        val cy = (paddingTop + height - paddingBottom) / 2f
+        val radius = min(width - paddingLeft - paddingRight,
+                height - paddingTop - paddingBottom) / 2f
+        if (radius <= 0f) {
+            return
+        }
+        val steps = 360
+        for (i in 0..steps) {
+            val theta = 2.0 * PI * i / steps
+            val r = radius * (1f - LOBE_DEPTH * (1f - cos(LOBES * theta).toFloat()) / 2f)
+            val x = cx + r * cos(theta).toFloat()
+            val y = cy + r * sin(theta).toFloat()
+            if (i == 0) mFacePath.moveTo(x, y) else mFacePath.lineTo(x, y)
+        }
+        mFacePath.close()
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
+        val cx = (paddingLeft + width - paddingRight) / 2f
+        val cy = (paddingTop + height - paddingBottom) / 2f
+        val radius = min(width - paddingLeft - paddingRight,
+                height - paddingTop - paddingBottom) / 2f
+        if (radius <= 0f) {
+            return
+        }
+
+        canvas.drawPath(mFacePath, mFacePaint)
+
+        val minutes = mTime[Calendar.MINUTE] + mTime[Calendar.SECOND] / 60f
+        val hours = mTime[Calendar.HOUR] + minutes / 60f
+
+        mHandPaint.strokeWidth = radius * HAND_WIDTH
+        mHandPaint.color = mHourHandColor
+        drawHand(canvas, cx, cy, hours * 30f, radius * HOUR_HAND_LENGTH)
+        mHandPaint.color = mMinuteHandColor
+        drawHand(canvas, cx, cy, minutes * 6f, radius * MINUTE_HAND_LENGTH)
+
+        if (mEnableSeconds) {
+            val angle = Math.toRadians((mTime[Calendar.SECOND] * 6f - 90f).toDouble())
+            val orbit = radius * SECOND_ORBIT
+            canvas.drawCircle(cx + orbit * cos(angle).toFloat(),
+                    cy + orbit * sin(angle).toFloat(), radius * SECOND_DOT_RADIUS, mDotPaint)
+        }
+    }
+
+    private fun drawHand(canvas: Canvas, cx: Float, cy: Float, degrees: Float, length: Float) {
+        val angle = Math.toRadians((degrees - 90f).toDouble())
+        canvas.drawLine(cx, cy, cx + length * cos(angle).toFloat(),
+                cy + length * sin(angle).toFloat(), mHandPaint)
     }
 
     override fun onAttachedToWindow() {
@@ -125,14 +198,6 @@ class AnalogClock @JvmOverloads constructor(
 
     private fun onTimeChanged() {
         mTime.timeInMillis = System.currentTimeMillis()
-        val hourAngle = mTime[Calendar.HOUR] * 30f
-        mHourHand.rotation = hourAngle
-        val minuteAngle = mTime[Calendar.MINUTE] * 6f
-        mMinuteHand.rotation = minuteAngle
-        if (mEnableSeconds) {
-            val secondAngle = mTime[Calendar.SECOND] * 6f
-            mSecondHand.rotation = secondAngle
-        }
         contentDescription = DateFormat.format(mDescFormat, mTime)
         invalidate()
     }
@@ -145,11 +210,22 @@ class AnalogClock @JvmOverloads constructor(
 
     fun enableSeconds(enable: Boolean) {
         mEnableSeconds = enable
+        removeCallbacks(mClockTick)
         if (mEnableSeconds) {
-            mSecondHand.visibility = View.VISIBLE
             mClockTick.run()
         } else {
-            mSecondHand.visibility = View.GONE
+            invalidate()
         }
+    }
+
+    companion object {
+        private const val LOBES = 12
+        /** How far the scallops dip, as a fraction of the radius. */
+        private const val LOBE_DEPTH = 0.1f
+        private const val HAND_WIDTH = 0.13f
+        private const val HOUR_HAND_LENGTH = 0.32f
+        private const val MINUTE_HAND_LENGTH = 0.52f
+        private const val SECOND_ORBIT = 0.68f
+        private const val SECOND_DOT_RADIUS = 0.07f
     }
 }

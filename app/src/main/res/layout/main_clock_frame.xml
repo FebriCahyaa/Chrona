@@ -42,10 +42,6 @@
                 android:id="@+id/analog_clock"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="@dimen/analog_clock_margin"
-                android:layout_marginLeft="@dimen/analog_clock_margin"
-                android:layout_marginRight="@dimen/analog_clock_margin"
-                android:layout_marginStart="@dimen/analog_clock_margin"
                 android:layout_marginTop="@dimen/circle_margin_top" />
 
             <com.android.deskclock.widget.AutoSizingTextClock
@@ -61,7 +57,11 @@
 
         </FrameLayout>
 
-        <include layout="@layout/date_and_next_alarm_time" />
+        <include
+            layout="@layout/main_clock_date_and_next_alarm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp" />
 
         <View
             android:id="@+id/hairline"

@@ -86,7 +86,7 @@
     <dimen name="analog_clock_size">294dp</dimen>
 
     <!-- Size of time zone analog clocks in world clock. -->
-    <dimen name="world_clock_analog_size">100dp</dimen>
+    <dimen name="world_clock_analog_size">80dp</dimen>
 
     <dimen name="min_analog_widget_size">110dp</dimen>
 
@@ -145,4 +145,8 @@
     <dimen name="timer_setup_value_font_size">72sp</dimen>
     <dimen name="timer_setup_preset_height">56dp</dimen>
     <dimen name="timer_setup_start_height">80dp</dimen>
+    <!-- Size of the cookie analog clock when its layout asks for wrap_content. -->
+    <dimen name="analog_clock_default_size">240dp</dimen>
+    <!-- Material 3 Expressive world clock cards. -->
+    <dimen name="world_clock_card_corner_radius">28dp</dimen>
 </resources>

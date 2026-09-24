@@ -28,6 +28,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.LinearLayout
 import androidx.annotation.StringRes
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
@@ -217,6 +218,7 @@ class DeskClock : BaseActivity(), FabContainer, AlarmLabelDialogHandler {
         leftHideAnimation.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
                 selectedDeskClockFragment.onUpdateFabButtons(mLeftButton, mRightButton)
+                alignFab()
             }
         })
 
@@ -356,6 +358,22 @@ class DeskClock : BaseActivity(), FabContainer, AlarmLabelDialogHandler {
                 super.onKeyDown(keyCode, event))
     }
 
+    /**
+     * Tabs without side buttons (alarms, world clock) get the fab in the end corner, as in the
+     * M3 Expressive clock; tabs with side buttons keep it centered between them.
+     */
+    private fun alignFab() {
+        val sideButtonsShown = mLeftButton.visibility == View.VISIBLE ||
+                mRightButton.visibility == View.VISIBLE
+        val endSlot = mRightButton.parent as View
+        val params = endSlot.layoutParams as LinearLayout.LayoutParams
+        val weight = if (sideButtonsShown) 1f else 0f
+        if (params.weight != weight) {
+            params.weight = weight
+            endSlot.layoutParams = params
+        }
+    }
+
     override fun updateFab(@UpdateFabFlag updateTypes: Int) {
         val f = selectedDeskClockFragment
 
@@ -381,6 +399,7 @@ class DeskClock : BaseActivity(), FabContainer, AlarmLabelDialogHandler {
             FabContainer.FAB_AND_BUTTONS_SHRINK -> mHideAnimation.start()
             FabContainer.FAB_AND_BUTTONS_EXPAND -> mShowAnimation.start()
         }
+        alignFab()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
