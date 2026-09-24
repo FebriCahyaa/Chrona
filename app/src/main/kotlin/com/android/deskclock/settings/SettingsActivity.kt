@@ -29,6 +29,8 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceDialogFragmentCompat
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.TwoStatePreference
+import com.google.android.material.appbar.CollapsingToolbarLayout
+import com.google.android.material.appbar.MaterialToolbar
 
 import com.android.deskclock.BaseActivity
 import com.android.deskclock.DropShadowController
@@ -54,6 +56,11 @@ class SettingsActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.settings)
+
+        val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        findViewById<CollapsingToolbarLayout>(R.id.collapsing_toolbar).title = title
 
         mOptionsMenuManager.addMenuItemController(NavUpMenuItemController(this))
                 .addMenuItemController(*MenuItemControllerFactory.buildMenuItemControllers(this))

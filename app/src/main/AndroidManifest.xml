@@ -82,7 +82,7 @@
             android:label="@string/settings"
             android:parentActivityName=".DeskClock"
             android:taskAffinity=""
-            android:theme="@style/Theme.DeskClock.Settings" />
+            android:theme="@style/Theme.DeskClock.Settings.Collapsing" />
 
         <activity
             android:name=".HandleShortcuts"

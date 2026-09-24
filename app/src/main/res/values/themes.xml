@@ -61,6 +61,12 @@
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
     </style>
 
+    <!-- Settings with its own collapsing MaterialToolbar instead of the window action bar. -->
+    <style name="Theme.DeskClock.Settings.Collapsing">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
     <style name="Theme.DeskClock.RingtonePicker">
         <!-- Attributes from androidx.appcompat.appcompat -->
         <item name="actionBarStyle">@style/Widget.ActionBar</item>
