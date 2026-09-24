@@ -112,8 +112,6 @@ object AnimatorUtils {
         }
     }
 
-    @JvmField
-    @Suppress("UNCHECKED_CAST")
     private val sArgbEvaluator = ArgbEvaluator()
 
     @JvmField
