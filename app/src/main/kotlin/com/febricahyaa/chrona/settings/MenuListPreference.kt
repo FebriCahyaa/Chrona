@@ -17,6 +17,7 @@
 package com.febricahyaa.chrona.settings
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -29,6 +30,10 @@ import androidx.preference.ListPreference
 import androidx.preference.PreferenceViewHolder
 
 import com.febricahyaa.chrona.R
+import com.febricahyaa.chrona.ThemeUtils
+
+import com.google.android.material.shape.MaterialShapeDrawable
+import com.google.android.material.shape.ShapeAppearanceModel
 
 /**
  * A [ListPreference] that shows its choices in a Material 3 menu anchored to the row, as the
@@ -63,6 +68,16 @@ class MenuListPreference @JvmOverloads constructor(
 
         val popup = ListPopupWindow(context, null, androidx.appcompat.R.attr.listPopupWindowStyle)
         popup.anchorView = anchor
+        // A rounded M3 menu surface; the default popup background has square corners.
+        val res = context.resources
+        popup.setBackgroundDrawable(MaterialShapeDrawable(ShapeAppearanceModel.builder()
+                .setAllCornerSizes(res.getDimension(R.dimen.preference_menu_corner_radius))
+                .build()).apply {
+            fillColor = ColorStateList.valueOf(ThemeUtils.resolveColor(context,
+                    com.google.android.material.R.attr.colorSurfaceContainer))
+            initializeElevationOverlay(context)
+            elevation = res.getDimension(R.dimen.preference_menu_elevation)
+        })
         popup.isModal = true
         popup.setDropDownGravity(Gravity.START)
         popup.setAdapter(object : ArrayAdapter<CharSequence>(
@@ -75,7 +90,7 @@ class MenuListPreference @JvmOverloads constructor(
                 return view
             }
         })
-        popup.setContentWidth(context.resources.getDimensionPixelSize(R.dimen.preference_menu_width))
+        popup.setContentWidth(res.getDimensionPixelSize(R.dimen.preference_menu_width))
         popup.verticalOffset = -anchor.height
         popup.setOnItemClickListener { _, _, position, _ ->
             popup.dismiss()

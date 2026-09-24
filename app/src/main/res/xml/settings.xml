@@ -14,10 +14,13 @@
 
 <PreferenceScreen
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:title="@string/settings">
     <PreferenceCategory
+        app:iconSpaceReserved="false"
         android:title="@string/alarm_settings">
         <ListPreference
+            app:iconSpaceReserved="false"
             android:defaultValue="10"
             android:dialogTitle="@string/auto_silence_title"
             android:entries="@array/auto_silence_entries"
@@ -26,6 +29,7 @@
             android:title="@string/auto_silence_title" />
 
         <ListPreference
+            app:iconSpaceReserved="false"
             android:defaultValue="10"
             android:dialogTitle="@string/snooze_duration_title"
             android:entries="@array/snooze_duration_entries"
@@ -34,11 +38,13 @@
             android:title="@string/snooze_duration_title" />
 
         <com.febricahyaa.chrona.settings.AlarmVolumePreference
+            app:iconSpaceReserved="false"
             android:key="volume_setting"
             android:layout="@layout/alarm_volume_preference"
             android:title="@string/alarm_volume_title" />
 
         <ListPreference
+            app:iconSpaceReserved="false"
             android:defaultValue="0"
             android:dialogTitle="@string/crescendo_duration_title"
             android:entries="@array/crescendo_entries"
@@ -47,6 +53,7 @@
             android:title="@string/crescendo_duration_title" />
 
         <com.febricahyaa.chrona.settings.MenuListPreference
+            app:iconSpaceReserved="false"
             android:defaultValue="0"
             android:dialogTitle="@string/volume_button_setting_title"
             android:entries="@array/volume_button_setting_entries"
@@ -55,6 +62,7 @@
             android:title="@string/volume_button_setting_title" />
 
         <com.febricahyaa.chrona.settings.MenuListPreference
+            app:iconSpaceReserved="false"
             android:dialogTitle="@string/week_start_title"
             android:entries="@array/week_start_entries"
             android:entryValues="@array/week_start_values"
@@ -63,8 +71,10 @@
     </PreferenceCategory>
 
     <PreferenceCategory
+        app:iconSpaceReserved="false"
         android:title="@string/clock_settings">
         <com.febricahyaa.chrona.settings.MenuListPreference
+            app:iconSpaceReserved="false"
             android:defaultValue="@string/default_clock_style"
             android:dialogTitle="@string/clock_style"
             android:entries="@array/clock_style_entries"
@@ -73,11 +83,13 @@
             android:title="@string/clock_style" />
 
         <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
             android:widgetLayout="@layout/preference_widget_material_switch"
             android:key="display_clock_seconds"
             android:title="@string/display_clock_seconds_pref" />
 
         <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
             android:widgetLayout="@layout/preference_widget_material_switch"
             android:defaultValue="false"
             android:key="amoled_dark_theme"
@@ -85,6 +97,7 @@
             android:title="@string/amoled_theme_title" />
 
         <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
             android:widgetLayout="@layout/preference_widget_material_switch"
             android:defaultValue="true"
             android:key="automatic_home_clock"
@@ -92,6 +105,7 @@
             android:title="@string/automatic_home_clock" />
 
         <ListPreference
+            app:iconSpaceReserved="false"
             android:dialogTitle="@string/home_time_zone_title"
             android:entries="@array/timezone_labels"
             android:entryValues="@array/timezone_values"
@@ -99,17 +113,21 @@
             android:title="@string/home_time_zone" />
 
         <Preference
+            app:iconSpaceReserved="false"
             android:key="date_time"
             android:title="@string/open_date_settings" />
     </PreferenceCategory>
 
     <PreferenceCategory
+        app:iconSpaceReserved="false"
         android:title="@string/timer_settings">
         <Preference
+            app:iconSpaceReserved="false"
             android:key="timer_ringtone"
             android:title="@string/timer_sound" />
 
         <ListPreference
+            app:iconSpaceReserved="false"
             android:defaultValue="0"
             android:dialogTitle="@string/crescendo_duration_title"
             android:entries="@array/crescendo_entries"
@@ -119,6 +137,7 @@
 
 
         <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
             android:widgetLayout="@layout/preference_widget_material_switch"
             android:defaultValue="false"
             android:key="timer_vibrate"
@@ -126,8 +145,10 @@
     </PreferenceCategory>
 
     <PreferenceCategory
+        app:iconSpaceReserved="false"
         android:title="@string/menu_item_night_mode">
         <com.febricahyaa.chrona.settings.MenuListPreference
+            app:iconSpaceReserved="false"
             android:defaultValue="@string/default_clock_style"
             android:dialogTitle="@string/clock_style"
             android:entries="@array/clock_style_entries"
@@ -136,6 +157,7 @@
             android:title="@string/clock_style" />
 
         <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
             android:widgetLayout="@layout/preference_widget_material_switch"
             android:defaultValue="true"
             android:key="screensaver_night_mode"
