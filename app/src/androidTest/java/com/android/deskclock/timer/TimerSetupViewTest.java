@@ -61,7 +61,11 @@ public class TimerSetupViewTest {
     private MockFabContainer fabContainer;
     private TimerSetupView timerSetupView;
 
-    private TextView timeView;
+    private View timeView;
+    private TextView hoursView;
+    private TextView minutesView;
+    private TextView secondsView;
+    private View startView;
     private View deleteView;
 
     private Locale defaultLocale;
@@ -92,6 +96,10 @@ public class TimerSetupViewTest {
 
             timeView = timerSetupView.findViewById(R.id.timer_setup_time);
             timeView.setActivated(true);
+            hoursView = timerSetupView.findViewById(R.id.timer_setup_hours);
+            minutesView = timerSetupView.findViewById(R.id.timer_setup_minutes);
+            secondsView = timerSetupView.findViewById(R.id.timer_setup_seconds);
+            startView = timerSetupView.findViewById(R.id.timer_setup_start);
             deleteView = timerSetupView.findViewById(R.id.timer_setup_delete);
         };
         InstrumentationRegistry.getInstrumentation().runOnMainSync(selectTabRunnable);
@@ -241,7 +249,8 @@ public class TimerSetupViewTest {
         assertFalse(timerSetupView.hasValidInput());
         assertEquals(0, timerSetupView.getTimeInMillis());
 
-        assertTrue(TextUtils.equals("00h 00m 00s", timeView.getText()));
+        assertValues(0, 0, 0);
+        assertFalse(startView.isEnabled());
         assertTrue(TextUtils.equals("0 hours, 0 minutes, 0 seconds",
                 timeView.getContentDescription()));
 
@@ -271,9 +280,8 @@ public class TimerSetupViewTest {
         assertTrue(timerSetupView.hasValidInput());
         assertEquals(time, timerSetupView.getTimeInMillis());
 
-        final String timeString =
-                String.format(Locale.US, "%02dh %02dm %02ds", hours, minutes, seconds);
-        assertTrue(TextUtils.equals(timeString, timeView.getText()));
+        assertValues(hours, minutes, seconds);
+        assertTrue(startView.isEnabled());
 
         assertTrue(deleteView.isEnabled());
         assertTrue(TextUtils.equals("Delete " + seconds % 10, deleteView.getContentDescription()));
@@ -289,9 +297,17 @@ public class TimerSetupViewTest {
             assertTrue(TextUtils.equals("Cancel", leftButton.getText()));
         }
 
-        assertEquals(VISIBLE, fab.getVisibility());
-        assertTrue(TextUtils.equals("Start", fab.getContentDescription()));
+        // The setup view's own start button replaces the shared fab.
+        assertEquals(INVISIBLE, fab.getVisibility());
         assertEquals(INVISIBLE, rightButton.getVisibility());
+    }
+
+    private void assertValues(int hours, int minutes, int seconds) {
+        assertTrue(TextUtils.equals(String.format(Locale.US, "%02d", hours), hoursView.getText()));
+        assertTrue(TextUtils.equals(String.format(Locale.US, "%02d", minutes),
+                minutesView.getText()));
+        assertTrue(TextUtils.equals(String.format(Locale.US, "%02d", seconds),
+                secondsView.getText()));
     }
 
     private void assertStateEquals(int hours, int minutes, int seconds) {
