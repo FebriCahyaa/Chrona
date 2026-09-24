@@ -48,6 +48,10 @@
         <item name="colorPrimaryDark">#66000000</item>
         <item name="imageButtonStyle">@style/Widget.ImageButton</item>
         <item name="popupTheme">@style/ThemeOverlay.Popup</item>
+        <!-- M3 Expressive snackbars: rounded tonal cards. -->
+        <item name="snackbarStyle">@style/Widget.Chrona.Snackbar</item>
+        <item name="snackbarTextViewStyle">@style/Widget.Chrona.Snackbar.TextView</item>
+        <item name="snackbarButtonStyle">@style/Widget.Chrona.Snackbar.Button</item>
     </style>
 
     <style name="Theme.DeskClock.Settings">

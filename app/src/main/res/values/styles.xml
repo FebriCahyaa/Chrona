@@ -102,6 +102,29 @@
         <item name="displayOptions">showTitle|homeAsUp</item>
     </style>
 
+    <!-- Snackbar as an M3 Expressive rounded tonal card, inset from the screen edges. -->
+    <style name="Widget.Chrona.Snackbar" parent="Widget.Material3.Snackbar">
+        <item name="android:layout_margin">12dp</item>
+        <item name="backgroundTint">?attr/colorSurfaceContainerHighest</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Chrona.Snackbar</item>
+        <item name="elevation">6dp</item>
+    </style>
+
+    <style name="ShapeAppearance.Chrona.Snackbar" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">20dp</item>
+    </style>
+
+    <style name="Widget.Chrona.Snackbar.TextView" parent="Widget.Material3.Snackbar.TextView">
+        <item name="android:textAppearance">?attr/textAppearanceBodyLarge</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="Widget.Chrona.Snackbar.Button" parent="Widget.Material3.Button.TextButton.Snackbar">
+        <item name="android:textColor">?attr/colorPrimary</item>
+        <item name="android:textAppearance">?attr/textAppearanceLabelLarge</item>
+    </style>
+
     <!-- Rows of options in an expanded alarm card. -->
     <style name="AlarmOptionRow">
         <item name="android:layout_width">match_parent</item>
