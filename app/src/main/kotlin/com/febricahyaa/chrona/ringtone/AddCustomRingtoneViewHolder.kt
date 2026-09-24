@@ -16,6 +16,8 @@
 
 package com.febricahyaa.chrona.ringtone
 
+import android.content.res.ColorStateList
+import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,6 +26,7 @@ import android.widget.TextView
 
 import com.febricahyaa.chrona.ItemAdapter.ItemViewHolder
 import com.febricahyaa.chrona.R
+import com.febricahyaa.chrona.ThemeUtils
 
 internal class AddCustomRingtoneViewHolder private constructor(itemView: View)
     : ItemViewHolder<AddCustomRingtoneHolder>(itemView), View.OnClickListener {
@@ -34,10 +37,16 @@ internal class AddCustomRingtoneViewHolder private constructor(itemView: View)
         selectedView.visibility = View.GONE
         val nameView = itemView.findViewById<View>(R.id.ringtone_name) as TextView
         nameView.text = itemView.context.getString(R.string.add_new_sound)
-        nameView.alpha = 0.63f
+        // "Add new" is a plus on a primary circle.
+        val context = itemView.context
         val imageView = itemView.findViewById<View>(R.id.ringtone_image) as ImageView
         imageView.setImageResource(R.drawable.ic_add_white_24dp)
-        imageView.alpha = 0.63f
+        imageView.background = GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            setColor(ThemeUtils.resolveColor(context, androidx.appcompat.R.attr.colorPrimary))
+        }
+        imageView.imageTintList = ColorStateList.valueOf(ThemeUtils.resolveColor(context,
+                com.google.android.material.R.attr.colorOnPrimary))
     }
 
     override fun onClick(view: View) {

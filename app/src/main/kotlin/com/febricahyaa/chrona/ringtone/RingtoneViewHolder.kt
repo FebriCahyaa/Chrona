@@ -16,6 +16,8 @@
 
 package com.febricahyaa.chrona.ringtone
 
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.graphics.PorterDuff
 import android.view.ContextMenu
 import android.view.LayoutInflater
@@ -26,7 +28,6 @@ import android.view.ContextMenu.ContextMenuInfo
 import android.view.View.OnCreateContextMenuListener
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 
 import com.febricahyaa.chrona.AnimatorUtils
 import com.febricahyaa.chrona.ItemAdapter.ItemViewHolder
@@ -51,6 +52,9 @@ internal class RingtoneViewHolder private constructor(itemView: View)
         mNameView.alpha = if (opaque) 1f else .63f
         mImageView.alpha = if (opaque) 1f else .63f
         mImageView.clearColorFilter()
+        val context = itemView.context
+        mImageView.imageTintList = ColorStateList.valueOf(ThemeUtils.resolveColor(context,
+                com.google.android.material.R.attr.colorOnSurfaceVariant))
 
         val itemViewType: Int = getItemViewType()
         if (itemViewType == VIEW_TYPE_CUSTOM_SOUND) {
@@ -61,6 +65,7 @@ internal class RingtoneViewHolder private constructor(itemView: View)
                 mImageView.setColorFilter(colorAccent, PorterDuff.Mode.SRC_ATOP)
             } else {
                 mImageView.setImageResource(R.drawable.placeholder_album_artwork)
+                mImageView.imageTintList = null
             }
         } else if (itemHolder.item == Utils.RINGTONE_SILENT) {
             mImageView.setImageResource(R.drawable.ic_ringtone_silent)
@@ -73,8 +78,13 @@ internal class RingtoneViewHolder private constructor(itemView: View)
 
         mSelectedView.visibility = if (itemHolder.isSelected) View.VISIBLE else View.GONE
 
-        val bgColorId = if (itemHolder.isSelected) R.color.white_08p else R.color.transparent
-        itemView.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), bgColorId))
+        // The selected sound sits on a highlighted row.
+        itemView.setBackgroundColor(if (itemHolder.isSelected) {
+            ThemeUtils.resolveColor(context,
+                    com.google.android.material.R.attr.colorSurfaceContainerHigh)
+        } else {
+            Color.TRANSPARENT
+        })
 
         if (itemViewType == VIEW_TYPE_CUSTOM_SOUND) {
             itemView.setOnCreateContextMenuListener(this)

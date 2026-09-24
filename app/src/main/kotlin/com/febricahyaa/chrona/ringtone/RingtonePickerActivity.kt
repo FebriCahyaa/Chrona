@@ -62,6 +62,9 @@ import com.febricahyaa.chrona.alarms.AlarmUpdateHandler
 import com.febricahyaa.chrona.data.DataModel
 import com.febricahyaa.chrona.provider.Alarm
 
+import com.google.android.material.appbar.CollapsingToolbarLayout
+import com.google.android.material.appbar.MaterialToolbar
+
 /**
  * This activity presents a set of ringtones from which the user may select one. The set includes:
  *
@@ -105,6 +108,8 @@ class RingtonePickerActivity : BaseActivity(), LoaderCallbacks<List<ItemHolder<U
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.ringtone_picker)
+        setSupportActionBar(findViewById<MaterialToolbar>(R.id.toolbar))
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         setVolumeControlStream(AudioManager.STREAM_ALARM)
 
         mOptionsMenuManager = OptionsMenuManager()
@@ -159,6 +164,7 @@ class RingtonePickerActivity : BaseActivity(), LoaderCallbacks<List<ItemHolder<U
 
         val titleResourceId = intent.getIntExtra(EXTRA_TITLE, 0)
         setTitle(context.getString(titleResourceId))
+        findViewById<CollapsingToolbarLayout>(R.id.collapsing_toolbar).title = title
 
         LoaderManager.getInstance(this).initLoader(0 /* id */, Bundle.EMPTY /* args */,
                 this /* callback */)
