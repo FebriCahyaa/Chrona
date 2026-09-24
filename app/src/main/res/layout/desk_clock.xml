@@ -118,9 +118,19 @@
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/hairline_height"
+        android:background="@color/hairline"
+        android:importantForAccessibility="no" />
+
+    <!-- Transparent so it sits on the same time-of-day background as the rest of the screen;
+         the default M3 surface color reads as a separate dark band against it. -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        app:backgroundTint="@android:color/transparent"
+        app:elevation="0dp" />
 
 </LinearLayout>
