@@ -26,6 +26,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.recyclerview.widget.RecyclerView
 
 import com.android.deskclock.R
+import com.android.deskclock.ThemeUtils
 import com.android.deskclock.data.DataModel
 import com.android.deskclock.data.Lap
 import com.android.deskclock.data.Stopwatch
@@ -95,6 +96,17 @@ internal class LapsAdapter(context: Context) : RecyclerView.Adapter<LapItemHolde
         viewHolder.lapTime.setText(formatLapTime(lapTime, true))
         viewHolder.accumulatedTime.setText(formatAccumulatedTime(totalTime, true))
         viewHolder.lapNumber.setText(formatLapNumber(laps.size + 1, lapNumber))
+
+        // Highlight the running (current) lap card, as in the M3 Expressive clock.
+        val colorAttr = if (lap == null) {
+            com.google.android.material.R.attr.colorPrimary
+        } else {
+            com.google.android.material.R.attr.colorOnSurface
+        }
+        val color = ThemeUtils.resolveColor(viewHolder.itemView.context, colorAttr)
+        viewHolder.lapNumber.setTextColor(color)
+        viewHolder.lapTime.setTextColor(color)
+        viewHolder.accumulatedTime.setTextColor(color)
     }
 
     override fun getItemId(position: Int): Long {
@@ -116,11 +128,11 @@ internal class LapsAdapter(context: Context) : RecyclerView.Adapter<LapItemHolde
             return
         }
 
-        val currentLapView: View? = rv.getChildAt(0)
-        if (currentLapView != null) {
+        // Adapter position 0 is the current lap; null while it is scrolled out of view.
+        val holder = rv.findViewHolderForAdapterPosition(0) as LapItemHolder?
+        if (holder != null) {
             // Compute the lap time using the total time.
             val lapTime = DataModel.dataModel.getCurrentLapTime(totalTime)
-            val holder = rv.getChildViewHolder(currentLapView) as LapItemHolder
             holder.lapTime.setText(formatLapTime(lapTime, false))
             holder.accumulatedTime.setText(formatAccumulatedTime(totalTime, false))
         }

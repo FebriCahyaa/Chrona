@@ -137,4 +137,8 @@
     <dimen name="alarm_card_corner_radius">28dp</dimen>
     <dimen name="alarm_card_margin_horizontal">16dp</dimen>
     <dimen name="alarm_card_margin_vertical">4dp</dimen>
+    <!-- Material 3 Expressive stopwatch. -->
+    <dimen name="stopwatch_primary_button_height">80dp</dimen>
+    <dimen name="stopwatch_secondary_button_height">56dp</dimen>
+    <dimen name="lap_card_min_width">88dp</dimen>
 </resources>
