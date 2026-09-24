@@ -202,7 +202,7 @@
     <string name="alarm_status_on">Alarm aktif</string>
     <string name="alarm_status_off">Alarm nonaktif</string>
     <string name="alarm_name">Nama alarm</string>
-    <string name="alarm_sound">Suara</string>
+    <string name="alarm_sound_row">Suara</string>
     <string name="alarm_save">Simpan</string>
     <string name="city_removed"><xliff:g id="city_name">%s</xliff:g> dihapus</string>
     <string name="search_city_hint">Telusuri kota</string>

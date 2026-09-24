@@ -147,7 +147,7 @@
 
             <TextView
                 style="@style/AlarmOptionTitle"
-                android:text="@string/alarm_sound" />
+                android:text="@string/alarm_sound_row" />
 
             <TextView
                 android:id="@+id/choose_ringtone"

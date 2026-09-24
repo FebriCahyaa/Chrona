@@ -486,7 +486,7 @@
     <string name="alarm_status_on">Alarm on</string>
     <string name="alarm_status_off">Alarm off</string>
     <string name="alarm_name">Alarm name</string>
-    <string name="alarm_sound">Sound</string>
+    <string name="alarm_sound_row">Sound</string>
     <string name="alarm_save">Save</string>
     <string name="city_removed"><xliff:g id="city_name">%s</xliff:g> removed</string>
     <string name="search_city_hint">Search city</string>
