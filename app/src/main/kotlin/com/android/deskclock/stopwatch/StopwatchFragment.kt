@@ -147,7 +147,7 @@ class StopwatchFragment : DeskClockFragment(UiDataModel.Tab.STOPWATCH) {
 
         val c: Context = mMainTimeText.getContext()
         val colorPrimary = ThemeUtils.resolveColor(c,
-                com.google.android.material.R.attr.colorPrimary)
+                androidx.appcompat.R.attr.colorPrimary)
         val colorOnSurface = ThemeUtils.resolveColor(c,
                 com.google.android.material.R.attr.colorOnSurface)
         val timeTextColor =
@@ -246,7 +246,7 @@ class StopwatchFragment : DeskClockFragment(UiDataModel.Tab.STOPWATCH) {
             textAttr = com.google.android.material.R.attr.colorOnTertiaryContainer
             mPrimaryButton.setText(R.string.sw_pause_button)
         } else {
-            fillAttr = com.google.android.material.R.attr.colorPrimary
+            fillAttr = androidx.appcompat.R.attr.colorPrimary
             textAttr = com.google.android.material.R.attr.colorOnPrimary
             mPrimaryButton.setText(R.string.sw_start_button)
         }

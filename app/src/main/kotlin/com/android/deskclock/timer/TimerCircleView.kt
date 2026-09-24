@@ -73,7 +73,7 @@ class TimerCircleView @JvmOverloads constructor(
         mRemainderColor = ThemeUtils.resolveColor(context,
                 com.google.android.material.R.attr.colorSecondaryContainer)
         mCompletedColor = ThemeUtils.resolveColor(context,
-                com.google.android.material.R.attr.colorPrimary)
+                androidx.appcompat.R.attr.colorPrimary)
 
         mPaint.isAntiAlias = true
         mPaint.style = Paint.Style.STROKE
