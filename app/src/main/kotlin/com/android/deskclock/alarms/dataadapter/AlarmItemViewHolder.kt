@@ -17,6 +17,8 @@
 package com.android.deskclock.alarms.dataadapter
 
 import android.content.Context
+import android.content.res.ColorStateList
+import android.graphics.drawable.RippleDrawable
 import android.view.View
 import android.widget.CompoundButton
 import android.widget.ImageView
@@ -26,10 +28,14 @@ import com.android.deskclock.AlarmUtils
 import com.android.deskclock.ItemAdapter.ItemViewHolder
 import com.android.deskclock.ItemAnimator.OnAnimateChangeListener
 import com.android.deskclock.R
+import com.android.deskclock.ThemeUtils
 import com.android.deskclock.provider.Alarm
 import com.android.deskclock.provider.AlarmInstance
 import com.android.deskclock.provider.ClockContract.InstancesColumns
 import com.android.deskclock.widget.TextTime
+
+import com.google.android.material.shape.MaterialShapeDrawable
+import com.google.android.material.shape.ShapeAppearanceModel
 
 /**
  * Abstract ViewHolder for alarm time items.
@@ -61,6 +67,21 @@ abstract class AlarmItemViewHolder(itemView: View)
         val context: Context = itemView.getContext()
         itemView.setContentDescription(clock.text.toString() + " " +
                 alarm.getLabelOrDefault(context))
+    }
+
+    /**
+     * Draws the row as a rounded Material 3 card filled with [fillAttr], with a ripple clipped
+     * to the same shape.
+     */
+    protected fun bindCardBackground(fillAttr: Int) {
+        val context: Context = itemView.getContext()
+        val radius = context.resources.getDimension(R.dimen.alarm_card_corner_radius)
+        val shape = ShapeAppearanceModel.builder().setAllCornerSizes(radius).build()
+        val card = MaterialShapeDrawable(shape)
+        card.fillColor = ColorStateList.valueOf(ThemeUtils.resolveColor(context, fillAttr))
+        val ripple = ColorStateList.valueOf(
+                ThemeUtils.resolveColor(context, android.R.attr.colorControlHighlight))
+        itemView.background = RippleDrawable(ripple, card, MaterialShapeDrawable(shape))
     }
 
     protected fun bindOnOffSwitch(alarm: Alarm) {

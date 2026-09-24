@@ -25,7 +25,6 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.LayerDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.TRANSLATION_Y
@@ -34,7 +33,6 @@ import android.widget.CheckBox
 import android.widget.CompoundButton
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 
 import com.android.deskclock.AnimatorUtils
@@ -64,11 +62,6 @@ class ExpandedAlarmViewHolder private constructor(itemView: View, private val mH
 
     init {
         val context: Context = itemView.getContext()
-        itemView.setBackground(LayerDrawable(arrayOf(
-                ContextCompat.getDrawable(context, R.drawable.alarm_background_expanded),
-                ThemeUtils.resolveDrawable(context, android.R.attr.selectableItemBackground)
-        )))
-
         // Build button for each day.
         val inflater: LayoutInflater = LayoutInflater.from(context)
         val weekdays = DataModel.dataModel.weekdayOrder.calendarDays
@@ -148,6 +141,8 @@ class ExpandedAlarmViewHolder private constructor(itemView: View, private val mH
         bindVibrator(alarm)
         bindRingtone(context, alarm)
         bindPreemptiveDismissButton(context, alarm, alarmInstance)
+        // Neutral card: the expanded row's controls use light-on-dark colors.
+        bindCardBackground(com.google.android.material.R.attr.colorSurfaceContainerHigh)
     }
 
     private fun bindRingtone(context: Context, alarm: Alarm) {

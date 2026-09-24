@@ -21,6 +21,7 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.Rect
 import android.view.LayoutInflater
 import android.view.View
@@ -31,6 +32,7 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.android.deskclock.AnimatorUtils
 import com.android.deskclock.ItemAdapter.ItemViewHolder
 import com.android.deskclock.R
+import com.android.deskclock.ThemeUtils
 import com.android.deskclock.data.DataModel
 import com.android.deskclock.events.Events
 import com.android.deskclock.provider.Alarm
@@ -80,6 +82,27 @@ class CollapsedAlarmViewHolder private constructor(itemView: View) : AlarmItemVi
         bindReadOnlyLabel(context, alarm)
         bindUpcomingInstance(context, alarm)
         bindPreemptiveDismissButton(context, alarm, alarmInstance)
+        bindCardColors(context, alarm)
+    }
+
+    /** Enabled alarms use the primary container card, like the M3 Expressive clock. */
+    private fun bindCardColors(context: Context, alarm: Alarm) {
+        val fillAttr: Int
+        val contentAttr: Int
+        if (alarm.enabled) {
+            fillAttr = com.google.android.material.R.attr.colorPrimaryContainer
+            contentAttr = com.google.android.material.R.attr.colorOnPrimaryContainer
+        } else {
+            fillAttr = com.google.android.material.R.attr.colorSurfaceContainerHigh
+            contentAttr = com.google.android.material.R.attr.colorOnSurface
+        }
+        bindCardBackground(fillAttr)
+        val content = ThemeUtils.resolveColor(context, contentAttr)
+        clock.setTextColor(content)
+        alarmLabel.setTextColor(content)
+        daysOfWeek.setTextColor(content)
+        upcomingInstanceLabel.setTextColor(content)
+        arrow.imageTintList = ColorStateList.valueOf(content)
     }
 
     private fun bindReadOnlyLabel(context: Context, alarm: Alarm) {

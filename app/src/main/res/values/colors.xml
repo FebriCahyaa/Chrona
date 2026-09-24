@@ -28,7 +28,9 @@
 
     <color name="transparent">#00000000</color>
 
-    <color name="hairline">#28FFFFFF</color>
+    <!-- Dividers are hidden in the Material 3 Expressive design; the views stay because code
+         animates them. -->
+    <color name="hairline">@android:color/transparent</color>
 
     <color name="clock_gray">#B3FFFFFF</color>
 
