@@ -1,0 +1,24 @@
+name: FebriCahyaa Bot Git Signing
+description: >-
+  Configure Git so automation commits are GPG-signed by FebriCahyaa Bot
+  instead of the default github-actions[bot] identity. Author stays
+  FebriCahyaa <febricahya12345@gmail.com>; set that with GIT_AUTHOR_NAME /
+  GIT_AUTHOR_EMAIL on the `git commit -S` step itself (see docs/github-bot-signing.md).
+
+inputs:
+  gpg-private-key:
+    description: CHRONABOT_GPG_PRIVATE_KEY secret (ASCII-armored private key)
+    required: true
+  gpg-passphrase:
+    description: CHRONABOT_GPG_PASSPHRASE secret
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Configure FebriCahyaa Bot signing
+      shell: bash
+      env:
+        CHRONABOT_GPG_PRIVATE_KEY: ${{ inputs.gpg-private-key }}
+        CHRONABOT_GPG_PASSPHRASE: ${{ inputs.gpg-passphrase }}
+      run: bash scripts/release/setup_ci_git_signing.sh

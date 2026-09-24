@@ -1,4 +1,4 @@
-name: Chrona Security
+name: Chrona Checks
 
 on:
   pull_request:
@@ -16,8 +16,32 @@ permissions:
   contents: read
   security-events: write
   actions: read
+  statuses: write
+  packages: read
 
 jobs:
+  super-linter:
+    name: Super-Linter
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Super-Linter
+        uses: super-linter/super-linter/slim@v8
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DEFAULT_BRANCH: main
+          VALIDATE_ALL_CODEBASE: ${{ github.event_name == 'workflow_dispatch' }}
+          VALIDATE_GITHUB_ACTIONS: true
+          VALIDATE_YAML: true
+          VALIDATE_MARKDOWN: true
+          VALIDATE_BASH: true
+          VALIDATE_PYTHON_RUFF: true
+          FILTER_REGEX_EXCLUDE: (^|/)(app/src/main/res|aosp)/
+
   codeql:
     name: CodeQL
     runs-on: ubuntu-24.04
@@ -90,6 +114,7 @@ jobs:
   telegram:
     name: Telegram Security
     needs:
+      - super-linter
       - codeql
       - trufflehog
       - dependency-review
@@ -104,6 +129,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.CHRONABOT_CI_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.CHRONABOT_CI_CHAT_ID }}
           TELEGRAM_EVENT: security
+          LINT_RESULT: ${{ needs.super-linter.result }}
           CODEQL_RESULT: ${{ needs.codeql.result }}
           TRUFFLEHOG_RESULT: ${{ needs.trufflehog.result }}
           DEPENDENCY_REVIEW_RESULT: ${{ needs.dependency-review.result }}

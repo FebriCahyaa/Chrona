@@ -1,0 +1,293 @@
+name: Chrona Build
+
+# One workflow for the three unsigned build lines, each on its own branch and
+# Android SDK channel. Release lives in release.yml because it needs the
+# protected `release` environment and a different SDK channel (stable).
+#
+#   main branch, pull requests -> Debug   build, SDK beta   channel (1)
+#   dev branch                 -> Dev     build, SDK dev    channel (2)
+#   canary branch              -> Canary  build, SDK canary channel (3),
+#                                  published as a GitHub pre-release
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - canary
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      variant:
+        description: Build type to force; default derives it from the branch
+        required: false
+        type: choice
+        default: auto
+        options:
+          - auto
+          - debug
+          - dev
+          - canary
+      platform:
+        description: Optional platform pin, e.g. android-37.2
+        required: false
+        type: string
+        default: ''
+      build-tools:
+        description: Optional build-tools pin, e.g. 37.0.0
+        required: false
+        type: string
+        default: ''
+      publish-canary:
+        description: Publish a canary pre-release (canary variant only)
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CANARY_KEEP: 5
+
+jobs:
+  resolve:
+    name: Resolve build variant
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      variant: ${{ steps.resolve.outputs.variant }}
+      sdk-channel: ${{ steps.resolve.outputs.sdk-channel }}
+    steps:
+      - name: Resolve variant and SDK channel
+        id: resolve
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          INPUT_VARIANT: ${{ inputs.variant }}
+        run: |
+          variant="$INPUT_VARIANT"
+          if [[ -z "$variant" || "$variant" == auto ]]; then
+            case "$EVENT_NAME:$REF_NAME" in
+              pull_request:*) variant=debug ;;
+              *:dev) variant=dev ;;
+              *:canary) variant=canary ;;
+              *) variant=debug ;;
+            esac
+          fi
+          case "$variant" in
+            debug) channel=1 ;;
+            dev) channel=2 ;;
+            canary) channel=3 ;;
+            *) printf '::error::Unknown build variant: %s\n' "$variant"; exit 1 ;;
+          esac
+          printf 'variant=%s\nsdk-channel=%s\n' "$variant" "$channel" >> "$GITHUB_OUTPUT"
+          printf 'Resolved variant=%s sdk-channel=%s\n' "$variant" "$channel"
+
+  notify-start:
+    name: Telegram start
+    needs: resolve
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Notify
+        continue-on-error: true
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.CHRONABOT_CI_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.CHRONABOT_CI_CHAT_ID }}
+          TELEGRAM_EVENT: ci-start
+          BUILD_VARIANT: ${{ needs.resolve.outputs.variant }}
+        run: python3 scripts/telegram/notify.py
+
+  quality:
+    name: Quality (${{ needs.resolve.outputs.variant }})
+    needs: resolve
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    outputs:
+      compile-sdk: ${{ steps.toolchain.outputs.compile-sdk }}
+      build-tools: ${{ steps.toolchain.outputs.build-tools }}
+      channel-name: ${{ steps.toolchain.outputs.channel-name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: CI script tests
+        run: python3 -m unittest discover -s scripts/ci -v
+      - name: Android toolchain
+        id: toolchain
+        uses: ./.github/actions/android-toolchain
+        with:
+          sdk-channel: ${{ needs.resolve.outputs.sdk-channel }}
+          platform: ${{ inputs.platform }}
+          build-tools: ${{ inputs.build-tools }}
+      - name: Resolve Gradle task names
+        id: tasks
+        env:
+          VARIANT: ${{ needs.resolve.outputs.variant }}
+        run: printf 'suffix=%s\n' "${VARIANT^}" >> "$GITHUB_OUTPUT"
+      - name: Format check
+        run: ./gradlew --no-daemon --stacktrace spotlessCheck
+      - name: Lint
+        run: ./gradlew --no-daemon --stacktrace "lint${{ steps.tasks.outputs.suffix }}"
+      - name: Unit tests
+        run: ./gradlew --no-daemon --stacktrace "test${{ steps.tasks.outputs.suffix }}UnitTest"
+      - name: Upload quality reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: chrona-quality-${{ needs.resolve.outputs.variant }}-${{ github.run_id }}
+          path: |
+            app/build/reports/lint-results-*.html
+            app/build/reports/lint-results-*.xml
+            app/build/reports/lint-results-*.sarif
+            app/build/test-results/**
+          if-no-files-found: ignore
+          retention-days: 14
+
+  build:
+    name: APK (${{ needs.resolve.outputs.variant }})
+    needs: resolve
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    outputs:
+      version-name: ${{ steps.version.outputs.name }}
+      artifact: ${{ steps.version.outputs.artifact }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Android toolchain
+        uses: ./.github/actions/android-toolchain
+        with:
+          sdk-channel: ${{ needs.resolve.outputs.sdk-channel }}
+          platform: ${{ inputs.platform }}
+          build-tools: ${{ inputs.build-tools }}
+      - name: Resolve version
+        id: version
+        env:
+          VARIANT: ${{ needs.resolve.outputs.variant }}
+        run: bash scripts/ci/resolve_version.sh "$VARIANT"
+      - name: Materialize signing key
+        if: needs.resolve.outputs.variant == 'canary'
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: bash scripts/ci/materialize_keystore.sh --optional
+      - name: Build ${{ needs.resolve.outputs.variant }} APK
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ needs.resolve.outputs.variant == 'canary' && secrets.ANDROID_KEYSTORE_PASSWORD || '' }}
+        run: |
+          set -o pipefail
+          status=0
+          ./gradlew --no-daemon --stacktrace "assemble${VARIANT_TASK}" 2>&1 | tee build.log || status=$?
+          if (( status != 0 )); then
+            python3 scripts/ci/extract_build_errors.py build.log build-errors.log
+          fi
+          exit "$status"
+        shell: bash
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: chrona-build-logs-${{ needs.resolve.outputs.variant }}-${{ github.run_id }}
+          path: |
+            build.log
+            build-errors.log
+          if-no-files-found: ignore
+          retention-days: 30
+      - name: Verify ABI outputs
+        run: python3 scripts/ci/verify_abi_outputs.py "app/build/outputs/apk/${{ needs.resolve.outputs.variant }}" "${{ needs.resolve.outputs.variant }}"
+      - name: Package APKs
+        run: bash scripts/ci/package_apks.sh "app/build/outputs/apk/${{ needs.resolve.outputs.variant }}" dist "Chrona-${{ steps.version.outputs.name }}"
+      - name: Upload APKs
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.version.outputs.artifact }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 30
+
+  publish-canary:
+    name: Publish canary pre-release
+    needs:
+      - resolve
+      - build
+    if: needs.resolve.outputs.variant == 'canary' && (github.event_name == 'push' || inputs.publish-canary)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Download APKs
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ needs.build.outputs.artifact }}
+          path: dist
+      - name: Publish pre-release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: canary-r${{ github.run_number }}
+          name: Chrona Canary ${{ needs.build.outputs.version-name }} (r${{ github.run_number }})
+          target_commitish: ${{ github.sha }}
+          prerelease: true
+          make_latest: false
+          generate_release_notes: true
+          body: |
+            Automated canary build from `${{ github.ref_name }}` at ${{ github.sha }}.
+            Built against the Android SDK **canary** channel. Not for production use.
+          files: |
+            dist/*.apk
+            dist/SHA256SUMS.txt
+          fail_on_unmatched_files: true
+      - name: Prune old canary pre-releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release list --limit 100 --json tagName,isPrerelease,createdAt \
+            --jq '[.[] | select(.isPrerelease and (.tagName | startswith("canary-r")))]
+                  | sort_by(.createdAt) | reverse | .[(env.CANARY_KEEP | tonumber):] | .[].tagName' |
+            while read -r tag; do
+              printf 'Deleting old canary release %s\n' "$tag"
+              gh release delete "$tag" --yes --cleanup-tag
+            done
+
+  report:
+    name: Telegram report
+    needs:
+      - resolve
+      - quality
+      - build
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Download reports and APKs
+        uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          pattern: chrona-*-${{ github.run_id }}
+          path: telegram
+      - name: Send Telegram report
+        continue-on-error: true
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.CHRONABOT_CI_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.CHRONABOT_CI_CHAT_ID }}
+          TELEGRAM_EVENT: ci-report
+          TELEGRAM_ARTIFACT_DIR: telegram
+          BUILD_VARIANT: ${{ needs.resolve.outputs.variant }}
+          SDK_CHANNEL_NAME: ${{ needs.quality.outputs.channel-name }}
+          COMPILE_SDK: ${{ needs.quality.outputs.compile-sdk }}
+          BUILD_TOOLS: ${{ needs.quality.outputs.build-tools }}
+          QUALITY_RESULT: ${{ needs.quality.result }}
+          BUILD_RESULT: ${{ needs.build.result }}
+        run: python3 scripts/telegram/notify.py
