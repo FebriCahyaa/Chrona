@@ -29,6 +29,8 @@ import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.text.format.DateUtils.MINUTE_IN_MILLIS
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationManagerCompat
@@ -36,6 +38,7 @@ import androidx.core.app.NotificationManagerCompat
 import com.febricahyaa.chrona.AlarmAlertWakeLock
 import com.febricahyaa.chrona.LogUtils
 import com.febricahyaa.chrona.R
+import com.febricahyaa.chrona.Utils
 import com.febricahyaa.chrona.events.Events
 import com.febricahyaa.chrona.settings.SettingsActivity
 import com.febricahyaa.chrona.timer.TimerKlaxon
@@ -56,6 +59,25 @@ internal class TimerModel(
 ) {
     /** The alarm manager system service that calls back when timers expire.  */
     private val mAlarmManager = mContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+    /**
+     * Expires the next timer right on time while this process is alive. AlarmManager delivery
+     * can lag by a few seconds, so the sound started late; it remains the fallback when the
+     * app is in the background or the process was killed.
+     */
+    private val mExpiryHandler = Handler(Looper.getMainLooper())
+    private val mExpireDueTimers = Runnable {
+        for (timer in timers) {
+            if (timer.isRunning && timer.remainingTime <= 0) {
+                try {
+                    mContext.startService(TimerService.createTimerExpiredIntent(mContext, timer))
+                } catch (e: IllegalStateException) {
+                    // Background start not allowed; the AlarmManager callback will expire it.
+                    LogUtils.i("Timer expiry left to AlarmManager: $e")
+                }
+            }
+        }
+    }
 
     /** Used to create and destroy system notifications related to timers.  */
     private val mNotificationManager = NotificationManagerCompat.from(mContext)
@@ -645,6 +667,12 @@ internal class TimerModel(
                     0, intent, PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_UPDATE_CURRENT or
                             PendingIntent.FLAG_IMMUTABLE)
             schedulePendingIntent(mAlarmManager, nextExpiringTimer.expirationTime, pi)
+        }
+
+        mExpiryHandler.removeCallbacks(mExpireDueTimers)
+        if (nextExpiringTimer != null) {
+            val delay = nextExpiringTimer.expirationTime - Utils.now()
+            mExpiryHandler.postDelayed(mExpireDueTimers, maxOf(0L, delay))
         }
     }
 
