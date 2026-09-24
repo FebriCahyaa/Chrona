@@ -334,7 +334,7 @@ class AlarmStateManager : BroadcastReceiver() {
             intent.addCategory(tag)
             intent.putExtra(ALARM_GLOBAL_ID_EXTRA, DataModel.dataModel.globalIntentId)
             if (state != null) {
-                intent.putExtra(ALARM_STATE_EXTRA, state.toInt())
+                intent.putExtra(ALARM_STATE_EXTRA, state)
             }
             return intent
         }

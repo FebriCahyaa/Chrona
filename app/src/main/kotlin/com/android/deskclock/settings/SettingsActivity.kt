@@ -194,7 +194,8 @@ class SettingsActivity : BaseActivity() {
                 return
             }
             // Always set the target fragment, this is required by PreferenceDialogFragment
-            // internally.
+            // internally (androidx.preference still reads getTargetFragment()).
+            @Suppress("DEPRECATION")
             fragment.setTargetFragment(this, 0)
             // Don't use getChildFragmentManager(), it causes issues on older platforms when the
             // target fragment is being restored after an orientation change.

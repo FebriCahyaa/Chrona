@@ -211,6 +211,9 @@ jobs:
           fi
           exit "$status"
         shell: bash
+      - name: Print all Kotlin compiler warnings
+        if: always()
+        run: python3 scripts/ci/print_compiler_warnings.py build/reports/problems/problems-report.html
       - name: Upload build logs
         if: always()
         uses: actions/upload-artifact@v7
