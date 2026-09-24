@@ -124,11 +124,11 @@ class TimerItem @JvmOverloads constructor(
         val res = resources
         val dp = res.displayMetrics.density
         findViewById<View>(R.id.timer_ring).updateLayoutParams {
-            height = if (compact) (104 * dp).toInt()
+            height = if (compact) (124 * dp).toInt()
                     else res.getDimensionPixelSize(R.dimen.timer_card_ring_size)
         }
         mTimerText.updateLayoutParams {
-            width = if (compact) (84 * dp).toInt()
+            width = if (compact) (88 * dp).toInt()
                     else res.getDimensionPixelSize(R.dimen.timer_card_time_width)
         }
         mTimerText.setTextSize(TypedValue.COMPLEX_UNIT_SP, if (compact) 26f else 64f)

@@ -19,145 +19,76 @@ package com.febricahyaa.chrona.timer
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
-import android.graphics.RectF
 import android.util.AttributeSet
-import android.view.View
 import androidx.core.graphics.ColorUtils
 
-import com.febricahyaa.chrona.R
 import com.febricahyaa.chrona.ThemeUtils
-import com.febricahyaa.chrona.Utils
 import com.febricahyaa.chrona.data.Timer
 
-import kotlin.math.cos
+import com.google.android.material.progressindicator.CircularProgressIndicator
+
 import kotlin.math.min
-import kotlin.math.sin
+import kotlin.math.roundToInt
 
 /**
- * Custom view that draws timer progress as a circle.
+ * Shows a timer's remaining time as a Material 3 Expressive wavy circular progress indicator
+ * that shrinks as the timer runs; an expired timer shows a filled disc instead.
  */
 class TimerCircleView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
-) : View(context, attrs) {
-    /** The size of the dot indicating the progress through the timer.  */
-    private val mDotRadius: Float
-
-    /** An amount to subtract from the true radius to account for drawing thicknesses.  */
-    private val mRadiusOffset: Float
-
-    /** The color indicating the remaining portion of the timer.  */
-    private val mRemainderColor: Int
-
-    /** The color indicating the completed portion of the timer.  */
-    private val mCompletedColor: Int
-
-    /** The size of the stroke that paints the timer circle.  */
-    private val mStrokeSize: Float
+) : CircularProgressIndicator(context, attrs,
+        com.google.android.material.R.attr.circularProgressIndicatorStyle) {
 
     /** Fills the ring once the timer expires, a lighter tone of the expired card.  */
-    private val mExpiredFillColor: Int
+    private val mExpiredPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+        color = ColorUtils.setAlphaComponent(ThemeUtils.resolveColor(context,
+                com.google.android.material.R.attr.colorOnPrimaryContainer), 0x1F)
+    }
 
-    private val mPaint = Paint()
-    private val mFill = Paint()
-    private val mArcRect = RectF()
-
-    private var mTimer: Timer? = null
+    private var mExpired = false
 
     init {
-        val resources = context.resources
-        val dotDiameter = resources.getDimension(R.dimen.circletimer_dot_size)
+        isIndeterminate = false
+        max = PROGRESS_MAX
+    }
 
-        mDotRadius = dotDiameter / 2f
-        mStrokeSize = resources.getDimension(R.dimen.circletimer_circle_size)
-        mRadiusOffset = Utils.calculateRadiusOffset(mStrokeSize, dotDiameter, 0f)
-
-        // Match Material 3 progress indicators: dynamic primary indicator on a
-        // secondary-container track, with rounded ends.
-        mRemainderColor = ThemeUtils.resolveColor(context,
-                com.google.android.material.R.attr.colorSecondaryContainer)
-        mCompletedColor = ThemeUtils.resolveColor(context,
-                androidx.appcompat.R.attr.colorPrimary)
-
-        mExpiredFillColor = ColorUtils.setAlphaComponent(ThemeUtils.resolveColor(context,
-                com.google.android.material.R.attr.colorOnPrimaryContainer), 0x1F)
-
-        mPaint.isAntiAlias = true
-        mPaint.style = Paint.Style.STROKE
-        mPaint.strokeCap = Paint.Cap.ROUND
-
-        mFill.isAntiAlias = true
-        mFill.color = mCompletedColor
-        mFill.style = Paint.Style.FILL
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        // Grow the indicator to fill the view; it defaults to a small spinner size.
+        val size = min(w - paddingLeft - paddingRight, h - paddingTop - paddingBottom) -
+                2 * indicatorInset
+        if (size > 0 && size != indicatorSize) {
+            post { indicatorSize = size }
+        }
     }
 
     fun update(timer: Timer) {
-        if (mTimer !== timer) {
-            mTimer = timer
-            postInvalidateOnAnimation()
+        val expired = timer.isExpired || timer.isMissed
+        if (expired != mExpired) {
+            mExpired = expired
+            invalidate()
         }
+        val total = timer.totalLength
+        val remaining = if (timer.isReset || total <= 0) {
+            1f
+        } else {
+            (timer.remainingTime.toFloat() / total).coerceIn(0f, 1f)
+        }
+        setProgressCompat((remaining * PROGRESS_MAX).roundToInt(), false)
     }
 
-    public override fun onDraw(canvas: Canvas) {
-        if (mTimer == null) {
+    override fun onDraw(canvas: Canvas) {
+        if (mExpired) {
+            val radius = min(width, height) / 2f - indicatorInset
+            canvas.drawCircle(width / 2f, height / 2f, radius, mExpiredPaint)
             return
         }
+        super.onDraw(canvas)
+    }
 
-        // Compute the size and location of the circle to be drawn.
-        val xCenter = width / 2
-        val yCenter = height / 2
-        val radius = min(xCenter, yCenter) - mRadiusOffset
-
-        // An expired timer shows a filled disc instead of a ring.
-        if (mTimer!!.isExpired || mTimer!!.isMissed) {
-            mFill.color = mExpiredFillColor
-            canvas.drawCircle(xCenter.toFloat(), yCenter.toFloat(), radius + mStrokeSize / 2, mFill)
-            mFill.color = mCompletedColor
-            return
-        }
-
-        // Reset old painting state.
-        mPaint.color = mRemainderColor
-        mPaint.strokeWidth = mStrokeSize
-
-        // If the timer is reset, draw a simple white circle.
-        val redPercent: Float
-        when {
-            mTimer!!.isReset -> {
-                // Draw a complete white circle; no red arc required.
-                canvas.drawCircle(xCenter.toFloat(), yCenter.toFloat(), radius, mPaint)
-
-                // Red percent is 0 since no timer progress has been made.
-                redPercent = 0f
-            }
-            else -> {
-                // Draw a combination of red and white arcs to create a circle.
-                mArcRect.top = yCenter - radius
-                mArcRect.bottom = yCenter + radius
-                mArcRect.left = xCenter - radius
-                mArcRect.right = xCenter + radius
-                redPercent = min(1f,
-                        mTimer!!.elapsedTime.toFloat() / mTimer!!.totalLength.toFloat())
-                val whitePercent = 1 - redPercent
-
-                // Draw a white arc to indicate the amount of timer that remains.
-                canvas.drawArc(mArcRect, 270f, whitePercent * 360, false, mPaint)
-
-                // Draw a red arc to indicate the amount of timer completed.
-                mPaint.color = mCompletedColor
-                canvas.drawArc(mArcRect, 270f, -redPercent * 360, false, mPaint)
-            }
-        }
-
-        // Draw a red dot to indicate current progress through the timer.
-        val dotAngleDegrees = 270 - redPercent * 360
-        val dotAngleRadians = Math.toRadians(dotAngleDegrees.toDouble())
-        val dotX = xCenter + (radius * cos(dotAngleRadians)).toFloat()
-        val dotY = yCenter + (radius * sin(dotAngleRadians)).toFloat()
-        canvas.drawCircle(dotX, dotY, mDotRadius, mFill)
-
-        if (mTimer!!.isRunning) {
-            postInvalidateOnAnimation()
-        }
+    private companion object {
+        const val PROGRESS_MAX = 10_000
     }
 }

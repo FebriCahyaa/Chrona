@@ -102,6 +102,18 @@
         <item name="displayOptions">showTitle|homeAsUp</item>
     </style>
 
+    <!-- Timer ring: M3 Expressive wavy determinate circular progress indicator. -->
+    <style name="Widget.Chrona.TimerProgress" parent="Widget.Material3.CircularProgressIndicator">
+        <item name="indicatorColor">?attr/colorPrimary</item>
+        <item name="trackColor">?attr/colorSecondaryContainer</item>
+        <item name="trackThickness">@dimen/timer_progress_thickness</item>
+        <item name="trackCornerRadius">@dimen/timer_progress_thickness</item>
+        <item name="indicatorTrackGapSize">6dp</item>
+        <item name="wavelength">36dp</item>
+        <item name="waveAmplitude">3dp</item>
+        <item name="waveSpeed">24dp</item>
+    </style>
+
     <!-- Snackbar as an M3 Expressive rounded tonal card, inset from the screen edges. -->
     <style name="Widget.Chrona.Snackbar" parent="Widget.Material3.Snackbar">
         <item name="android:layout_margin">12dp</item>

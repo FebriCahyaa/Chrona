@@ -19,6 +19,8 @@ package com.febricahyaa.chrona
 import android.text.format.DateUtils
 import android.widget.TextView
 
+import java.util.Locale
+
 /**
  * A controller which will format a provided time in millis to display as a timer.
  */
@@ -53,7 +55,12 @@ class TimerTextController(private val mTextView: TextView) {
             }
         }
 
-        var time = Utils.getTimeString(mTextView.context, hours, minutes, seconds)
+        // Always show minutes and seconds ("00:07"), and hours once there are any ("1:05:00").
+        var time = if (hours != 0) {
+            String.format(Locale.getDefault(), "%d:%02d:%02d", hours, minutes, seconds)
+        } else {
+            String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
+        }
         if (isNegative && !(hours == 0 && minutes == 0 && seconds == 0)) {
             time = "\u2212" + time
         }

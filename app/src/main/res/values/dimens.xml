@@ -157,6 +157,7 @@
     <dimen name="preference_menu_width">168dp</dimen>
     <dimen name="preference_menu_corner_radius">16dp</dimen>
     <dimen name="preference_menu_elevation">3dp</dimen>
+    <dimen name="timer_progress_thickness">8dp</dimen>
     <dimen name="timer_grid_gap">6dp</dimen>
     <dimen name="timer_grid_padding">10dp</dimen>
 </resources>
