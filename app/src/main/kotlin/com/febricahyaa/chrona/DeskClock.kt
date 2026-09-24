@@ -44,6 +44,7 @@ import androidx.viewpager.widget.ViewPager.SCROLL_STATE_SETTLING
 
 import com.febricahyaa.chrona.FabContainer.UpdateFabFlag
 import com.febricahyaa.chrona.LabelDialogFragment.AlarmLabelDialogHandler
+import com.febricahyaa.chrona.actionbarmenu.FeedbackMenuItemController
 import com.febricahyaa.chrona.actionbarmenu.MenuItemControllerFactory
 import com.febricahyaa.chrona.actionbarmenu.NightModeMenuItemController
 import com.febricahyaa.chrona.actionbarmenu.OptionsMenuManager
@@ -162,7 +163,8 @@ class DeskClock : BaseActivity(), FabContainer, AlarmLabelDialogHandler {
 
         // Configure the menu item controllers add behavior to the toolbar.
         mOptionsMenuManager.addMenuItemController(
-                NightModeMenuItemController(this), SettingsMenuItemController(this))
+                NightModeMenuItemController(this), SettingsMenuItemController(this),
+                FeedbackMenuItemController(this))
         mOptionsMenuManager.addMenuItemController(
                 *MenuItemControllerFactory.buildMenuItemControllers(this))
 

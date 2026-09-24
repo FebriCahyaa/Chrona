@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2026 The Chrona Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,26 @@
 
 package com.febricahyaa.chrona.actionbarmenu
 
-import android.app.Activity
+import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.view.Menu
 import android.view.Menu.NONE
 import android.view.MenuItem
 
 import com.febricahyaa.chrona.R
-import com.febricahyaa.chrona.settings.SettingsActivity
 
 /**
- * [MenuItemController] for settings menu.
+ * [MenuItemController] that opens the project's issue tracker to send feedback.
  */
-class SettingsMenuItemController(private val activity: Activity) : MenuItemController {
+class FeedbackMenuItemController(private val context: Context) : MenuItemController {
 
-    override val id: Int = R.id.menu_item_settings
+    override val id: Int = R.id.menu_item_feedback
 
     override fun onCreateOptionsItem(menu: Menu) {
-        menu.add(NONE, id, NONE, R.string.menu_item_settings)
-                .withOverflowIcon(activity, R.drawable.ic_settings_24dp)
+        menu.add(NONE, id, NONE, R.string.menu_item_feedback)
+                .withOverflowIcon(context, R.drawable.ic_feedback_24dp)
                 .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)
     }
 
@@ -42,12 +43,15 @@ class SettingsMenuItemController(private val activity: Activity) : MenuItemContr
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val settingIntent = Intent(activity, SettingsActivity::class.java)
-        activity.startActivityForResult(settingIntent, REQUEST_CHANGE_SETTINGS)
+        try {
+            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(FEEDBACK_URL)))
+        } catch (ignored: ActivityNotFoundException) {
+            // No browser; nothing to open.
+        }
         return true
     }
 
-    companion object {
-        const val REQUEST_CHANGE_SETTINGS = 1
+    private companion object {
+        const val FEEDBACK_URL = "https://github.com/FebriCahyaa/Chrona/issues"
     }
 }

@@ -35,6 +35,7 @@ class NightModeMenuItemController(private val context: Context) : MenuItemContro
 
     override fun onCreateOptionsItem(menu: Menu) {
         menu.add(NONE, id, NONE, R.string.menu_item_night_mode)
+                .withOverflowIcon(context, R.drawable.ic_screensaver_24dp)
                 .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)
     }
 
