@@ -18,9 +18,7 @@ package com.android.deskclock.stopwatch
 
 import android.R.attr.state_activated
 import android.R.attr.state_pressed
-import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
@@ -48,7 +46,6 @@ import com.android.deskclock.data.Lap
 import com.android.deskclock.data.Stopwatch
 import com.android.deskclock.data.StopwatchListener
 import com.android.deskclock.events.Events
-import com.android.deskclock.LogUtils
 import com.android.deskclock.R
 import com.android.deskclock.StopwatchTextController
 import com.android.deskclock.ThemeUtils
@@ -103,8 +100,11 @@ class StopwatchFragment : DeskClockFragment(UiDataModel.Tab.STOPWATCH) {
     /** Reset. */
     private lateinit var mResetButton: MaterialButton
 
-    /** Lap while running, share while paused. */
+    /** Lap (while running). */
     private lateinit var mLapButton: MaterialButton
+
+    /** Previous / next arrows above the lap cards. */
+    private lateinit var mLapsNavigation: View
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -135,12 +135,19 @@ class StopwatchFragment : DeskClockFragment(UiDataModel.Tab.STOPWATCH) {
         mPrimaryButton.setOnClickListener { toggleStopwatchState() }
         mResetButton.setOnClickListener { doReset() }
         mLapButton.setOnClickListener {
-            when (stopwatch.state) {
-                Stopwatch.State.RUNNING -> doAddLap()
-                Stopwatch.State.PAUSED -> doShare()
-                else -> {
-                }
+            if (stopwatch.isRunning) {
+                doAddLap()
             }
+        }
+
+        // Step through the lap cards one card at a time.
+        mLapsNavigation = v.findViewById(R.id.laps_navigation)
+        val step = resources.getDimensionPixelSize(R.dimen.lap_card_min_width)
+        v.findViewById<View>(R.id.laps_previous).setOnClickListener {
+            mLapsList.smoothScrollBy(-step, 0)
+        }
+        v.findViewById<View>(R.id.laps_next).setOnClickListener {
+            mLapsList.smoothScrollBy(step, 0)
         }
 
         DataModel.dataModel.addStopwatchListener(mStopwatchWatcher)
@@ -239,15 +246,16 @@ class StopwatchFragment : DeskClockFragment(UiDataModel.Tab.STOPWATCH) {
         val state = stopwatch.state
         val running = state == Stopwatch.State.RUNNING
 
+        // As in the M3 Expressive clock: "Start" in the tertiary container, "Stop" in primary.
         val fillAttr: Int
         val textAttr: Int
         if (running) {
-            fillAttr = com.google.android.material.R.attr.colorTertiaryContainer
-            textAttr = com.google.android.material.R.attr.colorOnTertiaryContainer
-            mPrimaryButton.setText(R.string.sw_pause_button)
-        } else {
             fillAttr = androidx.appcompat.R.attr.colorPrimary
             textAttr = com.google.android.material.R.attr.colorOnPrimary
+            mPrimaryButton.setText(R.string.timer_stop)
+        } else {
+            fillAttr = com.google.android.material.R.attr.colorTertiaryContainer
+            textAttr = com.google.android.material.R.attr.colorOnTertiaryContainer
             mPrimaryButton.setText(R.string.sw_start_button)
         }
         mPrimaryButton.backgroundTintList =
@@ -256,18 +264,12 @@ class StopwatchFragment : DeskClockFragment(UiDataModel.Tab.STOPWATCH) {
 
         mResetButton.setVisibility(if (state == Stopwatch.State.RESET) GONE else VISIBLE)
 
-        when (state) {
-            Stopwatch.State.RUNNING -> {
-                mLapButton.setText(R.string.sw_lap_button)
-                mLapButton.setVisibility(if (canRecordMoreLaps()) VISIBLE else GONE)
-            }
-            Stopwatch.State.PAUSED -> {
-                mLapButton.setText(R.string.sw_share_button)
-                mLapButton.setVisibility(VISIBLE)
-            }
-            else -> mLapButton.setVisibility(GONE)
-        }
-        mLapButton.setEnabled(true)
+        // Lap only while running; paused shows just Start and Reset, as in the reference.
+        mLapButton.setText(R.string.sw_lap_button)
+        mLapButton.setVisibility(if (running && canRecordMoreLaps()) VISIBLE else GONE)
+
+        // Tint the idle time; running/paused time uses the regular text color.
+        mStopwatchWrapper.isActivated = state == Stopwatch.State.RESET
     }
 
     /**
@@ -294,36 +296,6 @@ class StopwatchFragment : DeskClockFragment(UiDataModel.Tab.STOPWATCH) {
         DataModel.dataModel.resetStopwatch()
         mMainTimeText.setAlpha(1f)
         mHundredthsTimeText.setAlpha(1f)
-    }
-
-    /**
-     * Send stopwatch time and lap times to an external sharing application.
-     */
-    private fun doShare() {
-        // Disable the share button to avoid double-taps.
-        mLapButton.setEnabled(false)
-
-        val subjects: Array<String> = getResources().getStringArray(R.array.sw_share_strings)
-        val subject = subjects[(Math.random() * subjects.size).toInt()]
-        val text = mLapsAdapter.shareText
-
-        @SuppressLint("InlinedApi")
-        val shareIntent: Intent = Intent(Intent.ACTION_SEND)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
-                .putExtra(Intent.EXTRA_SUBJECT, subject)
-                .putExtra(Intent.EXTRA_TEXT, text)
-                .setType("text/plain")
-
-        val context: Context = requireActivity()
-        val title: String = context.getString(R.string.sw_share_button)
-        val shareChooserIntent: Intent = Intent.createChooser(shareIntent, title)
-        try {
-            context.startActivity(shareChooserIntent)
-        } catch (anfe: ActivityNotFoundException) {
-            LogUtils.e("Cannot share lap data because no suitable receiving Activity exists")
-        }
-        // Re-enable once the chooser is up (or failed to open).
-        mLapButton.post { mLapButton.setEnabled(true) }
     }
 
     /**
@@ -365,6 +337,7 @@ class StopwatchFragment : DeskClockFragment(UiDataModel.Tab.STOPWATCH) {
 
         val lapsVisible = mLapsAdapter.getItemCount() > 0
         mLapsList.setVisibility(if (lapsVisible) VISIBLE else GONE)
+        mLapsNavigation.setVisibility(if (lapsVisible) VISIBLE else GONE)
     }
 
     private fun adjustWakeLock() {

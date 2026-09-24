@@ -516,6 +516,9 @@
     <!-- Describes the purpose of the button to share the stopwatch value.
          Also used as title for chooser when sharing stopwatch results. -->
     <string name="sw_share_button">Share</string>
+    <!-- Accessibility labels for the arrows that scroll the stopwatch lap cards. [CHAR LIMIT=40] -->
+    <string name="laps_previous">Previous laps</string>
+    <string name="laps_next">Next laps</string>
 
     <!-- Abbreviation for temporal hours [CHAR LIMIT=1] -->
     <string name="hours_label">h</string>

@@ -99,7 +99,7 @@ internal class LapsAdapter(context: Context) : RecyclerView.Adapter<LapItemHolde
 
         // Highlight the running (current) lap card, as in the M3 Expressive clock.
         val colorAttr = if (lap == null) {
-            androidx.appcompat.R.attr.colorPrimary
+            com.google.android.material.R.attr.colorTertiary
         } else {
             com.google.android.material.R.attr.colorOnSurface
         }

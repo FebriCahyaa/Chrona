@@ -210,6 +210,8 @@
     <string name="sw_pause_button" msgid="2422084453454138042">"Jeda"</string>
     <string name="sw_lap_button" msgid="6992264696039004233">"Putaran"</string>
     <string name="sw_share_button" msgid="4478648110382859382">"Bagikan"</string>
+    <string name="laps_previous">"Putaran sebelumnya"</string>
+    <string name="laps_next">"Putaran berikutnya"</string>
     <string name="hours_label" msgid="3393478155635368097">"j"</string>
     <string name="minutes_label" msgid="3568098128251438588">"m"</string>
     <string name="seconds_label" msgid="124655952824003246">"d"</string>
