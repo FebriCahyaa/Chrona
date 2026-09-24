@@ -67,6 +67,7 @@ import com.febricahyaa.chrona.provider.ClockContract.InstancesColumns
 import com.febricahyaa.chrona.R
 import com.febricahyaa.chrona.ThemeUtils
 import com.febricahyaa.chrona.Utils
+import com.febricahyaa.chrona.widget.AlarmDismissControl
 import com.febricahyaa.chrona.widget.CircleView
 
 import kotlin.math.max
@@ -122,6 +123,7 @@ class AlarmActivity : BaseActivity(), View.OnClickListener, View.OnTouchListener
     private lateinit var mSnoozeButton: ImageView
     private lateinit var mDismissButton: ImageView
     private lateinit var mHintView: TextView
+    private lateinit var mDismissControl: AlarmDismissControl
 
     private lateinit var mAlarmAnimator: ValueAnimator
     private lateinit var mSnoozeAnimator: ValueAnimator
@@ -183,6 +185,17 @@ class AlarmActivity : BaseActivity(), View.OnClickListener, View.OnTouchListener
         mSnoozeButton = mContentView.findViewById(R.id.snooze) as ImageView
         mDismissButton = mContentView.findViewById(R.id.dismiss) as ImageView
         mHintView = mContentView.findViewById(R.id.hint) as TextView
+        mDismissControl = mContentView.findViewById(R.id.dismiss_control)
+        mDismissControl.style = DataModel.dataModel.alarmDismissStyle
+        mDismissControl.listener = object : AlarmDismissControl.Listener {
+            override fun onSnooze() {
+                if (!mAlarmHandled) snooze()
+            }
+
+            override fun onDismiss() {
+                if (!mAlarmHandled) dismiss()
+            }
+        }
 
         val titleView: TextView = mContentView.findViewById(R.id.title) as TextView
         val digitalClock: TextClock = mContentView.findViewById(R.id.digital_clock) as TextClock
@@ -476,7 +489,7 @@ class AlarmActivity : BaseActivity(), View.OnClickListener, View.OnTouchListener
         val accessibilityText: String = getResources().getQuantityString(
                 R.plurals.alarm_alert_snooze_set, snoozeMinutes, snoozeMinutes)
 
-        getAlertAnimator(mSnoozeButton, R.string.alarm_alert_snoozed_text, infoText,
+        getAlertAnimator(mDismissControl.snoozeTarget, R.string.alarm_alert_snoozed_text, infoText,
                 accessibilityText, colorAccent, colorAccent).start()
 
         AlarmStateManager.setSnoozeState(this, mAlarmInstance!!, false /* showToast */)
@@ -496,7 +509,8 @@ class AlarmActivity : BaseActivity(), View.OnClickListener, View.OnTouchListener
 
         setAnimatedFractions(0.0f /* snoozeFraction */, 1.0f /* dismissFraction */)
 
-        getAlertAnimator(mDismissButton, R.string.alarm_alert_off_text, null /* infoText */,
+        getAlertAnimator(mDismissControl.dismissTarget, R.string.alarm_alert_off_text,
+                null /* infoText */,
                 getString(R.string.alarm_alert_off_text) /* accessibilityText */,
                 Color.WHITE, mCurrentHourColor).start()
 

@@ -487,6 +487,13 @@
     <string name="alarm_status_off">Alarm off</string>
     <string name="alarm_name">Alarm name</string>
     <string name="sound_picker_unavailable">No sound picker is available on this device</string>
+    <string name="dismiss_style_title">Dismiss alarm with</string>
+    <string name="dismiss_style_dialog_title">Choose how to dismiss</string>
+    <string name="dismiss_style_tap">Tap</string>
+    <string name="dismiss_style_slide">Slide</string>
+    <string name="dismiss_style_swipe">Swipe</string>
+    <string name="alarm_control_stop">Stop</string>
+    <string name="alarm_control_swipe_hint">Swipe up to stop or down to snooze</string>
     <string name="alarm_snooze_row">Snooze</string>
     <string name="alarm_sound_row">Sound</string>
     <string name="alarm_save">Save</string>

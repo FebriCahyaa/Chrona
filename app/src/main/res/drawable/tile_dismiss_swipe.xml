@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "Swipe" tile in the dismiss-style dialog: a vertical track with a handle. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:width="28dp" android:height="80dp" android:gravity="top|start"
+        android:left="34dp" android:top="8dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="14dp" />
+            <solid android:color="?attr/colorSurface" />
+        </shape>
+    </item>
+    <item android:width="28dp" android:height="28dp" android:gravity="top|start"
+        android:left="34dp" android:top="34dp">
+        <shape android:shape="oval">
+            <solid android:color="?attr/colorPrimary" />
+        </shape>
+    </item>
+</layer-list>

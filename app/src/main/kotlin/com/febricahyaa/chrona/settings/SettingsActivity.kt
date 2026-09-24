@@ -309,6 +309,7 @@ class SettingsActivity : BaseActivity() {
     companion object {
         const val KEY_ALARM_SNOOZE = "snooze_duration"
         const val KEY_ALARM_CRESCENDO = "alarm_crescendo_duration"
+        const val KEY_DISMISS_STYLE = "alarm_dismiss_style"
         const val KEY_TIMER_CRESCENDO = "timer_crescendo_duration"
         const val KEY_TIMER_RINGTONE = "timer_ringtone"
         const val KEY_TIMER_VIBRATE = "timer_vibrate"

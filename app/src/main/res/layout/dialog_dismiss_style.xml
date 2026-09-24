@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "Choose how to dismiss" dialog: a live preview of the ringing-alarm control above the
+     three styles (tap, slide, swipe). -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="24dp"
+    android:paddingTop="24dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/dismiss_style_dialog_title"
+        android:textAppearance="?attr/textAppearanceHeadlineSmall"
+        android:textColor="?attr/colorOnSurface" />
+
+    <FrameLayout
+        android:id="@+id/dismiss_preview_frame"
+        android:layout_width="match_parent"
+        android:layout_height="360dp"
+        android:layout_marginTop="20dp"
+        android:padding="16dp">
+
+        <com.febricahyaa.chrona.widget.AlarmDismissControl
+            android:id="@+id/dismiss_preview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:orientation="horizontal">
+
+        <include
+            android:id="@+id/tile_tap"
+            layout="@layout/dismiss_style_tile" />
+
+        <include
+            android:id="@+id/tile_slide"
+            layout="@layout/dismiss_style_tile" />
+
+        <include
+            android:id="@+id/tile_swipe"
+            layout="@layout/dismiss_style_tile" />
+
+    </LinearLayout>
+
+</LinearLayout>

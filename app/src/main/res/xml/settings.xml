@@ -37,6 +37,11 @@
             android:key="snooze_duration"
             android:title="@string/snooze_duration_title" />
 
+        <com.febricahyaa.chrona.settings.DismissStylePreference
+            app:iconSpaceReserved="false"
+            android:key="alarm_dismiss_style"
+            android:title="@string/dismiss_style_title" />
+
         <com.febricahyaa.chrona.settings.AlarmVolumePreference
             app:iconSpaceReserved="false"
             android:key="volume_setting"

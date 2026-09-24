@@ -60,6 +60,7 @@
 
         <com.febricahyaa.chrona.widget.CircleView
             android:id="@+id/pulse"
+            android:visibility="gone"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:gravity="center"
@@ -73,6 +74,7 @@
 
         <ImageView
             android:id="@+id/snooze"
+            android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_circle_white"
@@ -86,6 +88,7 @@
 
         <ImageView
             android:id="@+id/dismiss"
+            android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_circle_white"
@@ -98,6 +101,7 @@
 
         <ImageView
             android:id="@+id/alarm"
+            android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
@@ -111,6 +115,18 @@
             app:layout_columnWeight="1"
             app:layout_gravity="center"
             app:srcCompat="@drawable/ic_fab_alarm" />
+
+        <!-- Tap, slide or swipe to snooze / stop, per the "Dismiss alarm with" setting. The
+             legacy pulse and buttons above stay hidden. -->
+        <com.febricahyaa.chrona.widget.AlarmDismissControl
+            android:id="@+id/dismiss_control"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginHorizontal="24dp"
+            app:layout_row="2"
+            app:layout_column="0"
+            app:layout_columnSpan="3"
+            app:layout_gravity="fill" />
 
         <TextView
             android:id="@+id/hint"

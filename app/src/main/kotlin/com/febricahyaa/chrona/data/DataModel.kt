@@ -740,6 +740,13 @@ class DataModel private constructor() {
         return alarmId?.let { mSettingsModel!!.getAlarmSnoozeLength(it) } ?: snoozeLength
     }
 
+    /** How a ringing alarm is snoozed or stopped: "tap", "slide" or "swipe". */
+    var alarmDismissStyle: String
+        get() = mSettingsModel!!.alarmDismissStyle
+        set(style) {
+            mSettingsModel!!.alarmDismissStyle = style
+        }
+
     /** @return the snooze length chosen for this alarm only, or `null` if it follows settings */
     fun getAlarmSnoozeLength(alarmId: Long): Int? = mSettingsModel!!.getAlarmSnoozeLength(alarmId)
 

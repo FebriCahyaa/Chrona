@@ -32,6 +32,7 @@ import com.febricahyaa.chrona.data.DataModel.ClockStyle
 import com.febricahyaa.chrona.data.Weekdays.Order
 import com.febricahyaa.chrona.settings.ScreensaverSettingsActivity
 import com.febricahyaa.chrona.settings.SettingsActivity
+import com.febricahyaa.chrona.widget.AlarmDismissControl
 
 import java.util.Arrays
 import java.util.Calendar
@@ -301,6 +302,16 @@ internal object SettingsDAO {
         // Default value must match the one in res/xml/settings.xml
         val string: String = prefs.getString(SettingsActivity.KEY_ALARM_SNOOZE, "10")!!
         return string.toInt()
+    }
+
+    /** @return how a ringing alarm is snoozed or stopped: tap, slide or swipe */
+    fun getAlarmDismissStyle(prefs: SharedPreferences): String {
+        return prefs.getString(SettingsActivity.KEY_DISMISS_STYLE, null)
+                ?: AlarmDismissControl.STYLE_SLIDE
+    }
+
+    fun setAlarmDismissStyle(prefs: SharedPreferences, style: String) {
+        prefs.edit().putString(SettingsActivity.KEY_DISMISS_STYLE, style).apply()
     }
 
     /**

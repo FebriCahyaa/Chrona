@@ -203,6 +203,13 @@
     <string name="alarm_status_off">Alarm nonaktif</string>
     <string name="alarm_name">Nama alarm</string>
     <string name="sound_picker_unavailable">Pemilih suara tidak tersedia di perangkat ini</string>
+    <string name="dismiss_style_title">Tutup alarm dengan</string>
+    <string name="dismiss_style_dialog_title">Pilih cara menutup</string>
+    <string name="dismiss_style_tap">Ketuk</string>
+    <string name="dismiss_style_slide">Geser</string>
+    <string name="dismiss_style_swipe">Usap</string>
+    <string name="alarm_control_stop">Berhenti</string>
+    <string name="alarm_control_swipe_hint">Usap ke atas untuk berhenti atau ke bawah untuk menunda</string>
     <string name="alarm_snooze_row">Jeda alarm</string>
     <string name="alarm_sound_row">Suara</string>
     <string name="alarm_save">Simpan</string>

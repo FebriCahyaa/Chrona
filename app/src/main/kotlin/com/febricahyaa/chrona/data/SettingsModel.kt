@@ -113,6 +113,12 @@ internal class SettingsModel(
     val snoozeLength: Int
         get() = SettingsDAO.getSnoozeLength(mPrefs)
 
+    var alarmDismissStyle: String
+        get() = SettingsDAO.getAlarmDismissStyle(mPrefs)
+        set(style) {
+            SettingsDAO.setAlarmDismissStyle(mPrefs, style)
+        }
+
     fun getAlarmSnoozeLength(alarmId: Long): Int? = SettingsDAO.getAlarmSnoozeLength(mPrefs, alarmId)
 
     fun setAlarmSnoozeLength(alarmId: Long, minutes: Int?) {

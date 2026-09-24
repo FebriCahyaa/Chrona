@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "Tap" tile in the dismiss-style dialog: Snooze and Stop pills side by side. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:width="38dp" android:height="20dp" android:gravity="top|start"
+        android:left="8dp" android:top="38dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="10dp" />
+            <solid android:color="?attr/colorTertiary" />
+        </shape>
+    </item>
+    <item android:width="38dp" android:height="20dp" android:gravity="top|start"
+        android:left="50dp" android:top="38dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="10dp" />
+            <solid android:color="?attr/colorTertiaryContainer" />
+        </shape>
+    </item>
+</layer-list>
