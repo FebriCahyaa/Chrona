@@ -21,7 +21,6 @@ import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Parcelable
 import android.provider.AlarmClock
@@ -53,7 +52,6 @@ import java.util.Date
  * that apply to alarms and timers. Its definition in AndroidManifest.xml requires callers to hold
  * the com.android.alarm.permission.SET_ALARM permission to complete the requested action.
  */
-// TODO(b/165664115) Replace deprecated AsyncTask calls
 class HandleApiCalls : Activity() {
     private lateinit var mAppContext: Context
 
@@ -83,7 +81,6 @@ class HandleApiCalls : Activity() {
         }
     }
 
-    @Suppress("DEPRECATION")
     private fun handleDismissAlarm(intent: Intent) {
         // Change to the alarms tab.
         UiDataModel.uiDataModel.selectedTab = UiDataModel.Tab.ALARMS
@@ -91,29 +88,26 @@ class HandleApiCalls : Activity() {
         // Open DeskClock which is now positioned on the alarms tab.
         startActivity(Intent(mAppContext, DeskClock::class.java))
 
-        DismissAlarmAsync(mAppContext, intent, this).execute()
+        AsyncHandler.post(DismissAlarmAsync(mAppContext, intent, this)::run)
     }
 
-    @Suppress("DEPRECATION")
     private class DismissAlarmAsync(
         private val mContext: Context,
         private val mIntent: Intent,
         private val mActivity: Activity
-    ) : AsyncTask<Void?, Void?, Void?>() {
-        @Suppress("OVERRIDE_DEPRECATION")
-        @Suppress("OVERRIDE_DEPRECATION")
-        override fun doInBackground(vararg parameters: Void?): Void? {
+    ) {
+        fun run() {
             val cr = mContext.contentResolver
-            val alarms = getEnabledAlarms(mContext)
+            val alarms = getEnabledAlarms(mContext).toMutableList()
             if (alarms.isEmpty()) {
                 val reason = mContext.getString(R.string.no_scheduled_alarms)
                 Controller.getController().notifyVoiceFailure(mActivity, reason)
                 LOGGER.i("No scheduled alarms")
-                return null
+                return
             }
 
             // remove Alarms in MISSED, DISMISSED, and PREDISMISSED states
-            val i: MutableIterator<Alarm> = alarms.toMutableList().listIterator()
+            val i: MutableIterator<Alarm> = alarms.iterator()
             while (i.hasNext()) {
                 val instance = AlarmInstance.getNextUpcomingInstanceByAlarmId(cr, i.next().id)
                 if (instance == null ||
@@ -135,7 +129,7 @@ class HandleApiCalls : Activity() {
                 mContext.startActivity(pickSelectionIntent)
                 val voiceMessage = mContext.getString(R.string.pick_alarm_to_dismiss)
                 Controller.getController().notifyVoiceSuccess(mActivity, voiceMessage)
-                return null
+                return
             }
 
             // fetch the alarms that are specified by the intent
@@ -155,7 +149,7 @@ class HandleApiCalls : Activity() {
                 mContext.startActivity(pickSelectionIntent)
                 val voiceMessage = mContext.getString(R.string.pick_alarm_to_dismiss)
                 Controller.getController().notifyVoiceSuccess(mActivity, voiceMessage)
-                return null
+                return
             }
 
             // Apply the action to the matching alarms
@@ -163,7 +157,6 @@ class HandleApiCalls : Activity() {
                 dismissAlarm(alarm, mActivity)
                 LOGGER.i("Alarm dismissed: $alarm")
             }
-            return null
         }
 
         companion object {
@@ -175,21 +168,17 @@ class HandleApiCalls : Activity() {
         }
     }
 
-    @Suppress("DEPRECATION")
     private fun handleSnoozeAlarm(intent: Intent) {
-        SnoozeAlarmAsync(intent, this).execute()
+        AsyncHandler.post(SnoozeAlarmAsync(intent, this)::run)
     }
 
-    @Suppress("DEPRECATION")
     private class SnoozeAlarmAsync(
         private val mIntent: Intent,
         private val mActivity: Activity
-    ) : AsyncTask<Void?, Void?, Void?>() {
+    ) {
         private val mContext: Context = mActivity.applicationContext
 
-        @Suppress("OVERRIDE_DEPRECATION")
-        @Suppress("OVERRIDE_DEPRECATION")
-        override fun doInBackground(vararg parameters: Void?): Void? {
+        fun run() {
             val cr = mContext.contentResolver
             val alarmInstances = AlarmInstance.getInstancesByState(
                     cr, ClockContract.InstancesColumns.FIRED_STATE)
@@ -197,13 +186,12 @@ class HandleApiCalls : Activity() {
                 val reason = mContext.getString(R.string.no_firing_alarms)
                 Controller.getController().notifyVoiceFailure(mActivity, reason)
                 LOGGER.i("No firing alarms")
-                return null
+                return
             }
 
             for (firingAlarmInstance in alarmInstances) {
                 snoozeAlarm(firingAlarmInstance, mContext, mActivity)
             }
-            return null
         }
     }
 

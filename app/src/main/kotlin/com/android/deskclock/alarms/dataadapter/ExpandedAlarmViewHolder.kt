@@ -22,12 +22,10 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
 import android.content.Context
-import android.content.Context.VIBRATOR_SERVICE
 import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
-import android.os.Vibrator
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.TRANSLATION_Y
@@ -486,7 +484,7 @@ class ExpandedAlarmViewHolder private constructor(itemView: View, private val mH
     class Factory(context: Context) : ItemViewHolder.Factory {
         private val mLayoutInflater: LayoutInflater = LayoutInflater.from(context)
         private val mHasVibrator: Boolean =
-                (context.getSystemService(VIBRATOR_SERVICE) as Vibrator).hasVibrator()
+                Utils.getVibrator(context).hasVibrator()
 
         override fun createViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder<*> {
             val itemView: View = mLayoutInflater.inflate(viewType, parent, false)

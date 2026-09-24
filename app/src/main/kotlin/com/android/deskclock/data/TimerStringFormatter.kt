@@ -107,24 +107,15 @@ object TimerStringFormatter {
         } else if (showSeconds) {
             formatStringId = R.string.timer_notifications_seconds
         } else if (!shouldShowSeconds) {
-            formatStringId = R.string.timer_notifications_less_min
+            // This string has no format specifiers; it must not go through String.format.
+            return context.getString(R.string.timer_notifications_less_min)
         }
 
         if (formatStringId == -1) {
             return null
         }
-
-        if (formatStringId == R.string.timer_notifications_less_min) {
-            return context.getString(R.string.timer_notifications_less_min)
-        }
-
-        return context.getString(
-                formatStringId,
-                hourSeq,
-                minSeq,
-                remainingSuffix,
-                secSeq
-        )
+        return String.format(context.getString(formatStringId), hourSeq, minSeq,
+                remainingSuffix, secSeq)
     }
 
     @JvmStatic

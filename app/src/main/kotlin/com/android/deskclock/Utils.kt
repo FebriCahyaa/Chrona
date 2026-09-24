@@ -34,9 +34,13 @@ import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.graphics.Typeface
+import android.media.AudioAttributes
 import android.net.Uri
 import android.os.Build
 import android.os.Looper
+import android.os.VibrationAttributes
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.provider.Settings
 import android.text.Spannable
 import android.text.SpannableString
@@ -163,6 +167,25 @@ object Utils {
      */
     val isOMR1OrLater: Boolean
         get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1
+
+    @JvmStatic
+    fun getVibrator(context: Context): Vibrator = context.getSystemService(Vibrator::class.java)
+
+    /** Vibrates [pattern] on repeat, attributed as an alarm so it bypasses DND like the ringtone. */
+    @JvmStatic
+    fun vibrateForAlarm(vibrator: Vibrator, pattern: LongArray) {
+        val effect = VibrationEffect.createWaveform(pattern, 0)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            vibrator.vibrate(effect,
+                    VibrationAttributes.createForUsage(VibrationAttributes.USAGE_ALARM))
+        } else {
+            @Suppress("DEPRECATION")
+            vibrator.vibrate(effect, AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_ALARM)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build())
+        }
+    }
 
     /**
      * @return {@code true} if the device is {@link Build.VERSION_CODES#P} or later

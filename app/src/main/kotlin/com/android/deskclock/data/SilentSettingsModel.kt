@@ -33,7 +33,6 @@ import android.media.AudioManager.STREAM_ALARM
 import android.media.RingtoneManager
 import android.media.RingtoneManager.TYPE_ALARM
 import android.net.Uri
-import android.os.AsyncTask
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -41,6 +40,7 @@ import android.provider.Settings.System.CONTENT_URI
 import android.provider.Settings.System.DEFAULT_ALARM_ALERT_URI
 import androidx.core.app.NotificationManagerCompat
 
+import com.android.deskclock.AsyncHandler
 import com.android.deskclock.Utils
 import com.android.deskclock.data.DataModel.SilentSetting
 
@@ -102,7 +102,7 @@ internal class SilentSettingsModel(
     fun updateSilentState() {
         // Cancel any task in flight, the result is no longer relevant.
         if (mCheckSilenceSettingsTask != null) {
-            mCheckSilenceSettingsTask!!.cancel(true)
+            mCheckSilenceSettingsTask!!.cancel()
             mCheckSilenceSettingsTask = null
         }
 
@@ -133,9 +133,21 @@ internal class SilentSettingsModel(
      * associated ringtone from playing. If any of them would prevent an alarm from firing or
      * making noise, a description of the setting is reported to this model on the main thread.
      */
-    // TODO(b/165664115) Replace deprecated AsyncTask calls
-    private inner class CheckSilenceSettingsTask : AsyncTask<Void?, Void?, SilentSetting?>() {
-        override fun doInBackground(vararg parameters: Void?): SilentSetting? {
+    private inner class CheckSilenceSettingsTask {
+        @Volatile
+        private var mCancelled = false
+
+        fun execute() {
+            AsyncHandler.postForResult(this::doInBackground, this::onPostExecute)
+        }
+
+        fun cancel() {
+            mCancelled = true
+        }
+
+        private fun isCancelled(): Boolean = mCancelled
+
+        private fun doInBackground(): SilentSetting? {
             if (!isCancelled() && isDoNotDisturbBlockingAlarms) {
                 return SilentSetting.DO_NOT_DISTURB
             } else if (!isCancelled() && isAlarmStreamMuted) {
@@ -148,15 +160,8 @@ internal class SilentSettingsModel(
             return null
         }
 
-        override fun onCancelled() {
-            super.onCancelled()
-            if (mCheckSilenceSettingsTask == this) {
-                mCheckSilenceSettingsTask = null
-            }
-        }
-
-        override fun onPostExecute(silentSetting: SilentSetting?) {
-            if (mCheckSilenceSettingsTask == this) {
+        private fun onPostExecute(silentSetting: SilentSetting?) {
+            if (!mCancelled && mCheckSilenceSettingsTask == this) {
                 mCheckSilenceSettingsTask = null
                 setSilentState(silentSetting)
             }

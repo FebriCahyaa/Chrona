@@ -53,8 +53,8 @@ class TimePickerDialogFragment : DialogFragment() {
             val context: Context = builder.getContext()
 
             val timePicker = TimePicker(context)
-            timePicker.setCurrentHour(hour)
-            timePicker.setCurrentMinute(minute)
+            timePicker.hour = hour
+            timePicker.minute = minute
             timePicker.setIs24HourView(DateFormat.is24HourFormat(context))
 
             builder.setView(timePicker)

@@ -19,7 +19,6 @@ package com.android.deskclock.settings
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.os.Vibrator
 import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
@@ -106,15 +105,14 @@ class SettingsActivity : BaseActivity() {
             addPreferencesFromResource(R.xml.settings)
             val timerVibrate: Preference? = findPreference(KEY_TIMER_VIBRATE)
             timerVibrate?.let {
-                val hasVibrator: Boolean = (it.getContext()
-                        .getSystemService(VIBRATOR_SERVICE) as Vibrator).hasVibrator()
+                val hasVibrator: Boolean = Utils.getVibrator(it.getContext()).hasVibrator()
                 it.setVisible(hasVibrator)
             }
             loadTimeZoneList()
         }
 
-        override fun onActivityCreated(savedInstanceState: Bundle?) {
-            super.onActivityCreated(savedInstanceState)
+        override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+            super.onViewCreated(view, savedInstanceState)
 
             // By default, do not recreate the DeskClock activity
             getActivity()?.setResult(RESULT_CANCELED)

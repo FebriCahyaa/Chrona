@@ -34,6 +34,7 @@ import android.view.animation.DecelerateInterpolator
 import android.widget.Button
 import android.widget.ImageView
 import androidx.annotation.VisibleForTesting
+import androidx.core.os.BundleCompat
 import androidx.viewpager.widget.ViewPager
 
 import com.android.deskclock.data.DataModel
@@ -105,7 +106,8 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
 
         // If timer setup state is present, retrieve it to be later honored.
         savedInstanceState?.let {
-            mTimerSetupState = it.getSerializable(KEY_TIMER_SETUP_STATE)
+            mTimerSetupState =
+                    BundleCompat.getSerializable(it, KEY_TIMER_SETUP_STATE, Serializable::class.java)
         }
 
         return view

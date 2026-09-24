@@ -16,12 +16,8 @@
 
 package com.android.deskclock.timer
 
-import android.annotation.TargetApi
 import android.content.Context
-import android.media.AudioAttributes
 import android.net.Uri
-import android.os.Build
-import android.os.Vibrator
 
 import com.android.deskclock.AsyncRingtonePlayer
 import com.android.deskclock.LogUtils
@@ -43,7 +39,7 @@ object TimerKlaxon {
             LogUtils.i("TimerKlaxon.stop()")
             sStarted = false
             getAsyncRingtonePlayer(context)!!.stop()
-            (context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator).cancel()
+            Utils.getVibrator(context).cancel()
         }
     }
 
@@ -64,26 +60,9 @@ object TimerKlaxon {
         }
 
         if (DataModel.dataModel.timerVibrate) {
-            val vibrator = getVibrator(context)
-            if (Utils.isLOrLater) {
-                vibrateLOrLater(vibrator)
-            } else {
-                vibrator.vibrate(VIBRATE_PATTERN, 0)
-            }
+            Utils.vibrateForAlarm(Utils.getVibrator(context), VIBRATE_PATTERN)
         }
         sStarted = true
-    }
-
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private fun vibrateLOrLater(vibrator: Vibrator) {
-        vibrator.vibrate(VIBRATE_PATTERN, 0, AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_ALARM)
-                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                .build())
-    }
-
-    private fun getVibrator(context: Context): Vibrator {
-        return context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
     }
 
     @Synchronized

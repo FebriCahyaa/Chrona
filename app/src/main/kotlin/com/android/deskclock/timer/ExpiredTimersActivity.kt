@@ -81,6 +81,7 @@ class ExpiredTimersActivity : BaseActivity() {
             setTurnScreenOn(true)
             setShowWhenLocked(true)
         } else {
+            @Suppress("DEPRECATION")
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
                     or WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
         }

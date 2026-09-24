@@ -18,6 +18,7 @@ package com.android.deskclock
 
 import android.os.Handler
 import android.os.HandlerThread
+import android.os.Looper
 
 /**
  * Helper class for managing the background thread used to perform io operations
@@ -26,6 +27,7 @@ import android.os.HandlerThread
 object AsyncHandler {
     private val sHandlerThread = HandlerThread("AsyncHandler")
     private val sHandler: Handler
+    private val sMainHandler = Handler(Looper.getMainLooper())
 
     init {
         sHandlerThread.start()
@@ -34,5 +36,13 @@ object AsyncHandler {
 
     fun post(r: () -> Unit) {
         sHandler.post(r)
+    }
+
+    /** Runs [background] on the background thread, then [onResult] with its result on main. */
+    fun <T> postForResult(background: () -> T, onResult: (T) -> Unit) {
+        sHandler.post {
+            val result = background()
+            sMainHandler.post { onResult(result) }
+        }
     }
 }

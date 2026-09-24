@@ -19,6 +19,7 @@ package com.android.deskclock.alarms
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.VibrationEffect
 import android.os.Vibrator
 import androidx.fragment.app.Fragment
 
@@ -26,6 +27,7 @@ import com.android.deskclock.AlarmClockFragment
 import com.android.deskclock.LabelDialogFragment
 import com.android.deskclock.LogUtils
 import com.android.deskclock.R
+import com.android.deskclock.Utils
 import com.android.deskclock.alarms.dataadapter.AlarmItemHolder
 import com.android.deskclock.data.DataModel
 import com.android.deskclock.data.Weekdays
@@ -87,9 +89,10 @@ class AlarmTimeClickHandler(
 
             if (newState) {
                 // Buzz the vibrator to preview the alarm firing behavior.
-                val v: Vibrator = mContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                val v: Vibrator = Utils.getVibrator(mContext)
                 if (v.hasVibrator()) {
-                    v.vibrate(300)
+                    v.vibrate(VibrationEffect.createOneShot(300,
+                            VibrationEffect.DEFAULT_AMPLITUDE))
                 }
             }
         }

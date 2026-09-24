@@ -24,7 +24,6 @@ import android.content.Intent
 import android.media.AudioManager
 import android.media.RingtoneManager
 import android.net.Uri
-import android.os.AsyncTask
 import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.OpenableColumns
@@ -32,10 +31,12 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.Keep
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
+import androidx.core.content.IntentCompat
 import androidx.core.os.BundleCompat
 import androidx.fragment.app.FragmentManager
 import androidx.loader.app.LoaderManager
@@ -44,6 +45,7 @@ import androidx.loader.content.Loader
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
+import com.android.deskclock.AsyncHandler
 import com.android.deskclock.BaseActivity
 import com.android.deskclock.DropShadowController
 import com.android.deskclock.LogUtils
@@ -69,7 +71,6 @@ import com.android.deskclock.provider.Alarm
  *  * user-selected audio files available as ringtones
  *
  */
-// TODO(b/165664115) Replace deprecated AsyncTask calls
 class RingtonePickerActivity : BaseActivity(), LoaderCallbacks<List<ItemHolder<Uri?>>> {
     /** The controller that shows the drop shadow when content is not scrolled to the top.  */
     private var mDropShadowController: DropShadowController? = null
@@ -115,15 +116,18 @@ class RingtonePickerActivity : BaseActivity(), LoaderCallbacks<List<ItemHolder<U
 
         if (savedInstanceState != null) {
             mIsPlaying = savedInstanceState.getBoolean(STATE_KEY_PLAYING)
-            mSelectedRingtoneUri = savedInstanceState.getParcelable(EXTRA_RINGTONE_URI)
+            mSelectedRingtoneUri = BundleCompat.getParcelable(savedInstanceState,
+                    EXTRA_RINGTONE_URI, Uri::class.java)
         }
 
         if (mSelectedRingtoneUri == null) {
-            mSelectedRingtoneUri = intent.getParcelableExtra(EXTRA_RINGTONE_URI)
+            mSelectedRingtoneUri =
+                    IntentCompat.getParcelableExtra(intent, EXTRA_RINGTONE_URI, Uri::class.java)
         }
 
         mAlarmId = intent.getLongExtra(EXTRA_ALARM_ID, -1)
-        mDefaultRingtoneUri = intent.getParcelableExtra(EXTRA_DEFAULT_RINGTONE_URI)
+        mDefaultRingtoneUri =
+                IntentCompat.getParcelableExtra(intent, EXTRA_DEFAULT_RINGTONE_URI, Uri::class.java)
         val defaultRingtoneTitleId = intent.getIntExtra(EXTRA_DEFAULT_RINGTONE_NAME, 0)
         mDefaultRingtoneTitle = context.getString(defaultRingtoneTitleId)
 
@@ -179,24 +183,23 @@ class RingtonePickerActivity : BaseActivity(), LoaderCallbacks<List<ItemHolder<U
                 val cr: ContentResolver = getContentResolver()
 
                 // Start a background task to fetch the alarm whose ringtone must be updated.
-                object : AsyncTask<Void?, Void?, Alarm>() {
-                    override fun doInBackground(vararg parameters: Void?): Alarm? {
-                        val alarm = Alarm.getAlarm(cr, mAlarmId)
-                        if (alarm != null) {
-                            alarm.alert = it
-                        }
-                        return alarm
+                AsyncHandler.postForResult({
+                    val alarm = Alarm.getAlarm(cr, mAlarmId)
+                    if (alarm != null) {
+                        alarm.alert = it
                     }
-
-                    override fun onPostExecute(alarm: Alarm) {
-                        // Update the default ringtone for future new alarms.
-                        DataModel.dataModel.defaultAlarmRingtoneUri = alarm.alert!!
-
-                        // Start a second background task to persist the updated alarm.
-                        AlarmUpdateHandler(context, mScrollHandler = null, mSnackbarAnchor = null)
-                                .asyncUpdateAlarm(alarm, popToast = false, minorUpdate = true)
+                    alarm
+                }) { alarm ->
+                    if (alarm == null) {
+                        return@postForResult
                     }
-                }.execute()
+                    // Update the default ringtone for future new alarms.
+                    DataModel.dataModel.defaultAlarmRingtoneUri = alarm.alert!!
+
+                    // Start a second background task to persist the updated alarm.
+                    AlarmUpdateHandler(context, mScrollHandler = null, mSnackbarAnchor = null)
+                            .asyncUpdateAlarm(alarm, popToast = false, minorUpdate = true)
+                }
             } else {
                 DataModel.dataModel.timerRingtoneUri = it
             }
@@ -268,18 +271,19 @@ class RingtonePickerActivity : BaseActivity(), LoaderCallbacks<List<ItemHolder<U
     override fun onLoaderReset(loader: Loader<List<ItemHolder<Uri?>>>) {
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode != RESULT_OK) {
-            return
+    private val mPickCustomRingtone =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode != RESULT_OK) {
+            return@registerForActivityResult
         }
 
-        val uri = data?.data ?: return
+        val data = result.data
+        val uri = data?.data ?: return@registerForActivityResult
 
         // Bail if the permission to read (playback) the audio at the uri was not granted.
         val flags = data.flags and Intent.FLAG_GRANT_READ_URI_PERMISSION
         if (flags != Intent.FLAG_GRANT_READ_URI_PERMISSION) {
-            return
+            return@registerForActivityResult
         }
 
         // Start a task to fetch the display name of the audio content and add the custom ringtone.
@@ -421,10 +425,10 @@ class RingtonePickerActivity : BaseActivity(), LoaderCallbacks<List<ItemHolder<U
             when (id) {
                 AddCustomRingtoneViewHolder.CLICK_ADD_NEW -> {
                     stopPlayingRingtone(selectedRingtoneHolder, false)
-                    startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT)
+                    mPickCustomRingtone.launch(Intent(Intent.ACTION_OPEN_DOCUMENT)
                             .addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
                             .addCategory(Intent.CATEGORY_OPENABLE)
-                            .setType("audio/*"), 0)
+                            .setType("audio/*"))
                 }
                 RingtoneViewHolder.CLICK_NORMAL -> {
                     val oldSelection = selectedRingtoneHolder
@@ -458,11 +462,14 @@ class RingtonePickerActivity : BaseActivity(), LoaderCallbacks<List<ItemHolder<U
      * This task locates a displayable string in the background that is fit for use as the title of
      * the audio content. It adds a custom ringtone using the uri and title on the main thread.
      */
-    private inner class AddCustomRingtoneTask(private val mUri: Uri)
-        : AsyncTask<Void?, Void?, String>() {
+    private inner class AddCustomRingtoneTask(private val mUri: Uri) {
         private val mContext: Context = getApplicationContext()
 
-        override fun doInBackground(vararg voids: Void?): String {
+        fun execute() {
+            AsyncHandler.postForResult(this::doInBackground, this::onPostExecute)
+        }
+
+        private fun doInBackground(): String {
             val contentResolver = mContext.contentResolver
 
             // Take the long-term permission to read (playback) the audio at the uri.
@@ -498,7 +505,7 @@ class RingtonePickerActivity : BaseActivity(), LoaderCallbacks<List<ItemHolder<U
             return mContext.getString(R.string.unknown_ringtone_title)
         }
 
-        override fun onPostExecute(title: String) {
+        private fun onPostExecute(title: String) {
             // Add the new custom ringtone to the data model.
             DataModel.dataModel.addCustomRingtone(mUri, title)
 
@@ -519,11 +526,14 @@ class RingtonePickerActivity : BaseActivity(), LoaderCallbacks<List<ItemHolder<U
      * Android system default alarm ringtone. If the application's timer ringtone is being removed,
      * it is reset to the application's default timer ringtone.
      */
-    private inner class RemoveCustomRingtoneTask(private val mRemoveUri: Uri)
-        : AsyncTask<Void?, Void?, Void?>() {
+    private inner class RemoveCustomRingtoneTask(private val mRemoveUri: Uri) {
         private lateinit var mSystemDefaultRingtoneUri: Uri
 
-        override fun doInBackground(vararg voids: Void?): Void? {
+        fun execute() {
+            AsyncHandler.postForResult({ doInBackground() }) { onPostExecute() }
+        }
+
+        private fun doInBackground() {
             mSystemDefaultRingtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
 
             // Update all alarms that use the custom ringtone to use the system default.
@@ -547,11 +557,9 @@ class RingtonePickerActivity : BaseActivity(), LoaderCallbacks<List<ItemHolder<U
                 // thrown indicating this app did not hold the read permission being released.
                 LogUtils.w("SecurityException while releasing read permission for $mRemoveUri")
             }
-
-            return null
         }
 
-        override fun onPostExecute(v: Void?) {
+        private fun onPostExecute() {
             // Reset the default alarm ringtone if it was just removed.
             if (mRemoveUri == DataModel.dataModel.defaultAlarmRingtoneUri) {
                 DataModel.dataModel.defaultAlarmRingtoneUri = mSystemDefaultRingtoneUri
