@@ -20,7 +20,6 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.content.Intent
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.KeyEvent
@@ -29,7 +28,6 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
-import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.widget.Toolbar
@@ -55,7 +53,8 @@ import com.android.deskclock.uidata.UiDataModel
 import com.android.deskclock.widget.toast.SnackbarManager
 
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.tabs.TabLayout
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.navigation.NavigationBarView
 
 /**
  * The main activity of the application which displays 4 different tabs contains alarms, world
@@ -119,7 +118,7 @@ class DeskClock : BaseActivity(), FabContainer, AlarmLabelDialogHandler {
     private lateinit var mFragmentTabPagerAdapter: FragmentTabPagerAdapter
 
     /** The container that stores the tab headers.  */
-    private lateinit var mTabLayout: TabLayout
+    private lateinit var mBottomNavigation: BottomNavigationView
 
     /** `true` when a settings change necessitates recreating this activity.  */
     private var mRecreateActivity = false
@@ -142,7 +141,7 @@ class DeskClock : BaseActivity(), FabContainer, AlarmLabelDialogHandler {
         setSupportActionBar(toolbar)
 
         val actionBar: ActionBar? = getSupportActionBar()
-        actionBar?.setDisplayShowTitleEnabled(false)
+        actionBar?.setDisplayShowTitleEnabled(true)
 
         // Configure the menu item controllers add behavior to the toolbar.
         mOptionsMenuManager.addMenuItemController(
@@ -154,40 +153,21 @@ class DeskClock : BaseActivity(), FabContainer, AlarmLabelDialogHandler {
         // inflation occurs *after* the initial draw and a second layout pass adds in the menu.
         onCreateOptionsMenu(toolbar.getMenu())
 
-        // Create the tabs that make up the user interface.
-        mTabLayout = findViewById(R.id.tabs) as TabLayout
+        // Create the bottom navigation items that make up the user interface. Each item's id is
+        // its tab's index, so selection maps straight back to UiDataModel.Tab.
+        mBottomNavigation = findViewById(R.id.bottom_navigation) as BottomNavigationView
         val tabCount: Int = UiDataModel.uiDataModel.tabCount
-        val showTabLabel: Boolean = getResources().getBoolean(R.bool.showTabLabel)
-        val showTabHorizontally: Boolean = getResources().getBoolean(R.bool.showTabHorizontally)
         for (i in 0 until tabCount) {
             val tabModel: UiDataModel.Tab = UiDataModel.uiDataModel.getTab(i)
-            @StringRes val labelResId: Int = tabModel.labelResId
-
-            val tab: TabLayout.Tab = mTabLayout.newTab()
-                    .setTag(tabModel)
+            mBottomNavigation.menu.add(Menu.NONE, i, i, tabModel.labelResId)
                     .setIcon(tabModel.iconResId)
-                    .setContentDescription(labelResId)
-
-            if (showTabLabel) {
-                tab.setText(labelResId)
-                tab.setCustomView(R.layout.tab_item)
-
-                val text = tab.getCustomView()!!.findViewById(android.R.id.text1) as TextView
-                text.setTextColor(mTabLayout.getTabTextColors())
-
-                // Bind the icon to the TextView.
-                val icon: Drawable? = tab.getIcon()
-                if (showTabHorizontally) {
-                    // Remove the icon so it doesn't affect the minimum TabLayout height.
-                    tab.setIcon(null)
-                    text.setCompoundDrawablesRelativeWithIntrinsicBounds(icon, null, null, null)
-                } else {
-                    text.setCompoundDrawablesRelativeWithIntrinsicBounds(null, icon, null, null)
-                }
-            }
-
-            mTabLayout.addTab(tab)
         }
+        mBottomNavigation.labelVisibilityMode =
+                if (getResources().getBoolean(R.bool.showTabLabel)) {
+                    NavigationBarView.LABEL_VISIBILITY_LABELED
+                } else {
+                    NavigationBarView.LABEL_VISIBILITY_UNLABELED
+                }
 
         // Configure the buttons shared by the tabs.
         mFab = findViewById(R.id.fab) as ImageView
@@ -264,18 +244,11 @@ class DeskClock : BaseActivity(), FabContainer, AlarmLabelDialogHandler {
         mFragmentTabPager.addOnPageChangeListener(PageChangeWatcher())
         mFragmentTabPager.setAdapter(mFragmentTabPagerAdapter)
 
-        // Mirror changes made to the selected tab into UiDataModel.
-        mTabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab) {
-                UiDataModel.uiDataModel.selectedTab = tab.getTag() as UiDataModel.Tab
-            }
-
-            override fun onTabUnselected(tab: TabLayout.Tab) {
-            }
-
-            override fun onTabReselected(tab: TabLayout.Tab) {
-            }
-        })
+        // Mirror changes made to the selected navigation item into UiDataModel.
+        mBottomNavigation.setOnItemSelectedListener { item ->
+            UiDataModel.uiDataModel.selectedTab = UiDataModel.uiDataModel.getTab(item.itemId)
+            true
+        }
 
         // Honor changes to the selected tab from outside entities.
         UiDataModel.uiDataModel.addTabListener(mTabChangeWatcher)
@@ -404,21 +377,19 @@ class DeskClock : BaseActivity(), FabContainer, AlarmLabelDialogHandler {
     }
 
     /**
-     * Configure the [.mFragmentTabPager] and [.mTabLayout] to display UiDataModel's
+     * Configure the [.mFragmentTabPager] and [.mBottomNavigation] to display UiDataModel's
      * selected tab.
      */
     private fun updateCurrentTab() {
         // Fetch the selected tab from the source of truth: UiDataModel.
         val selectedTab: UiDataModel.Tab = UiDataModel.uiDataModel.selectedTab
 
-        // Update the selected tab in the tablayout if it does not agree with UiDataModel.
-        for (i in 0 until mTabLayout.getTabCount()) {
-            val tab: TabLayout.Tab? = mTabLayout.getTabAt(i)
-            if (tab?.getTag() == selectedTab && !tab.isSelected()) {
-                tab.select()
-                break
-            }
+        // Update the selected navigation item if it does not agree with UiDataModel.
+        val selectedIndex = selectedTab.ordinal
+        if (mBottomNavigation.selectedItemId != selectedIndex) {
+            mBottomNavigation.selectedItemId = selectedIndex
         }
+        setTitle(selectedTab.labelResId)
 
         // Update the selected fragment in the viewpager if it does not agree with UiDataModel.
         for (i in 0 until mFragmentTabPagerAdapter.count) {
