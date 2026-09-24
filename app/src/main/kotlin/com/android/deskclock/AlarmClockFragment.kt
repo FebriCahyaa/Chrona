@@ -243,7 +243,11 @@ class AlarmClockFragment : DeskClockFragment(UiDataModel.Tab.ALARMS),
         return Alarm.getAlarmsCursorLoader(requireActivity())
     }
 
-    override fun onLoadFinished(cursorLoader: Loader<Cursor>, data: Cursor) {
+    override fun onLoadFinished(cursorLoader: Loader<Cursor>, data: Cursor?) {
+        if (data == null) {
+            return
+        }
+
         val itemHolders: MutableList<AlarmItemHolder> = ArrayList(data.count)
         data.moveToFirst()
         while (!data.isAfterLast) {
