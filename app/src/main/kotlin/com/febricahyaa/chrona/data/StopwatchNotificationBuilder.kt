@@ -21,10 +21,6 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
-import android.os.SystemClock
-import android.view.View.GONE
-import android.view.View.VISIBLE
-import android.widget.RemoteViews
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
@@ -38,6 +34,8 @@ import com.febricahyaa.chrona.R
 import com.febricahyaa.chrona.Utils
 import com.febricahyaa.chrona.events.Events
 import com.febricahyaa.chrona.stopwatch.StopwatchService
+
+import java.util.Locale
 
 /**
  * Builds notification to reflect the latest state of the stopwatch and recorded laps.
@@ -62,12 +60,8 @@ internal class StopwatchNotificationBuilder {
 
         // Compute some values required below.
         val running = stopwatch!!.isRunning
-        val pname: String = context.getPackageName()
         val res: Resources = context.getResources()
-        val base: Long = SystemClock.elapsedRealtime() - stopwatch.totalTime
-
-        val content = RemoteViews(pname, R.layout.chronometer_notif_content)
-        content.setChronometer(R.id.chronometer, base, null, running)
+        var stateText: CharSequence? = null
 
         val actions: MutableList<Action> = ArrayList<Action>(2)
 
@@ -97,12 +91,7 @@ internal class StopwatchNotificationBuilder {
             // Show the current lap number if any laps have been recorded.
             val lapCount = DataModel.dataModel.laps.size
             if (lapCount > 0) {
-                val lapNumber = lapCount + 1
-                val lap: String = res.getString(R.string.sw_notification_lap_number, lapNumber)
-                content.setTextViewText(R.id.state, lap)
-                content.setViewVisibility(R.id.state, VISIBLE)
-            } else {
-                content.setViewVisibility(R.id.state, GONE)
+                stateText = res.getString(R.string.sw_notification_lap_number, lapCount + 1)
             }
         } else {
             // Left button: Start
@@ -125,21 +114,31 @@ internal class StopwatchNotificationBuilder {
             val intent2: PendingIntent = Utils.pendingServiceIntent(context, reset)
             actions.add(Action.Builder(icon2, title2, intent2).build())
 
-            // Indicate the stopwatch is paused.
-            content.setTextViewText(R.id.state, res.getString(R.string.swn_paused))
-            content.setViewVisibility(R.id.state, VISIBLE)
+            // Indicate the stopwatch is paused, and at what time.
+            stateText = res.getString(R.string.swn_paused) + " · " +
+                    formatElapsed(stopwatch.totalTime)
         }
         val notification: Builder = Builder(
                 context, STOPWATCH_NOTIFICATION_CHANNEL_ID)
                 .setLocalOnly(true)
                 .setOngoing(running)
-                .setCustomContentView(content)
                 .setContentIntent(pendingShowApp)
                 .setAutoCancel(stopwatch.isPaused)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_STOPWATCH)
                 .setSmallIcon(R.drawable.stat_notify_stopwatch)
-                .setStyle(NotificationCompat.DecoratedCustomViewStyle())
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setColor(ContextCompat.getColor(context, R.color.default_background))
+                .setContentTitle(res.getString(R.string.stopwatch_channel))
+                .setContentText(stateText)
+        if (running) {
+            // A standard chronometer (no custom view) lets Android 16+ show a Live Update.
+            notification.setShowWhen(true)
+                    .setUsesChronometer(true)
+                    .setWhen(System.currentTimeMillis() - stopwatch.totalTime)
+        } else {
+            notification.setShowWhen(false)
+        }
 
         notification.setGroup(nm.stopwatchNotificationGroupKey)
 
@@ -148,6 +147,19 @@ internal class StopwatchNotificationBuilder {
         }
 
         return NotificationUtils.requestPromotedOngoing(notification).build()
+    }
+
+    /** Formats elapsed time as "00:07" or "1:05:00". */
+    private fun formatElapsed(elapsedMillis: Long): String {
+        val totalSeconds = maxOf(elapsedMillis, 0L) / 1000
+        val hours = totalSeconds / 3600
+        val minutes = totalSeconds / 60 % 60
+        val seconds = totalSeconds % 60
+        return if (hours > 0) {
+            String.format(Locale.getDefault(), "%d:%02d:%02d", hours, minutes, seconds)
+        } else {
+            String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
+        }
     }
 
     companion object {

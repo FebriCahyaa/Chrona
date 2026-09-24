@@ -17,16 +17,13 @@
 package com.febricahyaa.chrona.data
 
 import android.app.Notification
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
-import android.os.Build
 import android.os.SystemClock
 import android.text.TextUtils
 import android.text.format.DateUtils.SECOND_IN_MILLIS
-import android.widget.RemoteViews
 import androidx.annotation.DrawableRes
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.Action
@@ -40,6 +37,8 @@ import com.febricahyaa.chrona.Utils
 import com.febricahyaa.chrona.events.Events
 import com.febricahyaa.chrona.timer.ExpiredTimersActivity
 import com.febricahyaa.chrona.timer.TimerService
+
+import java.util.Locale
 
 /**
  * Builds notifications to reflect the latest state of the timers.
@@ -65,7 +64,6 @@ internal class TimerNotificationBuilder {
         val res: Resources = context.getResources()
 
         val base = getChronometerBase(timer)
-        val pname: String = context.getPackageName()
 
         val actions: MutableList<Action> = ArrayList<Action>(2)
 
@@ -150,27 +148,38 @@ internal class TimerNotificationBuilder {
                 PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_UPDATE_CURRENT or
                         PendingIntent.FLAG_IMMUTABLE)
 
+        // A standard notification (no custom view) with a count-down chronometer, so Android 16+
+        // can show it as a Live Update: a status bar chip and a card on the lock screen.
         val notification: Builder = Builder(
                 context, TIMER_MODEL_NOTIFICATION_CHANNEL_ID)
                 .setOngoing(true)
                 .setLocalOnly(true)
-                .setShowWhen(false)
                 .setAutoCancel(false)
                 .setContentIntent(pendingShowApp)
-                .setPriority(NotificationManager.IMPORTANCE_HIGH)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setSmallIcon(R.drawable.stat_notify_timer)
                 .setSortKey(nm.timerNotificationSortKey)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setStyle(NotificationCompat.DecoratedCustomViewStyle())
                 .setColor(ContextCompat.getColor(context, R.color.default_background))
+                .setContentTitle(stateText)
+                .setGroup(nm.timerNotificationGroupKey)
+        if (running) {
+            // The chronometer counts down to the moment the first timer reaches 0:00.
+            val untilZero = base - SystemClock.elapsedRealtime()
+            notification.setShowWhen(true)
+                    .setUsesChronometer(true)
+                    .setChronometerCountDown(true)
+                    .setWhen(System.currentTimeMillis() + untilZero)
+        } else {
+            notification.setShowWhen(false)
+                    .setContentText(formatRemaining(timer.remainingTime))
+        }
 
         for (action in actions) {
             notification.addAction(action)
         }
 
-        notification.setCustomContentView(buildChronometer(pname, base, running, stateText))
-                .setGroup(nm.timerNotificationGroupKey)
         return NotificationUtils.requestPromotedOngoing(notification).build()
     }
 
@@ -214,8 +223,6 @@ internal class TimerNotificationBuilder {
 
         val base = getChronometerBase(timer)
 
-        val pname: String = context.getPackageName()
-
         // Content intent shows the timer full screen when clicked.
         val content = Intent(context, ExpiredTimersActivity::class.java)
         val contentIntent: PendingIntent = Utils.pendingActivityIntent(context, content)
@@ -229,21 +236,25 @@ internal class TimerNotificationBuilder {
                 context, NotificationUtils.FIRING_NOTIFICATION_CHANNEL_ID)
                 .setOngoing(true)
                 .setLocalOnly(true)
-                .setShowWhen(false)
                 .setAutoCancel(false)
                 .setContentIntent(contentIntent)
-                .setPriority(NotificationManager.IMPORTANCE_HIGH)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setDefaults(Notification.DEFAULT_LIGHTS)
                 .setSmallIcon(R.drawable.stat_notify_timer)
                 .setFullScreenIntent(pendingFullScreen, true)
-                .setStyle(NotificationCompat.DecoratedCustomViewStyle())
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setColor(ContextCompat.getColor(context, R.color.default_background))
+                .setContentTitle(stateText)
+                // Counts up past 0:00 ("-0:05") since the timer expired.
+                .setShowWhen(true)
+                .setUsesChronometer(true)
+                .setChronometerCountDown(true)
+                .setWhen(System.currentTimeMillis() + (base - SystemClock.elapsedRealtime()))
 
         for (action in actions) {
             notification.addAction(action)
         }
-
-        notification.setCustomContentView(buildChronometer(pname, base, true, stateText))
 
         return NotificationUtils.requestPromotedOngoing(notification).build()
     }
@@ -258,7 +269,6 @@ internal class TimerNotificationBuilder {
 
         // Compute some values required below.
         val base = getChronometerBase(timer)
-        val pname: String = context.getPackageName()
         val res: Resources = context.getResources()
 
         val action: Action
@@ -308,35 +318,36 @@ internal class TimerNotificationBuilder {
         val notification: Builder = Builder(
                 context, TIMER_MODEL_NOTIFICATION_CHANNEL_ID)
                 .setLocalOnly(true)
-                .setShowWhen(false)
                 .setAutoCancel(false)
                 .setContentIntent(pendingShowApp)
-                .setPriority(NotificationManager.IMPORTANCE_HIGH)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setSmallIcon(R.drawable.stat_notify_timer)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setSortKey(nm.timerNotificationMissedSortKey)
-                .setStyle(NotificationCompat.DecoratedCustomViewStyle())
                 .addAction(action)
                 .setColor(ContextCompat.getColor(context, R.color.default_background))
-
-        notification.setCustomContentView(buildChronometer(pname, base, true, stateText))
+                .setContentTitle(stateText)
+                .setShowWhen(true)
+                .setUsesChronometer(true)
+                .setChronometerCountDown(true)
+                .setWhen(System.currentTimeMillis() + (base - SystemClock.elapsedRealtime()))
                 .setGroup(nm.timerNotificationGroupKey)
 
         return notification.build()
     }
 
-    private fun buildChronometer(
-        pname: String,
-        base: Long,
-        running: Boolean,
-        stateText: CharSequence
-    ): RemoteViews {
-        val content = RemoteViews(pname, R.layout.chronometer_notif_content)
-        content.setChronometerCountDown(R.id.chronometer, true)
-        content.setChronometer(R.id.chronometer, base, null, running)
-        content.setTextViewText(R.id.state, stateText)
-        return content
+    /** Formats a paused timer's remaining time as "00:07" or "1:05:00". */
+    private fun formatRemaining(remainingMillis: Long): String {
+        val totalSeconds = (maxOf(remainingMillis, 0L) + SECOND_IN_MILLIS - 1) / SECOND_IN_MILLIS
+        val hours = totalSeconds / 3600
+        val minutes = totalSeconds / 60 % 60
+        val seconds = totalSeconds % 60
+        return if (hours > 0) {
+            String.format(Locale.getDefault(), "%d:%02d:%02d", hours, minutes, seconds)
+        } else {
+            String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
+        }
     }
 
     companion object {
