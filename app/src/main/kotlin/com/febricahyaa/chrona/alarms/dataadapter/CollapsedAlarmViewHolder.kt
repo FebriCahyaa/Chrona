@@ -70,7 +70,8 @@ class CollapsedAlarmViewHolder private constructor(itemView: View) : AlarmItemVi
             itemHolder?.expand()
         }
 
-        itemView.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO)
+        // The expand arrow takes no space; the card itself is the expand action.
+        itemView.contentDescription = itemView.context.getString(R.string.expand_alarm)
     }
 
     override fun onBindItemView(itemHolder: AlarmItemHolder) {

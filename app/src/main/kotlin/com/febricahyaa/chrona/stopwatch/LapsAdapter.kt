@@ -97,16 +97,31 @@ internal class LapsAdapter(context: Context) : RecyclerView.Adapter<LapItemHolde
         viewHolder.accumulatedTime.setText(formatAccumulatedTime(totalTime, true))
         viewHolder.lapNumber.setText(formatLapNumber(laps.size + 1, lapNumber))
 
-        // Highlight the running (current) lap card, as in the M3 Expressive clock.
-        val colorAttr = if (lap == null) {
-            com.google.android.material.R.attr.colorTertiary
-        } else {
-            com.google.android.material.R.attr.colorOnSurface
+        // As in the M3 Expressive clock, once two laps are recorded the slowest one is red and
+        // the fastest one is blue; the running lap and the others stay neutral.
+        val context = viewHolder.itemView.context
+        val recorded = laps
+        val highlightAttr = when {
+            lap == null || recorded.size < 2 -> 0
+            lap.lapTime == recorded.maxOf { it.lapTime } ->
+                androidx.appcompat.R.attr.colorError
+            lap.lapTime == recorded.minOf { it.lapTime } ->
+                com.google.android.material.R.attr.colorTertiary
+            else -> 0
         }
-        val color = ThemeUtils.resolveColor(viewHolder.itemView.context, colorAttr)
-        viewHolder.lapNumber.setTextColor(color)
-        viewHolder.lapTime.setTextColor(color)
-        viewHolder.accumulatedTime.setTextColor(color)
+        if (highlightAttr != 0) {
+            val color = ThemeUtils.resolveColor(context, highlightAttr)
+            viewHolder.lapNumber.setTextColor(color)
+            viewHolder.lapTime.setTextColor(color)
+            viewHolder.accumulatedTime.setTextColor(color)
+        } else {
+            val variant = ThemeUtils.resolveColor(context,
+                    com.google.android.material.R.attr.colorOnSurfaceVariant)
+            viewHolder.lapNumber.setTextColor(variant)
+            viewHolder.lapTime.setTextColor(ThemeUtils.resolveColor(context,
+                    com.google.android.material.R.attr.colorOnSurface))
+            viewHolder.accumulatedTime.setTextColor(variant)
+        }
     }
 
     override fun getItemId(position: Int): Long {
@@ -146,16 +161,12 @@ internal class LapsAdapter(context: Context) : RecyclerView.Adapter<LapItemHolde
     fun addLap(): Lap? {
         val lap = DataModel.dataModel.addLap()
 
-        if (itemCount == 10) {
-            // 10 total laps indicates all items switch from 1 to 2 digit lap numbers.
-            notifyDataSetChanged()
-        } else {
-            // New current lap now exists.
-            notifyItemInserted(0)
+        // New current lap now exists.
+        notifyItemInserted(0)
 
-            // Prior current lap must be refreshed once with the true values in place.
-            notifyItemChanged(1)
-        }
+        // Every recorded lap may change: lap numbers widen at 10 laps, and the slowest and
+        // fastest lap highlights move.
+        notifyItemRangeChanged(1, itemCount - 1)
 
         return lap
     }
