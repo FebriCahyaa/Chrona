@@ -142,7 +142,7 @@ class AlarmTimeClickHandler(
 
     fun onDeleteClicked(itemHolder: AlarmItemHolder) {
         if (mFragment is AlarmClockFragment) {
-            (mFragment as AlarmClockFragment).removeItem(itemHolder)
+            mFragment.removeItem(itemHolder)
         }
         val alarm = itemHolder.item
         Events.sendAlarmEvent(R.string.action_delete, R.string.label_deskclock)
@@ -153,7 +153,7 @@ class AlarmTimeClickHandler(
     fun onClockClicked(alarm: Alarm) {
         mSelectedAlarm = alarm
         Events.sendAlarmEvent(R.string.action_set_time, R.string.label_deskclock)
-        TimePickerDialogFragment.show(mFragment, alarm.hour, alarm.minutes)
+        AlarmTimePicker.show(mFragment, alarm.hour, alarm.minutes)
     }
 
     fun dismissAlarmInstance(alarmInstance: AlarmInstance) {
@@ -175,7 +175,7 @@ class AlarmTimeClickHandler(
     fun onEditLabelClicked(alarm: Alarm) {
         Events.sendAlarmEvent(R.string.action_set_label, R.string.label_deskclock)
         val fragment = LabelDialogFragment.newInstance(alarm, alarm.label, mFragment.getTag())
-        LabelDialogFragment.show(mFragment.getFragmentManager(), fragment)
+        LabelDialogFragment.show(mFragment.parentFragmentManager, fragment)
     }
 
     fun onTimeSet(hourOfDay: Int, minute: Int) {

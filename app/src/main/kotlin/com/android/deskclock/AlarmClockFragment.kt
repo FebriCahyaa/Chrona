@@ -39,7 +39,7 @@ import com.android.deskclock.ItemAdapter.OnItemChangedListener
 import com.android.deskclock.alarms.AlarmTimeClickHandler
 import com.android.deskclock.alarms.AlarmUpdateHandler
 import com.android.deskclock.alarms.ScrollHandler
-import com.android.deskclock.alarms.TimePickerDialogFragment
+import com.android.deskclock.alarms.AlarmTimePicker
 import com.android.deskclock.alarms.dataadapter.AlarmItemHolder
 import com.android.deskclock.alarms.dataadapter.CollapsedAlarmViewHolder
 import com.android.deskclock.alarms.dataadapter.ExpandedAlarmViewHolder
@@ -58,7 +58,7 @@ import kotlin.math.max
  * A fragment that displays a list of alarm time and allows interaction with them.
  */
 class AlarmClockFragment : DeskClockFragment(UiDataModel.Tab.ALARMS),
-        LoaderCallbacks<Cursor>, ScrollHandler, TimePickerDialogFragment.OnTimeSetListener {
+        LoaderCallbacks<Cursor>, ScrollHandler, AlarmTimePicker.OnTimeSetListener {
     // Updates "Today/Tomorrow" in the UI when midnight passes.
     private val mMidnightUpdater: Runnable = MidnightRunnable()
 
@@ -81,6 +81,7 @@ class AlarmClockFragment : DeskClockFragment(UiDataModel.Tab.ALARMS),
 
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
+        AlarmTimePicker.reattach(this)
         mCursorLoader = LoaderManager.getInstance(this).initLoader(0, Bundle.EMPTY, this)
         savedState?.let {
             mExpandedAlarmId = it.getLong(KEY_EXPANDED_ID, Alarm.INVALID_ID)
@@ -167,7 +168,7 @@ class AlarmClockFragment : DeskClockFragment(UiDataModel.Tab.ALARMS),
         super.onStart()
 
         if (!isTabSelected) {
-            TimePickerDialogFragment.removeTimeEditDialog(parentFragmentManager)
+            AlarmTimePicker.dismiss(childFragmentManager)
         }
     }
 
@@ -372,10 +373,10 @@ class AlarmClockFragment : DeskClockFragment(UiDataModel.Tab.ALARMS),
     private fun startCreatingAlarm() {
         // Clear the currently selected alarm.
         mAlarmTimeClickHandler.setSelectedAlarm(null)
-        TimePickerDialogFragment.show(this)
+        AlarmTimePicker.show(this)
     }
 
-    override fun onTimeSet(fragment: TimePickerDialogFragment?, hourOfDay: Int, minute: Int) {
+    override fun onTimeSet(hourOfDay: Int, minute: Int) {
         mAlarmTimeClickHandler.onTimeSet(hourOfDay, minute)
     }
 
