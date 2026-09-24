@@ -40,7 +40,7 @@ import com.febricahyaa.chrona.actionbarmenu.MenuItemControllerFactory
 import com.febricahyaa.chrona.actionbarmenu.NavUpMenuItemController
 import com.febricahyaa.chrona.actionbarmenu.OptionsMenuManager
 import com.febricahyaa.chrona.data.DataModel
-import com.febricahyaa.chrona.ringtone.RingtonePickerActivity
+import com.febricahyaa.chrona.ringtone.SoundPickerActivity
 
 /**
  * Settings for the Alarm Clock.
@@ -184,7 +184,7 @@ class SettingsActivity : BaseActivity() {
                     return true
                 }
                 KEY_TIMER_RINGTONE -> {
-                    startActivity(RingtonePickerActivity.createTimerRingtonePickerIntent(context))
+                    startActivity(SoundPickerActivity.createTimerIntent(context))
                     return true
                 }
                 else -> return false

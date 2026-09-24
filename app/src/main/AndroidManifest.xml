@@ -81,11 +81,12 @@
             </intent-filter>
         </activity>
 
+        <!-- No UI of its own: opens the system sound picker and saves the choice. -->
         <activity
-            android:name=".ringtone.RingtonePickerActivity"
+            android:name=".ringtone.SoundPickerActivity"
             android:excludeFromRecents="true"
-            android:taskAffinity=""
-            android:theme="@style/Theme.DeskClock.RingtonePicker" />
+            android:exported="false"
+            android:theme="@style/Theme.DeskClock.SoundPicker" />
 
         <activity
             android:name=".worldclock.CitySelectionActivity"

@@ -202,6 +202,7 @@
     <string name="alarm_status_on">Alarm aktif</string>
     <string name="alarm_status_off">Alarm nonaktif</string>
     <string name="alarm_name">Nama alarm</string>
+    <string name="sound_picker_unavailable">Pemilih suara tidak tersedia di perangkat ini</string>
     <string name="alarm_snooze_row">Jeda alarm</string>
     <string name="alarm_sound_row">Suara</string>
     <string name="alarm_save">Simpan</string>

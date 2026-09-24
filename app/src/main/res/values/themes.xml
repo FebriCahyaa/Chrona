@@ -71,10 +71,13 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <!-- The ringtone picker draws its own large collapsing top app bar. -->
-    <style name="Theme.DeskClock.RingtonePicker">
+    <!-- Invisible host for the system sound picker. -->
+    <style name="Theme.DeskClock.SoundPicker">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowAnimationStyle">@null</item>
     </style>
 
     <!-- The city search draws its own search-field toolbar. -->

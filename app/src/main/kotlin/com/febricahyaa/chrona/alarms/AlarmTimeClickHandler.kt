@@ -35,7 +35,7 @@ import com.febricahyaa.chrona.events.Events
 import com.febricahyaa.chrona.provider.Alarm
 import com.febricahyaa.chrona.provider.AlarmInstance
 import com.febricahyaa.chrona.provider.ClockContract.InstancesColumns
-import com.febricahyaa.chrona.ringtone.RingtonePickerActivity
+import com.febricahyaa.chrona.ringtone.SoundPickerActivity
 
 import java.util.Calendar
 
@@ -168,8 +168,8 @@ class AlarmTimeClickHandler(
         mSelectedAlarm = alarm
         Events.sendAlarmEvent(R.string.action_set_ringtone, R.string.label_deskclock)
 
-        val intent: Intent = RingtonePickerActivity.createAlarmRingtonePickerIntent(context, alarm)
-        context.startActivity(intent)
+        // The phone's own sound picker, as in the Google clock.
+        context.startActivity(SoundPickerActivity.createAlarmIntent(context, alarm))
     }
 
     fun onEditLabelClicked(alarm: Alarm) {
