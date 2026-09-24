@@ -21,18 +21,16 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.database.ContentObserver
 import android.os.BatteryManager
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.provider.Settings
 import android.view.View
-import android.view.View.OnSystemUiVisibilityChangeListener
 import android.view.ViewTreeObserver.OnPreDrawListener
 import android.view.Window
 import android.view.WindowManager
 import android.widget.TextClock
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 
 import com.android.deskclock.events.Events
 import com.android.deskclock.uidata.UiDataModel
@@ -53,17 +51,6 @@ class ScreensaverActivity : BaseActivity() {
                 }
             }
         }
-    }
-
-    /* Register ContentObserver to see alarm changes for pre-L */
-    private val mSettingsContentObserver: ContentObserver? = if (Utils.isPreL) {
-        object : ContentObserver(Handler(Looper.myLooper()!!)) {
-            override fun onChange(selfChange: Boolean) {
-                Utils.refreshAlarm(this@ScreensaverActivity, mContentView)
-            }
-        }
-    } else {
-        null
     }
 
     // Runs every midnight or when the time changes and refreshes the date.
@@ -98,12 +85,10 @@ class ScreensaverActivity : BaseActivity() {
         Utils.dimClockView(true, mMainClockView)
         analogClock.enableSeconds(false)
 
-        mContentView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LOW_PROFILE
-                or View.SYSTEM_UI_FLAG_IMMERSIVE
-                or View.SYSTEM_UI_FLAG_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
-        mContentView.setOnSystemUiVisibilityChangeListener(InteractionListener())
+        val controller = WindowCompat.getInsetsController(window, mContentView)
+        controller.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        controller.hide(WindowInsetsCompat.Type.systemBars())
 
         mPositionUpdater = MoveScreensaverRunnable(mContentView, mMainClockView)
 
@@ -120,15 +105,9 @@ class ScreensaverActivity : BaseActivity() {
         filter.addAction(Intent.ACTION_POWER_CONNECTED)
         filter.addAction(Intent.ACTION_POWER_DISCONNECTED)
         filter.addAction(Intent.ACTION_USER_PRESENT)
-        if (Utils.isLOrLater) {
-            filter.addAction(AlarmManager.ACTION_NEXT_ALARM_CLOCK_CHANGED)
-        }
+        filter.addAction(AlarmManager.ACTION_NEXT_ALARM_CLOCK_CHANGED)
         registerReceiver(mIntentReceiver, filter)
 
-        mSettingsContentObserver?.let {
-            val uri = Settings.System.getUriFor(Settings.System.NEXT_ALARM_FORMATTED)
-            getContentResolver().registerContentObserver(uri, false, it)
-        }
     }
 
     override fun onResume() {
@@ -152,9 +131,6 @@ class ScreensaverActivity : BaseActivity() {
     }
 
     override fun onStop() {
-        mSettingsContentObserver?.let {
-            getContentResolver().unregisterContentObserver(it)
-        }
         unregisterReceiver(mIntentReceiver)
         super.onStop()
     }
@@ -213,16 +189,6 @@ class ScreensaverActivity : BaseActivity() {
                 mContentView.viewTreeObserver.removeOnPreDrawListener(mStartPositionUpdater)
             }
             return true
-        }
-    }
-
-    private inner class InteractionListener : OnSystemUiVisibilityChangeListener {
-        override fun onSystemUiVisibilityChange(visibility: Int) {
-            // When the user interacts with the screen, the navigation bar reappears
-            if (visibility and View.SYSTEM_UI_FLAG_HIDE_NAVIGATION == 0) {
-                // We want the screen saver to exit upon user interaction.
-                finish()
-            }
         }
     }
 

@@ -36,6 +36,7 @@ import androidx.annotation.Keep
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
+import androidx.core.os.BundleCompat
 import androidx.fragment.app.FragmentManager
 import androidx.loader.app.LoaderManager
 import androidx.loader.app.LoaderManager.LoaderCallbacks
@@ -370,7 +371,7 @@ class RingtonePickerActivity : BaseActivity(), LoaderCallbacks<List<ItemHolder<U
     class ConfirmRemoveCustomRingtoneDialogFragment : DialogFragment() {
         override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
             val arguments = requireArguments()
-            val toRemove = arguments.getParcelable<Uri>(ARG_RINGTONE_URI_TO_REMOVE)
+            val toRemove = BundleCompat.getParcelable(arguments, ARG_RINGTONE_URI_TO_REMOVE, Uri::class.java)
 
             val okListener = DialogInterface.OnClickListener { _, _ ->
                 (activity as RingtonePickerActivity).removeCustomRingtone(toRemove!!)

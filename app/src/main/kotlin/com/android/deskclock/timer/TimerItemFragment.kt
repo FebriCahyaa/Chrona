@@ -22,6 +22,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 
+import com.android.deskclock.Utils
+
 import com.android.deskclock.LabelDialogFragment
 import com.android.deskclock.R
 import com.android.deskclock.data.DataModel
@@ -86,7 +88,7 @@ class TimerItemFragment : Fragment() {
                 // Must re-retrieve timer because old timer is no longer accurate.
                 val currentTime: Long = this@TimerItemFragment.timer!!.remainingTime
                 if (currentTime > 0) {
-                    v.announceForAccessibility(TimerStringFormatter.formatString(
+                    Utils.announceForAccessibilityCompat(v, TimerStringFormatter.formatString(
                             context, R.string.timer_accessibility_one_minute_added, currentTime,
                             true))
                 }

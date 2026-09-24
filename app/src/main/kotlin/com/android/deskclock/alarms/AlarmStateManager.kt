@@ -16,7 +16,6 @@
 
 package com.android.deskclock.alarms
 
-import android.annotation.TargetApi
 import android.app.AlarmManager
 import android.app.AlarmManager.AlarmClockInfo
 import android.app.PendingIntent
@@ -29,8 +28,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.PowerManager
-import android.provider.Settings
-import android.provider.Settings.System.NEXT_ALARM_FORMATTED
 import android.text.format.DateFormat
 import android.widget.Toast
 import androidx.core.app.NotificationManagerCompat
@@ -215,11 +212,7 @@ class AlarmStateManager : BroadcastReceiver() {
         private fun updateNextAlarm(context: Context) {
             val nextAlarm = getNextFiringAlarm(context)
 
-            if (Utils.isPreL) {
-                updateNextAlarmInSystemSettings(context, nextAlarm)
-            } else {
-                updateNextAlarmInAlarmManager(context, nextAlarm)
-            }
+            updateNextAlarmInAlarmManager(context, nextAlarm)
         }
 
         /**
@@ -245,33 +238,8 @@ class AlarmStateManager : BroadcastReceiver() {
         }
 
         /**
-         * Used in pre-L devices, where "next alarm" is stored in system settings.
-         */
-        @TargetApi(Build.VERSION_CODES.KITKAT)
-        private fun updateNextAlarmInSystemSettings(context: Context, nextAlarm: AlarmInstance?) {
-            // Format the next alarm time if an alarm is scheduled.
-            var time = ""
-            if (nextAlarm != null) {
-                time = AlarmUtils.getFormattedTime(context, nextAlarm.alarmTime)
-            }
-
-            try {
-                // Write directly to NEXT_ALARM_FORMATTED in all pre-L versions
-                Settings.System.putString(context.getContentResolver(), NEXT_ALARM_FORMATTED, time)
-                LogUtils.i("Updated next alarm time to: '$time'")
-
-                // Send broadcast message so pre-L AppWidgets will recognize an update.
-                context.sendBroadcast(Intent(ACTION_ALARM_CHANGED))
-            } catch (se: SecurityException) {
-                // The user has most likely revoked WRITE_SETTINGS.
-                LogUtils.e("Unable to update next alarm to: '$time'", se)
-            }
-        }
-
-        /**
          * Used in L and later devices where "next alarm" is stored in the Alarm Manager.
          */
-        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         private fun updateNextAlarmInAlarmManager(context: Context, nextAlarm: AlarmInstance?) {
             // Sets a surrogate alarm with alarm manager that provides the AlarmClockInfo for the
             // alarm that is going to fire next. The operation is constructed such that it is

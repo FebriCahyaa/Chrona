@@ -74,9 +74,6 @@ class ExpiredTimersActivity : BaseActivity() {
 
         (findViewById(R.id.fab) as View).setOnClickListener(FabClickListener())
 
-        val view: View = findViewById(R.id.expired_timers_activity)
-        view.systemUiVisibility = View.SYSTEM_UI_FLAG_LOW_PROFILE
-
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                 or WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON)
 

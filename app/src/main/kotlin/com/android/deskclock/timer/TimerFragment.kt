@@ -306,7 +306,7 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
                     DataModel.dataModel.pauseTimer(timer)
                     Events.sendTimerEvent(R.string.action_stop, R.string.label_deskclock)
                     if (currentTime > 0) {
-                        mTimersView?.announceForAccessibility(TimerStringFormatter.formatString(
+                        Utils.announceForAccessibilityCompat(mTimersView, TimerStringFormatter.formatString(
                                 context, R.string.timer_accessibility_stopped, currentTime, true))
                     }
                 }
@@ -314,7 +314,7 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
                     DataModel.dataModel.startTimer(timer)
                     Events.sendTimerEvent(R.string.action_start, R.string.label_deskclock)
                     if (currentTime > 0) {
-                        mTimersView?.announceForAccessibility(TimerStringFormatter.formatString(
+                        Utils.announceForAccessibilityCompat(mTimersView, TimerStringFormatter.formatString(
                                 context, R.string.timer_accessibility_started, currentTime, true))
                     }
                 }
@@ -356,14 +356,14 @@ class TimerFragment : DeskClockFragment(UiDataModel.Tab.TIMERS) {
                 animateToView(mCreateTimerView, timer, false)
             }
 
-            left.announceForAccessibility(requireActivity().getString(R.string.timer_deleted))
+            Utils.announceForAccessibilityCompat(left, requireActivity().getString(R.string.timer_deleted))
         } else if (mCurrentView === mCreateTimerView) {
             // Clicking the "cancel" button on the timer creation page returns to the timers list.
             mCreateTimerView.reset()
 
             animateToView(mTimersView, null, false)
 
-            left.announceForAccessibility(requireActivity().getString(R.string.timer_canceled))
+            Utils.announceForAccessibilityCompat(left, requireActivity().getString(R.string.timer_canceled))
         }
     }
 

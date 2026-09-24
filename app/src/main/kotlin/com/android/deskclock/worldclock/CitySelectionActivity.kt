@@ -359,11 +359,11 @@ class CitySelectionActivity : BaseActivity() {
             val city = b.tag as City
             if (checked) {
                 mUserSelectedCities.add(city)
-                b.announceForAccessibility(mContext.getString(R.string.city_checked,
+                Utils.announceForAccessibilityCompat(b, mContext.getString(R.string.city_checked,
                         city.name))
             } else {
                 mUserSelectedCities.remove(city)
-                b.announceForAccessibility(mContext.getString(R.string.city_unchecked,
+                Utils.announceForAccessibilityCompat(b, mContext.getString(R.string.city_unchecked,
                         city.name))
             }
         }

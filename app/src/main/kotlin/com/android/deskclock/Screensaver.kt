@@ -22,10 +22,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Configuration
-import android.database.ContentObserver
-import android.os.Handler
-import android.os.Looper
-import android.provider.Settings
 import android.service.dreams.DreamService
 import android.view.View
 import android.view.ViewTreeObserver.OnPreDrawListener
@@ -45,17 +41,6 @@ class Screensaver : DreamService() {
     private var mMainClockView: View? = null
     private var mDigitalClock: TextClock? = null
     private var mAnalogClock: AnalogClock? = null
-
-    /* Register ContentObserver to see alarm changes for pre-L */
-    private val mSettingsContentObserver: ContentObserver? = if (Utils.isLOrLater) {
-        null
-    } else {
-        object : ContentObserver(Handler(Looper.myLooper()!!)) {
-            override fun onChange(selfChange: Boolean) {
-                Utils.refreshAlarm(this@Screensaver, mContentView)
-            }
-        }
-    }
 
     // Runs every midnight or when the time changes and refreshes the date.
     private val mMidnightUpdater = Runnable {
@@ -97,28 +82,15 @@ class Screensaver : DreamService() {
         Utils.setTimeFormat(mDigitalClock, false)
         mAnalogClock?.enableSeconds(false)
 
-        mContentView?.systemUiVisibility = (View.SYSTEM_UI_FLAG_LOW_PROFILE
-                or View.SYSTEM_UI_FLAG_IMMERSIVE
-                or View.SYSTEM_UI_FLAG_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
-
         mPositionUpdater = MoveScreensaverRunnable(mContentView!!, mMainClockView!!)
 
         // We want the screen saver to exit upon user interaction.
         isInteractive = false
         isFullscreen = true
 
-        // Setup handlers for time reference changes and date updates.
-        if (Utils.isLOrLater) {
-            registerReceiver(mAlarmChangedReceiver,
-                    IntentFilter(AlarmManager.ACTION_NEXT_ALARM_CLOCK_CHANGED))
-        }
-
-        mSettingsContentObserver?.let {
-            val uri = Settings.System.getUriFor(Settings.System.NEXT_ALARM_FORMATTED)
-            contentResolver.registerContentObserver(uri, false, it)
-        }
+        // Setup the handler for next-alarm changes.
+        registerReceiver(mAlarmChangedReceiver,
+                IntentFilter(AlarmManager.ACTION_NEXT_ALARM_CLOCK_CHANGED))
 
         Utils.updateDate(mDateFormat, mDateFormatForAccessibility, mContentView)
         Utils.refreshAlarm(this, mContentView)
@@ -131,17 +103,11 @@ class Screensaver : DreamService() {
         LOGGER.v("Screensaver detached from window")
         super.onDetachedFromWindow()
 
-        mSettingsContentObserver?.let {
-            contentResolver.unregisterContentObserver(it)
-        }
-
         UiDataModel.uiDataModel.removePeriodicCallback(mMidnightUpdater)
         stopPositionUpdater()
 
-        // Tear down handlers for time reference changes and date updates.
-        if (Utils.isLOrLater) {
-            unregisterReceiver(mAlarmChangedReceiver)
-        }
+        // Tear down the next-alarm change receiver.
+        unregisterReceiver(mAlarmChangedReceiver)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {

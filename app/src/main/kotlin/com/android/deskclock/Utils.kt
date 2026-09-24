@@ -74,6 +74,11 @@ import kotlin.math.abs
 import kotlin.math.max
 
 object Utils {
+    @JvmStatic
+    @Suppress("DEPRECATION")
+    fun announceForAccessibilityCompat(view: View?, text: CharSequence) {
+        view?.announceForAccessibility(text)
+    }
     /**
      * [Uri] signifying the "silent" ringtone.
      */
@@ -294,13 +299,7 @@ object Utils {
      * @return The next alarm from [AlarmManager]
      */
     fun getNextAlarm(context: Context): String? {
-        return if (isPreL) getNextAlarmPreL(context) else getNextAlarmLOrLater(context)
-    }
-
-    @TargetApi(Build.VERSION_CODES.KITKAT)
-    private fun getNextAlarmPreL(context: Context): String {
-        val cr = context.contentResolver
-        return Settings.System.getString(cr, Settings.System.NEXT_ALARM_FORMATTED)
+        return getNextAlarmLOrLater(context)
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)

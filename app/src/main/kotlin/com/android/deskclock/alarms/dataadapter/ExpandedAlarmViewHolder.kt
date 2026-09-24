@@ -121,7 +121,7 @@ class ExpandedAlarmViewHolder private constructor(itemView: View, private val mH
         // Delete alarm handler
         delete.setOnClickListener { view ->
             alarmTimeClickHandler.onDeleteClicked(itemHolder!!)
-            view.announceForAccessibility(context.getString(R.string.alarm_deleted))
+            Utils.announceForAccessibilityCompat(view, context.getString(R.string.alarm_deleted))
         }
         // Repeat checkbox handler
         repeat.setOnClickListener { view ->

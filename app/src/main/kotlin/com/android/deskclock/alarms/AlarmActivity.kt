@@ -51,6 +51,9 @@ import android.widget.TextClock
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.core.graphics.ColorUtils
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.animation.PathInterpolatorCompat
 
 import com.android.deskclock.AnimatorUtils
@@ -401,9 +404,10 @@ class AlarmActivity : BaseActivity(), View.OnClickListener, View.OnTouchListener
     }
 
     private fun hideNavigationBar() {
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
+        val controller = WindowCompat.getInsetsController(window, window.decorView)
+        controller.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        controller.hide(WindowInsetsCompat.Type.navigationBars())
     }
 
     /**
@@ -630,7 +634,7 @@ class AlarmActivity : BaseActivity(), View.OnClickListener, View.OnTouchListener
         alertAnimator.play(revealAnimator).before(fadeAnimator)
         alertAnimator.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animator: Animator) {
-                mAlertView.announceForAccessibility(accessibilityText)
+                Utils.announceForAccessibilityCompat(mAlertView, accessibilityText)
                 mHandler.postDelayed(Runnable { finish() }, ALERT_DISMISS_DELAY_MILLIS.toLong())
             }
         })
