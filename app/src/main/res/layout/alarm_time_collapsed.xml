@@ -51,7 +51,7 @@
         app:layout_gravity="center_vertical"
         app:layout_row="0" />
 
-    <com.android.deskclock.widget.EllipsizeLayout
+    <com.febricahyaa.chrona.widget.EllipsizeLayout
         android:layout_width="0dp"
         android:layout_height="@dimen/touch_target_min_size"
         android:gravity="center_vertical"
@@ -93,7 +93,7 @@
             android:paddingStart="@dimen/icon_margin"
             android:singleLine="true" />
 
-    </com.android.deskclock.widget.EllipsizeLayout>
+    </com.febricahyaa.chrona.widget.EllipsizeLayout>
 
     <include
         layout="@layout/preemptive_dismiss"

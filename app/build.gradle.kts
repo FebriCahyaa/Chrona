@@ -26,7 +26,7 @@ val releaseSigningAvailable = keystoreFile != null && keystorePassword != null
 val compileSdkRelease = Regex("""(\d+)(?:\.(\d+))?""").matchEntire(compileSdkSpec)
 
 android {
-  namespace = "com.android.deskclock"
+  namespace = "com.febricahyaa.chrona"
 
   if (compileSdkRelease != null) {
     compileSdk = compileSdkRelease.groupValues[1].toInt()
@@ -39,7 +39,7 @@ android {
   buildToolsOverride?.let { buildToolsVersion = it }
 
   defaultConfig {
-    applicationId = "com.android.deskclock"
+    applicationId = "com.febricahyaa.chrona"
     minSdk = libs.versions.androidMinSdk.get().toInt()
     targetSdk = libs.versions.androidTargetSdk.get().toInt()
     versionCode = chronaVersionCode

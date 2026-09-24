@@ -16,7 +16,7 @@
   -->
 <!-- Material 3 Expressive timer card: label and delete on top, progress ring with the time and
      a state icon (tap to pause/resume, or stop when expired), then +1:00 and reset. -->
-<com.android.deskclock.timer.TimerItem
+<com.febricahyaa.chrona.timer.TimerItem
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -71,7 +71,7 @@
             android:layout_height="@dimen/timer_card_ring_size"
             android:layout_marginTop="8dp">
 
-            <com.android.deskclock.timer.TimerCircleView
+            <com.febricahyaa.chrona.timer.TimerCircleView
                 android:id="@+id/timer_time"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
@@ -83,7 +83,7 @@
                 android:gravity="center_horizontal"
                 android:orientation="vertical">
 
-                <com.android.deskclock.widget.AutoSizingTextView
+                <com.febricahyaa.chrona.widget.AutoSizingTextView
                     android:id="@+id/timer_time_text"
                     style="@style/display_time"
                     android:layout_width="@dimen/timer_card_time_width"
@@ -139,4 +139,4 @@
 
     </LinearLayout>
 
-</com.android.deskclock.timer.TimerItem>
+</com.febricahyaa.chrona.timer.TimerItem>
