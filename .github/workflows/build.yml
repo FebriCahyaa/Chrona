@@ -118,7 +118,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
       - name: CI script tests
-        run: python3 -m unittest discover -s scripts/ci -v
+        run: |
+          python3 -m unittest discover -s scripts/ci -v
+          python3 -m unittest discover -s scripts/assets -v
       - name: Android toolchain
         id: toolchain
         uses: ./.github/actions/android-toolchain

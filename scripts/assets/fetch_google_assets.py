@@ -22,12 +22,18 @@ def get_bytes(url: str) -> bytes:
     with urlopen(Request(url, headers=HEADERS), timeout=60) as response:
         return response.read()
 
-def latest_asset(owner: str, repo: str, predicate) -> str:
-    tree = get_json(f"{API_ROOT}/{owner}/{repo}/git/trees/main?recursive=1")
+def default_branch(owner: str, repo: str) -> str:
+    # Don't assume "main": some repos (e.g. google/material-design-icons)
+    # still default to "master", and a hardcoded guess silently returns an
+    # empty or unrelated tree instead of failing loudly.
+    return get_json(f"{API_ROOT}/{owner}/{repo}")["default_branch"]
+
+def latest_asset(owner: str, repo: str, branch: str, predicate) -> str:
+    tree = get_json(f"{API_ROOT}/{owner}/{repo}/git/trees/{branch}?recursive=1")
     paths = [item["path"] for item in tree["tree"] if item.get("type") == "blob"]
     matches = sorted(path for path in paths if predicate(path))
     if not matches:
-        raise RuntimeError(f"No matching asset found in {owner}/{repo}")
+        raise RuntimeError(f"No matching asset found in {owner}/{repo}@{branch}")
     matches.sort(key=lambda path: (0 if "[" in path else 1, 0 if "variablefont" in path.lower() else 1, path.lower()))
     return matches[0]
 
@@ -35,24 +41,24 @@ def save(url: str, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(get_bytes(url))
 
+def fetch(owner: str, repo: str, predicate, destination: Path) -> str:
+    branch = default_branch(owner, repo)
+    path = latest_asset(owner, repo, branch, predicate)
+    save(f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{path}", destination)
+    return path
+
 def main() -> int:
     root = Path(__file__).resolve().parents[2]
-    font_path = latest_asset(
+    font_path = fetch(
         "googlefonts",
         "googlesans-flex",
         lambda p: p.lower().endswith(".ttf") and "googlesansflex" in p.lower(),
+        root / ".generated/assets/fonts/GoogleSansFlex.ttf",
     )
-    symbols_path = latest_asset(
+    symbols_path = fetch(
         "google",
         "material-design-icons",
         lambda p: p.lower().endswith(".ttf") and "materialsymbolsrounded" in p.lower(),
-    )
-    save(
-        f"https://raw.githubusercontent.com/googlefonts/googlesans-flex/main/{font_path}",
-        root / ".generated/assets/fonts/GoogleSansFlex.ttf",
-    )
-    save(
-        f"https://raw.githubusercontent.com/google/material-design-icons/main/{symbols_path}",
         root / ".generated/assets/fonts/MaterialSymbolsRounded.ttf",
     )
     metadata = {
