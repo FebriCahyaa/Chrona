@@ -38,7 +38,7 @@ import java.util.TimeZone
  * format specifiers. [android.widget.TextClock] doesn't support a non-ticking clock.
  */
 class TextTime @JvmOverloads constructor(
-    context: Context?,
+    context: Context,
     attrs: AttributeSet? = null,
     defStyle: Int = 0
 ) : AppCompatTextView(context, attrs, defStyle) {
