@@ -1,5 +1,12 @@
 # Google Font Assets
 
-The current upstream font assets are intentionally refreshed by `scripts/assets/fetch_google_assets.py`. This source package was prepared in an environment without outbound network access, so unverified third-party binaries are not bundled here.
+`GoogleSansFlex.ttf` is a symlink refreshed by `scripts/assets/fetch_google_assets.py`,
+which targets the current default branch of Google Fonts `googlesans-flex`
+and records the resolved upstream path in `.generated/assets/fonts/metadata.json`.
+This source package was prepared in an environment without outbound network
+access, so the unverified upstream binary isn't bundled here; run the script
+on a network-enabled machine or let CI run it before building.
 
-The fetch script targets the current `main` branches of Google Fonts `googlesans-flex` and Google's `material-design-icons` repository and records the resolved upstream paths in `.generated/assets/fonts/metadata.json`.
+Material Symbols icons are fetched separately, per icon, as Android vector
+drawables into `res/drawable/` — see `scripts/assets/fetch_material_symbols_icons.py`
+and `scripts/assets/material_symbols_icons.txt`.

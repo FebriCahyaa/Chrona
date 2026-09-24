@@ -1,0 +1,13 @@
+# Material Symbols (Rounded) icons to fetch as Android vector drawables.
+#
+# One icon name per line, using the name exactly as it appears at
+# https://github.com/google/material-design-icons/tree/master/symbols/android
+# (lowercase, underscore-separated, e.g. "alarm" or "account_balance").
+# Blank lines and lines starting with # are ignored.
+#
+# Nothing is added by default: the fonts under assets/fonts/ used to bundle
+# every Material Symbols glyph as one big font for exactly this reason, but
+# nothing in the app referenced it. Add icon names here as the app actually
+# needs them, then run:
+#
+#   python3 scripts/assets/fetch_material_symbols_icons.py

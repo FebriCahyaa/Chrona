@@ -13,29 +13,28 @@ import fetch_google_assets as fga
 
 class FetchGoogleAssetsTest(unittest.TestCase):
     def test_default_branch_reads_the_repo_metadata_field(self) -> None:
-        # Regression: material-design-icons defaults to "master", not "main".
-        # Hardcoding "main" silently walked an unrelated/empty tree instead
-        # of failing loudly, so this must come from the API, never a guess.
+        # Regression: a hardcoded "main" silently walks whatever branch of
+        # that name happens to exist instead of failing on a missing ref.
         with patch.object(fga, "get_json", return_value={"default_branch": "master"}) as mocked:
-            self.assertEqual(fga.default_branch("google", "material-design-icons"), "master")
-        mocked.assert_called_once_with(f"{fga.API_ROOT}/google/material-design-icons")
+            self.assertEqual(fga.default_branch("owner", "repo"), "master")
+        mocked.assert_called_once_with(f"{fga.API_ROOT}/owner/repo")
 
     def test_latest_asset_prefers_bracketed_variable_font_paths(self) -> None:
         tree = {
             "tree": [
-                {"path": "static/MaterialSymbolsRounded-Regular.ttf", "type": "blob"},
-                {"path": "variablefont/MaterialSymbolsRounded[FILL,GRAD,opsz,wght].ttf", "type": "blob"},
+                {"path": "static/GoogleSansFlex-Regular.ttf", "type": "blob"},
+                {"path": "variablefont/GoogleSansFlex[wght].ttf", "type": "blob"},
                 {"path": "README.md", "type": "blob"},
             ]
         }
         with patch.object(fga, "get_json", return_value=tree):
             path = fga.latest_asset(
-                "google",
-                "material-design-icons",
-                "master",
-                lambda p: p.lower().endswith(".ttf") and "materialsymbolsrounded" in p.lower(),
+                "owner",
+                "repo",
+                "main",
+                lambda p: p.lower().endswith(".ttf") and "googlesansflex" in p.lower(),
             )
-        self.assertEqual(path, "variablefont/MaterialSymbolsRounded[FILL,GRAD,opsz,wght].ttf")
+        self.assertEqual(path, "variablefont/GoogleSansFlex[wght].ttf")
 
     def test_latest_asset_raises_when_nothing_matches(self) -> None:
         with patch.object(fga, "get_json", return_value={"tree": [{"path": "README.md", "type": "blob"}]}):
@@ -49,11 +48,11 @@ class FetchGoogleAssetsTest(unittest.TestCase):
             patch.object(fga, "latest_asset", return_value="variablefont/Foo.ttf"),
             patch.object(fga, "save", side_effect=lambda url, dest: saved.update(url=url, dest=dest)),
         ):
-            path = fga.fetch("google", "material-design-icons", lambda p: True, "/tmp/out.ttf")
+            path = fga.fetch("owner", "repo", lambda p: True, "/tmp/out.ttf")
         self.assertEqual(path, "variablefont/Foo.ttf")
         self.assertEqual(
             saved["url"],
-            "https://raw.githubusercontent.com/google/material-design-icons/master/variablefont/Foo.ttf",
+            "https://raw.githubusercontent.com/owner/repo/master/variablefont/Foo.ttf",
         )
         self.assertEqual(saved["dest"], "/tmp/out.ttf")
 

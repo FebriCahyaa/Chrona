@@ -1,3 +1,9 @@
+"""Refresh Google Sans Flex, the text typeface bundled under assets/fonts.
+
+Material Symbols icons are fetched per-icon as Android vector drawables by
+fetch_material_symbols_icons.py instead; see that script's docstring.
+"""
+
 from __future__ import annotations
 
 import json
@@ -23,9 +29,8 @@ def get_bytes(url: str) -> bytes:
         return response.read()
 
 def default_branch(owner: str, repo: str) -> str:
-    # Don't assume "main": some repos (e.g. google/material-design-icons)
-    # still default to "master", and a hardcoded guess silently returns an
-    # empty or unrelated tree instead of failing loudly.
+    # Don't assume "main": it silently walks whatever branch of that name
+    # happens to exist instead of failing on a missing ref.
     return get_json(f"{API_ROOT}/{owner}/{repo}")["default_branch"]
 
 def latest_asset(owner: str, repo: str, branch: str, predicate) -> str:
@@ -55,16 +60,7 @@ def main() -> int:
         lambda p: p.lower().endswith(".ttf") and "googlesansflex" in p.lower(),
         root / ".generated/assets/fonts/GoogleSansFlex.ttf",
     )
-    symbols_path = fetch(
-        "google",
-        "material-design-icons",
-        lambda p: p.lower().endswith(".ttf") and "materialsymbolsrounded" in p.lower(),
-        root / ".generated/assets/fonts/MaterialSymbolsRounded.ttf",
-    )
-    metadata = {
-        "google_sans_flex": font_path,
-        "material_symbols_rounded": symbols_path,
-    }
+    metadata = {"google_sans_flex": font_path}
     (root / ".generated/assets/fonts/metadata.json").write_text(
         json.dumps(metadata, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
