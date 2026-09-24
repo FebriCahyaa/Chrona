@@ -2,7 +2,9 @@ name: Release
 
 # stable branch + vX.Y.Z tags -> signed Release build, Android SDK stable channel (0).
 # Pushes to `stable` build and verify the signed APKs; tags (or a manual run
-# with a tag) also publish the GitHub Release.
+# with a version) also publish the GitHub Release. A manual run accepts
+# "1.2.3" or "v1.2.3"; if that tag does not exist yet it is created on the
+# commit the workflow was run from (the branch picked in "Run workflow").
 
 on:
   push:
@@ -15,7 +17,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing vX.Y.Z tag to (re)publish; leave empty to only build
+        description: Version to release, e.g. 1.2.3 or v1.2.3 (created on the selected branch if new); leave empty to only build
         required: false
         type: string
         default: ''
@@ -63,27 +65,46 @@ jobs:
       ref: ${{ steps.meta.outputs.ref }}
       tag: ${{ steps.meta.outputs.tag }}
       publish: ${{ steps.meta.outputs.publish }}
+      target: ${{ steps.meta.outputs.target }}
     steps:
       - name: Resolve release
         id: meta
         env:
+          GH_TOKEN: ${{ github.token }}
           INPUT_TAG: ${{ inputs.tag }}
           REF_TYPE: ${{ github.ref_type }}
           REF_NAME: ${{ github.ref_name }}
         run: |
-          tag="$INPUT_TAG"
+          tag="${INPUT_TAG//[[:space:]]/}"
           if [[ -z "$tag" && "$REF_TYPE" == tag ]]; then tag="$REF_NAME"; fi
-          if [[ -n "$tag" ]]; then
-            [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { printf '::error::Invalid version tag: %s\n' "$tag"; exit 1; }
-            printf 'ref=%s\ntag=%s\npublish=true\n' "refs/tags/$tag" "$tag" >> "$GITHUB_OUTPUT"
-          else
-            printf 'ref=%s\ntag=\npublish=false\n' "$GITHUB_REF" >> "$GITHUB_OUTPUT"
+          if [[ -z "$tag" ]]; then
+            printf 'ref=%s\ntag=\npublish=false\ntarget=%s\n' "$GITHUB_REF" "$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+          # Accept "1.2.3" as well as "v1.2.3".
+          tag="v${tag#[vV]}"
+          if [[ ! "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            printf '::error::Invalid version %s; use X.Y.Z or vX.Y.Z (e.g. 1.0.1)\n' "$tag"
+            exit 1
+          fi
+          if gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$tag" > /dev/null 2>&1; then
+            printf 'Releasing existing tag %s\n' "$tag"
+            ref="refs/tags/$tag"
+          else
+            printf 'Tag %s does not exist yet; it will be created on %s (%s)\n' "$tag" "$REF_NAME" "$GITHUB_SHA"
+            ref="$GITHUB_SHA"
+          fi
+          printf 'ref=%s\ntag=%s\npublish=true\ntarget=%s\n' "$ref" "$tag" "$GITHUB_SHA" >> "$GITHUB_OUTPUT"
       - name: Checkout
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
           ref: ${{ steps.meta.outputs.ref }}
+      - name: Tag the release commit locally
+        if: steps.meta.outputs.tag != ''
+        env:
+          TAG: ${{ steps.meta.outputs.tag }}
+        run: git rev-parse -q --verify "refs/tags/$TAG" > /dev/null || git tag "$TAG"
       - name: Generate changelog
         env:
           GH_TOKEN: ${{ github.token }}
@@ -118,6 +139,12 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ needs.prepare.outputs.ref }}
+      - name: Tag the release commit locally
+        if: needs.prepare.outputs.tag != ''
+        env:
+          TAG: ${{ needs.prepare.outputs.tag }}
+        # versionName comes from the latest vX.Y.Z tag, so a new tag must exist locally.
+        run: git rev-parse -q --verify "refs/tags/$TAG" > /dev/null || git tag "$TAG"
       - name: Android toolchain
         id: toolchain
         uses: ./.github/actions/android-toolchain
@@ -199,6 +226,8 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.prepare.outputs.tag }}
+          # Creates the tag on this commit when it does not exist yet.
+          target_commitish: ${{ needs.prepare.outputs.target }}
           name: Chrona ${{ needs.prepare.outputs.tag }}
           body_path: ${{ steps.existing.outputs.body-path }}
           draft: false
