@@ -20,6 +20,7 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.os.SystemClock
 import android.text.TextUtils
+import android.text.format.DateUtils
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
@@ -184,6 +185,10 @@ class TimerItem @JvmOverloads constructor(
         if (!TextUtils.equals(label, mLabelView.text)) {
             mLabelView.text = label
         }
+        // An unnamed timer is called after its length, e.g. "Timer 5m".
+        if (showDeleteAndReset) {
+            mLabelView.hint = defaultLabel(timer.length)
+        }
 
         // Update the progress of the circle.
         mCircleView.update(timer)
@@ -245,4 +250,20 @@ class TimerItem @JvmOverloads constructor(
 
     private val deleteVisibility: Int
         get() = if (showDeleteAndReset) View.VISIBLE else View.GONE
+
+    private fun defaultLabel(lengthMillis: Long): String {
+        val totalSeconds = lengthMillis / DateUtils.SECOND_IN_MILLIS
+        val hours = totalSeconds / 3600
+        val minutes = totalSeconds / 60 % 60
+        val seconds = totalSeconds % 60
+        val res = resources
+        val parts = buildList {
+            if (hours > 0) add(res.getString(R.string.timer_length_hours_short, hours))
+            if (minutes > 0) add(res.getString(R.string.timer_length_minutes_short, minutes))
+            if (seconds > 0 || isEmpty()) {
+                add(res.getString(R.string.timer_length_seconds_short, seconds))
+            }
+        }
+        return res.getString(R.string.timer_default_label, parts.joinToString(" "))
+    }
 }

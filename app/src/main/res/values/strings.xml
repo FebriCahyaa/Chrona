@@ -489,6 +489,10 @@
     <string name="alarm_sound_row">Sound</string>
     <string name="alarm_save">Save</string>
     <string name="menu_item_feedback">Send feedback</string>
+    <string name="timer_default_label">Timer %s</string>
+    <string name="timer_length_hours_short">%dh</string>
+    <string name="timer_length_minutes_short">%dm</string>
+    <string name="timer_length_seconds_short">%ds</string>
     <string name="city_removed"><xliff:g id="city_name">%s</xliff:g> removed</string>
     <string name="search_city_hint">Search city</string>
     <string name="search_city_no_results">No matching cities</string>
