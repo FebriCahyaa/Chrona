@@ -75,7 +75,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Scan for verified secrets
-        uses: trufflesecurity/trufflehog@v3.97.8
+        uses: trufflesecurity/trufflehog@v3.97.9
         with:
           # On push/PR TruffleHog scans only the new commits; scheduled and
           # manual runs scan the full history.
