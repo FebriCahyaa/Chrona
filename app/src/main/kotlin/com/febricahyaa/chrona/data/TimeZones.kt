@@ -16,8 +16,6 @@
 
 package com.febricahyaa.chrona.data
 
-import android.text.TextUtils
-
 /**
  * A read-only domain object representing the timezones from which to choose a "home" timezone.
  */
@@ -31,8 +29,9 @@ class TimeZones internal constructor(
      * @return the timezone name with the `timeZoneId`; `null` if it does not exist
      */
     fun getTimeZoneName(timeZoneId: CharSequence?): CharSequence? {
+        if (timeZoneId == null) return null
         for (i in timeZoneIds.indices) {
-            if (TextUtils.equals(timeZoneId, timeZoneIds[i])) {
+            if (timeZoneId == timeZoneIds[i]) {
                 return timeZoneNames[i]
             }
         }
