@@ -470,7 +470,7 @@ class Alarm : Parcelable, AlarmsColumns {
         @JvmStatic
         fun deleteAlarm(contentResolver: ContentResolver, alarmId: Long): Boolean {
             if (alarmId == INVALID_ID) return false
-            val deletedRows: Int = contentResolver.delete(getContentUri(alarmId), "", null)
+            val deletedRows: Int = contentResolver.delete(getContentUri(alarmId), null, null)
             return deletedRows == 1
         }
 
