@@ -30,7 +30,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Super-Linter
-        uses: super-linter/super-linter/slim@v8
+        uses: super-linter/super-linter/slim@v9
         env:
           GITHUB_TOKEN: ${{ github.token }}
           DEFAULT_BRANCH: main
@@ -75,7 +75,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Scan for verified secrets
-        uses: trufflesecurity/trufflehog@v3.97.8
+        uses: trufflesecurity/trufflehog@v3.97.9
         with:
           # On push/PR TruffleHog scans only the new commits; scheduled and
           # manual runs scan the full history.
