@@ -1,10 +1,10 @@
 plugins {
-  id("com.android.application") version "9.4.1" apply false
+  id("com.android.application") version "9.5.0" apply false
   // AGP 9 compiles Kotlin itself (android.builtInKotlin). Declaring the Kotlin
   // plugin here only pins the Kotlin Gradle Plugin version on the classpath.
   // Stay below 2.4.20: the CodeQL bundle rejects it during extraction.
-  id("org.jetbrains.kotlin.android") version "2.4.10" apply false
-  id("com.diffplug.spotless") version "8.10.2"
+  id("org.jetbrains.kotlin.android") version "2.4.21" apply false
+  id("com.diffplug.spotless") version "8.10.4"
 }
 
 spotless {
